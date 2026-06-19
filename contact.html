@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Contact &amp; Cartographie | CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .contact-section { scroll-margin-top: calc(var(--site-header-height, 75px) + 16px); }
+        .location-card { transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s; }
+        .location-card.is-active { border-color: #9e001f; background-color: #fff8f7; box-shadow: 0 2px 12px rgba(158, 0, 31, 0.08); }
+        .location-card.is-active .location-icon { background-color: #9e001f; color: #fff; }
+        html { scroll-behavior: smooth; }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#bf0229", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                      "inverse-on-surface": "#f3f0f0", "outline-variant": "#e5bdbb", "inverse-surface": "#303030",
+                      "on-error": "#ffffff", "on-secondary-fixed": "#002107", "secondary": "#006e27",
+                      "surface-container-lowest": "#ffffff", "on-tertiary-fixed": "#241a00",
+                      "on-surface-variant": "#5c403f", "error-container": "#ffdad6", "on-primary-container": "#ffdad8",
+                      "on-primary": "#ffffff", "surface": "#fbf9f8", "on-secondary-fixed-variant": "#00531c",
+                      "on-primary-fixed-variant": "#92001c", "surface-dim": "#dcd9d9", "secondary-container": "#7ff98d",
+                      "on-tertiary-fixed-variant": "#574400", "surface-container-low": "#f6f3f2", "on-surface": "#1b1c1c",
+                      "on-tertiary": "#ffffff", "secondary-fixed": "#81fc90", "inverse-primary": "#ffb3b1",
+                      "on-primary-fixed": "#410007", "tertiary": "#745b00", "error": "#ba1a1a", "on-tertiary-container": "#4f3d00",
+                      "outline": "#906f6e", "background": "#fbf9f8", "tertiary-container": "#d0a600", "tertiary-fixed": "#ffe08a",
+                      "on-secondary": "#ffffff", "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1",
+                      "on-background": "#1b1c1c", "surface-bright": "#fbf9f8", "on-secondary-container": "#007329",
+                      "surface-container": "#f0eded", "primary-fixed-dim": "#ffb3b1", "on-error-container": "#93000a",
+                      "primary": "#9e001f", "primary-fixed": "#ffdad8", "primary-container": "#c8102e"
+              },
+              "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+              "spacing": {
+                      "stack-md": "16px", "container-max-width": "1200px", "unit": "4px", "margin-desktop": "32px",
+                      "stack-sm": "8px", "stack-lg": "32px", "gutter": "24px", "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Montserrat"], "headline-lg-mobile": ["Montserrat"], "display-lg": ["Montserrat"],
+                      "body-lg": ["Inter"], "title-lg": ["Inter"], "caption": ["Inter"], "body-md": ["Inter"],
+                      "headline-lg": ["Montserrat"], "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<link href="site-shell.css" rel="stylesheet"/>
+</head>
+<body class="bg-surface font-body-md text-on-surface" data-page="contact">
+<div id="site-shell-top"></div>
+<main class="min-h-screen">
+<!-- Hero -->
+<section class="relative py-20 md:py-24 text-white overflow-hidden bg-cover bg-center" style="background-image: linear-gradient(rgba(27,28,28,0.82), rgba(27,28,28,0.7)), url('images/CAMA_1.jfif');">
+<div class="relative max-w-container-max-width mx-auto px-4 md:px-margin-desktop text-center">
+<p class="text-white/70 text-xs font-semibold uppercase tracking-widest mb-3">Nous trouver &amp; nous écrire</p>
+<h1 class="font-headline-lg text-headline-lg mb-4">Contact &amp; Cartographie</h1>
+<p class="font-body-lg text-body-lg max-w-2xl mx-auto opacity-80">Envoyez-nous un message ou consultez nos antennes sur la carte.</p>
+</div>
+</section>
+
+<!-- Section Contact -->
+<section class="contact-section py-stack-lg" id="section-contact">
+<div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
+<div class="max-w-2xl mx-auto">
+<div class="bg-white p-6 md:p-8 rounded-xl border border-outline-variant shadow-sm">
+<h2 class="font-headline-md text-xl text-on-surface mb-1">Envoyez-nous un message</h2>
+<p class="text-on-surface-variant text-sm mb-6">Demande administrative, réclamation ou informationréponse sous 48h ouvrées.</p>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-5" id="contact-form">
+<div class="md:col-span-2 space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant">Nom complet</label>
+<input class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Ex : Jean-Baptiste Sawadogo" type="text" required/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant">E-mail</label>
+<input class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none" placeholder="vous@exemple.bf" type="email"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant">Téléphone</label>
+<input class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none" placeholder="+226 …" type="tel"/>
+</div>
+<div class="md:col-span-2 space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant">Objet</label>
+<select class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white">
+<option>Nouvel enrôlement</option>
+<option>Demande de remboursement</option>
+<option>Problème technique portail</option>
+<option>Mise à jour ayant-droit</option>
+<option>Autre</option>
+</select>
+</div>
+<div class="md:col-span-2 space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant">Message</label>
+<textarea class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none" placeholder="Décrivez votre demande…" rows="5" required></textarea>
+</div>
+<div class="md:col-span-2 flex items-start gap-3">
+<input class="w-4 h-4 mt-1 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox" required/>
+<span class="text-caption text-on-surface-variant">Je consens au traitement de mes données conformément à la <a class="text-primary underline" href="mention_legales.html#rgpd">politique de confidentialité</a>.</span>
+</div>
+<div class="md:col-span-2">
+<button class="w-full md:w-auto bg-primary text-white px-8 py-3.5 rounded-lg font-bold text-sm hover:brightness-110 active:scale-[0.98] transition-all shadow-md flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">send</span> Envoyer le message
+</button>
+</div>
+</form>
+</div>
+<div class="mt-5 flex flex-col sm:flex-row gap-3">
+<div class="flex-1 bg-primary/5 border border-primary/20 rounded-xl px-5 py-4 flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[28px]">emergency</span>
+<div class="min-w-0">
+<p class="text-sm font-bold text-on-surface">Urgence médicale</p>
+<p class="text-xs text-on-surface-variant">Prise en charge 7j/7militaires et ayants-droit</p>
+</div>
+<a class="shrink-0 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90" href="tel:112">112</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<!-- Section Cartographie -->
+<section class="contact-section bg-surface-container-low border-t border-outline-variant py-stack-lg" id="section-carte">
+<div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
+<div class="mb-6">
+<h2 class="font-headline-md text-xl md:text-2xl text-on-surface mb-1">Nos antennes</h2>
+<p class="text-sm text-on-surface-variant max-w-2xl">Sélectionnez un point pour afficher la carte et les coordonnées.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+<!-- Liste des points -->
+<div class="lg:col-span-4 flex flex-col gap-2 max-h-[520px] lg:max-h-none overflow-y-auto" id="locations-list" role="listbox" aria-label="Points CAMA"></div>
+<!-- Carte + détail -->
+<div class="lg:col-span-8">
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm flex flex-col min-h-[380px] lg:min-h-[440px]">
+<div class="px-4 py-3 border-b border-outline-variant flex flex-wrap items-center justify-between gap-2">
+<div>
+<p class="text-sm font-semibold text-on-surface" id="map-location-label">Siège CAMAOuagadougou</p>
+<p class="text-xs text-on-surface-variant mt-0.5" id="location-meta"></p>
+</div>
+<a class="text-xs font-bold text-primary flex items-center gap-1 hover:underline shrink-0" href="#" id="map-external-link" rel="noopener" target="_blank">
+<span class="material-symbols-outlined text-[16px]">directions</span> Itinéraire
+</a>
+</div>
+<div class="relative flex-1 min-h-[280px] bg-[#ebe6dc]">
+<iframe class="absolute inset-0 w-full h-full border-0" id="map-iframe" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte OpenStreetMap CAMA" src=""></iframe>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<div id="site-shell-bottom"></div>
+<script src="site-shell.js"></script>
+<script>
+    const LOCATIONS = [
+        {
+            id: 'siege',
+            name: 'Siège CAMAOuagadougou',
+            type: 'siege',
+            address: 'Ex-État-Major Général des Armées, Bilbalogho, Ouagadougou',
+            hours: 'Lun – Ven : 07h30 – 16h00',
+            phone: '+226 25 30 00 00',
+            email: 'contact@cama.bf',
+            lat: 12.3714, lon: -1.5197,
+            embed: 'https://www.openstreetmap.org/export/embed.html?bbox=-1.545%2C12.355%2C-1.495%2C12.388&layer=mapnik&marker=12.3714%2C-1.5197',
+            osm: 'https://www.openstreetmap.org/?mlat=12.3714&mlon=-1.5197#map=16/12.3714/-1.5197'
+        },
+        {
+            id: 'bobo',
+            name: 'Antenne Bobo-Dioulasso',
+            type: 'antenne',
+            address: 'Camp militaire, Bobo-Dioulasso',
+            hours: 'Lun – Ven : 08h00 – 15h00',
+            phone: '+226 20 97 00 00',
+            email: 'bobo@cama.bf',
+            lat: 11.1771, lon: -4.2979,
+            embed: 'https://www.openstreetmap.org/export/embed.html?bbox=-4.32%2C11.16%2C-4.27%2C11.19&layer=mapnik&marker=11.1771%2C-4.2979',
+            osm: 'https://www.openstreetmap.org/?mlat=11.1771&mlon=-4.2979#map=14/11.1771/-4.2979'
+        },
+        {
+            id: 'ouahigouya',
+            name: 'Antenne Ouahigouya',
+            type: 'antenne',
+            address: 'Antenne nord, Ouahigouya',
+            hours: 'Sur rendez-vous',
+            phone: '+226 24 55 00 00',
+            email: 'nord@cama.bf',
+            lat: 13.5825, lon: -2.4216,
+            embed: 'https://www.openstreetmap.org/export/embed.html?bbox=-2.44%2C13.57%2C-2.40%2C13.60&layer=mapnik&marker=13.5825%2C-2.4216',
+            osm: 'https://www.openstreetmap.org/?mlat=13.5825&mlon=-2.4216#map=14/13.5825/-2.4216'
+        },
+        {
+            id: 'fada',
+            name: "Antenne Fada N'Gourma",
+            type: 'antenne',
+            address: "Fada N'Gourma, région Est",
+            hours: 'Lun – Ven : 08h00 – 14h00',
+            phone: '+226 24 77 00 00',
+            email: 'est@cama.bf',
+            lat: 12.0616, lon: 0.3584,
+            embed: 'https://www.openstreetmap.org/export/embed.html?bbox=0.34%2C12.05%2C0.38%2C12.08&layer=mapnik&marker=12.0616%2C0.3584',
+            osm: 'https://www.openstreetmap.org/?mlat=12.0616&mlon=0.3584#map=14/12.0616/0.3584'
+        },
+        {
+            id: 'dori',
+            name: 'Antenne Dori',
+            type: 'antenne',
+            address: 'Dori, région Sahel',
+            hours: 'Sur rendez-vous',
+            phone: '+226 24 46 00 00',
+            email: 'sahel@cama.bf',
+            lat: 14.0354, lon: -0.0345,
+            embed: 'https://www.openstreetmap.org/export/embed.html?bbox=-0.05%2C14.02%2C-0.02%2C14.05&layer=mapnik&marker=14.0354%2C-0.0345',
+            osm: 'https://www.openstreetmap.org/?mlat=14.0354&mlon=-0.0345#map=14/14.0354/-0.0345'
+        }
+    ];
+
+    let activeId = 'siege';
+
+    function renderLocationList() {
+        const list = document.getElementById('locations-list');
+        list.innerHTML = LOCATIONS.map(loc => `
+            <button type="button" role="option" aria-selected="${loc.id === activeId}" data-id="${loc.id}"
+                class="location-card w-full text-left p-4 rounded-xl border border-outline-variant bg-white ${loc.id === activeId ? 'is-active' : ''}">
+                <div class="flex gap-3">
+                    <div class="location-icon w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${loc.type === 'siege' ? 'bg-primary/10 text-primary' : 'bg-surface-container-low text-on-surface-variant'}">
+                        <span class="material-symbols-outlined text-[20px]">${loc.type === 'siege' ? 'account_balance' : 'place'}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-on-surface truncate">${loc.name}</p>
+                        <p class="text-xs text-on-surface-variant mt-0.5 line-clamp-2">${loc.address}</p>
+                    </div>
+                </div>
+            </button>`).join('');
+        list.querySelectorAll('.location-card').forEach(btn => {
+            btn.addEventListener('click', () => selectLocation(btn.dataset.id));
+        });
+    }
+
+    function renderLocationMeta(loc) {
+        document.getElementById('location-meta').innerHTML = `
+            ${loc.address}<br/>
+            ${loc.hours} · <a href="tel:${loc.phone.replace(/\s/g, '')}" class="hover:text-primary">${loc.phone}</a> · <a href="mailto:${loc.email}" class="hover:text-primary">${loc.email}</a>`;
+    }
+
+    function selectLocation(id) {
+        const loc = LOCATIONS.find(l => l.id === id);
+        if (!loc) return;
+        activeId = id;
+        document.getElementById('map-iframe').src = loc.embed;
+        document.getElementById('map-location-label').textContent = loc.name;
+        document.getElementById('map-external-link').href = loc.osm;
+        renderLocationMeta(loc);
+        renderLocationList();
+    }
+
+    document.getElementById('contact-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const original = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span> Envoi…';
+        btn.disabled = true;
+        setTimeout(() => {
+            btn.classList.replace('bg-primary', 'bg-secondary');
+            btn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Message envoyé';
+            e.target.reset();
+            setTimeout(() => {
+                btn.classList.replace('bg-secondary', 'bg-primary');
+                btn.innerHTML = original;
+                btn.disabled = false;
+            }, 3000);
+        }, 1200);
+    });
+
+    selectLocation('siege');
+    if (window.location.hash === '#carte' || window.location.hash === '#section-carte') {
+        setTimeout(() => document.getElementById('section-carte').scrollIntoView({ behavior: 'smooth' }), 300);
+    }
+</script>
+</body></html>

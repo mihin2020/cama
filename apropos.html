@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>À Propos - CAMA</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Inter:wght@400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+        }
+        .pattern-bg {
+            background-color: #fbf9f8;
+            background-image: radial-gradient(#906f6e 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+            opacity: 0.1;
+        }
+        .hero-gradient {
+            background: linear-gradient(135deg, #9e001f 0%, #410007 100%);
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-tint": "#bf0229",
+                      "secondary-fixed-dim": "#65df76",
+                      "tertiary-fixed-dim": "#f1c100",
+                      "inverse-on-surface": "#f3f0f0",
+                      "outline-variant": "#e5bdbb",
+                      "inverse-surface": "#303030",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed": "#002107",
+                      "secondary": "#006e27",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-fixed": "#241a00",
+                      "on-surface-variant": "#5c403f",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#ffdad8",
+                      "on-primary": "#ffffff",
+                      "surface": "#fbf9f8",
+                      "on-secondary-fixed-variant": "#00531c",
+                      "on-primary-fixed-variant": "#92001c",
+                      "surface-dim": "#dcd9d9",
+                      "secondary-container": "#7ff98d",
+                      "on-tertiary-fixed-variant": "#574400",
+                      "surface-container-low": "#f6f3f2",
+                      "on-surface": "#1b1c1c",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#81fc90",
+                      "inverse-primary": "#ffb3b1",
+                      "on-primary-fixed": "#410007",
+                      "tertiary": "#745b00",
+                      "error": "#ba1a1a",
+                      "on-tertiary-container": "#4f3d00",
+                      "outline": "#906f6e",
+                      "background": "#fbf9f8",
+                      "tertiary-container": "#d0a600",
+                      "tertiary-fixed": "#ffe08a",
+                      "on-secondary": "#ffffff",
+                      "surface-variant": "#e4e2e1",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-background": "#1b1c1c",
+                      "surface-bright": "#fbf9f8",
+                      "on-secondary-container": "#007329",
+                      "surface-container": "#f0eded",
+                      "primary-fixed-dim": "#ffb3b1",
+                      "on-error-container": "#93000a",
+                      "primary": "#9e001f",
+                      "primary-fixed": "#ffdad8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "stack-md": "16px",
+                      "container-max-width": "1200px",
+                      "unit": "4px",
+                      "margin-desktop": "32px",
+                      "stack-sm": "8px",
+                      "stack-lg": "32px",
+                      "gutter": "24px",
+                      "margin-mobile": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Montserrat"],
+                      "headline-lg-mobile": ["Montserrat"],
+                      "display-lg": ["Montserrat"],
+                      "body-lg": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "caption": ["Inter"],
+                      "body-md": ["Inter"],
+                      "headline-lg": ["Montserrat"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<link href="site-shell.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background font-body-md" data-page="apropos">
+<div id="site-shell-top"></div>
+<main>
+<!-- Hero Section -->
+<section class="relative h-[420px] overflow-hidden flex items-center">
+<div class="absolute inset-0 bg-cover bg-center" style="background-image: linear-gradient(rgba(27,28,28,0.72), rgba(27,28,28,0.55)), url('images/CAMA_3.3.jfif');"></div>
+<div class="w-full px-6 md:px-16 relative z-10">
+<div class="text-white space-y-6 max-w-2xl mr-auto">
+<span class="inline-block bg-black/40 backdrop-blur-md border border-white/25 text-white px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider shadow-sm">Institution Nationale</span>
+<h1 class="font-display-lg text-display-lg leading-tight">Protéger ceux qui nous protègent</h1>
+<p class="font-body-lg text-body-lg text-white/90 max-w-lg">Découvrez l'histoire, les missions et l'engagement de la Caisse d'Assurance Maladie des Armées au service du personnel de défense du Burkina Faso.</p>
+</div>
+</div>
+</section>
+<!-- Director's Message (High-end layout) -->
+<section class="py-stack-lg bg-surface-container-lowest relative overflow-hidden">
+<div class="absolute -left-24 top-1/2 -translate-y-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="max-w-container-max-width mx-auto px-margin-desktop relative z-10">
+<div class="text-center lg:text-left mb-12">
+<span class="text-primary font-label-md uppercase tracking-widest">Gouvernance</span>
+<h2 class="font-headline-lg text-headline-lg mt-2">Mot du Directeur Général</h2>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-5">
+<div class="relative max-w-sm mx-auto lg:max-w-none">
+<div class="absolute -inset-3 bg-primary/10 rounded-2xl -z-10 hidden sm:block"></div>
+<div class="aspect-[4/5] bg-surface-container-high rounded-xl overflow-hidden shadow-lg border border-outline-variant relative">
+<img alt="Directeur Général de la CAMA" class="w-full h-full object-cover" src="images/directeur.jpg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+<div class="absolute bottom-0 left-0 right-0 p-5 text-white">
+<span class="inline-flex items-center gap-1.5 bg-secondary/90 text-on-secondary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-2">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                                    En fonction depuis le 13 nov. 2025
+                                </span>
+<p class="font-title-lg text-title-lg font-bold leading-snug">Ph. Lt-Colonel Ousmane Sinaré</p>
+<p class="font-caption text-caption text-white/80">Directeur Général de la CAMA</p>
+</div>
+</div>
+<div class="absolute -top-5 -right-5 w-14 h-14 bg-primary text-on-primary rounded-xl shadow-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-[28px]">format_quote</span>
+</div>
+</div>
+</div>
+<div class="lg:col-span-7 space-y-stack-md">
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed italic border-l-4 border-secondary pl-6">
+                            « Bienvenue sur l'espace d'information de la CAMA. Nous nous engageons chaque jour à moderniser nos services pour garantir une prise en charge rapide, efficace et humaine. »
+                        </p>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Installé le 13 novembre 2025, le <strong>pharmacien lieutenant-colonel Ousmane Sinaré</strong> succède au médecin colonel-major Saïdou Yonaba à la tête de la CAMA. Il inscrit l'institution dans une dynamique de transformation digitale visant à simplifier les parcours de soins de nos assurés et de leurs ayants-droit. Notre mission est d'assurer la sérénité de ceux qui servent sous les drapeaux.
+                        </p>
+<div class="pt-stack-md grid grid-cols-2 gap-4 max-w-md">
+<div class="flex items-center gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10 hover:bg-primary/10 transition-colors">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+</div>
+<div class="flex flex-col leading-tight">
+<span class="font-headline-md text-headline-md text-primary">2020</span>
+<span class="font-caption text-caption uppercase text-outline">Création par décret</span>
+</div>
+</div>
+<div class="flex items-center gap-3 p-4 bg-secondary/5 rounded-xl border border-secondary/10 hover:bg-secondary/10 transition-colors">
+<div class="w-10 h-10 rounded-lg bg-secondary text-on-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">health_and_safety</span>
+</div>
+<div class="flex flex-col leading-tight">
+<span class="font-headline-md text-headline-md text-secondary">80%</span>
+<span class="font-caption text-caption uppercase text-outline">Taux de couverture</span>
+</div>
+</div>
+</div>
+<a class="inline-flex items-center gap-2 text-primary font-bold hover:underline group pt-2" href="contact.html">
+                            Contacter la Direction Générale
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</section>
+<!-- Timeline / History -->
+<section class="py-stack-lg bg-surface-container-low">
+<div class="max-w-container-max-width mx-auto px-margin-desktop">
+<div class="text-center mb-16 space-y-2">
+<span class="text-primary font-label-md uppercase tracking-widest">Notre Histoire</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-2">Notre Évolution</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mt-3">De la mutuelle traditionnelle à une caisse d'assurance moderne et performante.</p>
+</div>
+<!-- Connected milestones -->
+<div class="relative mb-4">
+<div class="hidden md:block absolute top-7 left-[16.66%] right-[16.66%] h-0.5 bg-outline-variant"></div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- 1. The MUFAN Era -->
+<div class="group relative bg-white p-8 rounded-xl border border-outline-variant shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-primary hover:border-primary transition-all duration-300">
+<div class="w-14 h-14 rounded-full bg-primary text-on-primary group-hover:bg-white group-hover:text-primary flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined">history</span>
+</div>
+<span class="inline-block text-xs font-label-md uppercase tracking-wide text-primary group-hover:text-white/80 font-bold mb-2 transition-colors duration-300">Avant 2020</span>
+<h3 class="font-title-lg text-title-lg mb-2 text-on-surface group-hover:text-white transition-colors duration-300">L'ère MUFAN</h3>
+<p class="font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">Originairement gérée sous forme de mutuelle (MUFAN, Mutuelle des Forces Armées Nationales), l'institution a posé les bases de la solidarité au sein des forces armées burkinabè.</p>
+</div>
+<!-- 2. The Decree -->
+<div class="group relative bg-white p-8 rounded-xl border border-outline-variant shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-secondary hover:border-secondary transition-all duration-300">
+<div class="w-14 h-14 rounded-full bg-secondary text-on-secondary group-hover:bg-white group-hover:text-secondary flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined">gavel</span>
+</div>
+<span class="inline-block text-xs font-label-md uppercase tracking-wide text-secondary group-hover:text-white/80 font-bold mb-2 transition-colors duration-300">16 Avril 2020</span>
+<h3 class="font-title-lg text-title-lg mb-2 text-on-surface group-hover:text-white transition-colors duration-300">Création de la CAMA</h3>
+<p class="font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">Fondée par décret pour répondre aux exigences de la protection sociale moderne des armées et succéder à la MUFAN.</p>
+</div>
+<!-- 3. Official launch -->
+<div class="group relative bg-white p-8 rounded-xl border border-outline-variant shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-tertiary hover:border-tertiary transition-all duration-300">
+<div class="w-14 h-14 rounded-full bg-tertiary text-on-tertiary group-hover:bg-white group-hover:text-tertiary flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined">rocket_launch</span>
+</div>
+<span class="inline-block text-xs font-label-md uppercase tracking-wide text-tertiary group-hover:text-white/80 font-bold mb-2 transition-colors duration-300">13 Février 2025</span>
+<h3 class="font-title-lg text-title-lg mb-2 text-on-surface group-hover:text-white transition-colors duration-300">Lancement Officiel</h3>
+<p class="font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">Conférence de presse le 11 février 2025, puis lancement officiel de la CAMA à Ouagadougou, au siège de l'ex-État-Major Général des Armées.</p>
+</div>
+</div>
+</div>
+<div class="flex justify-center my-2">
+<span class="material-symbols-outlined text-outline-variant text-3xl">arrow_downward</span>
+</div>
+<!-- 4. Today CAMA -->
+<div class="text-on-primary p-12 rounded-xl shadow-xl overflow-hidden relative group bg-cover bg-center" style="background-image: linear-gradient(100deg, rgba(158,0,31,0.92) 30%, rgba(65,0,7,0.75) 70%, rgba(27,28,28,0.55) 100%), url('images/CAMA_4.jfif');">
+<div class="relative z-10 max-w-2xl">
+<span class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide mb-4">
+<span class="material-symbols-outlined text-[14px]">today</span>
+                        Aujourd'hui
+                    </span>
+<h3 class="font-headline-lg text-headline-lg mb-4">La CAMA, une institution pivot</h3>
+<p class="font-body-lg text-body-lg opacity-90">Rattachée au Ministère de la Défense, elle garantit l'accès fiable et équitable aux soins de qualité pour les militaires en fonction, leurs conjoints non-salariés et leurs enfants à charge.</p>
+</div>
+<span class="absolute right-8 bottom-8 material-symbols-outlined text-8xl opacity-10 group-hover:scale-110 transition-transform duration-500">verified_user</span>
+</div>
+</div>
+</section>
+<!-- Missions & Responsibilities (Asymmetric Cards) -->
+<section class="py-stack-lg bg-surface-container">
+<div class="max-w-container-max-width mx-auto px-margin-desktop">
+<div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+<div class="max-w-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Nos Missions Régaliennes</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Le cadre d'action de la CAMA est défini par une vision stratégique de protection globale.</p>
+</div>
+<button class="flex items-center gap-2 text-primary font-bold group">
+                        Consulter les textes officiels 
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-stack-lg">
+<div class="group p-8 bg-white border border-outline-variant rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-secondary hover:border-secondary transition-all duration-300">
+<div class="w-12 h-12 rounded-lg bg-secondary/10 group-hover:bg-white flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined text-secondary">medical_services</span>
+</div>
+<h4 class="font-title-lg text-title-lg mb-4 group-hover:text-white transition-colors duration-300">Gestion des Soins</h4>
+<ul class="space-y-3 font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Remboursement des frais médicaux</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Prise en charge des hospitalisations</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Conventionnement hospitalier</li>
+</ul>
+</div>
+<div class="group p-8 bg-white border border-outline-variant rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-primary hover:border-primary transition-all duration-300">
+<div class="w-12 h-12 rounded-lg bg-primary/10 group-hover:bg-white flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined text-primary">family_restroom</span>
+</div>
+<h4 class="font-title-lg text-title-lg mb-4 group-hover:text-white transition-colors duration-300">Protection de la Famille</h4>
+<ul class="space-y-3 font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Extension aux ayants-droit</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Soutien aux veuves et orphelins</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Programmes de prévention santé</li>
+</ul>
+</div>
+<div class="group p-8 bg-white border border-outline-variant rounded-lg shadow-sm hover:shadow-lg hover:-translate-y-1 hover:bg-tertiary hover:border-tertiary transition-all duration-300">
+<div class="w-12 h-12 rounded-lg bg-tertiary/10 group-hover:bg-white flex items-center justify-center mb-6 transition-colors duration-300">
+<span class="material-symbols-outlined text-tertiary">shield_person</span>
+</div>
+<h4 class="font-title-lg text-title-lg mb-4 group-hover:text-white transition-colors duration-300">Appui Opérationnel</h4>
+<ul class="space-y-3 font-body-md text-body-md text-on-surface-variant group-hover:text-white/90 transition-colors duration-300">
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Soutien sanitaire en mission</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Évacuations sanitaires (Evasan)</li>
+<li class="flex gap-2"><span class="group-hover:text-white">●</span> Expertise médicale militaire</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-stack-lg px-margin-desktop mb-stack-lg">
+<div class="max-w-container-max-width mx-auto bg-surface-container p-stack-lg rounded-3xl flex flex-col md:flex-row items-center justify-between gap-stack-lg border border-outline-variant overflow-hidden relative">
+<div class="absolute -left-10 -bottom-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg mb-2">Besoin d'aide pour vos démarches ?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Consultez notre guide de l'assuré ou contactez notre permanence téléphonique.</p>
+</div>
+<div class="flex gap-4 relative z-10 w-full md:w-auto">
+<button class="bg-on-background text-surface px-8 py-4 rounded-xl font-bold flex-1 md:flex-none">Guide de l'assuré</button>
+<button class="bg-secondary text-on-secondary px-8 py-4 rounded-xl font-bold flex-1 md:flex-none flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">call</span>
+                        Nous appeler
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<div id="site-shell-bottom"></div>
+<script src="site-shell.js"></script>
+</body></html>

@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dossiers | Back-office CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "spacing": { "stack-md": "16px", "container-max-width": "1200px", "gutter": "24px", "stack-sm": "8px", "margin-mobile": "16px", "unit": "4px", "stack-lg": "32px", "margin-desktop": "32px" },
+            "fontFamily": { "headline-lg-mobile": ["Montserrat"], "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "display-lg": ["Montserrat"], "caption": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "headline-lg-mobile": ["22px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "display-lg": ["44px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<link href="admin-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        summary::-webkit-details-marker { display: none; }
+        summary { list-style: none; }
+        .modal-overlay { display: none; }
+        .modal-overlay.is-open { display: flex; }
+        .view-pill.is-active { background-color: #9e001f; color: #fff; border-color: #9e001f; }
+        .view-pill { min-height: 44px; }
+        .dossier-mobile-card:active { transform: scale(0.995); }
+        .detail-action-btn { min-height: 44px; justify-content: center; }
+        @media (max-width: 767px) {
+            #app-header h1 { font-size: 1rem; line-height: 1.35; }
+            #pagination button,
+            #pagination-assure button { min-width: 44px; min-height: 44px; }
+            #detail-panel .detail-action-btn { width: 100%; }
+            #detail-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+            #detail-actions .detail-action-btn--wide { grid-column: 1 / -1; }
+            .filter-field { width: 100%; }
+            .piece-row-mobile { flex-direction: column; align-items: flex-start !important; gap: 8px; }
+            .piece-row-mobile .piece-actions { width: 100%; justify-content: flex-end; }
+        }
+        @media (min-width: 768px) {
+            .info-banner-details summary { cursor: default; pointer-events: none; }
+            .info-banner-details summary .info-chevron { display: none; }
+        }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Back-office</span></span>
+</a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span>
+<select class="w-full text-[12px] font-bold py-0.5" id="role-select">
+<option value="gestionnaire">Gestionnaire CAMA</option>
+<option value="superviseur">Superviseur / Responsable</option>
+<option value="administrateur">Administrateur technique</option>
+<option value="direction">Direction Générale</option>
+</select>
+</div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="dashboard.html">
+<span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord
+</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur" href="dossiers.html">
+<span class="material-symbols-outlined text-[20px]">folder_shared</span> Dossiers
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+<span class="material-symbols-outlined text-[20px]">groups</span> Assurés
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="utilisateurs-internes.html">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span> Comptes internes
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="exports.html">
+<span class="material-symbols-outlined text-[20px]">file_download</span> Exports
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="audit.html">
+<span class="material-symbols-outlined text-[20px]">fact_check</span> Journal d'audit
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="administrateur" href="parametres.html">
+<span class="material-symbols-outlined text-[20px]">settings</span> Paramètres
+</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="cms/dashboard.html">
+<span class="material-symbols-outlined text-[20px]">design_services</span> Studio de contenu
+</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="notifications.html">
+<span class="material-symbols-outlined text-[20px]">notifications</span> Notifications
+<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center" id="sidebar-unread-badge">3</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="profil.html">
+<span class="material-symbols-outlined text-[20px]">account_circle</span> Mon profil
+</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
+<span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
+</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div>
+<h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Dossiers</h1>
+<p class="text-[11px] text-on-surface-variant sm:hidden">1 demande = 1 membre</p>
+<p class="text-caption text-on-surface-variant hidden sm:block">1 demande = 1 membre de famille · regroupement par assuré possible</p>
+</div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
+<div class="hidden md:block text-left">
+<p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p>
+<p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p>
+</div>
+</a>
+</header>
+<main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
+<!-- Modèle explicite -->
+<details class="info-banner-details mb-4 md:mb-5 rounded-xl border border-primary/20 bg-primary/5 overflow-hidden" open>
+<summary class="flex items-center gap-3 p-4 cursor-pointer list-none select-none">
+<span class="material-symbols-outlined text-primary text-[22px] shrink-0">info</span>
+<span class="font-bold text-sm text-on-surface flex-1">Comment lire cette page</span>
+<span class="material-symbols-outlined text-on-surface-variant info-chevron text-[20px]">expand_more</span>
+</summary>
+<div class="px-4 pb-4 pt-0 text-xs text-on-surface-variant leading-relaxed border-t border-primary/10">
+<p class="md:hidden mb-2"><strong class="text-on-surface">Assuré</strong> = le militaire. <strong class="text-on-surface">Demande</strong> = un membre de sa famille (réf. <code class="text-[10px] bg-white px-1 rounded">CAMA-…</code>).</p>
+<p class="hidden md:block"><strong class="text-on-surface">Assuré principal</strong> = le militaire connecté (ex. Issouf TRAORÉ). Chaque <strong class="text-on-surface">demande d'enrôlement</strong> concerne <strong class="text-on-surface">un seul membre</strong> de sa famille (conjoint, enfant, parent…) avec sa propre référence (<code class="text-[10px] bg-white px-1 rounded">CAMA-2026-…</code>).</p>
+<p class="mt-2"><strong class="text-on-surface">Par assuré</strong> : vue famille · <strong class="text-on-surface">Par demande</strong> : file de traitement.</p>
+</div>
+</details>
+<!-- Filters -->
+<div class="assure-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3 items-stretch lg:items-center">
+<select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-statut">
+<option value="Tous">Tous les statuts</option>
+<option>Brouillon</option>
+<option>Soumis</option>
+<option>En instruction</option>
+<option>En attente supervision</option>
+<option>Pièce manquante demandée</option>
+<option>Validé</option>
+<option>Refusé</option>
+</select>
+<select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-gestionnaire">
+<option value="Tous">Tous les gestionnaires</option>
+<option>Lt. Aminata KABORÉ</option>
+<option>Sgt. Daniel ZONGO</option>
+<option>Adj. Rasmané BANCÉ</option>
+<option value="Non affecté">Non affecté</option>
+</select>
+<select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-lien">
+<option value="Tous">Tous les liens</option>
+<option>Conjoint(e)</option>
+<option>Enfant biologique</option>
+<option>Enfant du conjoint</option>
+<option>Parent</option>
+<option>Autre</option>
+</select>
+<input class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-periode" type="date"/>
+<div class="relative filter-field lg:flex-1 lg:min-w-[180px] sm:col-span-2">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-10 pr-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-search" placeholder="Réf., membre ou assuré…" type="search"/>
+</div>
+<button class="filter-field w-full sm:w-auto py-3 sm:py-2 px-4 rounded-lg border border-primary/30 bg-primary/5 text-primary font-bold text-sm sm:text-xs hover:bg-primary/10 transition-colors sm:border-0 sm:bg-transparent sm:px-0 sm:hover:bg-transparent sm:hover:underline sm:col-span-2 lg:col-span-1" id="filter-reset" type="button">Réinitialiser les filtres</button>
+</div>
+<!-- Vue -->
+<div class="mb-4">
+<p class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant mb-2">Affichage</p>
+<div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2">
+<button class="view-pill px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-full text-sm sm:text-[11px] font-semibold border border-outline-variant bg-white text-on-surface-variant transition-colors flex items-center justify-center gap-1.5" data-view="demande" type="button">
+<span class="material-symbols-outlined text-[18px] sm:hidden">list</span>
+<span>Par demande</span>
+</button>
+<button class="view-pill is-active px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-full text-sm sm:text-[11px] font-semibold border border-outline-variant bg-white text-on-surface-variant transition-colors flex items-center justify-center gap-1.5" data-view="assure" type="button">
+<span class="material-symbols-outlined text-[18px] sm:hidden">family_restroom</span>
+<span>Par assuré</span>
+</button>
+</div>
+</div>
+<!-- Vue par demande -->
+<div class="assure-card overflow-hidden" id="view-demande">
+<div class="md:hidden divide-y divide-outline-variant" id="dossiers-cards"></div>
+<div class="hidden md:block overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
+<th class="px-5 py-3 font-medium">Référence</th>
+<th class="px-5 py-3 font-medium">Membre (bénéficiaire)</th>
+<th class="px-5 py-3 font-medium hidden sm:table-cell">Assuré principal</th>
+<th class="px-5 py-3 font-medium hidden md:table-cell">Lien</th>
+<th class="px-5 py-3 font-medium hidden lg:table-cell">Soumis le</th>
+<th class="px-5 py-3 font-medium hidden md:table-cell">Gestionnaire</th>
+<th class="px-5 py-3 font-medium">Statut</th>
+<th class="px-5 py-3 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant" id="dossiers-table"></tbody>
+</table>
+</div>
+<div class="px-4 sm:px-5 py-4 border-t border-outline-variant" id="pagination"></div>
+</div>
+<!-- Vue par assuré -->
+<div class="hidden space-y-3" id="view-assure"></div>
+<div class="hidden px-1 py-4" id="pagination-assure"></div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
+            © 2026 CAMA — Back-office institutionnel. Accès restreint et tracé.
+        </footer>
+</div>
+<!-- Detail drawer -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-50 items-stretch justify-end" id="detail-overlay">
+<div class="bg-surface-container-low w-full sm:max-w-2xl h-full overflow-y-auto shadow-2xl" id="detail-panel"></div>
+</div>
+<!-- Action modal (Refuser / Compléter) -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-[60] items-center justify-center p-4" id="action-overlay">
+<div class="bg-white rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto p-5 sm:p-6" id="action-modal-content"></div>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="dashboard.html">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-[10px] font-label-md">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="dossiers.html">
+<span class="material-symbols-outlined text-[22px]">folder_shared</span>
+<span class="text-[10px] font-label-md">Dossiers</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="assures.html">
+<span class="material-symbols-outlined text-[22px]">groups</span>
+<span class="text-[10px] font-label-md">Assurés</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="notifications.html">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="text-[10px] font-label-md">Alertes</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html">
+<span class="material-symbols-outlined text-[22px]">person</span>
+<span class="text-[10px] font-label-md">Profil</span>
+</a>
+</nav>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast">
+<div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div>
+</div>
+<script src="../assure/assure-data.js"></script>
+<script>
+        const ROLE_IDENTITIES = {
+            gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
+            superviseur: { nom: "Cdt. Paul SAWADOGO", role: "Superviseur / Responsable" },
+            administrateur: { nom: "Ing. Awa OUÉDRAOGO", role: "Administrateur technique" },
+            direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
+        };
+
+        const PIECES_REQUETABLES = ["Acte de naissance", "Copie CNIB", "Acte de mariage", "Certificat médical de scolarité", "Pièce justifiant la garde", "Acte de divorce"];
+
+        let DOSSIERS = CamaAssureData.getDossiers();
+
+        function persistDossiers() {
+            CamaAssureData.saveDossiers(DOSSIERS);
+        }
+
+        const STATUS_STYLES = {
+            "Brouillon": "bg-surface-container-high text-on-surface-variant",
+            "Soumis": "bg-primary/10 text-primary",
+            "En instruction": "bg-tertiary/10 text-tertiary",
+            "En attente supervision": "bg-primary-fixed text-on-primary-fixed-variant",
+            "Pièce manquante demandée": "bg-tertiary text-on-tertiary",
+            "Validé": "bg-secondary text-on-secondary",
+            "Refusé": "bg-error text-on-error"
+        };
+        const PIECE_STYLES = {
+            "Validée": "bg-secondary/10 text-secondary", "Manquante": "bg-tertiary text-on-tertiary",
+            "Refusée": "bg-error/10 text-error", "Soumise": "bg-primary/10 text-primary"
+        };
+        function statusBadge(s) { return `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${STATUS_STYLES[s] || ''}">${s}</span>`; }
+        function pieceBadge(s) { return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${PIECE_STYLES[s] || ''}">${s}</span>`; }
+        function initials(name) {
+            const parts = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' ');
+            return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+        }
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-content').innerHTML = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function applyRole(role) {
+            localStorage.setItem('cama_admin_role', role);
+            document.querySelectorAll('[data-roles]').forEach(el => {
+                const roles = el.dataset.roles.split(',');
+                el.classList.toggle('role-hidden', !roles.includes(role));
+            });
+            const identity = ROLE_IDENTITIES[role];
+            document.getElementById('topbar-name').textContent = identity.nom;
+            document.getElementById('topbar-role').textContent = identity.role;
+            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
+            const select = document.getElementById('role-select');
+            if (select) select.value = role;
+        }
+
+        // ---- Filtering, sorting, pagination ----
+        const PAGE_SIZE = 5;
+        const GROUP_PAGE_SIZE = 4;
+        let currentPage = 1;
+        let viewMode = localStorage.getItem('cama_admin_dossiers_view') || 'assure';
+
+        function setViewMode(mode) {
+            viewMode = mode;
+            localStorage.setItem('cama_admin_dossiers_view', mode);
+            document.querySelectorAll('.view-pill').forEach(btn => {
+                btn.classList.toggle('is-active', btn.dataset.view === mode);
+            });
+            document.getElementById('view-demande').classList.toggle('hidden', mode !== 'demande');
+            document.getElementById('view-assure').classList.toggle('hidden', mode !== 'assure');
+            document.getElementById('pagination').classList.toggle('hidden', mode !== 'demande');
+            document.getElementById('pagination-assure').classList.toggle('hidden', mode !== 'assure');
+            renderView(1);
+        }
+
+        function getFiltered() {
+            const statut = document.getElementById('filter-statut').value;
+            const gestionnaire = document.getElementById('filter-gestionnaire').value;
+            const lien = document.getElementById('filter-lien').value;
+            const periode = document.getElementById('filter-periode').value;
+            const search = document.getElementById('filter-search').value.trim().toLowerCase();
+
+            return DOSSIERS.filter(d => {
+                if (statut !== 'Tous' && d.statut !== statut) return false;
+                if (gestionnaire !== 'Tous' && d.gestionnaire !== gestionnaire) return false;
+                if (lien !== 'Tous' && d.lien !== lien) return false;
+                if (periode && d.dateSoumission !== periode) return false;
+                if (search && !(
+                    d.ref.toLowerCase().includes(search) ||
+                    d.beneficiaire.toLowerCase().includes(search) ||
+                    (d.assureNom || '').toLowerCase().includes(search)
+                )) return false;
+                return true;
+            }).sort((a, b) => b.dateSoumission.localeCompare(a.dateSoumission));
+        }
+
+        function renderView(page) {
+            if (viewMode === 'assure') renderGrouped(page);
+            else renderTable(page);
+        }
+
+        function renderDemandeCard(d) {
+            return `
+                <button type="button" class="dossier-mobile-card w-full text-left p-4 hover:bg-surface-container-low active:bg-surface-container transition-colors" onclick="openDetail(${d.id})">
+                    <div class="flex items-start justify-between gap-2 mb-3">
+                        <span class="text-[11px] font-bold text-primary break-all">${d.ref}</span>
+                        ${statusBadge(d.statut)}
+                    </div>
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${initials(d.beneficiaire)}</div>
+                        <div class="min-w-0 flex-1">
+                            <p class="font-bold text-base text-on-surface leading-tight">${d.beneficiaire}</p>
+                            <p class="text-xs text-on-surface-variant mt-0.5">${d.lien}</p>
+                        </div>
+                    </div>
+                    <dl class="grid grid-cols-1 gap-2 text-xs bg-surface-container-low rounded-lg p-3">
+                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Assuré</dt><dd class="font-semibold text-on-surface text-right">${d.assureNom}</dd></div>
+                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Soumis le</dt><dd class="font-semibold">${formatDate(d.dateSoumission)}</dd></div>
+                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Gestionnaire</dt><dd class="font-semibold text-right ${d.gestionnaire === 'Non affecté' ? 'text-tertiary' : 'text-on-surface'}">${d.gestionnaire}</dd></div>
+                    </div>
+                    <span class="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">Ouvrir la demande <span class="material-symbols-outlined text-[18px]">chevron_right</span></span>
+                </button>`;
+        }
+
+        function renderMembreRowCard(d) {
+            return `
+                <button type="button" class="w-full text-left p-3 rounded-xl border border-outline-variant bg-white hover:bg-surface-container-low active:bg-surface-container transition-colors" onclick="event.stopPropagation(); openDetail(${d.id})">
+                    <div class="flex justify-between items-start gap-2 mb-1.5">
+                        <span class="text-[11px] font-bold text-primary break-all">${d.ref}</span>
+                        ${statusBadge(d.statut)}
+                    </div>
+                    <p class="font-bold text-sm text-on-surface">${d.beneficiaire}</p>
+                    <p class="text-xs text-on-surface-variant mt-1">${d.lien} · ${formatDate(d.dateSoumission)}</p>
+                </button>`;
+        }
+
+        function renderTable(page) {
+            currentPage = page || 1;
+            const filtered = getFiltered();
+            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+            currentPage = Math.min(currentPage, totalPages);
+            const start = (currentPage - 1) * PAGE_SIZE;
+            const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+            const tbody = document.getElementById('dossiers-table');
+            const cardsEl = document.getElementById('dossiers-cards');
+            const emptyMsg = `<p class="p-8 text-center text-on-surface-variant text-sm">Aucune demande ne correspond à ces filtres.</p>`;
+            if (!pageItems.length) {
+                tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-10 text-center text-on-surface-variant text-sm">Aucune demande ne correspond à ces filtres.</td></tr>`;
+                cardsEl.innerHTML = emptyMsg;
+            } else {
+                tbody.innerHTML = pageItems.map(d => `
+                    <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetail(${d.id})">
+                        <td class="px-5 py-3 font-bold text-xs">${d.ref}</td>
+                        <td class="px-5 py-3 text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-bold text-[10px] text-primary shrink-0">${initials(d.beneficiaire)}</div>
+                                <div>
+                                    <p class="font-semibold">${d.beneficiaire}</p>
+                                    <p class="text-[10px] text-on-surface-variant sm:hidden">Assuré : ${d.assureNom}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3 text-xs hidden sm:table-cell">
+                            <p class="font-semibold text-on-surface">${d.assureNom}</p>
+                        </td>
+                        <td class="px-5 py-3 text-xs text-on-surface-variant hidden md:table-cell">${d.lien}</td>
+                        <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${formatDate(d.dateSoumission)}</td>
+                        <td class="px-5 py-3 text-xs hidden md:table-cell ${d.gestionnaire === 'Non affecté' ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">${d.gestionnaire}</td>
+                        <td class="px-5 py-3">${statusBadge(d.statut)}</td>
+                        <td class="px-5 py-3 text-right"><span class="material-symbols-outlined text-on-surface-variant">chevron_right</span></td>
+                    </tr>
+                `).join('');
+                cardsEl.innerHTML = pageItems.map(d => renderDemandeCard(d)).join('');
+            }
+            renderPagination(totalPages, filtered.length, 'pagination', 'demande');
+        }
+
+        function renderGrouped(page) {
+            currentPage = page || 1;
+            const groups = CamaAssureData.groupDossiersByAssure(getFiltered());
+            const totalPages = Math.max(1, Math.ceil(groups.length / GROUP_PAGE_SIZE));
+            currentPage = Math.min(currentPage, totalPages);
+            const start = (currentPage - 1) * GROUP_PAGE_SIZE;
+            const pageGroups = groups.slice(start, start + GROUP_PAGE_SIZE);
+            const container = document.getElementById('view-assure');
+
+            if (!pageGroups.length) {
+                container.innerHTML = `<div class="assure-card p-10 text-center text-on-surface-variant text-sm">Aucun assuré ne correspond à ces filtres.</div>`;
+            } else {
+                container.innerHTML = pageGroups.map(g => `
+                    <details class="assure-card overflow-hidden group" ${g.pending > 0 ? 'open' : ''}>
+                        <summary class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 px-4 py-4 sm:px-5 cursor-pointer hover:bg-surface-container-low transition-colors list-none">
+                            <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
+                                <div class="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${initials(g.assureNom)}</div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-base sm:text-sm text-on-surface truncate">${g.assureNom}</p>
+                                    <p class="text-xs text-on-surface-variant">${g.matricule} · ${g.numeroCama}</p>
+                                </div>
+                                <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform sm:hidden shrink-0">expand_more</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+                                <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">${g.total} demande${g.total > 1 ? 's' : ''}</span>
+                                ${g.pending > 0 ? `<span class="px-3 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary">${g.pending} à traiter</span>` : `<span class="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary/10 text-secondary">À jour</span>`}
+                            </div>
+                            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform hidden sm:block shrink-0">expand_more</span>
+                        </summary>
+                        <div class="border-t border-outline-variant px-4 py-3 sm:px-5 bg-surface-container-low/50">
+                            <p class="text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-3">Demandes d'enrôlement des membres</p>
+                            <div class="md:hidden space-y-2 mb-3">
+                                ${g.dossiers.map(d => renderMembreRowCard(d)).join('')}
+                            </div>
+                            <div class="hidden md:block overflow-x-auto rounded-lg border border-outline-variant bg-white">
+                                <table class="w-full text-left text-xs">
+                                    <thead class="bg-surface-container-low text-[10px] uppercase text-on-surface-variant">
+                                        <tr>
+                                            <th class="px-3 py-2">Référence</th>
+                                            <th class="px-3 py-2">Membre</th>
+                                            <th class="px-3 py-2">Lien</th>
+                                            <th class="px-3 py-2">Date</th>
+                                            <th class="px-3 py-2">Statut</th>
+                                            <th class="px-3 py-2 text-right"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-outline-variant">
+                                        ${g.dossiers.map(d => `
+                                            <tr class="hover:bg-surface-container-low cursor-pointer" onclick="openDetail(${d.id})">
+                                                <td class="px-3 py-2.5 font-bold">${d.ref}</td>
+                                                <td class="px-3 py-2.5">${d.beneficiaire}</td>
+                                                <td class="px-3 py-2.5 text-on-surface-variant">${d.lien}</td>
+                                                <td class="px-3 py-2.5 text-on-surface-variant">${formatDate(d.dateSoumission)}</td>
+                                                <td class="px-3 py-2.5">${statusBadge(d.statut)}</td>
+                                                <td class="px-3 py-2.5 text-right"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">chevron_right</span></td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3 flex justify-stretch sm:justify-end">
+                                <a class="w-full sm:w-auto text-center sm:text-left py-3 sm:py-0 text-sm sm:text-[11px] font-bold text-primary hover:underline inline-flex items-center justify-center sm:justify-start gap-1 rounded-lg border border-primary/20 sm:border-0 bg-white sm:bg-transparent" href="assures.html">Voir la fiche assuré <span class="material-symbols-outlined text-[16px]">open_in_new</span></a>
+                            </div>
+                        </div>
+                    </details>
+                `).join('');
+            }
+            renderPagination(totalPages, groups.length, 'pagination-assure', 'assure');
+        }
+
+        function formatDate(iso) {
+            const [y, m, d] = iso.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function renderPagination(totalPages, total, elId, mode) {
+            const el = document.getElementById(elId);
+            const unit = mode === 'assure' ? 'assuré' : 'demande';
+            const unitPlural = mode === 'assure' ? 'assurés' : 'demandes';
+            if (totalPages <= 1) {
+                el.innerHTML = `<p class="text-[11px] text-on-surface-variant">${total} ${total > 1 ? unitPlural : unit}</p>`;
+                return;
+            }
+            let buttons = '';
+            for (let p = 1; p <= totalPages; p++) {
+                buttons += `<button class="w-8 h-8 rounded-lg text-xs font-bold ${p === currentPage ? 'bg-primary text-on-primary' : 'border border-outline text-on-surface-variant hover:bg-surface-container-low'}" onclick="renderView(${p})">${p}</button>`;
+            }
+            el.innerHTML = `<div class="flex items-center justify-between flex-wrap gap-3">
+                <p class="text-[11px] text-on-surface-variant">${total} ${total > 1 ? unitPlural : unit}</p>
+                <div class="flex gap-2">${buttons}</div>
+            </div>`;
+        }
+
+        ['filter-statut', 'filter-gestionnaire', 'filter-lien', 'filter-periode'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => renderView(1));
+        });
+        document.getElementById('filter-search').addEventListener('input', () => renderView(1));
+        document.getElementById('filter-reset').addEventListener('click', () => {
+            document.getElementById('filter-statut').value = 'Tous';
+            document.getElementById('filter-gestionnaire').value = 'Tous';
+            document.getElementById('filter-lien').value = 'Tous';
+            document.getElementById('filter-periode').value = '';
+            document.getElementById('filter-search').value = '';
+            renderView(1);
+        });
+        document.querySelectorAll('.view-pill').forEach(btn => {
+            btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+        });
+
+        function getCurrentRole() { return localStorage.getItem('cama_admin_role') || 'gestionnaire'; }
+        function isValidation2N() { return window.CamaAdminShell?.isValidation2Niveaux?.() ?? localStorage.getItem('cama_validation_2niveaux') === 'true'; }
+
+        function getValidationUi(d) {
+            const role = getCurrentRole();
+            if (!isValidation2N()) return { label: 'Valider', sub: 'Cette action notifie l\'assuré par e-mail.', show: true };
+            if (d.statut === 'En attente supervision') {
+                if (role === 'superviseur' || role === 'administrateur') return { label: 'Valider (niveau 2)', sub: 'Validation finalele dossier sera clos.', show: true };
+                return { label: 'En attente supervision', sub: 'Ce dossier attend la validation du superviseur.', show: false };
+            }
+            if (role === 'gestionnaire') return { label: 'Pré-valider', sub: 'Transmission au superviseur (validation à 2 niveaux).', show: true };
+            return { label: 'Valider', sub: 'Validation directe par le superviseur.', show: true };
+        }
+
+        // ---- Detail drawer ----
+        function openDetail(id) {
+            const d = DOSSIERS.find(x => x.id === id);
+            if (!d) return;
+
+            const piecesHtml = d.pieces.length ? d.pieces.map(p => `
+                <div class="piece-row-mobile flex items-center justify-between py-2.5 border-b border-outline-variant last:border-0 gap-2">
+                    <span class="text-xs flex items-center gap-2 min-w-0"><span class="material-symbols-outlined text-[16px] text-on-surface-variant shrink-0">description</span><span class="break-words">${p.type}</span></span>
+                    <div class="piece-actions flex items-center gap-2 shrink-0">
+                        ${pieceBadge(p.statut)}
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-primary" onclick="event.stopPropagation(); viewPiece('${p.type}')" title="Visualiser" type="button"><span class="material-symbols-outlined text-[18px]">visibility</span></button>
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-surface-container-low text-on-surface-variant" onclick="event.stopPropagation(); downloadPiece('${p.type}')" title="Télécharger" type="button"><span class="material-symbols-outlined text-[18px]">download</span></button>
+                        <button class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-error/10 text-error" onclick="event.stopPropagation(); deletePiece(${d.id}, '${p.type}')" title="Supprimer" type="button"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                    </div>
+                </div>`).join('') : `<p class="text-xs text-on-surface-variant italic py-2">Aucune pièce téléversée.</p>`;
+
+            const journalHtml = d.journal.map((j, i) => `
+                <div class="flex gap-3">
+                    <div class="relative flex flex-col items-center">
+                        <div class="w-2 h-2 rounded-full bg-primary z-10 mt-1"></div>
+                        ${i < d.journal.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}
+                    </div>
+                    <div class="pb-3"><p class="text-xs font-bold">${j.libelle}</p><p class="text-[11px] text-on-surface-variant">${j.date}</p></div>
+                </div>`).join('');
+
+            const messagesHtml = d.messages.length ? d.messages.map(m => `
+                <div class="flex ${m.auteur === 'gestionnaire' ? 'justify-end' : 'justify-start'}">
+                    <div class="max-w-[80%] ${m.auteur === 'gestionnaire' ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-on-surface'} rounded-xl px-3 py-2">
+                        <p class="text-xs">${m.texte}</p>
+                        <p class="text-[10px] opacity-70 mt-1">${m.date}</p>
+                    </div>
+                </div>`).join('') : `<p class="text-xs text-on-surface-variant italic">Aucun message échangé.</p>`;
+
+            const motif = d.motifRefus ? `<div class="bg-error/5 border border-error/20 rounded-lg p-3 flex gap-2 mb-4"><span class="material-symbols-outlined text-error text-[18px]">error</span><p class="text-xs"><strong class="text-error">Motif du refus :</strong> ${d.motifRefus}</p></div>` : '';
+            const valUi = getValidationUi(d);
+            const validerBtn = valUi.show
+                ? `<button class="detail-action-btn detail-action-btn--wide px-4 py-3 rounded-lg bg-secondary text-on-secondary text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'valider')" type="button"><span class="material-symbols-outlined text-[18px]">check_circle</span> ${valUi.label}</button>`
+                : `<span class="detail-action-btn detail-action-btn--wide px-4 py-3 rounded-lg bg-primary-fixed/30 text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px]">hourglass_top</span> En attente supervision</span>`;
+
+            document.getElementById('detail-panel').innerHTML = `
+                <div class="sticky top-0 bg-white border-b border-outline-variant px-4 py-4 sm:px-5 flex items-start justify-between gap-3 z-10">
+                    <div class="min-w-0 flex-1 pr-2">
+                        <p class="text-[10px] uppercase tracking-wide text-primary font-bold mb-0.5">Demande — membre de famille</p>
+                        <p class="text-[11px] text-on-surface-variant break-all">${d.ref}</p>
+                        <h2 class="font-title-lg text-lg sm:text-title-lg text-on-surface leading-tight mt-1">${d.beneficiaire}</h2>
+                        <p class="text-xs text-on-surface-variant mt-1">Assuré : <strong class="text-on-surface">${d.assureNom}</strong></p>
+                    </div>
+                    <button class="w-11 h-11 rounded-full hover:bg-surface-container-low flex items-center justify-center shrink-0" onclick="closeDetail()" type="button" aria-label="Fermer"><span class="material-symbols-outlined">close</span></button>
+                </div>
+                <div class="p-4 sm:p-5 space-y-5 pb-36 sm:pb-5">
+                    ${motif}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Membre (bénéficiaire)</p><p class="text-xs font-bold">${d.beneficiaire}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Assuré principal</p><p class="text-xs font-bold">${d.assureNom}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Lien de parenté</p><p class="text-xs font-bold">${d.lien}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Soumis le</p><p class="text-xs font-bold">${formatDate(d.dateSoumission)}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant sm:col-span-2"><p class="text-[10px] text-on-surface-variant uppercase">Statut de cette demande</p><div class="mt-1">${statusBadge(d.statut)}</div></div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation</label>
+                        <select class="w-full px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" onchange="assignGestionnaire(${d.id}, this.value)">
+                            <option value="Non affecté" ${d.gestionnaire === 'Non affecté' ? 'selected' : ''}>Non affecté</option>
+                            <option ${d.gestionnaire === 'Lt. Aminata KABORÉ' ? 'selected' : ''}>Lt. Aminata KABORÉ</option>
+                            <option ${d.gestionnaire === 'Sgt. Daniel ZONGO' ? 'selected' : ''}>Sgt. Daniel ZONGO</option>
+                            <option ${d.gestionnaire === 'Adj. Rasmané BANCÉ' ? 'selected' : ''}>Adj. Rasmané BANCÉ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">folder</span> Pièces justificatives</h3>
+                        <div class="bg-surface-container-low rounded-lg px-3">${piecesHtml}</div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">history</span> Journal du dossier</h3>
+                        <div class="bg-surface-container-low rounded-lg px-3 py-3">${journalHtml}</div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">forum</span> Fil de discussion avec l'assuré</h3>
+                        <div class="bg-surface-container-low rounded-lg p-3 space-y-2 mb-2">${messagesHtml}</div>
+                        <div class="flex gap-2">
+                            <input class="flex-1 min-w-0 px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="msg-input-${d.id}" placeholder="Message à l'assuré…" type="text"/>
+                            <button class="bg-primary text-on-primary w-11 h-11 sm:px-3 sm:w-auto rounded-lg shrink-0 flex items-center justify-center" onclick="sendMessage(${d.id})" type="button" aria-label="Envoyer"><span class="material-symbols-outlined text-[20px]">send</span></button>
+                        </div>
+                    </div>
+                </div>
+                <div class="sticky bottom-0 bg-white border-t border-outline-variant p-3 sm:p-4 flex flex-wrap gap-2 sm:gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]" data-roles="gestionnaire,superviseur" id="detail-actions">
+                    ${validerBtn}
+                    <button class="detail-action-btn px-4 py-3 rounded-lg bg-error text-on-error text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'refuser')" type="button"><span class="material-symbols-outlined text-[18px]">cancel</span> Refuser</button>
+                    <button class="detail-action-btn px-4 py-3 rounded-lg bg-tertiary text-on-tertiary text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'complement')" type="button"><span class="material-symbols-outlined text-[18px]">description</span> Complément</button>
+                    <button class="detail-action-btn px-4 py-3 rounded-lg border border-outline text-on-surface text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'attente')" type="button"><span class="material-symbols-outlined text-[18px]">pause_circle</span> En attente</button>
+                </div>`;
+
+            applyRole(localStorage.getItem('cama_admin_role') || 'gestionnaire');
+            document.getElementById('detail-overlay').classList.add('is-open');
+        }
+        function closeDetail() { document.getElementById('detail-overlay').classList.remove('is-open'); }
+
+        function assignGestionnaire(id, value) {
+            const d = DOSSIERS.find(x => x.id === id);
+            d.gestionnaire = value;
+            d.journal.push({ date: new Date().toLocaleString('fr-FR'), libelle: `Affecté à ${value}` });
+            persistDossiers();
+            showToast(`<span class="material-symbols-outlined">check_circle</span> Dossier affecté à ${value}.`);
+            renderView(currentPage);
+        }
+        function sendMessage(id) {
+            const input = document.getElementById(`msg-input-${id}`);
+            if (!input.value.trim()) return;
+            const d = DOSSIERS.find(x => x.id === id);
+            d.messages.push({ auteur: 'gestionnaire', texte: input.value.trim(), date: new Date().toLocaleString('fr-FR') });
+            input.value = '';
+            persistDossiers();
+            openDetail(id);
+        }
+        function viewPiece(type) { showToast(`<span class="material-symbols-outlined">visibility</span> Aperçu de « ${type} » (consultation tracée).`); }
+        function downloadPiece(type) { showToast(`<span class="material-symbols-outlined">download</span> Téléchargement de « ${type} ».`); }
+        function deletePiece(id, type) {
+            if (!confirm(`Confirmer la suppression de la pièce « ${type} » ? Un motif sera demandé au gestionnaire superviseur.`)) return;
+            const motif = prompt('Motif de suppression (obligatoire) :');
+            if (!motif) { showToast('<span class="material-symbols-outlined">error</span> Suppression annulée : motif requis.'); return; }
+            const d = DOSSIERS.find(x => x.id === id);
+            d.pieces = d.pieces.filter(p => p.type !== type);
+            d.journal.push({ date: new Date().toLocaleString('fr-FR'), libelle: `Pièce supprimée : ${type} (motif : ${motif})` });
+            persistDossiers();
+            showToast('<span class="material-symbols-outlined">check_circle</span> Pièce supprimée.');
+            openDetail(id);
+        }
+
+        // ---- Action modal (Valider / Refuser / Compléter / Attente) ----
+        function openActionModal(id, action) {
+            const d = DOSSIERS.find(x => x.id === id);
+            let html = '';
+            if (action === 'valider') {
+                const valUi = getValidationUi(d);
+                html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-secondary">check_circle</span> ${valUi.label}</h3>
+                    <p class="text-xs text-on-surface-variant mb-4">${d.beneficiaire}${d.ref}. ${valUi.sub}</p>
+                    <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-secondary text-on-secondary font-bold" onclick="confirmAction(${id}, 'valider')">Confirmer</button></div>`;
+            } else if (action === 'refuser') {
+                html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-error">cancel</span> Refuser le dossier</h3>
+                    <p class="text-xs text-on-surface-variant mb-3">${d.beneficiaire}${d.ref}. Le motif est obligatoire et sera communiqué à l'assuré.</p>
+                    <textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg mb-1" id="motif-refus" placeholder="Motif du refus…" rows="3"></textarea>
+                    <p class="text-error text-[11px] hidden mb-2" id="motif-refus-error">Le motif est obligatoire.</p>
+                    <div class="flex justify-end gap-2 mt-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-error text-on-error font-bold" onclick="confirmAction(${id}, 'refuser')">Confirmer le refus</button></div>`;
+            } else if (action === 'complement') {
+                const checks = PIECES_REQUETABLES.map(p => `<label class="flex items-center gap-2 text-xs py-1"><input type="checkbox" class="comp-piece" value="${p}"/> ${p}</label>`).join('');
+                html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">description</span> Demander un complément</h3>
+                    <p class="text-xs text-on-surface-variant mb-3">${d.beneficiaire}${d.ref}. Sélectionnez la/les pièce(s) à redemander.</p>
+                    <div class="max-h-40 overflow-y-auto border border-outline-variant rounded-lg p-2 mb-3">${checks}</div>
+                    <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-tertiary text-on-tertiary font-bold" onclick="confirmAction(${id}, 'complement')">Envoyer la demande</button></div>`;
+            } else if (action === 'attente') {
+                html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined">pause_circle</span> Mettre en attente</h3>
+                    <p class="text-xs text-on-surface-variant mb-4">${d.beneficiaire}${d.ref}. Le dossier sera marqué « en instruction ».</p>
+                    <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-on-background text-white font-bold" onclick="confirmAction(${id}, 'attente')">Confirmer</button></div>`;
+            }
+            document.getElementById('action-modal-content').innerHTML = html;
+            document.getElementById('action-overlay').classList.add('is-open');
+        }
+        function closeActionModal() { document.getElementById('action-overlay').classList.remove('is-open'); }
+
+        function confirmAction(id, action) {
+            const d = DOSSIERS.find(x => x.id === id);
+            const now = new Date().toLocaleString('fr-FR');
+            let notifyAction = null;
+            let notifyExtra = {};
+            if (action === 'valider') {
+                const role = getCurrentRole();
+                const twoLevel = isValidation2N();
+                if (twoLevel && role === 'gestionnaire' && d.statut !== 'En attente supervision') {
+                    d.statut = 'En attente supervision';
+                    d.journal.push({ date: now, libelle: 'Pré-validation gestionnaireen attente supervision' });
+                    notifyAction = 'supervision';
+                    window.CamaAdminShell?.addNotif?.({ type: 'supervision', icon: 'verified_user', color: 'tertiary', titre: 'Validation niveau 1', contenu: `${d.ref} transmis au superviseur.`, date: now, lu: false, lien: 'dossiers.html' });
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier pré-validé. En attente du superviseur.');
+                } else if (twoLevel && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
+                    d.statut = 'Validé';
+                    d.journal.push({ date: now, libelle: 'Validation finale superviseur (niveau 2)' });
+                    notifyAction = 'valider';
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé (niveau 2). L\'assuré a été notifié.');
+                } else {
+                    d.statut = 'Validé';
+                    d.journal.push({ date: now, libelle: 'Dossier validé' });
+                    notifyAction = 'valider';
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé. L\'assuré a été notifié.');
+                }
+            } else if (action === 'refuser') {
+                const motif = document.getElementById('motif-refus').value.trim();
+                if (!motif) { document.getElementById('motif-refus-error').classList.remove('hidden'); return; }
+                d.statut = 'Refusé';
+                d.motifRefus = motif;
+                d.journal.push({ date: now, libelle: `Dossier refusé : ${motif}` });
+                notifyAction = 'refuser';
+                notifyExtra = { motif };
+                showToast('<span class="material-symbols-outlined">check_circle</span> Dossier refusé. L\'assuré a été notifié du motif.');
+            } else if (action === 'complement') {
+                const checked = Array.from(document.querySelectorAll('.comp-piece:checked')).map(c => c.value);
+                if (!checked.length) { showToast('<span class="material-symbols-outlined">error</span> Sélectionnez au moins une pièce.'); return; }
+                d.statut = 'Pièce manquante demandée';
+                checked.forEach(p => d.pieces.push({ type: p, statut: 'Manquante' }));
+                d.journal.push({ date: now, libelle: `Pièce(s) complémentaire(s) demandée(s) : ${checked.join(', ')}` });
+                notifyAction = 'complement';
+                notifyExtra = { pieces: checked };
+                showToast('<span class="material-symbols-outlined">check_circle</span> Demande de complément envoyée à l\'assuré.');
+            } else if (action === 'attente') {
+                d.statut = 'En instruction';
+                d.journal.push({ date: now, libelle: 'Dossier mis en attente / instruction' });
+                notifyAction = 'attente';
+                showToast('<span class="material-symbols-outlined">check_circle</span> Dossier mis en attente.');
+            }
+            if (notifyAction) CamaAssureData.notifyAssureFromAdminAction(d, notifyAction, notifyExtra);
+            persistDossiers();
+            closeActionModal();
+            closeDetail();
+            renderView(currentPage);
+        }
+
+        (function () {
+            const toggle = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+            if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+            const savedRole = localStorage.getItem('cama_admin_role') || 'gestionnaire';
+            applyRole(savedRole);
+            document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
+            setViewMode(viewMode);
+        })();
+    </script>
+<script src="admin-shell.js"></script>
+</body></html>

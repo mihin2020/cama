@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pages | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = { darkMode: "class", theme: { extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}], "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+      } } }
+    </script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span>
+</a>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button>
+<div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Pages</h1><p class="text-caption text-on-surface-variant hidden sm:block">Créez et gérez les pages du site institutionnel</p></div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">AO</div>
+<div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight">Ing. Awa OUÉDRAOGO</p><p class="text-caption text-on-surface-variant leading-tight">Administrateur technique</p></div>
+</a>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+<input class="pl-9 pr-3 py-2 text-sm border border-outline-variant rounded-lg w-64 max-w-full focus:outline-none focus:border-primary" id="search" placeholder="Rechercher une page…"/>
+</div>
+<select class="text-sm border border-outline-variant rounded-lg px-2 py-2" id="filter-status">
+<option value="">Tous les statuts</option>
+<option value="published">En ligne</option>
+<option value="draft">Brouillon</option>
+</select>
+</div>
+<button class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-sm font-bold flex items-center gap-2 self-start" id="btn-add"><span class="material-symbols-outlined text-[18px]">add</span>Ajouter une page</button>
+</div>
+
+<div class="assure-card overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-sm">
+<thead><tr class="text-left text-[11px] uppercase tracking-wider text-on-surface-variant border-b border-outline-variant bg-surface-container-low">
+<th class="px-4 py-3 font-bold">Titre</th>
+<th class="px-4 py-3 font-bold hidden md:table-cell">Adresse (slug)</th>
+<th class="px-4 py-3 font-bold">Statut</th>
+<th class="px-4 py-3 font-bold hidden lg:table-cell">Modifié le</th>
+<th class="px-4 py-3 font-bold text-right">Actions</th>
+</tr></thead>
+<tbody id="rows"></tbody>
+</table>
+</div>
+</div>
+<p class="text-[11px] text-on-surface-variant" id="count"></p>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMAStudio de contenu.</footer>
+</div>
+
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+
+<script src="cms-seed-pages.js"></script>
+<script src="cms-data.js"></script>
+<script>
+"use strict";
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function showToast(m){ const t=document.getElementById("toast"); document.getElementById("toast-content").innerHTML=m; t.classList.remove("hidden"); clearTimeout(showToast._t); showToast._t=setTimeout(()=>t.classList.add("hidden"),2600); }
+
+let q="", statusFilter="";
+function render(){
+  let pages=CamaCMS.getPages();
+  if(q) pages=pages.filter(p=>p.title.toLowerCase().includes(q)||p.slug.includes(q));
+  if(statusFilter) pages=pages.filter(p=>p.status===statusFilter);
+  const tbody=document.getElementById("rows");
+  tbody.innerHTML=pages.length?pages.map(p=>{
+    const blocks=(p.sections||[]).length;
+    const badge=p.status==="published"
+      ? `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-secondary/15 text-secondary"><span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>En ligne</span>`
+      : `<span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-tertiary-container/40 text-tertiary"><span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>Brouillon</span>`;
+    return `<tr class="border-b border-outline-variant last:border-0 hover:bg-surface-container-low">
+      <td class="px-4 py-3">
+        <a href="page-builder.html?page=${p.id}" class="font-bold text-on-surface hover:text-primary">${esc(p.title)}</a>
+        <p class="text-[11px] text-on-surface-variant mt-0.5">${blocks} section${blocks>1?"s":""}</p>
+      </td>
+      <td class="px-4 py-3 hidden md:table-cell text-on-surface-variant">/${esc(p.slug)}</td>
+      <td class="px-4 py-3">${badge}</td>
+      <td class="px-4 py-3 hidden lg:table-cell text-on-surface-variant text-[12px]">${esc(p.updatedAt||"—")}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center justify-end gap-1">
+          <a href="page-builder.html?page=${p.id}" class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-primary/10 hover:text-primary" title="Modifier dans l'éditeur"><span class="material-symbols-outlined text-[18px]">edit</span></a>
+          <button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container" data-act="rename" data-id="${p.id}" title="Renommer / slug"><span class="material-symbols-outlined text-[18px]">drive_file_rename_outline</span></button>
+          <button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container" data-act="status" data-id="${p.id}" title="${p.status==="published"?"Repasser en brouillon":"Publier"}"><span class="material-symbols-outlined text-[18px]">${p.status==="published"?"toggle_on":"toggle_off"}</span></button>
+          <button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container" data-act="dup" data-id="${p.id}" title="Dupliquer"><span class="material-symbols-outlined text-[18px]">content_copy</span></button>
+          <button class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-error/10 hover:text-error" data-act="del" data-id="${p.id}" title="Supprimer"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+        </div>
+      </td>
+    </tr>`;
+  }).join(""):`<tr><td colspan="5" class="px-4 py-12 text-center text-on-surface-variant text-sm">Aucune page.</td></tr>`;
+  document.getElementById("count").textContent=`${pages.length} page(s)`;
+  tbody.querySelectorAll("[data-act]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.act,b.dataset.id)));
+}
+function act(a,id){
+  const p=CamaCMS.getPage(id); if(!p)return;
+  if(a==="rename"){
+    const title=prompt("Titre de la page :",p.title); if(title==null)return;
+    const slug=prompt("Adresse (slug) :",p.slug); if(slug==null)return;
+    CamaCMS.updatePage(id,{title:title.trim()||p.title, slug:CamaCMS.slugify(slug)});
+    showToast('<span class="material-symbols-outlined">check</span> Page mise à jour');
+  } else if(a==="status"){
+    CamaCMS.updatePage(id,{status:p.status==="published"?"draft":"published"});
+    showToast('<span class="material-symbols-outlined">check</span> Statut modifié');
+  } else if(a==="dup"){
+    CamaCMS.duplicatePage(id); showToast('<span class="material-symbols-outlined">content_copy</span> Page dupliquée');
+  } else if(a==="del"){
+    if(!confirm(`Supprimer la page « ${p.title} » ? Elle sera aussi retirée du menu.`))return;
+    CamaCMS.deletePage(id); showToast('<span class="material-symbols-outlined">delete</span> Page supprimée');
+  }
+  render();
+}
+document.getElementById("btn-add").addEventListener("click",()=>{
+  const title=prompt("Titre de la nouvelle page :","Nouvelle page"); if(title==null)return;
+  const p=CamaCMS.createPage(title.trim()||"Nouvelle page");
+  showToast('<span class="material-symbols-outlined">note_add</span> Page créée');
+  location.href="page-builder.html?page="+p.id;
+});
+document.getElementById("search").addEventListener("input",e=>{q=e.target.value.toLowerCase().trim();render();});
+document.getElementById("filter-status").addEventListener("change",e=>{statusFilter=e.target.value;render();});
+(function(){ const t=document.getElementById("sidebar-toggle"),o=document.getElementById("sidebar-overlay");
+  if(t)t.addEventListener("click",()=>document.body.classList.toggle("sidebar-open"));
+  if(o)o.addEventListener("click",()=>document.body.classList.remove("sidebar-open"));
+  render();
+})();
+</script>
+<script src="../admin-shell.js"></script>
+</body></html>

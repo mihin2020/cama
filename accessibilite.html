@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Accessibilité | CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = { theme: { extend: {
+    colors: { primary: "#9e001f", secondary: "#006e27", "on-surface": "#1b1c1c", "on-surface-variant": "#5c403f", "outline-variant": "#e5bdbb", background: "#fbf9f8", "surface-container-low": "#f6f3f2", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "primary-container": "#c8102e" },
+    spacing: { "container-max-width": "1200px", "margin-desktop": "32px", "stack-lg": "32px" },
+    fontFamily: { "headline-lg": ["Montserrat"], "body-md": ["Inter"] },
+    fontSize: { "headline-lg": ["28px", { lineHeight: "36px", fontWeight: "700" }], "body-md": ["16px", { lineHeight: "26px" }] }
+} } }
+</script>
+<link href="site-shell.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-surface font-body-md" data-page="mentions">
+<div id="site-shell-top"></div>
+<main class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-stack-lg">
+<section class="bg-primary-container text-white p-8 md:p-10 rounded-xl mb-8">
+<h1 class="font-headline-lg text-2xl md:text-headline-lg mb-3">Déclaration d'accessibilité</h1>
+<p class="text-white/90 text-sm md:text-base max-w-3xl">La CAMA s'engage à rendre son site internet accessible conformément à l'article 47 de la loi n° 2006-009 et aux référentiels WCAG 2.1 niveau AA.</p>
+<p class="mt-4 text-sm font-semibold inline-flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px]">info</span> État : partiellement conforme</p>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+<article class="bg-white p-6 rounded-xl border border-outline-variant">
+<h2 class="font-bold text-lg mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-primary">check_circle</span> Points conformes</h2>
+<ul class="space-y-2 text-sm text-on-surface-variant list-disc pl-5">
+<li>Contrastes de couleurs institutionnels (rouge CAMA / fond clair)</li>
+<li>Navigation clavier sur le menu principal et le pied de page</li>
+<li>Structure sémantique (titres, landmarks, labels de formulaires)</li>
+<li>Textes alternatifs sur les logos et images principales</li>
+<li>Redimensionnement du texte jusqu'à 200 % sans perte de contenu</li>
+</ul>
+</article>
+<article class="bg-white p-6 rounded-xl border border-outline-variant">
+<h2 class="font-bold text-lg mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">warning</span> Améliorations en cours</h2>
+<ul class="space-y-2 text-sm text-on-surface-variant list-disc pl-5">
+<li>Sous-titrage des vidéos institutionnelles</li>
+<li>Descriptions audio enrichies du carrousel d'accueil</li>
+<li>Cartes interactives : alternative textuelle détaillée</li>
+<li>Audit complet des composants dynamiques (back-office)</li>
+</ul>
+</article>
+</div>
+<article class="bg-white p-6 md:p-8 rounded-xl border border-outline-variant mb-6">
+<h2 class="font-bold text-lg mb-4">Signaler un problème d'accessibilité</h2>
+<p class="text-sm text-on-surface-variant mb-4">Si vous rencontrez un obstacle à la navigation ou à la consultation des contenus, contactez notre référent accessibilité :</p>
+<div class="grid md:grid-cols-2 gap-4">
+<div class="p-4 bg-surface-container-low rounded-lg"><p class="text-xs uppercase text-on-surface-variant mb-1">E-mail</p><a class="font-bold text-primary" href="mailto:accessibilite@cama.bf">accessibilite@cama.bf</a></div>
+<div class="p-4 bg-surface-container-low rounded-lg"><p class="text-xs uppercase text-on-surface-variant mb-1">Délai de réponse</p><p class="font-bold">15 jours ouvrés maximum</p></div>
+</div>
+</article>
+<p class="text-xs text-on-surface-variant">Dernière revue : juin 2026Référentiel : WCAG 2.1 niveau AA, RGAA 4.1 (inspiration).</p>
+</main>
+<div id="site-shell-bottom"></div>
+<script src="site-shell.js"></script>
+</body></html>

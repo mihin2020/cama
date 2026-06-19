@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tableau de bord | Espace Assuré CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#c8102e",
+                    "on-background": "#1b1c1c",
+                    "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#ffb3b1",
+                    "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f",
+                    "on-primary-fixed-variant": "#92001c",
+                    "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#7ff98d",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#65df76",
+                    "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90",
+                    "on-tertiary-fixed": "#241a00",
+                    "tertiary": "#745b00",
+                    "inverse-surface": "#303030",
+                    "surface-bright": "#fbf9f8",
+                    "surface": "#fbf9f8",
+                    "secondary": "#006e27",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f",
+                    "outline": "#906f6e",
+                    "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb",
+                    "background": "#fbf9f8",
+                    "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#eae7e7",
+                    "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "container-max-width": "1200px",
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Montserrat"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["22px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "display-lg": ["44px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<link href="assure-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shield-pattern {
+            background-color: transparent;
+            background-image: radial-gradient(#ffffff 0.5px, transparent 0.5px), radial-gradient(#ffffff 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0,10px 10px;
+            opacity: 0.08;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        /* Hiérarchie typographique du contenu dashboard */
+        .dash-stat-value { font-size: 1.5rem; line-height: 2rem; font-weight: 700; font-family: Montserrat, sans-serif; }
+        @media (min-width: 768px) { .dash-stat-value { font-size: 1.75rem; line-height: 2.25rem; } }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<!-- Mobile overlay -->
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<!-- Sidebar -->
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-6" href="../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Espace Assuré</span></span>
+</a>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="dashboard.html">
+<span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="mes-membres.html">
+<span class="material-symbols-outlined text-[20px]">group</span> Ma famille
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="historique.html">
+<span class="material-symbols-outlined text-[20px]">history</span> Historique
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="notifications.html">
+<span class="material-symbols-outlined text-[20px]">notifications</span> Notifications
+<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center" id="sidebar-unread-badge">2</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="profil.html">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span> Mon profil
+</a>
+</nav>
+<a class="flex items-center justify-center gap-2 bg-primary text-on-primary px-4 py-2.5 rounded-lg font-bold font-label-md text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm mb-2 mx-1" href="ajouter-membre.html">
+<span class="material-symbols-outlined text-[20px]">add_circle</span> Ajouter un membre
+</a>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
+<span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
+</a>
+</aside>
+<!-- Content shell -->
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<!-- Topbar -->
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div>
+<h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Tableau de bord</h1>
+<p class="text-caption text-on-surface-variant hidden sm:block">Bienvenue dans votre espace assuré</p>
+</div>
+</div>
+<div class="flex items-center gap-2 md:gap-4">
+<div class="relative group">
+<button class="relative w-10 h-10 rounded-full hover:bg-surface-container-high flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full bg-primary border-2 border-surface-container-lowest"></span>
+</button>
+<div class="absolute right-0 top-full mt-2 w-80 bg-white rounded-lg border border-outline-variant shadow-lg overflow-hidden opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+<div class="p-3 border-b border-outline-variant font-bold text-sm">Notifications récentes</div>
+<div id="topbar-notif-preview" class="divide-y divide-outline-variant"></div>
+<a class="block text-center text-primary font-bold text-sm py-3 hover:bg-surface-container-low transition-colors" href="notifications.html">Voir toutes les notifications</a>
+</div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
+<div class="hidden md:block text-left">
+<p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p>
+<p class="text-caption text-on-surface-variant leading-tight" id="topbar-matricule">—</p>
+</div>
+</a>
+</div>
+</header>
+<!-- Main content -->
+<main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
+<!-- Welcome banner -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary-container text-on-primary p-5 md:p-6 mb-6">
+<div class="shield-pattern absolute inset-0"></div>
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3">
+<div>
+<p class="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">Bienvenue</p>
+<h2 class="text-lg md:text-xl font-bold font-headline-lg leading-snug mb-0.5" id="welcome-name">—</h2>
+<p class="text-sm opacity-90" id="welcome-sub">—</p>
+</div>
+<div class="inline-flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wide w-fit">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span id="welcome-status">—</span>
+</div>
+</div>
+</section>
+<!-- Stat cards -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+<div class="bg-white rounded-xl border border-outline-variant p-4 md:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+<div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[20px]">hourglass_top</span>
+</div>
+<p class="dash-stat-value text-on-surface" id="stat-attente">0</p>
+<p class="text-xs text-on-surface-variant font-medium mt-0.5">En attente</p>
+</div>
+<div class="bg-white rounded-xl border border-outline-variant p-4 md:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+<div class="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+</div>
+<p class="dash-stat-value text-on-surface" id="stat-valides">0</p>
+<p class="text-xs text-on-surface-variant font-medium mt-0.5">Validés</p>
+</div>
+<div class="bg-white rounded-xl border border-outline-variant p-4 md:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+<div class="w-9 h-9 rounded-lg bg-error/10 text-error flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[20px]">cancel</span>
+</div>
+<p class="dash-stat-value text-on-surface" id="stat-refuses">0</p>
+<p class="text-xs text-on-surface-variant font-medium mt-0.5">Refusés</p>
+</div>
+<div class="bg-white rounded-xl border border-outline-variant p-4 md:p-5 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
+<div class="w-9 h-9 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center mb-3">
+<span class="material-symbols-outlined text-[20px]">edit_note</span>
+</div>
+<p class="dash-stat-value text-on-surface" id="stat-acompleter">0</p>
+<p class="text-xs text-on-surface-variant font-medium mt-0.5">À compléter</p>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5 md:gap-6">
+<!-- Dossiers list -->
+<div class="lg:col-span-2 bg-white rounded-xl border border-outline-variant overflow-hidden">
+<div class="px-4 md:px-5 py-3 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+<h3 class="text-base font-semibold text-on-surface">Mes dossiers</h3>
+<a class="text-primary font-semibold text-sm hover:underline" href="mes-membres.html">Voir tout</a>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant text-xs uppercase tracking-wide">
+<th class="px-4 md:px-5 py-2.5 font-medium">Bénéficiaire</th>
+<th class="px-4 md:px-5 py-2.5 font-medium hidden sm:table-cell">Lien</th>
+<th class="px-4 md:px-5 py-2.5 font-medium hidden md:table-cell">Soumis le</th>
+<th class="px-4 md:px-5 py-2.5 font-medium">Statut</th>
+<th class="px-4 md:px-5 py-2.5 font-medium text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant" id="dossiers-list"></tbody>
+</table>
+</div>
+</div>
+<!-- Notifications zone -->
+<div class="bg-white rounded-xl border border-outline-variant overflow-hidden flex flex-col">
+<div class="px-4 md:px-5 py-3 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+<h3 class="text-base font-semibold text-on-surface">Notifications</h3>
+<a class="text-primary font-semibold text-sm hover:underline" href="notifications.html">Voir tout</a>
+</div>
+<div class="divide-y divide-outline-variant flex-1" id="notif-list"></div>
+</div>
+</div>
+<!-- CTA row -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mt-6">
+<a class="group bg-white p-4 md:p-5 rounded-xl border border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3" href="ajouter-membre.html">
+<div class="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">person_add</span>
+</div>
+<div class="min-w-0">
+<p class="text-sm font-semibold text-on-surface">Ajouter un membre</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Enrôler un nouvel ayant droit</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant text-[20px] group-hover:translate-x-1 transition-transform shrink-0">arrow_forward</span>
+</a>
+<a class="group bg-white p-4 md:p-5 rounded-xl border border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3" href="profil.html">
+<div class="w-10 h-10 rounded-lg bg-secondary text-on-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+</div>
+<div class="min-w-0">
+<p class="text-sm font-semibold text-on-surface">Compléter mon profil</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Vérifier mes informations</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant text-[20px] group-hover:translate-x-1 transition-transform shrink-0">arrow_forward</span>
+</a>
+<a class="group bg-white p-4 md:p-5 rounded-xl border border-outline-variant hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-3" href="mes-membres.html">
+<div class="w-10 h-10 rounded-lg bg-tertiary text-on-tertiary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+</div>
+<div class="min-w-0">
+<p class="text-sm font-semibold text-on-surface">Mettre à jour une pièce</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Compléter un dossier en attente</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant text-[20px] group-hover:translate-x-1 transition-transform shrink-0">arrow_forward</span>
+</a>
+</section>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
+            © 2026 CAMACaisse d'Assurance Maladie des Armées. Tous droits réservés.
+        </footer>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="dashboard.html">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-[10px] font-label-md">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="mes-membres.html">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="text-[10px] font-label-md">Famille</span>
+</a>
+<a class="flex flex-col items-center justify-center -mt-7" href="ajouter-membre.html">
+<span class="w-13 h-13 w-[52px] h-[52px] rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-4 border-surface-container-low">
+<span class="material-symbols-outlined">add</span>
+</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="historique.html">
+<span class="material-symbols-outlined text-[22px]">history</span>
+<span class="text-[10px] font-label-md">Historique</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html">
+<span class="material-symbols-outlined text-[22px]">person</span>
+<span class="text-[10px] font-label-md">Profil</span>
+</a>
+</nav>
+<script src="assure-data.js"></script>
+<script src="assure-shell.js"></script>
+<script>
+        const MOCK_ASSURE = CamaAssureData.getAssureProfile();
+        function getMembres() { return CamaAssureData.getMembres(); }
+        function getNotifications() { return CamaAssureData.getAssureNotifications(); }
+
+        const STATUS_STYLES = {
+            "Brouillon": "bg-surface-container-high text-on-surface-variant",
+            "Soumis": "bg-primary/10 text-primary",
+            "En instruction": "bg-tertiary/10 text-tertiary",
+            "Pièce manquante demandée": "bg-tertiary text-on-tertiary",
+            "Validé": "bg-secondary text-on-secondary",
+            "Refusé": "bg-error text-on-error"
+        };
+
+        const NOTIF_ICONS = {
+            validation_compte: { icon: "how_to_reg", color: "secondary" },
+            soumission_dossier: { icon: "upload_file", color: "primary" },
+            piece_complementaire: { icon: "description", color: "tertiary" },
+            validation_refus: { icon: "fact_check", color: "secondary" },
+            alerte_securite: { icon: "security", color: "error" },
+            creation_compte: { icon: "person_add", color: "primary" }
+        };
+
+        function statusBadge(statut) {
+            const cls = STATUS_STYLES[statut] || "bg-surface-container-high text-on-surface-variant";
+            return `<span class="px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap ${cls}">${statut}</span>`;
+        }
+
+        function initials(prenom, nom) {
+            return ((prenom[0] || '') + (nom[0] || '')).toUpperCase();
+        }
+
+        function timeAgo(dateStr) {
+            return dateStr;
+        }
+
+        // ---- Dashboard-specific rendering ----
+        (function () {
+            document.getElementById('welcome-name').textContent = `Bonjour, ${MOCK_ASSURE.prenom} ${MOCK_ASSURE.nom}`;
+            document.getElementById('welcome-sub').textContent = `Matricule ${MOCK_ASSURE.matricule} · ${MOCK_ASSURE.numeroCama}`;
+            document.getElementById('welcome-status').textContent = `Compte ${MOCK_ASSURE.statut}`;
+
+            const membres = getMembres();
+            const enAttente = membres.filter(m => m.statut === 'Soumis' || m.statut === 'En instruction').length;
+            const valides = membres.filter(m => m.statut === 'Validé').length;
+            const refuses = membres.filter(m => m.statut === 'Refusé').length;
+            const aCompleter = membres.filter(m => m.statut === 'Brouillon' || m.statut === 'Pièce manquante demandée').length;
+
+            function countUp(el, target, duration = 800) {
+                const start = performance.now();
+                function tick(now) {
+                    const progress = Math.min((now - start) / duration, 1);
+                    el.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+                    if (progress < 1) requestAnimationFrame(tick);
+                }
+                requestAnimationFrame(tick);
+            }
+            countUp(document.getElementById('stat-attente'), enAttente);
+            countUp(document.getElementById('stat-valides'), valides);
+            countUp(document.getElementById('stat-refuses'), refuses);
+            countUp(document.getElementById('stat-acompleter'), aCompleter);
+
+            const dossiersList = document.getElementById('dossiers-list');
+            dossiersList.innerHTML = membres.map(m => `
+                <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="window.location.href='mes-membres.html#membre-${m.id}'">
+                    <td class="px-4 md:px-5 py-3">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-semibold text-primary shrink-0">${initials(m.prenom, m.nom)}</div>
+                            <span class="font-semibold text-on-surface text-sm">${m.prenom} ${m.nom}</span>
+                        </div>
+                    </td>
+                    <td class="px-4 md:px-5 py-3 text-on-surface-variant hidden sm:table-cell">${m.lien}</td>
+                    <td class="px-4 md:px-5 py-3 text-on-surface-variant hidden md:table-cell">${m.dateSoumission || '—'}</td>
+                    <td class="px-4 md:px-5 py-3">${statusBadge(m.statut)}</td>
+                    <td class="px-4 md:px-5 py-3 text-right">
+                        <span class="material-symbols-outlined text-on-surface-variant text-[20px]">chevron_right</span>
+                    </td>
+                </tr>
+            `).join('');
+
+            const notifList = document.getElementById('notif-list');
+            const recent = [...getNotifications()].slice(0, 4);
+            function notifRow(n) {
+                const meta = NOTIF_ICONS[n.type] || { icon: "notifications", color: "primary" };
+                return `
+                <a href="${n.lien || 'notifications.html'}" class="flex gap-2.5 px-4 md:px-5 py-3 hover:bg-surface-container-low transition-colors ${n.lu ? '' : 'bg-primary/5'}">
+                    <div class="w-8 h-8 rounded-full bg-${meta.color}/10 text-${meta.color} flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[16px]">${meta.icon}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm text-on-surface leading-snug line-clamp-2">${n.contenu}</p>
+                        <p class="text-xs text-on-surface-variant mt-1">${timeAgo(n.date)}</p>
+                    </div>
+                </a>`;
+            }
+            notifList.innerHTML = recent.map(notifRow).join('');
+            document.getElementById('topbar-notif-preview').innerHTML = recent.slice(0, 3).map(notifRow).join('');
+        })();
+    </script>
+</body></html>

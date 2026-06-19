@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Tableau de bord | Back-office CAMA</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap"
+        rel="stylesheet" />
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#c8102e",
+                        "on-background": "#1b1c1c",
+                        "primary-fixed": "#ffdad8",
+                        "error": "#ba1a1a",
+                        "inverse-primary": "#ffb3b1",
+                        "surface-container-low": "#f6f3f2",
+                        "primary": "#9e001f",
+                        "on-primary-fixed-variant": "#92001c",
+                        "on-secondary-fixed": "#002107",
+                        "surface-container": "#f0eded",
+                        "secondary-container": "#7ff98d",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#65df76",
+                        "tertiary-fixed-dim": "#f1c100",
+                        "secondary-fixed": "#81fc90",
+                        "on-tertiary-fixed": "#241a00",
+                        "tertiary": "#745b00",
+                        "inverse-surface": "#303030",
+                        "surface-bright": "#fbf9f8",
+                        "surface": "#fbf9f8",
+                        "secondary": "#006e27",
+                        "on-tertiary-container": "#4f3d00",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#ffe08a",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#410007",
+                        "on-secondary-container": "#007329",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary-container": "#ffdad8",
+                        "on-surface-variant": "#5c403f",
+                        "outline": "#906f6e",
+                        "primary-fixed-dim": "#ffb3b1",
+                        "outline-variant": "#e5bdbb",
+                        "background": "#fbf9f8",
+                        "on-surface": "#1b1c1c",
+                        "surface-variant": "#e4e2e1",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-tertiary-fixed-variant": "#574400",
+                        "tertiary-container": "#d0a600",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#bf0229",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae7e7",
+                        "on-secondary-fixed-variant": "#00531c",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "stack-md": "16px",
+                        "container-max-width": "1200px",
+                        "gutter": "24px",
+                        "stack-sm": "8px",
+                        "margin-mobile": "16px",
+                        "unit": "4px",
+                        "stack-lg": "32px",
+                        "margin-desktop": "32px"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Montserrat"],
+                        "title-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Montserrat"],
+                        "caption": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["22px", { "lineHeight": "30px", "fontWeight": "700" }],
+                        "title-lg": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "fontWeight": "700" }],
+                        "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }],
+                        "display-lg": ["44px", { "lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["11px", { "lineHeight": "15px", "fontWeight": "400" }],
+                        "label-md": ["13px", { "lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+    <link href="admin-shell.css" rel="stylesheet" />
+    <style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        #sidebar {
+            transition: transform 0.25s ease;
+        }
+
+        @media (max-width: 767px) {
+            #sidebar {
+                position: fixed;
+                transform: translateX(-100%);
+            }
+
+            body.sidebar-open #sidebar {
+                transform: translateX(0);
+            }
+
+            body.sidebar-open #sidebar-overlay {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            #content-shell {
+                margin-left: 0 !important;
+            }
+        }
+
+        #sidebar-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+    </style>
+</head>
+
+<body class="bg-surface-container-low text-on-background font-body-md">
+    <div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+    <aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+        <a class="flex items-center gap-3 px-2 mb-4" href="../index.html">
+            <img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../images/logo_cama.png" />
+            <span
+                class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span
+                    class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Back-office</span></span>
+        </a>
+        <!-- Role switcher (démo) -->
+        <div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1">
+            <span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span>
+            <select class="w-full text-[12px] font-bold py-0.5" id="role-select">
+                <option value="gestionnaire">Gestionnaire CAMA</option>
+                <option value="superviseur">Superviseur / Responsable</option>
+                <option value="administrateur">Administrateur technique</option>
+                <option value="direction">Direction Générale</option>
+            </select>
+        </div>
+        <nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+            <a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur,administrateur,direction" href="dashboard.html">
+                <span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur" href="dossiers.html">
+                <span class="material-symbols-outlined text-[20px]">folder_shared</span> Dossiers
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+                <span class="material-symbols-outlined text-[20px]">groups</span> Assurés
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="superviseur,administrateur" href="utilisateurs-internes.html">
+                <span class="material-symbols-outlined text-[20px]">manage_accounts</span> Comptes internes
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur,administrateur" href="exports.html">
+                <span class="material-symbols-outlined text-[20px]">file_download</span> Exports
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="superviseur,administrateur" href="audit.html">
+                <span class="material-symbols-outlined text-[20px]">fact_check</span> Journal d'audit
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="administrateur" href="parametres.html">
+                <span class="material-symbols-outlined text-[20px]">settings</span> Paramètres
+            </a>
+            <div class="h-px bg-white/10 my-2 mx-1"></div>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="superviseur,administrateur" href="cms/dashboard.html">
+                <span class="material-symbols-outlined text-[20px]">design_services</span> Studio de contenu
+            </a>
+            <div class="h-px bg-white/10 my-2 mx-1"></div>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur,administrateur,direction" href="notifications.html">
+                <span class="material-symbols-outlined text-[20px]">notifications</span> Notifications
+                <span
+                    class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                    id="sidebar-unread-badge">3</span>
+            </a>
+            <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
+                data-roles="gestionnaire,superviseur,administrateur,direction" href="profil.html">
+                <span class="material-symbols-outlined text-[20px]">account_circle</span> Mon profil
+            </a>
+        </nav>
+        <a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1"
+            href="../index.html">
+            <span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
+        </a>
+    </aside>
+    <div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+        <header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+            <div class="flex items-center gap-3">
+                <button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full"
+                    id="sidebar-toggle">
+                    <span class="material-symbols-outlined">menu</span>
+                </button>
+                <div>
+                    <h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Tableau de bord</h1>
+                    <p class="text-caption text-on-surface-variant hidden sm:block">Indicateurs et statistiques de la
+                        plateforme</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span
+                    class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold uppercase tracking-wide"
+                    id="role-badge">Gestionnaire</span>
+                <div class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant">
+                    <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0"
+                        id="topbar-avatar">--</div>
+                    <div class="hidden md:block text-left">
+                        <p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">
+                            —</p>
+                        <p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+        <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
+            <!-- Stat cards (9.7) -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">groups</span></div>
+                        <span class="text-secondary text-[11px] font-bold flex items-center gap-0.5"><span
+                                class="material-symbols-outlined text-[14px]">trending_up</span>+4.2%</span>
+                    </div>
+                    <p class="text-headline-md font-headline-lg" id="stat-assures">0</p>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Assurés inscrits</p>
+                </div>
+                <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">pending_actions</span></div>
+                        <span class="text-tertiary text-[11px] font-bold">À traiter</span>
+                    </div>
+                    <p class="text-headline-md font-headline-lg" id="stat-attente">0</p>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Dossiers en attente</p>
+                </div>
+                <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">verified</span></div>
+                        <span class="text-secondary text-[11px] font-bold">Optimal</span>
+                    </div>
+                    <p class="text-headline-md font-headline-lg" id="stat-taux-validation">0%</p>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Taux de validation</p>
+                </div>
+                <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-on-background/10 text-on-background flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[20px]">schedule</span></div>
+                        <span class="text-secondary text-[11px] font-bold flex items-center gap-0.5"><span
+                                class="material-symbols-outlined text-[14px]">trending_down</span>-0.5j</span>
+                    </div>
+                    <p class="text-headline-md font-headline-lg" id="stat-delai">0j</p>
+                    <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Délai moyen de traitement</p>
+                </div>
+            </section>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Dossiers prioritaires -->
+                <div class="lg:col-span-2 assure-card overflow-hidden">
+                    <div
+                        class="px-5 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+                        <h3 class="font-title-lg text-title-lg flex items-center gap-2"><span
+                                class="material-symbols-outlined text-primary text-[20px]">priority_high</span> Dossiers
+                            prioritaires</h3>
+                        <a class="text-primary font-bold text-xs hover:underline" href="dossiers.html">Voir tout</a>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr
+                                    class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
+                                    <th class="px-5 py-2.5 font-medium">Référence</th>
+                                    <th class="px-5 py-2.5 font-medium hidden sm:table-cell">Bénéficiaire</th>
+                                    <th class="px-5 py-2.5 font-medium">Statut</th>
+                                    <th class="px-5 py-2.5 font-medium text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant" id="priority-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Activité récente -->
+                <div class="assure-card overflow-hidden flex flex-col">
+                    <div
+                        class="px-5 py-4 border-b border-outline-variant bg-surface-container-low flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[20px]">history</span>
+                        <h3 class="font-title-lg text-title-lg">Activité récente</h3>
+                    </div>
+                    <div class="p-5 space-y-4 flex-1" id="activity-feed"></div>
+                </div>
+            </div>
+            <!-- Charge par gestionnaire + stockage -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                <div class="lg:col-span-2 assure-card overflow-hidden">
+                    <div class="px-5 py-4 border-b border-outline-variant bg-surface-container-low">
+                        <h3 class="font-title-lg text-title-lg">Charge par gestionnaire</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr
+                                    class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
+                                    <th class="px-5 py-2.5 font-medium">Gestionnaire</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">Ouverts</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">Traités</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">En retard</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant" id="charge-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="assure-card p-5">
+                    <h3 class="font-title-lg text-title-lg mb-4">Volumétrie de stockage</h3>
+                    <div class="flex items-end gap-2 mb-2">
+                        <p class="text-headline-md font-headline-lg" id="stat-stockage">0</p>
+                        <p class="text-on-surface-variant text-sm mb-1">Go utilisés</p>
+                    </div>
+                    <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden mb-2">
+                        <div class="h-full bg-primary" id="stockage-bar" style="width:0%"></div>
+                    </div>
+                    <p class="text-[11px] text-on-surface-variant">Projection mensuelle : <span class="font-bold"
+                            id="stat-projection">—</span></p>
+                </div>
+            </div>
+        </main>
+        <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
+            © 2026 CAMABack-office institutionnel. Accès restreint et tracé.
+        </footer>
+    </div>
+    <nav
+        class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
+        <a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="dashboard.html">
+            <span class="material-symbols-outlined text-[22px]">dashboard</span>
+            <span class="text-[10px] font-label-md">Accueil</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant"
+            data-roles="gestionnaire,superviseur" href="dossiers.html">
+            <span class="material-symbols-outlined text-[22px]">folder_shared</span>
+            <span class="text-[10px] font-label-md">Dossiers</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant"
+            data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+            <span class="material-symbols-outlined text-[22px]">groups</span>
+            <span class="text-[10px] font-label-md">Assurés</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="notifications.html">
+            <span class="material-symbols-outlined text-[22px]">notifications</span>
+            <span class="text-[10px] font-label-md">Alertes</span>
+        </a>
+        <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html">
+            <span class="material-symbols-outlined text-[22px]">person</span>
+            <span class="text-[10px] font-label-md">Profil</span>
+        </a>
+    </nav>
+    <script>
+        const ROLE_IDENTITIES = {
+            gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
+            superviseur: { nom: "Cdt. Paul SAWADOGO", role: "Superviseur / Responsable" },
+            administrateur: { nom: "Ing. Awa OUÉDRAOGO", role: "Administrateur technique" },
+            direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
+        };
+
+        const PRIORITY_DOSSIERS = [
+            { ref: "CAMA-2025-88213", nom: "Aïcha TRAORÉ", statut: "Pièce manquante demandée" },
+            { ref: "CAMA-2026-12044", nom: "Marie OUÉDRAOGO", statut: "Soumis" },
+            { ref: "CAMA-2026-15302", nom: "Fatoumata TRAORÉ", statut: "Soumis" },
+            { ref: "CAMA-2025-91007", nom: "Boubacar TRAORÉ", statut: "En instruction" }
+        ];
+
+        const ACTIVITY_FEED = [
+            { color: "secondary", libelle: "Dossier validéAïcha TRAORÉ", meta: "Il y a 14 min · Gestionnaire KABORÉ" },
+            { color: "primary", libelle: "Nouvelle soumissionFatoumata TRAORÉ", meta: "Il y a 42 min · Portail assuré" },
+            { color: "tertiary", libelle: "Pièce complémentaire demandéeBoubacar TRAORÉ", meta: "Il y a 2 h · Gestionnaire KABORÉ" },
+            { color: "error", libelle: "Dossier refuséKarim SANOU", meta: "Hier · Superviseur SAWADOGO" }
+        ];
+
+        const CHARGE_GESTIONNAIRES = [
+            { nom: "Lt. Aminata KABORÉ", ouverts: 12, traites: 48, retard: 1 },
+            { nom: "Sgt. Daniel ZONGO", ouverts: 9, traites: 36, retard: 0 },
+            { nom: "Adj. Rasmané BANCÉ", ouverts: 15, traites: 41, retard: 3 }
+        ];
+
+        const STATUS_STYLES = {
+            "Brouillon": "bg-surface-container-high text-on-surface-variant",
+            "Soumis": "bg-primary/10 text-primary",
+            "En instruction": "bg-tertiary/10 text-tertiary",
+            "Pièce manquante demandée": "bg-tertiary text-on-tertiary",
+            "Validé": "bg-secondary text-on-secondary",
+            "Refusé": "bg-error text-on-error"
+        };
+        function statusBadge(statut) {
+            const cls = STATUS_STYLES[statut] || "bg-surface-container-high text-on-surface-variant";
+            return `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${cls}">${statut}</span>`;
+        }
+        function initials(name) {
+            const parts = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' ');
+            return ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')).toUpperCase();
+        }
+
+        function applyRole(role) {
+            localStorage.setItem('cama_admin_role', role);
+            document.querySelectorAll('[data-roles]').forEach(el => {
+                const roles = el.dataset.roles.split(',');
+                el.classList.toggle('role-hidden', !roles.includes(role));
+            });
+            const identity = ROLE_IDENTITIES[role];
+            document.getElementById('topbar-name').textContent = identity.nom;
+            document.getElementById('topbar-role').textContent = identity.role;
+            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
+            const badge = document.getElementById('role-badge');
+            if (badge) badge.textContent = identity.role.split(' / ')[0].split(' ')[0] === 'Gestionnaire' ? 'Gestionnaire' : identity.role;
+            const select = document.getElementById('role-select');
+            if (select) select.value = role;
+        }
+
+        (function () {
+            const toggle = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+            if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+
+            const savedRole = localStorage.getItem('cama_admin_role') || 'gestionnaire';
+            applyRole(savedRole);
+
+            const select = document.getElementById('role-select');
+            if (select) select.addEventListener('change', (e) => applyRole(e.target.value));
+        })();
+
+        (function () {
+            document.getElementById('stat-assures').textContent = '12 450';
+            document.getElementById('stat-attente').textContent = '842';
+            document.getElementById('stat-taux-validation').textContent = '94.8%';
+            document.getElementById('stat-delai').textContent = '3.2j';
+            document.getElementById('stat-stockage').textContent = '184';
+            document.getElementById('stockage-bar').style.width = '61%';
+            document.getElementById('stat-projection').textContent = '+12 Go / mois';
+
+            document.getElementById('priority-list').innerHTML = PRIORITY_DOSSIERS.map(d => `
+                <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="px-5 py-3 font-bold text-xs">${d.ref}</td>
+                    <td class="px-5 py-3 text-xs hidden sm:table-cell">${d.nom}</td>
+                    <td class="px-5 py-3">${statusBadge(d.statut)}</td>
+                    <td class="px-5 py-3 text-right"><a class="text-primary font-bold text-xs hover:underline" href="dossiers.html">Examiner</a></td>
+                </tr>
+            `).join('');
+
+            document.getElementById('activity-feed').innerHTML = ACTIVITY_FEED.map((a, i) => `
+                <div class="flex gap-3">
+                    <div class="relative flex flex-col items-center">
+                        <div class="w-2.5 h-2.5 rounded-full bg-${a.color} z-10 mt-1"></div>
+                        ${i < ACTIVITY_FEED.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}
+                    </div>
+                    <div class="pb-4">
+                        <p class="text-xs font-bold text-on-surface">${a.libelle}</p>
+                        <p class="text-[11px] text-on-surface-variant mt-0.5">${a.meta}</p>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('charge-list').innerHTML = CHARGE_GESTIONNAIRES.map(g => `
+                <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="px-5 py-3 text-xs font-bold">${g.nom}</td>
+                    <td class="px-5 py-3 text-xs text-center">${g.ouverts}</td>
+                    <td class="px-5 py-3 text-xs text-center text-secondary font-bold">${g.traites}</td>
+                    <td class="px-5 py-3 text-xs text-center ${g.retard > 0 ? 'text-error font-bold' : 'text-on-surface-variant'}">${g.retard}</td>
+                </tr>
+            `).join('');
+        })();
+    </script>
+<script src="admin-shell.js"></script>
+</body>
+
+</html>

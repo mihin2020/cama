@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bannière d'accueil | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = { darkMode: "class", theme: { extend: {
+    "colors": { "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary": "#9e001f", "surface-container-low": "#f6f3f2", "secondary": "#006e27", "tertiary": "#745b00", "on-surface-variant": "#5c403f", "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "tertiary-container": "#d0a600", "primary-fixed": "#ffdad8", "error": "#ba1a1a" },
+    "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"] },
+    "fontSize": { "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}], "body-md": ["14px", {"lineHeight": "22px"}], "caption": ["11px", {"lineHeight": "15px"}], "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}] }
+} } }
+</script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+#sidebar { transition: transform 0.25s ease; }
+@media (max-width: 767px) { #sidebar { position: fixed; transform: translateX(-100%); } body.sidebar-open #sidebar { transform: translateX(0); } body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; } #content-shell { margin-left: 0 !important; } }
+#sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.modal-overlay { display: none; } .modal-overlay.is-open { display: flex; }
+.slide-preview { aspect-ratio: 16/6; background-size: cover; background-position: center; }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html"><img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/><span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span></a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1"><span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span><select class="w-full text-[12px] font-bold py-0.5" id="role-select"><option value="gestionnaire">Gestionnaire CAMA</option><option value="superviseur">Superviseur / Responsable</option><option value="administrateur">Administrateur technique</option><option value="direction">Direction Générale</option></select></div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3"><button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button><div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Bannière d'accueil</h1><p class="text-caption text-on-surface-variant hidden sm:block">Carousel accueil &amp; bandeau d'alerte site public</p></div></div>
+<div class="flex items-center gap-3"><a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html"><div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div><div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p><p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p></div></a></div>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-6">
+<section class="assure-card p-5 space-y-4">
+<div class="flex items-center justify-between"><h2 class="text-sm font-bold text-on-surface">Bandeau d'information (site public)</h2><label class="flex items-center gap-2 text-xs font-semibold"><input type="checkbox" id="banner-active" class="rounded border-outline-variant text-primary"/> Actif</label></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Type</label><select class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="banner-type"><option value="info">Information</option><option value="warning">Alerte</option></select></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Lien (optionnel)</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="banner-link" placeholder="espace-assure.html#inscription"/></div>
+</div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Message</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="banner-message" rows="2"></textarea></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Libellé du lien</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="banner-link-label"/></div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold" id="banner-save" type="button">Publier le bandeau sur le site</button>
+</section>
+<section class="flex items-center justify-between"><h2 class="text-sm font-bold text-on-surface">Slides du carousel (page d'accueil)</h2><button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5" onclick="openSlideEditor(null)" type="button"><span class="material-symbols-outlined text-[16px]">add</span> Nouveau slide</button></section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4" id="slides-grid"></div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMAStudio de contenu</footer>
+</div>
+<div class="modal-overlay fixed inset-0 bg-black/50 z-50 items-center justify-center p-4" id="slide-overlay">
+<div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+<div class="flex items-center justify-between p-5 border-b border-outline-variant"><h3 class="font-semibold text-sm" id="slide-editor-title">Nouveau slide</h3><button onclick="closeSlideEditor()" type="button"><span class="material-symbols-outlined">close</span></button></div>
+<form class="p-5 space-y-4" id="slide-form">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Titre</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="s-titre" required/></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Sous-titre</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="s-sous-titre" rows="2"></textarea></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Image (URL)</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="s-image" placeholder="images/CAMA_8.jfif"/></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Ordre</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="s-ordre" min="1" type="number" value="1"/></div><div class="flex items-end pb-2"><label class="flex items-center gap-2 text-xs font-semibold"><input checked class="rounded border-outline-variant text-primary" id="s-actif" type="checkbox"/> Publié</label></div></div>
+<div class="flex justify-end gap-2 pt-2"><button class="px-4 py-2 text-xs font-bold border border-outline-variant rounded-lg" onclick="closeSlideEditor()" type="button">Annuler</button><button class="px-4 py-2 text-xs font-bold bg-primary text-on-primary rounded-lg" type="submit">Enregistrer</button></div>
+</form>
+</div>
+</div>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold" id="toast-content"></div></div>
+<script>
+const ROLE_IDENTITIES = { gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" }, superviseur: { nom: "Cdt. Paul SAWADOGO", role: "Superviseur / Responsable" }, administrateur: { nom: "Ing. Awa OUÉDRAOGO", role: "Administrateur technique" }, direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" } };
+const SLIDES_KEY = 'cama_site_slides';
+const BANNER_KEY = 'cama_site_banner';
+let SLIDES = [];
+function initials(n) { const p = n.replace(/^(Lt\.|Sgt\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' '); return ((p[0]?.[0]||'')+(p[1]?.[0]||'')).toUpperCase(); }
+function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+function loadSlides() { try { const s = localStorage.getItem(SLIDES_KEY); SLIDES = s ? JSON.parse(s) : [{ id: 1, titre: "La santé de nos héros, notre priorité", sousTitre: "Couverture santé solidaire pour les militaires et leurs familles.", image: "images/CAMA_8.jfif", ordre: 1, actif: true }, { id: 2, titre: "Enrôlement en ligne simplifié", sousTitre: "Créez votre espace assuré et enrôlez vos ayants droit.", image: "images/CAMA_3.3.jfif", ordre: 2, actif: true }]; } catch { SLIDES = []; } }
+function saveSlides() { localStorage.setItem(SLIDES_KEY, JSON.stringify(SLIDES)); renderSlides(); }
+function renderSlides() {
+    SLIDES.sort((a,b) => a.ordre - b.ordre);
+    document.getElementById('slides-grid').innerHTML = SLIDES.map(s => `
+        <div class="assure-card overflow-hidden">
+            <div class="slide-preview" style="background-image:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url('${s.image}')"></div>
+            <div class="p-4 space-y-2">
+                <div class="flex items-start justify-between gap-2"><h3 class="text-sm font-bold text-on-surface">${s.titre}</h3><span class="text-[10px] px-2 py-0.5 rounded-full ${s.actif ? 'bg-secondary text-on-secondary' : 'bg-surface-container-high text-on-surface-variant'}">${s.actif ? 'Publié' : 'Brouillon'}</span></div>
+                <p class="text-xs text-on-surface-variant line-clamp-2">${s.sousTitre}</p>
+                <div class="flex justify-between items-center pt-2"><span class="text-[10px] text-on-surface-variant">Ordre ${s.ordre}</span>
+                <div><button class="text-on-surface-variant hover:text-primary" onclick="openSlideEditor(${s.id})"><span class="material-symbols-outlined text-[18px]">edit</span></button>
+                <button class="text-on-surface-variant hover:text-error ml-2" onclick="deleteSlide(${s.id})"><span class="material-symbols-outlined text-[18px]">delete</span></button></div></div>
+            </div>
+        </div>`).join('') || '<p class="text-sm text-on-surface-variant col-span-2">Aucun slide. Ajoutez-en un.</p>';
+}
+function openSlideEditor(id) { document.getElementById('slide-form').reset(); document.getElementById('slide-form').dataset.editId = id || ''; document.getElementById('slide-editor-title').textContent = id ? 'Modifier le slide' : 'Nouveau slide'; if (id) { const s = SLIDES.find(x => x.id === id); document.getElementById('s-titre').value = s.titre; document.getElementById('s-sous-titre').value = s.sousTitre; document.getElementById('s-image').value = s.image; document.getElementById('s-ordre').value = s.ordre; document.getElementById('s-actif').checked = s.actif; } document.getElementById('slide-overlay').classList.add('is-open'); }
+function closeSlideEditor() { document.getElementById('slide-overlay').classList.remove('is-open'); }
+function deleteSlide(id) { if (!confirm('Supprimer ce slide ?')) return; SLIDES = SLIDES.filter(s => s.id !== id); saveSlides(); showToast('Slide supprimé.'); }
+function loadBannerForm() { try { const b = JSON.parse(localStorage.getItem(BANNER_KEY) || '{}'); document.getElementById('banner-active').checked = b.active !== false; document.getElementById('banner-type').value = b.type || 'info'; document.getElementById('banner-message').value = b.message || ''; document.getElementById('banner-link').value = b.link || ''; document.getElementById('banner-link-label').value = b.linkLabel || ''; } catch {} }
+document.getElementById('banner-save').addEventListener('click', () => { localStorage.setItem(BANNER_KEY, JSON.stringify({ active: document.getElementById('banner-active').checked, type: document.getElementById('banner-type').value, message: document.getElementById('banner-message').value, link: document.getElementById('banner-link').value, linkLabel: document.getElementById('banner-link-label').value })); showToast('<span class="material-symbols-outlined">campaign</span> Bandeau publié sur le site public.'); });
+document.getElementById('slide-form').addEventListener('submit', (e) => { e.preventDefault(); const editId = e.target.dataset.editId; const data = { titre: document.getElementById('s-titre').value, sousTitre: document.getElementById('s-sous-titre').value, image: document.getElementById('s-image').value, ordre: parseInt(document.getElementById('s-ordre').value, 10), actif: document.getElementById('s-actif').checked }; if (editId) { Object.assign(SLIDES.find(x => x.id == editId), data); } else { SLIDES.push({ id: Date.now(), ...data }); } closeSlideEditor(); saveSlides(); showToast('Slide enregistré.'); });
+function applyRole(role) { localStorage.setItem('cama_admin_role', role); document.querySelectorAll('[data-roles]').forEach(el => el.classList.toggle('role-hidden', !el.dataset.roles.split(',').includes(role))); const i = ROLE_IDENTITIES[role]; document.getElementById('topbar-name').textContent = i.nom; document.getElementById('topbar-role').textContent = i.role; document.getElementById('topbar-avatar').textContent = initials(i.nom); document.getElementById('role-select').value = role; }
+(function(){ document.getElementById('sidebar-toggle')?.addEventListener('click', () => document.body.classList.toggle('sidebar-open')); document.getElementById('sidebar-overlay')?.addEventListener('click', () => document.body.classList.remove('sidebar-open')); applyRole(localStorage.getItem('cama_admin_role') || 'administrateur'); document.getElementById('role-select').addEventListener('change', e => applyRole(e.target.value)); loadSlides(); renderSlides(); loadBannerForm(); })();
+</script>
+<script src="../admin-shell.js"></script>
+</body></html>

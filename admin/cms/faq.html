@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FAQ | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = { darkMode: "class", theme: { extend: {
+    "colors": { "primary": "#9e001f", "surface-container-low": "#f6f3f2", "secondary": "#006e27", "tertiary": "#745b00", "on-surface-variant": "#5c403f", "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "primary-fixed": "#ffdad8" },
+    "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"] },
+    "fontSize": { "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "body-md": ["14px", {"lineHeight": "22px"}], "caption": ["11px", {"lineHeight": "15px"}], "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}] }
+} } }
+</script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+#sidebar { transition: transform 0.25s ease; }
+@media (max-width: 767px) { #sidebar { position: fixed; transform: translateX(-100%); } body.sidebar-open #sidebar { transform: translateX(0); } body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; } #content-shell { margin-left: 0 !important; } }
+#sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.modal-overlay { display: none; } .modal-overlay.is-open { display: flex; }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html"><img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/><span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span></a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1"><span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span><select class="w-full text-[12px] font-bold py-0.5" id="role-select"><option value="administrateur">Administrateur technique</option><option value="superviseur">Superviseur / Responsable</option></select></div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3"><button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button><div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">FAQ</h1><p class="text-caption text-on-surface-variant hidden sm:block">Questions fréquentes par catégorie</p></div></div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html"><div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">AO</div></a>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-4">
+<div class="flex flex-wrap gap-2 items-center justify-between"><div class="flex flex-wrap gap-2" id="category-pills"></div><button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5" onclick="openEditor(null)" type="button"><span class="material-symbols-outlined text-[16px]">add</span> Nouvelle question</button></div>
+<div class="assure-card overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b border-outline-variant text-left text-[10px] uppercase text-on-surface-variant"><th class="p-3">Question</th><th class="p-3">Catégorie</th><th class="p-3">Statut</th><th class="p-3">Ordre</th><th class="p-3"></th></tr></thead><tbody id="faq-tbody"></tbody></table></div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMAStudio de contenu</footer>
+</div>
+<div class="modal-overlay fixed inset-0 bg-black/50 z-50 items-center justify-center p-4" id="editor-overlay">
+<div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between p-5 border-b border-outline-variant"><h3 class="font-semibold text-sm">Question FAQ</h3><button onclick="closeEditor()" type="button"><span class="material-symbols-outlined">close</span></button></div>
+<form class="p-5 space-y-4" id="faq-form">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Question</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-question" required/></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Réponse</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-reponse" required rows="4"></textarea></div>
+<div class="grid grid-cols-2 gap-3"><div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Catégorie</label><select class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-categorie"><option>Enrôlement</option><option>Prestations</option><option>Remboursements</option><option>Compte assuré</option></select></div><div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Ordre</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-ordre" min="1" type="number" value="1"/></div></div>
+<div><label class="flex items-center gap-2 text-xs font-semibold"><input checked class="rounded border-outline-variant text-primary" id="f-publie" type="checkbox"/> Publié</label></div>
+<div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs font-bold border border-outline-variant rounded-lg" onclick="closeEditor()" type="button">Annuler</button><button class="px-4 py-2 text-xs font-bold bg-primary text-on-primary rounded-lg" type="submit">Enregistrer</button></div>
+</form></div></div>
+<script src="../../site-content.js"></script>
+<script>
+const CATEGORIES = ['Toutes', 'Enrôlement', 'Prestations', 'Remboursements', 'Compte assuré'];
+let FAQ = [];
+let activeCat = 'Toutes';
+function load() { FAQ = CamaSiteContent.getFaq(); renderPills(); render(); }
+function save() { CamaSiteContent.saveFaq(FAQ); render(); document.getElementById('stat-faq') && (document.getElementById('stat-faq').textContent = FAQ.filter(f => f.publie).length); }
+function renderPills() { document.getElementById('category-pills').innerHTML = CATEGORIES.map(c => `<button type="button" class="px-3 py-1.5 rounded-full text-[11px] font-semibold border ${activeCat === c ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant'}" onclick="setCat('${c}')">${c}</button>`).join(''); }
+function setCat(c) { activeCat = c; renderPills(); render(); }
+function render() {
+    const list = activeCat === 'Toutes' ? FAQ : FAQ.filter(f => f.categorie === activeCat);
+    list.sort((a,b) => a.ordre - b.ordre);
+    document.getElementById('faq-tbody').innerHTML = list.map(f => `
+        <tr class="border-b border-outline-variant last:border-0">
+            <td class="p-3 font-semibold max-w-xs truncate">${f.question}</td>
+            <td class="p-3 text-on-surface-variant">${f.categorie}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${f.publie ? 'bg-secondary text-on-secondary' : 'bg-surface-container-high text-on-surface-variant'}">${f.publie ? 'Publié' : 'Brouillon'}</span></td>
+            <td class="p-3 text-on-surface-variant">${f.ordre}</td>
+            <td class="p-3 text-right"><button onclick="openEditor(${f.id})"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="ml-2" onclick="removeFaq(${f.id})"><span class="material-symbols-outlined text-[18px] text-error">delete</span></button></td>
+        </tr>`).join('') || '<tr><td class="p-6 text-center text-on-surface-variant" colspan="5">Aucune question dans cette catégorie.</td></tr>';
+}
+function openEditor(id) { document.getElementById('faq-form').reset(); document.getElementById('faq-form').dataset.editId = id || ''; if (id) { const f = FAQ.find(x => x.id === id); document.getElementById('f-question').value = f.question; document.getElementById('f-reponse').value = f.reponse; document.getElementById('f-categorie').value = f.categorie; document.getElementById('f-ordre').value = f.ordre; document.getElementById('f-publie').checked = f.publie; } document.getElementById('editor-overlay').classList.add('is-open'); }
+function closeEditor() { document.getElementById('editor-overlay').classList.remove('is-open'); }
+function removeFaq(id) { if (!confirm('Supprimer cette question ?')) return; FAQ = FAQ.filter(f => f.id !== id); save(); }
+document.getElementById('faq-form').addEventListener('submit', e => { e.preventDefault(); const editId = e.target.dataset.editId; const data = { question: document.getElementById('f-question').value, reponse: document.getElementById('f-reponse').value, categorie: document.getElementById('f-categorie').value, ordre: parseInt(document.getElementById('f-ordre').value, 10), publie: document.getElementById('f-publie').checked }; if (editId) Object.assign(FAQ.find(x => x.id == editId), data); else FAQ.push({ id: Date.now(), ...data }); closeEditor(); save(); });
+document.getElementById('sidebar-toggle')?.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+document.getElementById('sidebar-overlay')?.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+load();
+</script>
+<script src="../admin-shell.js"></script>
+</body></html>

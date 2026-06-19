@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Espace Assuré | CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#c8102e",
+                    "on-background": "#1b1c1c",
+                    "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#ffb3b1",
+                    "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f",
+                    "on-primary-fixed-variant": "#92001c",
+                    "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#7ff98d",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#65df76",
+                    "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90",
+                    "on-tertiary-fixed": "#241a00",
+                    "tertiary": "#745b00",
+                    "inverse-surface": "#303030",
+                    "surface-bright": "#fbf9f8",
+                    "surface": "#fbf9f8",
+                    "secondary": "#006e27",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f",
+                    "outline": "#906f6e",
+                    "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb",
+                    "background": "#fbf9f8",
+                    "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#eae7e7",
+                    "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "container-max-width": "1200px",
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Montserrat"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shield-pattern {
+            background-color: transparent;
+            background-image: radial-gradient(#e5bdbb 0.5px, transparent 0.5px), radial-gradient(#e5bdbb 0.5px, #fbf9f8 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0,10px 10px;
+            opacity: 0.1;
+        }
+        .auth-tab-panel { display: none; }
+        .auth-tab-panel.is-active { display: block; }
+    </style>
+<link href="site-shell.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed" data-page="espace-assure">
+<div id="site-shell-top"></div>
+<main>
+<!-- Hero -->
+<section class="relative py-16 md:py-20 overflow-hidden bg-on-background text-white">
+<div class="shield-pattern absolute inset-0 opacity-20"></div>
+<div class="relative z-10 max-w-container-max-width mx-auto px-margin-desktop text-center">
+<span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider mb-6">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+                    Plateforme d'enrôlement
+                </span>
+<h1 class="font-headline-lg text-headline-lg mb-4">Votre Espace Assuré</h1>
+<p class="font-body-lg text-body-lg text-white/85 max-w-2xl mx-auto">Créez votre dossier en ligne, enrôlez les membres de votre famille et suivez l'état de vos demandes en toute sécurité, où que vous soyez.</p>
+</div>
+</section>
+<!-- Auth Card -->
+<section class="py-stack-lg bg-surface-container-low">
+<div class="max-w-container-max-width mx-auto px-margin-desktop">
+<div class="flex justify-center">
+<!-- Auth tabs -->
+<div class="w-full max-w-2xl">
+<div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="grid grid-cols-2">
+<button class="auth-tab-btn px-6 py-5 font-bold font-label-md text-label-md text-center border-b-2 transition-colors" data-tab="connexion" id="tab-btn-connexion">Se connecter</button>
+<button class="auth-tab-btn px-6 py-5 font-bold font-label-md text-label-md text-center border-b-2 transition-colors" data-tab="inscription" id="tab-btn-inscription">Créer un compte</button>
+</div>
+<div class="p-8">
+<!-- Connexion -->
+<div class="auth-tab-panel" id="tab-connexion">
+<h3 class="font-title-lg text-title-lg mb-2">Connexion à mon espace</h3>
+<p class="text-on-surface-variant font-body-md text-sm mb-6">Accédez à votre tableau de bord assuré.</p>
+<form class="space-y-5" id="login-form">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Adresse e-mail</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="vous@exemple.bf" type="email"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Mot de passe</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+<div class="flex items-center justify-between">
+<label class="flex items-center gap-2 text-sm text-on-surface-variant">
+<input class="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
+                                        Se souvenir de moi
+                                    </label>
+<a class="text-primary text-sm font-bold hover:underline" href="#">Mot de passe oublié ?</a>
+</div>
+<button class="w-full bg-primary text-white py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">login</span>
+                                    Se connecter
+                                </button>
+</form>
+</div>
+<!-- Inscription -->
+<div class="auth-tab-panel" id="tab-inscription">
+<h3 class="font-title-lg text-title-lg mb-2">Création de compte assuré</h3>
+<p class="text-on-surface-variant font-body-md text-sm mb-6">Réservé aux militaires en fonction. Votre compte sera vérifié avant activation.</p>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-5">
+<div class="md:col-span-2 space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Nom complet</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Ex: Jean-Baptiste Sawadogo" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Matricule militaire</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="12345-X" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Numéro CAMA</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="CAMA-000000" type="text"/>
+</div>
+<div class="md:col-span-2 space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Adresse e-mail</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="vous@exemple.bf" type="email"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Mot de passe</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="12 caractères minimum" type="password"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Confirmation</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="••••••••" type="password"/>
+</div>
+<div class="md:col-span-2 flex items-start gap-3 py-1">
+<input class="w-5 h-5 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer" type="checkbox"/>
+<span class="text-caption text-on-surface-variant">J'accepte que mes données soient traitées conformément à la politique de confidentialité de la CAMA.</span>
+</div>
+<div class="md:col-span-2">
+<button class="w-full bg-secondary text-on-secondary py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit">
+<span class="material-symbols-outlined">person_add</span>
+                                        Créer mon compte
+                                    </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<div id="site-shell-bottom"></div>
+<script src="site-shell.js"></script>
+<script>
+        // Auth tabs
+        (function () {
+            const buttons = document.querySelectorAll('.auth-tab-btn');
+            const panels = document.querySelectorAll('.auth-tab-panel');
+
+            function activate(tab) {
+                buttons.forEach(btn => {
+                    const isActive = btn.dataset.tab === tab;
+                    btn.classList.toggle('text-primary', isActive);
+                    btn.classList.toggle('border-primary', isActive);
+                    btn.classList.toggle('text-on-surface-variant', !isActive);
+                    btn.classList.toggle('border-transparent', !isActive);
+                });
+                panels.forEach(panel => {
+                    panel.classList.toggle('is-active', panel.id === 'tab-' + tab);
+                });
+            }
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => activate(btn.dataset.tab));
+            });
+
+            const initial = window.location.hash === '#inscription' ? 'inscription' : 'connexion';
+            activate(initial);
+        })();
+
+    </script>
+<script src="assure/assure-data.js"></script>
+<script>
+        // Login mock redirect
+        (function () {
+            const form = document.getElementById('login-form');
+            if (!form) return;
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                CamaAssureData.setAssureSession();
+                window.location.href = 'assure/dashboard.html';
+            });
+        })();
+    </script>
+</body></html>

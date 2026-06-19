@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Paramètres | Back-office CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = { darkMode: "class", theme: { extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "spacing": { "stack-md": "16px", "container-max-width": "1200px", "gutter": "24px", "stack-sm": "8px", "margin-mobile": "16px", "unit": "4px", "stack-lg": "32px", "margin-desktop": "32px" },
+            "fontFamily": { "headline-lg-mobile": ["Montserrat"], "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "display-lg": ["Montserrat"], "caption": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "headline-lg-mobile": ["22px", {"lineHeight": "30px", "fontWeight": "700"}], "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}], "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "display-lg": ["44px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}], "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+      } } }
+    </script>
+<link href="admin-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .tab-panel { display: none; }
+        .tab-panel.is-active { display: block; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Back-office</span></span>
+</a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span>
+<select class="w-full text-[12px] font-bold py-0.5" id="role-select">
+<option value="gestionnaire">Gestionnaire CAMA</option>
+<option value="superviseur">Superviseur / Responsable</option>
+<option value="administrateur">Administrateur technique</option>
+<option value="direction">Direction Générale</option>
+</select>
+</div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur" href="dossiers.html"><span class="material-symbols-outlined text-[20px]">folder_shared</span> Dossiers</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="assures.html"><span class="material-symbols-outlined text-[20px]">groups</span> Assurés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="utilisateurs-internes.html"><span class="material-symbols-outlined text-[20px]">manage_accounts</span> Comptes internes</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="exports.html"><span class="material-symbols-outlined text-[20px]">file_download</span> Exports</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="audit.html"><span class="material-symbols-outlined text-[20px]">fact_check</span> Journal d'audit</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="administrateur" href="parametres.html"><span class="material-symbols-outlined text-[20px]">settings</span> Paramètres</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="cms/dashboard.html"><span class="material-symbols-outlined text-[20px]">design_services</span> Studio de contenu</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="notifications.html"><span class="material-symbols-outlined text-[20px]">notifications</span> Notifications<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center" id="sidebar-unread-badge">3</span></a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur,direction" href="profil.html"><span class="material-symbols-outlined text-[20px]">account_circle</span> Mon profil</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button>
+<div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Paramètres</h1><p class="text-caption text-on-surface-variant hidden sm:block">Réservé Administrateur technique</p></div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
+<div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p><p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p></div>
+</a>
+</header>
+<main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1100px] w-full mx-auto">
+<div class="flex flex-wrap gap-2 mb-5" id="tab-pills">
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary" data-tab="liens">Liens de parenté & pièces</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="retention">Rétention</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="libelles">Libellés & modèles</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="affectation">Règles d'affectation</button>
+</div>
+
+<!-- Liens de parenté -->
+<div class="tab-panel is-active" data-tab="liens">
+<div class="assure-card overflow-hidden">
+<div class="px-5 py-4 border-b border-outline-variant bg-surface-container-low"><h3 class="font-title-lg text-title-lg">Liens de parenté et pièces requises</h3></div>
+<div class="overflow-x-auto"><table class="w-full text-left">
+<thead><tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide"><th class="px-5 py-3 font-medium">Lien</th><th class="px-5 py-3 font-medium">Pièces obligatoires</th><th class="px-5 py-3 font-medium">Pièces optionnelles</th></tr></thead>
+<tbody class="divide-y divide-outline-variant">
+<tr><td class="px-5 py-3 text-xs font-bold">Conjoint(e)</td><td class="px-5 py-3 text-xs">Acte de mariage, copie CNIB du conjoint</td><td class="px-5 py-3 text-xs text-on-surface-variant">Acte de divorce du précédent conjoint</td></tr>
+<tr><td class="px-5 py-3 text-xs font-bold">Enfant biologique</td><td class="px-5 py-3 text-xs">Acte de naissance, copie CNIB du parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Certificat médical de scolarité</td></tr>
+<tr><td class="px-5 py-3 text-xs font-bold">Enfant du conjoint</td><td class="px-5 py-3 text-xs">Acte de naissance, acte de mariage avec le parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Pièce justifiant la garde</td></tr>
+<tr><td class="px-5 py-3 text-xs font-bold">Parent</td><td class="px-5 py-3 text-xs">Acte de naissance de l'assuré, copie CNIB du parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">—</td></tr>
+<tr><td class="px-5 py-3 text-xs font-bold">Autre</td><td class="px-5 py-3 text-xs text-on-surface-variant" colspan="2">Définies au cas par cas en phase de cadrage</td></tr>
+</tbody>
+</table></div>
+<div class="p-4 bg-surface-container-low text-[11px] text-on-surface-variant italic">Modification de cette matrice réservée à l'Administrateurimpacte le formulaire d'enrôlement de l'espace assuré.</div>
+</div>
+</div>
+
+<!-- Rétention -->
+<div class="tab-panel" data-tab="retention">
+<div class="assure-card p-6 max-w-md">
+<h3 class="font-title-lg text-title-lg mb-1">Durée de rétention des pièces</h3>
+<p class="text-xs text-on-surface-variant mb-4">Durée de conservation des pièces justificatives après clôture du dossier.</p>
+<div class="flex items-center gap-3 mb-4">
+<input class="w-24 px-3 py-2 text-sm border border-outline-variant rounded-lg text-center" id="retention-years" type="number" value="5"/>
+<span class="text-sm text-on-surface-variant">ans (par défaut : 5 ans)</span>
+</div>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Durée de rétention')">Enregistrer</button>
+</div>
+</div>
+
+<!-- Libellés -->
+<div class="tab-panel" data-tab="libelles">
+<div class="assure-card p-6 mb-4">
+<h3 class="font-title-lg text-title-lg mb-3">Motifs de refus pré-définis</h3>
+<div class="space-y-2 mb-3" id="motifs-list">
+<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Pièce justificative non conforme"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
+<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Lien de parenté non justifié"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
+<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Informations incohérentes avec le dossier militaire"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
+</div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" onclick="addMotif()"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter un motif</button>
+</div>
+<div class="assure-card p-6">
+<h3 class="font-title-lg text-title-lg mb-3">Modèles de message e-mail</h3>
+<div class="space-y-3">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Validation de dossier</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" rows="2">Bonjour, votre dossier {ref} a été validé. Votre carte d'assuré sera produite sous peu.</textarea></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Demande de complément</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" rows="2">Bonjour, une pièce complémentaire est requise pour le dossier {ref} : {piece}.</textarea></div>
+</div>
+<button class="mt-3 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Modèles de message')">Enregistrer</button>
+</div>
+</div>
+
+<!-- Affectation -->
+<div class="tab-panel" data-tab="affectation">
+<div class="assure-card p-6 max-w-lg">
+<h3 class="font-title-lg text-title-lg mb-1">Règles d'affectation automatique</h3>
+<p class="text-xs text-on-surface-variant mb-4">Mode d'affectation des nouveaux dossiers aux gestionnaires.</p>
+<div class="space-y-2 mb-4">
+<label class="flex items-center gap-2 text-xs"><input checked="" name="affectation" type="radio"/> Manuelle (le superviseur affecte chaque dossier)</label>
+<label class="flex items-center gap-2 text-xs"><input name="affectation" type="radio"/> Automatiquerépartition équilibrée (round-robin)</label>
+<label class="flex items-center gap-2 text-xs"><input name="affectation" type="radio"/> Automatiquepar charge la plus faible</label>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant">
+<div><p class="text-xs font-bold">Validation à deux niveaux</p><p class="text-[11px] text-on-surface-variant">Gestionnaire puis Superviseur avant décision finale</p></div>
+<div class="toggle-switch on shrink-0" id="validation-2niveaux"><div class="knob"></div></div>
+</div>
+<button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Règles d\'affectation')">Enregistrer</button>
+</div>
+</div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMABack-office institutionnel. Accès restreint et tracé.</footer>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="dashboard.html"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="text-[10px] font-label-md">Accueil</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="assures.html"><span class="material-symbols-outlined text-[22px]">groups</span><span class="text-[10px] font-label-md">Assurés</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="parametres.html"><span class="material-symbols-outlined text-[22px]">settings</span><span class="text-[10px] font-label-md">Paramètres</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="notifications.html"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="text-[10px] font-label-md">Alertes</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html"><span class="material-symbols-outlined text-[22px]">person</span><span class="text-[10px] font-label-md">Profil</span></a>
+</nav>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+<style>
+        .toggle-switch { width: 44px; height: 24px; border-radius: 9999px; position: relative; transition: background-color 0.2s; cursor: pointer; }
+        .toggle-switch .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: white; transition: transform 0.2s; }
+        .toggle-switch.on { background-color: #006e27; }
+        .toggle-switch.on .knob { transform: translateX(20px); }
+        .toggle-switch.off { background-color: #e4e2e1; }
+    </style>
+<script>
+        const ROLE_IDENTITIES = {
+            gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
+            superviseur: { nom: "Cdt. Paul SAWADOGO", role: "Superviseur / Responsable" },
+            administrateur: { nom: "Ing. Awa OUÉDRAOGO", role: "Administrateur technique" },
+            direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
+        };
+        function initials(name) { const p = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' '); return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase(); }
+        function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+        function applyRole(role) {
+            localStorage.setItem('cama_admin_role', role);
+            document.querySelectorAll('[data-roles]').forEach(el => { el.classList.toggle('role-hidden', !el.dataset.roles.split(',').includes(role)); });
+            const identity = ROLE_IDENTITIES[role];
+            document.getElementById('topbar-name').textContent = identity.nom;
+            document.getElementById('topbar-role').textContent = identity.role;
+            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
+            const select = document.getElementById('role-select'); if (select) select.value = role;
+        }
+        function saveSetting(label) { showToast(`<span class="material-symbols-outlined">check_circle</span> ${label} mis(e) à jour.`); }
+        function addMotif() {
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2';
+            div.innerHTML = `<input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" placeholder="Nouveau motif…"/><button class="text-error" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-[18px]">delete</span></button>`;
+            document.getElementById('motifs-list').appendChild(div);
+        }
+        document.getElementById('validation-2niveaux').addEventListener('click', function () {
+            const isOn = this.classList.toggle('on'); this.classList.toggle('off', !isOn);
+            localStorage.setItem('cama_validation_2niveaux', isOn ? 'true' : 'false');
+        });
+        document.querySelectorAll('.tab-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.tab-pill').forEach(p => { p.classList.remove('bg-primary', 'text-on-primary'); p.classList.add('bg-surface-container-high', 'text-on-surface-variant'); });
+                pill.classList.remove('bg-surface-container-high', 'text-on-surface-variant'); pill.classList.add('bg-primary', 'text-on-primary');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('is-active', p.dataset.tab === pill.dataset.tab));
+            });
+        });
+        (function () {
+            const toggle = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+            if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+            applyRole(localStorage.getItem('cama_admin_role') || 'administrateur');
+            document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
+            const v2 = document.getElementById('validation-2niveaux');
+            const saved2n = localStorage.getItem('cama_validation_2niveaux') !== 'false';
+            v2.classList.toggle('on', saved2n);
+            v2.classList.toggle('off', !saved2n);
+            if (!localStorage.getItem('cama_validation_2niveaux')) localStorage.setItem('cama_validation_2niveaux', 'true');
+        })();
+    </script>
+<script src="admin-shell.js"></script>
+</body></html>

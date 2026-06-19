@@ -1,0 +1,580 @@
+
+BURKINA FASO
+La patrie ou la mort , nous vraincrons
+—————————
+MINISTÈRE DE LA GUERRE ET DE LA DÉFENSE PATRIOTIQUE
+SECRÉTARIAT GÉNÉRAL
+CAISSE D’ASSURANCE MALADIE DES ARMÉES (CA
+CAHIER DES CHARGES
+
+DÉVELOPPEMENT D’UN SITE WEB INSTITUTIONNEL
+ASSOCIÉ À UNE PLATEFORME D’ENRÔLEMENT DES MEMBRES DE FAMILLE
+
+Version 1.0 Juin 2026
+« La santé de nos héros, notre priorité »
+
+ TOC \o "1-5" \h \z \u 1. Préambule et contexte institutionnel PAGEREF _Toc232687436 \h 4
+1.1 Genèse de la CAMA PAGEREF _Toc232687437 \h 4
+1.2 Slogan et identité PAGEREF _Toc232687438 \h 4
+1.3 Contexte du projet PAGEREF _Toc232687439 \h 4
+2. Présentation du maître d’ouvrage : la CAMA PAGEREF _Toc232687440 \h 5
+2.1 Statut et tutelle PAGEREF _Toc232687441 \h 5
+2.2 Mission PAGEREF _Toc232687442 \h 5
+2.3 Piliers fondamentaux PAGEREF _Toc232687443 \h 5
+2.4 Bénéficiaires couverts par la CAMA PAGEREF _Toc232687444 \h 5
+2.5 Financement et prestations PAGEREF _Toc232687445 \h 6
+3. Enjeux, objectifs et bénéfices attendus PAGEREF _Toc232687446 \h 6
+3.1 Enjeux stratégiques PAGEREF _Toc232687447 \h 6
+3.2 Objectifs généraux PAGEREF _Toc232687448 \h 6
+3.3 Bénéfices attendus PAGEREF _Toc232687449 \h 7
+4. Périmètre du projet PAGEREF _Toc232687450 \h 7
+4.1 Inclus dans le périmètre PAGEREF _Toc232687451 \h 7
+4.2 Hors périmètre PAGEREF _Toc232687452 \h 7
+4.3 Hypothèses et dépendances PAGEREF _Toc232687453 \h 8
+5. Acteurs et profils utilisateurs PAGEREF _Toc232687454 \h 9
+5.1 Cartographie des acteurs PAGEREF _Toc232687455 \h 9
+5.2 Rôles et matrice de droits PAGEREF _Toc232687456 \h 9
+6. Architecture fonctionnelle d’ensemble PAGEREF _Toc232687457 \h 11
+6.1 Workflow cible d’enrôlement PAGEREF _Toc232687458 \h 11
+6.2 Schéma logique de la solution (textuel) PAGEREF _Toc232687459 \h 11
+7. Spécifications fonctionnelles Site institutionnel PAGEREF _Toc232687460 \h 12
+7.1 Arborescence cible PAGEREF _Toc232687461 \h 12
+7.2 Composants transverses du site public PAGEREF _Toc232687462 \h 12
+7.3 Modules éditoriaux administrables PAGEREF _Toc232687463 \h 12
+8. Spécifications fonctionnelles Plateforme d’enrôlement PAGEREF _Toc232687464 \h 13
+8.1 Création de compte de l’assuré principal PAGEREF _Toc232687465 \h 13
+8.2 Tableau de bord personnel PAGEREF _Toc232687466 \h 13
+8.3 Formulaire d’ajout d’un membre de famille (A valider) PAGEREF _Toc232687467 \h 13
+8.3.1 Étape 1 État civil du membre PAGEREF _Toc232687468 \h 13
+8.3.2 Étape 2 Lien avec l’assuré PAGEREF _Toc232687469 \h 14
+8.3.3 Étape 3 Identifiants administratifs PAGEREF _Toc232687470 \h 14
+8.3.4 Étape 4 Pièces justificatives PAGEREF _Toc232687471 \h 14
+8.3.5 Étape 5 Récapitulatif et soumission PAGEREF _Toc232687472 \h 14
+8.4 Gestion du cycle de vie d’un dossier (côté assuré) PAGEREF _Toc232687473 \h 15
+8.5 Historique des actions PAGEREF _Toc232687474 \h 15
+8.6 Notifications utilisateur PAGEREF _Toc232687475 \h 15
+9. Spécifications fonctionnelles Back-office d’administration PAGEREF _Toc232687476 \h 16
+9.1 Authentification et sécurité d’accès PAGEREF _Toc232687477 \h 16
+9.2 Gestion des comptes utilisateurs PAGEREF _Toc232687478 \h 16
+9.3 Traitement des dossiers d’enrôlement PAGEREF _Toc232687479 \h 16
+9.4 Gestion des pièces justificatives PAGEREF _Toc232687480 \h 16
+9.5 Export des données PAGEREF _Toc232687481 \h 16
+9.6 Notifications administratives PAGEREF _Toc232687482 \h 16
+9.7 Tableaux de bord et statistiques PAGEREF _Toc232687483 \h 17
+9.8 Paramétrage PAGEREF _Toc232687484 \h 17
+9.9 Journalisation et audit PAGEREF _Toc232687485 \h 17
+10. Spécifications techniques et architecture PAGEREF _Toc232687486 \h 18
+10.1 Architecture cible PAGEREF _Toc232687487 \h 18
+10.2 Schéma de données modèle logique simplifié PAGEREF _Toc232687488 \h 18
+10.3 Intégrations attendues PAGEREF _Toc232687489 \h 19
+10.4 Outillage et qualité logicielle PAGEREF _Toc232687490 \h 19
+11. Exigences de sécurité PAGEREF _Toc232687491 \h 20
+11.1 Sécurité applicative PAGEREF _Toc232687492 \h 20
+12. Exigences UX/UI et charte graphique PAGEREF _Toc232687493 \h 20
+12.1 Identité visuelle officielle de la CAMA PAGEREF _Toc232687494 \h 20
+12.2 Palette de couleurs institutionnelle PAGEREF _Toc232687495 \h 20
+14. Conformité réglementaire et protection des données PAGEREF _Toc232687496 \h 21
+14.1 Cadre applicable PAGEREF _Toc232687497 \h 21
+14.2 Droits des personnes PAGEREF _Toc232687498 \h 21
+14.3 Mesures techniques de conformité PAGEREF _Toc232687499 \h 21
+15. Hébergement, infrastructure et exploitation PAGEREF _Toc232687500 \h 22
+15.1 Recommandation d’hébergement PAGEREF _Toc232687501 \h 22
+16. Planning prévisionnel et jalons PAGEREF _Toc232687502 \h 22
+16.1 Phases de réalisation PAGEREF _Toc232687503 \h 22
+17. Interrogations ou élément à fournir 17.1 Documents à fournir par la CAMA au prestataire (rappel) PAGEREF _Toc232687504 \h 22
+
+1. Préambule et contexte institutionnel
+1.1 Genèse de la CAMA
+La protection sociale des Forces Armées Nationales (FAN) a connu plusieurs étapes au Burkina Faso. Depuis 2008, l’Armée s’appuyait sur la Mutuelle des Forces Armées Nationales (MUFAN), dont la vocation était de gérer l’entraide financière pour l’accès aux soins de santé. Cette mutuelle, principalement destinée aux militaires eux-mêmes, ne couvrait pas systématiquement les membres de leur famille.
+La mise en place du Régime d’Assurance Maladie Universelle (RAMU), institué par la loi n°060-2015/CNT du 05 septembre 2015, a profondément réorganisé le paysage de la protection sociale santé au Burkina Faso. Cette loi confie l’opérationnalisation du régime à deux organismes complémentaires : la Caisse Nationale d’Assurance Maladie Universelle (CNAMU) pour les populations civiles, et la Caisse d’Assurance Maladie des Armées (CAMA) pour le personnel militaire et leurs ayants droit.
+La CAMA a été formellement créée par le décret n°2020-0272/PRES/PM/MINEFID/MDNAC/MFPTPS du 16 avril 2020. Ses statuts particuliers ont été approuvés en conseil des ministres le 20 janvier 2021. Les modalités de prélèvement et de versement des cotisations ont été fixées par un décret adopté en octobre 2023. Les activités effectives de la Caisse ont démarré le 1er novembre 2024, et le lancement officiel a été présidé le 13 février 2025 par le Ministre d’État, Ministre de la Défense et des Anciens Combattants.
+« En créant la CAMA, nous répondons à un besoin fondamental : celui d’offrir à nos militaires et à leurs familles un accès fiable et équitable au système de santé au Burkina Faso. » Ministre d’État, Ministre de la Défense, lors du lancement officiel.
+
+1.2 Slogan et identité
+L’institution communique sous le slogan officiel : « La santé de nos héros, notre priorité ». Ce slogan, ancré dans la reconnaissance nationale envers les forces combattantes, doit irriguer l’ensemble de l’expérience numérique conçue dans le cadre du présent projet.
+1.3 Contexte du projet
+Dans son discours d’installation du 13 novembre 2025, le Secrétaire Général du Ministère de la Défense a invité le nouveau Directeur Général de la CAMA, le Pharmacien Lieutenant-Colonel Ousmane SINARE, à inscrire son action dans une logique d’innovation et de dématérialisation, en cohérence avec la politique gouvernementale de transformation numérique.
+Le présent projet s’inscrit pleinement dans cette orientation. Il vise à doter la CAMA d’une présence en ligne moderne, sécurisée et résolument utile à ses bénéficiaires, par la mise en place :
+d’un site web institutionnel qui présente la Caisse, ses missions et ses prestations ;
+d’une plateforme d’enrôlement des membres de famille de l’assuré, permettant aux militaires de constituer le dossier de leurs ayants droit à distance ;
+d’un back-office d’administration outillé pour la gestion des soumissions, la validation des dossiers et l’export des données.
+2. Présentation du maître d’ouvrage : la CAMA
+2.1 Statut et tutelle
+La CAMA est un établissement public de prévoyance sociale (EPPS), placé sous la tutelle du Ministère de la Guerre et de la Défense Patriotique. Elle gère le régime d’assurance maladie universelle au profit des personnels des Forces Armées Nationales et des membres de leur famille.
+2.2 Mission
+La CAMA a pour mission d’organiser la prise en charge sanitaire des militaires et de leurs ayants droit, en cohérence avec la pyramide sanitaire militaire et l’ensemble du système national de santé. Elle vise à :
+renforcer les capacités opérationnelles des FAN par la préservation de la santé des combattants ;
+offrir un cadre solidaire et équitable de prise en charge des frais de santé ;
+étendre la couverture aux familles, source majeure de préoccupation pour les militaires engagés au front ou en mission.
+2.3 Piliers fondamentaux
+Pilier
+Traduction concrète dans la solution numérique
+Accès aux soins de qualité pour tous
+Information claire, à jour et accessible sur les prestations, les structures partenaires et la procédure d’enrôlement, sur tous supports (desktop, tablette, mobile).
+Solidarité et équité
+Procédure d’enrôlement uniforme, indépendante du grade, du lieu de résidence ou du moment de la demande ; suivi transparent du dossier.
+Transparence et durabilité
+Traçabilité des actions (journal d’audit), conservation maîtrisée des pièces justificatives, journal des notifications adressées aux assurés.
+2.4 Bénéficiaires couverts par la CAMA
+Militaires en activité au sein des Forces Armées Nationales (adhésion obligatoire).
+Membres de la famille du militaire : conjoint(e) et enfants, y compris enfants d’un précédent mariage du conjoint.
+En cas de décès du militaire, les ayants droit continuent de bénéficier des prestations pendant six (6) mois avant transfert vers la CNAMU.
+Ne sont pas concernés par la CAMA : les militaires à la retraite et le personnel civil de l’armée. La solution numérique objet du présent projet ne doit pas créer la confusion sur ce périmètre.
+2.5 Financement et prestations
+Le financement de la CAMA repose sur une cotisation totale de 5,5 % du solde indiciaire des militaires, répartie entre 2,5 % à la charge du militaire et 3 % à la charge de l’État. L’État a en outre mobilisé un fonds de réserve de 2 milliards de FCFA et un fonds de démarrage supérieur à 1,2 milliard de FCFA.
+Les prestations couvertes incluent notamment :
+les consultations médicales ;
+les actes médico-chirurgicaux ;
+les soins infirmiers ;
+les examens de biologie ;
+les actes de radiologie et d’imagerie médicale.
+Deux modalités principales de prise en charge coexistent : le paiement d’un ticket modérateur en formation sanitaire, ou l’avance de frais par l’assuré suivie d’un remboursement.
+3. Enjeux, objectifs et bénéfices attendus
+3.1 Enjeux stratégiques
+Enjeu
+Description
+Visibilité institutionnelle
+Donner à la CAMA, jeune institution lancée officiellement en 2025, une vitrine numérique à la hauteur de sa mission et de son ancrage régalien.
+Dématérialisation
+Réduire la dépendance aux démarches physiques pour des assurés souvent en opération ou éloignés du siège, conformément à l’orientation de dématérialisation portée par la tutelle.
+Sécurisation des données sensibles
+Protéger des données personnelles et de santé concernant des personnels militaires et leurs familles, dont la sensibilité est aggravée par le contexte sécuritaire.
+Confiance des assurés
+Donner à l’assuré la maîtrise et la visibilité de son dossier famille, et un canal officiel de référence face aux rumeurs et désinformation.
+3.2 Objectifs généraux
+Offrir une vitrine institutionnelle moderne, sobre et conforme à l’identité militaire.
+Mettre en service une plateforme d’enrôlement sécurisée des membres de famille de l’assuré.
+Outiller l’administration de la CAMA pour le traitement diligent et tracé des soumissions.
+Garantir la sécurité, la confidentialité et la pérennité des données personnelles collectées.
+Préparer l’interopérabilité future avec le système d’information métier de la CAMA et, à terme, avec celui de la CNAMU (notamment pour la prise en charge transitoire des ayants droit en cas de décès).
+3.3 Bénéfices attendus
+Pour l’assuré militaire : réduction du déplacement au siège, suivi en temps réel du dossier famille, sentiment renforcé de reconnaissance institutionnelle.
+Pour la famille : accès plus rapide à la couverture sanitaire, transparence sur les pièces requises.
+Pour la CAMA : qualité accrue de la donnée, productivité administrative, capacité de pilotage par les statistiques.
+Pour la tutelle : illustration concrète de la dématérialisation et levier de communication institutionnelle.
+4. Périmètre du projet
+4.1 Inclus dans le périmètre
+Conception et développement d’un site web institutionnel responsive, multi-pages.
+Conception et développement d’une plateforme d’enrôlement des membres de famille (Front-Office assuré).
+Conception et développement d’un back-office d’administration sécurisé.
+Conception graphique (charte digitale dérivée de l’identité institutionnelle CAMA).
+Intégration des contenus fournis par la MOA (textes, photos, logos, organigramme, cartographie).
+Recommandations d’hébergement et mise en production sur un environnement désigné par la MOA.
+Formation des équipes internes (2 jours) à l’administration et à l’exploitation.
+Documentation technique et fonctionnelle complète.
+Garantie corrective minimale de 3 mois après mise en production.
+4.2 Hors périmètre
+Sauf décision contraire formalisée par avenant, les éléments suivants sont hors périmètre de la prestation :
+Module de paiement en ligne des cotisations.
+Interfaçage avec les systèmes d’information du Service de Santé des Armées et des formations sanitaires partenaires.
+Module de gestion des prestations, des sinistres, des remboursements et de la facturation.
+Production des contenus rédactionnels et photographiques institutionnels (qui demeurent à la charge de la MOA).
+Acquisition de licences logicielles tierces non explicitement listées.
+4.3 Hypothèses et dépendances
+La MOA fournit en temps utile les contenus, photos et logos nécessaires à l’intégration.
+La MOA désigne un référent unique disposant de l’autorité de validation.
+Les justificatifs administratifs attendus (acte de naissance, acte de mariage, copie CNIB, etc.) sont strictement définis avec la MOA en début de projet.
+Le serveur d’hébergement final est désigné et accessible avant la phase de mise en production.
+5. Acteurs et profils utilisateurs
+5.1 Cartographie des acteurs
+Acteur
+Rôle dans la solution
+Niveau d’accès
+Visiteur public
+Consulte la vitrine institutionnelle.
+Front-Office public, sans authentification.
+Assuré principal (militaire)
+Crée son compte, enrôle ses membres de famille, suit ses dossiers.
+Front-Office privé après authentification.
+Gestionnaire CAMA
+Examine et valide les dossiers, gère les pièces, communique avec l’assuré.
+Back-office rôle « Gestionnaire ».
+Superviseur / Responsable
+Supervise l’activité, gère les utilisateurs internes, consulte les statistiques.
+Back-office rôle « Superviseur ».
+Administrateur technique
+Gère les paramètres techniques, la sécurité, les sauvegardes.
+Back-office rôle « Administrateur ».
+Direction Générale
+Consulte les tableaux de bord stratégiques.
+Back-office rôle « Direction ».
+5.2 Rôles et matrice de droits
+Fonctionnalité
+Visiteur
+Assuré
+Gestionnaire
+Superviseur
+Administrateur
+Consulter les pages publiques
+✅
+✅
+✅
+✅
+✅
+Créer un compte assuré
+✅
+—
+—
+—
+—
+Ajouter / modifier un membre de famille
+—
+✅
+—
+—
+—
+Soumettre un dossier
+—
+✅
+—
+—
+—
+Valider / rejeter un dossier
+—
+—
+✅
+✅
+—
+Demander une pièce complémentaire
+—
+—
+✅
+✅
+—
+Exporter les données (CSV / Excel)
+—
+—
+✅
+✅
+✅
+Gérer les comptes internes
+—
+—
+—
+✅
+✅
+Consulter les journaux d’audit
+—
+—
+—
+✅
+✅
+Paramétrer la rétention / la sécurité
+—
+—
+—
+—
+✅
+6. Architecture fonctionnelle d’ensemble
+6.1 Workflow cible d’enrôlement
+L’assuré principal crée son compte sur la plateforme (email + mot de passe + vérification d’identité institutionnelle).
+Il complète son profil et démarre l’ajout d’un membre de famille.
+Il renseigne le formulaire structuré (état civil, lien de parenté, numéro CAMA, etc.) et téléverse les pièces justificatives.
+Il soumet le dossier. Le système attribue un identifiant unique de dossier et notifie le service gestionnaire.
+Le gestionnaire instruit le dossier : valide, rejette motivé ou demande des pièces complémentaires.
+À chaque changement d’état, l’assuré reçoit une notification e-mail.
+Le dossier validé est tagué, archivé et rendu exportable pour intégration aux systèmes métiers de la CAMA.
+6.2 Schéma logique de la solution (textuel)
+La solution sera structurée selon une architecture trois-tiers classique : couche de présentation (HTML/CSS/JS côté navigateur ou framework), couche applicative (back-end, traitements métiers, règles de validation) et couche données (base de données relationnelle, stockage objet sécurisé pour les pièces). Un service mail transactionnel assure les notifications. Un service de journalisation centralisé reçoit les événements applicatifs et de sécurité.
+7. Spécifications fonctionnelles Site institutionnel
+7.1 Arborescence cible
+Rubrique
+Contenu détaillé attendu
+Accueil
+Bannière dynamique reprenant le slogan « La santé de nos héros, notre priorité » ; valeurs (solidarité, équité, transparence, durabilité) ; chiffres clés (cotisation, fonds de démarrage, etc.) ; dernières actualités ; appel à l’action vers l’espace assuré.
+À propos / Notre histoire
+Genèse de la CAMA, de la MUFAN à la CAMA, cadre légal (loi 060-2015, décret 2020-0272), missions, statuts, organigramme, mot du Directeur Général.
+Services / Prestations
+Périmètre des prestations (consultations, actes médico-chirurgicaux, soins infirmiers, biologie, radiologie, imagerie médicale), modalités de prise en charge (ticket modérateur, remboursement), bénéficiaires éligibles, FAQ.
+Espace famille / Espace assuré
+Page de présentation de la plateforme + accès à la connexion / création de compte.
+Actualités
+Liste paginée d’articles, fiche détaillée, partage social, recherche par mot-clé et par catégorie.
+Cartographie de la CAMA
+Géolocalisation du siège et des éventuelles antennes ; coordonnées ; horaires ; carte interactive (OpenStreetMap, à confirmer).
+Contact
+Formulaire de contact (objet, message, fichier joint optionnel) ; coordonnées physiques, téléphoniques, email officiel ; itinéraire.
+Mentions légales
+Éditeur, hébergeur, directeur de publication, conditions d’utilisation.
+Politique de confidentialité
+Finalités, base légale, données collectées, destinataires, durée de conservation, droits des personnes.
+Accessibilité
+Déclaration de conformité partielle WCAG 2.1 niveau AA, contact pour signaler une difficulté d’accès.
+7.2 Composants transverses du site public
+En-tête fixe avec logo CAMA, menu principal, sélecteur d’accès « Espace assuré ».
+Bandeau d’information (alerte / actualité prioritaire) activable par l’administrateur.
+Pied de page institutionnel : liens utiles (Présidence du Faso, Gouvernement, Ministère de la Défense, CNAMU), réseaux sociaux officiels, lien mentions légales et confidentialité.
+Moteur de recherche interne couvrant les actualités et les pages éditoriales.
+Module de partage : Facebook, X, WhatsApp, e-mail.
+Module de cookies conforme : information, finalités, choix granulaire (essentiels, mesure d’audience, etc.).
+7.3 Modules éditoriaux administrables
+Gestion des actualités : création, brouillon, planification, publication, dépublication.
+Gestion des pages institutionnelles : édition WYSIWYG, gestion des versions, prévisualisation.
+Gestion de la bannière d’accueil (slides) : image, titre, sous-titre, lien, ordre.
+Gestion des chiffres clés en page d’accueil.
+Gestion des FAQ : catégories, ordre, statut publié/brouillon.
+8. Spécifications fonctionnelles Plateforme d’enrôlement
+8.1 Création de compte de l’assuré principal
+Inscription par e-mail + mot de passe (politique de complexité minimum 12 caractères, mélange alphanumérique et caractères spéciaux).
+Saisie obligatoire des informations d’identification CAMA : matricule militaire, numéro CAMA, numéro CNIB.
+Vérification de l’adresse e-mail par lien de validation à durée limitée.
+Confirmation par le back-office (validation manuelle de l’assuré) avant accès aux fonctionnalités d’enrôlement.
+Mécanisme de réinitialisation de mot de passe sécurisé (lien à usage unique, expiration courte).
+Possibilité d’activation d’une authentification à deux facteurs (2FA) par e-mail à minima, par SMS optionnel.
+8.2 Tableau de bord personnel
+Le tableau de bord constitue la page d’accueil de l’espace assuré après authentification. Il doit présenter :
+Un résumé des informations de l’assuré (nom, prénom, matricule, statut).
+Le nombre de membres de famille enregistrés, par statut (en attente, validés, refusés, à compléter).
+Le statut de chaque dossier de membre, avec accès direct à son détail.
+Une zone « notifications » regroupant les messages reçus du service gestionnaire.
+Des appels à l’action : « Ajouter un membre », « Compléter mon profil », « Mettre à jour une pièce ».
+8.3 Formulaire d’ajout d’un membre de famille (A valider)
+Le formulaire est conçu en plusieurs étapes pour préserver l’ergonomie sur mobile et fiabiliser la saisie.
+8.3.1 Étape 1 État civil du membre
+Nom, prénom(s) obligatoires.
+Sexe (Masculin / Féminin) obligatoire.
+Date de naissance obligatoire (format jj/mm/aaaa, avec sélecteur).
+Lieu de naissance facultatif mais recommandé.
+Nationalité par défaut : burkinabè.
+8.3.2 Étape 2 Lien avec l’assuré
+Lien de parenté : Conjoint(e), Enfant, Parent, Autre (avec précision libre).
+Pour un conjoint : régime matrimonial, date de mariage, numéro CNIB du conjoint.
+Pour un enfant : nom du second parent, scolarité (non obligatoire).
+Mention explicite : la CAMA prend en charge les enfants du conjoint issus d’un précédent mariage, dès lors que les pièces le justifient. ( A valider ou discuter)
+8.3.3 Étape 3 Identifiants administratifs
+Numéro CAMA du membre (le cas échéant).
+Numéro d’identifiant informatique unique (IIU), à confirmer en phase de cadrage.
+Numéro CNIB du membre (si âge ≥ 15 ans).
+8.3.4 Étape 4 Pièces justificatives
+Pour chaque membre, l’assuré téléverse les pièces requises selon le lien de parenté.
+Lien de parenté
+Pièces justificatives requises
+Conjoint(e)
+Acte de mariage ; copie CNIB du conjoint ; éventuel acte de divorce du précédent conjoint.
+Enfant biologique
+Acte de naissance ; copie CNIB du parent ; le cas échéant, certificat médical de scolarité.
+Enfant du conjoint (issu d’un précédent mariage)
+Acte de naissance ; acte de mariage avec le parent ; éventuelle pièce justifiant la garde.
+Parent
+Acte de naissance de l’assuré ; copie CNIB du parent.
+Autre cas
+Pièces définies par la CAMA en phase de cadrage.
+Formats autorisés : PDF, JPEG, PNG. Taille maximale par fichier : 5 Mo. Volume total par dossier : 25 Mo.
+Antivirus de fichiers à l’upload, contrôle MIME réel (pas seulement à l’extension), renommage serveur, stockage chiffré.
+8.3.5 Étape 5 Récapitulatif et soumission
+Affichage récapitulatif complet et lisible avant soumission.
+Case à cocher obligatoire : déclaration sur l’honneur d’exactitude des informations.
+Case à cocher obligatoire : consentement explicite au traitement des données et à la conservation des pièces.
+Attribution d’un numéro de dossier unique, communiqué à l’écran et par e-mail.
+8.4 Gestion du cycle de vie d’un dossier (côté assuré)
+Visualisation du statut : Brouillon, Soumis, En instruction, Pièce manquante demandée, Validé, Refusé.
+Modification d’un membre tant que le dossier n’est pas soumis ou si une pièce est demandée.
+Suppression d’un membre par l’assuré : autorisée tant que le dossier n’est pas validé ; au-delà, la suppression devient une demande de retrait soumise au gestionnaire.
+Téléchargement d’un accusé de soumission (PDF) avec horodatage et hash technique.
+8.5 Historique des actions
+L’assuré dispose d’un journal personnel listant : création de compte, ajout / modification / suppression d’un membre, soumission, demande de complément, validation, refus.
+Chaque entrée porte un horodatage et un libellé clair.
+L’historique est non modifiable par l’assuré.
+8.6 Notifications utilisateur
+Confirmation de création de compte.
+Validation administrative du compte assuré.
+Soumission d’un dossier membre.
+Demande de pièce complémentaire (avec lien direct vers le dossier).
+Validation / refus motivé du dossier.
+Alerte sécurité : nouvelle connexion depuis un appareil inhabituel, modification de mot de passe.
+9. Spécifications fonctionnelles Back-office d’administration
+9.1 Authentification et sécurité d’accès
+Connexion par identifiant CAMA et mot de passe complexe.
+Politique de session courte (15 minutes d’inactivité) avec déconnexion automatique.
+9.2 Gestion des comptes utilisateurs
+Liste des assurés inscrits, avec recherche, filtres et export.
+Détail d’un assuré : informations, membres de famille, journal des actions.
+Activation / désactivation d’un compte assuré ; motif obligatoire.
+Gestion des comptes internes (création, modification, désactivation, attribution de rôle).
+9.3 Traitement des dossiers d’enrôlement
+Liste paginée et triable de tous les dossiers, filtrable par statut, période, gestionnaire affecté, type de lien.
+Affectation d’un dossier à un gestionnaire (manuelle ou automatique selon règle paramétrable).
+Consultation de la fiche dossier : récapitulatif structuré, pièces, journal, fil de discussion avec l’assuré.
+Actions disponibles : Valider, Refuser (motif obligatoire), Demander un complément (liste de pièces à demander), Mettre en attente.
+Validation à deux niveaux paramétrable (gestionnaire puis superviseur) selon profil de dossier.
+9.4 Gestion des pièces justificatives
+Téléchargement d’une pièce avec marquage de consultation tracé.
+Suppression d’une pièce (avec motif obligatoire, traçable).
+Demande d’une nouvelle version d’une pièce (notifie automatiquement l’assuré).
+Visualisation directe (PDF/image) dans le navigateur, sans téléchargement obligatoire.
+9.5 Export des données
+Export Excel (.xlsx) et CSV des membres enrôlés et des dossiers, avec filtres appliqués.
+Export PDF d’une fiche de dossier (pour archivage papier).
+Export du journal d’audit sur une période.
+Tous les exports sont tracés (qui a exporté, quoi, quand).
+9.6 Notifications administratives
+Notification e-mail vers les gestionnaires lors d’une nouvelle soumission.
+Notification e-mail vers l’assuré pour validation, refus motivé, demande de pièce.
+Centre de notifications internes dans le back-office (cloche).
+9.7 Tableaux de bord et statistiques
+Indicateur
+Description
+Nombre d’assurés inscrits
+Total et évolution mensuelle.
+Nombre de membres enrôlés
+Par statut (en attente, validé, refusé), par lien de parenté, par période.
+Délai moyen de traitement
+Du jour de soumission au jour de validation.
+Taux de validation
+Pourcentage de dossiers validés / total des dossiers soumis.
+Taux de retour pour complément
+Pourcentage de dossiers nécessitant une demande de pièce.
+Charge par gestionnaire
+Nombre de dossiers ouverts, traités, en retard, par utilisateur interne.
+Volumétrie de stockage
+Volume de pièces justificatives stockées, projection mensuelle.
+9.8 Paramétrage
+Gestion des liens de parenté et des pièces requises associées.
+Gestion des durées de rétention (par défaut 5 ans pour les pièces, paramétrable).
+Gestion des libellés (motifs de refus pré-définis, modèles de message d’e-mail).
+Gestion des règles d’affectation automatique aux gestionnaires.
+9.9 Journalisation et audit
+Toute action significative (connexion, validation, refus, suppression, export, modification de paramètre) est tracée.
+Le journal d’audit est consultable et exportable par les profils Superviseur et Administrateur.
+Le journal est en lecture seule : aucune modification a posteriori possible.
+10. Spécifications techniques et architecture
+10.1 Architecture cible
+La solution sera développée sur une architecture monolithique Laravel 12, dans laquelle Vue.js 3 assure le rendu interactif des interfaces utilisateurs. Cette approche, dite « monolithique moderne », offre la simplicité opérationnelle d'une application unique tout en conservant la richesse fonctionnelle d'une interface réactive.
+Framework applicatif : Laravel 12 (PHP 8.3 minimum), couvrant les couches routing, contrôleurs, services métiers, accès aux données et authentification.
+Couche de présentation : Vue.js 3 (Composition API), intégré au sein de Laravel via Inertia.js. Cette intégration évite la mise en place d'une API REST séparée tout en offrant l'expérience d'une Single Page Application.
+Build front-end : Vite (intégré nativement à Laravel 12) pour le bundling, le Hot Module Replacement en développement et l'optimisation en production.
+Styling : Tailwind CSS pour la cohérence du design system et la performance des feuilles de style.
+Base de données : MySQL 8.x ou PostgreSQL 15+ (PostgreSQL recommandé pour ses fonctionnalités d'audit avancées et le typage JSON natif).
+ORM : Eloquent (natif Laravel), avec respect strict des conventions PSR et utilisation des migrations versionnées.
+Cache et files d'attente : Redis (drivers Laravel natifs pour le cache applicatif, les sessions et les queues asynchrones).
+Stockage des pièces : Laravel Filesystem avec driver S3-compatible (chiffrement au repos) ou volume disque chiffré, accès par URLs signées à durée limitée.
+Reverse-proxy : Nginx + PHP-FPM, terminaison TLS, en-têtes de sécurité HTTP (HSTS, CSP, X-Frame-Options, X-Content-Type-Options).
+Mail transactionnel : Laravel Mail et Laravel Notifications via SMTP authentifié, avec SPF/DKIM/DMARC configurés sur le domaine de la CAMA.
+
+10.2 Schéma de données modèle logique simplifié
+L'architecture monolithique Laravel + Inertia permet de s'appuyer sur le mécanisme de sessions natif de Laravel, plus sûr et plus simple à exploiter qu'une authentification par jeton dans ce contexte.
+Briques retenues : Laravel Fortify (logique d'authentification) couplé à Laravel Sanctum en mode SPA same-domain pour la protection des routes d'application.
+Sessions : cookies HttpOnly, Secure (HTTPS uniquement), attribut SameSite=Lax ou Strict selon les cas.
+Protection CSRF : token CSRF natif Laravel injecté automatiquement dans les requêtes Inertia/Axios.
+Hachage des mots de passe : bcrypt (coût ≥ 12) ou argon2id via le driver de hash configurable de Laravel.
+Réinitialisation de mot de passe : workflow Laravel natif avec liens à usage unique et expiration courte (60 minutes).
+Authentification à deux facteurs (2FA) : prise en charge via Fortify (TOTP / e-mail), activable depuis le profil utilisateur.
+Limitation de débit (rate limiting) : middleware throttle de Laravel sur les endpoints sensibles (login, reset, upload).
+10.3 Intégrations attendues
+Service e-mail transactionnel (configuré au domaine CAMA).
+Service de stockage des pièces (chiffrement au repos).
+API publique en lecture seule (versionnée) pour intégration future avec l’application mobile CAMA et avec le SI métier.
+10.4 Outillage et qualité logicielle
+Gestion de versions par Git, dépôt remis à la MOA (GitHub privé recommandé).
+Conventions de code documentées et respectées.
+Code commenté et documentation technique livrée (architecture, modèle de données, API).
+11. Exigences de sécurité
+11.1 Sécurité applicative
+HTTPS obligatoire (TLS 1.2 minimum, idéalement 1.3) sur toutes les pages, redirection HTTP → HTTPS forcée.
+Hachage des mots de passe via bcrypt (coût ≥ 12) ou argon2id.
+Protection CSRF active sur tous les formulaires et endpoints d’écriture.
+Protection XSS par échappement systématique côté serveur et en-tête Content-Security-Policy strict.
+Protection contre l’injection SQL : exclusivement requêtes paramétrées / ORM.
+Validation des fichiers téléversés : type MIME réel, extension, taille, scan antivirus.
+Renommage et stockage hors webroot des pièces ; accès par URL signée à durée limitée.
+Limite de taux (rate-limiting) sur les endpoints sensibles (login, reset, upload).
+Protection contre le brute force : verrouillage temporaire après N tentatives, captcha de niveau accessible.
+Conformité OWASP Top 10 vérifiée à la recette.
+
+12. Exigences UX/UI et charte graphique
+12.1 Identité visuelle officielle de la CAMA
+Le logo officiel de la CAMA constitue la référence graphique fondatrice de l'institution. Ce logo, déjà déployé sur l'ensemble des supports de communication de la Caisse, porte trois éléments symboliques structurants :
+Une silhouette protectrice rouge entourant un bénéficiaire (l'enfant, la famille) incarne la mission première de la CAMA : protéger les militaires et leur famille.
+Une étoile verte à cinq branches ancrage national burkinabè, en écho direct au drapeau.
+Un médaillon circulaire jaune/or bordé de rouge signature institutionnelle et marque d'autorité.
+Un bandeau anthracite portant le sigle "CAMA" pivot d'identification immédiate.
+Toute la charte digitale doit dériver de cette identité, sans réinterprétation libre.
+12.2 Palette de couleurs institutionnelle
+La palette web découle directement du logo et reprend les codes du drapeau du Burkina Faso :
+Rôle
+Couleur
+Code hexadécimal indicatif
+Usage
+Primaire
+Rouge CAMA
+#C8102E
+Couleur d'autorité en-têtes, boutons d'action principale, accents institutionnels.
+Secondaire
+Vert burkinabè
+#009739
+Marqueur national états de validation, succès, ancrage patriotique.
+Accent
+Or institutionnel
+#F2C200
+Signature, mise en valeur, distinctions (à utiliser avec parcimonie).
+Neutre foncé
+Anthracite
+#2F2F2F
+Texte principal, en-tête éditorial, rappel du bandeau "CAMA".
+Neutre clair
+Blanc cassé
+#F8F8F6
+Fond de respiration, zones de contenu.
+Texte secondaire
+Gris moyen
+#6B6B6B
+Légendes, métadonnées, libellés secondaires.
+
+14. Conformité réglementaire et protection des données
+14.1 Cadre applicable
+La solution traite des données à caractère personnel relatives à des militaires et à leur famille, ce qui appelle un niveau d’exigence renforcé. Le prestataire mettra en œuvre les principes de protection des données reconnus, dont :
+Licéité, loyauté et transparence du traitement.
+Limitation des finalités au seul enrôlement et à la gestion administrative associée.
+Minimisation des données : ne pas collecter au-delà de ce qui est requis.
+Exactitude et mise à jour.
+Intégrité et confidentialité (sécurité technique et organisationnelle).
+Responsabilité : documentation, registres.
+14.2 Droits des personnes
+Information préalable lors de la collecte (politique de confidentialité accessible et claire).
+Droit d’accès : possibilité pour l’assuré d’exporter ses données et celles de ses ayants droit.
+Droit de rectification : modification des données erronées.
+Droit d’effacement : suppression sur demande, sous réserve des obligations légales de conservation.
+Droit d’opposition et de limitation, selon les cas applicables.
+Procédure interne documentée de prise en charge des demandes d’exercice de droits.
+14.3 Mesures techniques de conformité
+Bandeau cookies conforme (information, choix granulaire, refus aussi simple que l’acceptation).
+Journal des accès aux données personnelles dans le back-office.
+15. Hébergement, infrastructure et exploitation
+15.1 Recommandation d’hébergement
+Compte tenu de la sensibilité des données militaires, il est recommandé que la solution soit hébergée :
+Soit sur un serveur dédié situé dans un centre de données qualifié, sur le territoire national si possible (ANPTIC, Cloud souverain national).
+Soit chez un hébergeur reconnu (OVH, AWS, ou équivalent disposant d’une présence en Afrique de l’Ouest) avec contractualisation explicite sur la localisation des données.
+16. Planning prévisionnel et jalons
+16.1 Phases de réalisation
+Phase
+Durée
+Livrables clés
+Cadrage et recueil détaillé
+1 semaine
+Compte-rendu d’ateliers, liste arrêtée des champs et pièces, validation MOA.
+Conception (maquettes + spécifications)
+2 semaines
+Wireframes, maquettes HD, spécifications, modèle de données.
+Développement (site + plateforme)
+3 semaines
+Code de l’ensemble des modules, déployé en pré-production.
+Tests et recette interne
+1 semaine
+Rapport de tests, tickets d’anomalie.
+Corrections et validation MOA
+1 semaine
+Anomalies corrigées, PV de recette préliminaire.
+Formation et livraison finale
+1 semaine
+Formation effectuée, manuels remis, mise en production.
+TOTAL
+9 semaines
+Solution en production et garantie démarrée.
+17. Interrogations ou élément à fournir17.1 Documents à fournir par la CAMA au prestataire (rappel)
+Logos officiels en haute définition et déclinaisons (couleur, monochrome, fond noir / blanc).
+Exemples de formulaires papier existants et liste des pièces justificatives par cas.
+Politique de confidentialité de référence ou éléments pour sa rédaction.
+Détail des champs obligatoires et facultatifs pour l’enrôlement.
+Liste des structures partenaires à cartographier le cas échéant.
+Désignation du référent unique côté CAMA.
+

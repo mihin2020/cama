@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ajouter un membre | Espace Assuré CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#c8102e",
+                    "on-background": "#1b1c1c",
+                    "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#ffb3b1",
+                    "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f",
+                    "on-primary-fixed-variant": "#92001c",
+                    "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded",
+                    "secondary-container": "#7ff98d",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#65df76",
+                    "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90",
+                    "on-tertiary-fixed": "#241a00",
+                    "tertiary": "#745b00",
+                    "inverse-surface": "#303030",
+                    "surface-bright": "#fbf9f8",
+                    "surface": "#fbf9f8",
+                    "secondary": "#006e27",
+                    "on-tertiary-container": "#4f3d00",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329",
+                    "surface-dim": "#dcd9d9",
+                    "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f",
+                    "outline": "#906f6e",
+                    "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb",
+                    "background": "#fbf9f8",
+                    "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1",
+                    "surface-container-highest": "#e4e2e1",
+                    "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600",
+                    "on-primary": "#ffffff",
+                    "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#eae7e7",
+                    "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0",
+                    "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "stack-md": "16px",
+                    "container-max-width": "1200px",
+                    "gutter": "24px",
+                    "stack-sm": "8px",
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "stack-lg": "32px",
+                    "margin-desktop": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Montserrat"],
+                    "title-lg": ["Inter"],
+                    "headline-lg": ["Montserrat"],
+                    "body-md": ["Inter"],
+                    "display-lg": ["Montserrat"],
+                    "caption": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Montserrat"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["22px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}],
+                    "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}],
+                    "display-lg": ["44px", {"lineHeight": "52px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "26px", "fontWeight": "400"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<link href="assure-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .wizard-step { display: none; }
+        .wizard-step.is-active { display: block; }
+        .field-error { border-color: #ba1a1a !important; }
+        .field-error-msg { color: #ba1a1a; font-size: 12px; margin-top: 4px; display: none; }
+        .field-error-msg.show { display: block; }
+        .hidden-block { display: none; }
+        .toggle-btn { transition: all 0.15s; }
+        .toggle-btn.selected { background-color: #9e001f; color: white; border-color: #9e001f; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-6" href="../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Espace Assuré</span></span>
+</a>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="dashboard.html">
+<span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="mes-membres.html">
+<span class="material-symbols-outlined text-[20px]">group</span> Ma famille
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="historique.html">
+<span class="material-symbols-outlined text-[20px]">history</span> Historique
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="notifications.html">
+<span class="material-symbols-outlined text-[20px]">notifications</span> Notifications
+<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center" id="sidebar-unread-badge">2</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="profil.html">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span> Mon profil
+</a>
+</nav>
+<a class="flex items-center justify-center gap-2 bg-primary text-on-primary px-4 py-2.5 rounded-lg font-bold font-label-md text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm mb-2 mx-1" href="ajouter-membre.html">
+<span class="material-symbols-outlined text-[20px]">add_circle</span> Ajouter un membre
+</a>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
+<span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
+</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div>
+<h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Ajouter un membre de famille</h1>
+<p class="text-xs text-on-surface-variant hidden sm:block">Formulaire d'enrôlement en 5 étapes</p>
+</div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
+<div class="hidden md:block text-left">
+<p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p>
+<p class="text-caption text-on-surface-variant leading-tight" id="topbar-matricule">—</p>
+</div>
+</a>
+</header>
+<main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[900px] w-full mx-auto">
+<!-- Stepper -->
+<div class="relative mb-6 md:mb-8" id="wizard-wrapper">
+<div class="hidden md:block absolute top-4 left-[10%] right-[10%] h-0.5 bg-outline-variant -z-0"></div>
+<div class="grid grid-cols-5 gap-1 relative">
+<div class="step-indicator flex flex-col items-center" data-step="1">
+<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-primary text-on-primary">1</div>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">État civil</span>
+</div>
+<div class="step-indicator flex flex-col items-center" data-step="2">
+<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">2</div>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Lien de parenté</span>
+</div>
+<div class="step-indicator flex flex-col items-center" data-step="3">
+<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">3</div>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Identifiants</span>
+</div>
+<div class="step-indicator flex flex-col items-center" data-step="4">
+<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">4</div>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Pièces</span>
+</div>
+<div class="step-indicator flex flex-col items-center" data-step="5">
+<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">5</div>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Récapitulatif</span>
+</div>
+</div>
+</div>
+<!-- Form card -->
+<div class="bg-white rounded-xl border border-outline-variant p-4 md:p-6 wizard-form" id="wizard-card">
+<!-- Étape 1 -->
+<div class="wizard-step is-active" data-step="1">
+<h2 class="text-base font-semibold text-on-surface mb-1">État civil du membre</h2>
+<p class="text-on-surface-variant text-xs mb-5">Informations de base concernant le membre à enrôler.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Nom *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none uppercase" data-field="nom" id="field-nom" placeholder="EX: TRAORÉ" type="text"/>
+<p class="field-error-msg">Le nom est obligatoire.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Prénom(s) *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="prenom" type="text"/>
+<p class="field-error-msg">Le(s) prénom(s) sont obligatoires.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Sexe *</label>
+<div class="flex gap-3">
+<button class="toggle-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-sexe="Masculin" type="button">Masculin</button>
+<button class="toggle-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-sexe="Féminin" type="button">Féminin</button>
+</div>
+<p class="field-error-msg" id="sexe-error">Veuillez sélectionner le sexe.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Date de naissance *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="dateNaissance" type="date"/>
+<p class="field-error-msg">La date de naissance est obligatoire.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Lieu de naissance</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="lieuNaissance" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Nationalité</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="nationalite" type="text" value="Burkinabè"/>
+</div>
+</div>
+</div>
+<!-- Étape 2 -->
+<div class="wizard-step" data-step="2">
+<h2 class="text-base font-semibold text-on-surface mb-1">Lien avec l'assuré</h2>
+<p class="text-on-surface-variant text-xs mb-5">Précisez le lien de parenté qui vous unit à ce membre.</p>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-5">
+<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Conjoint(e)" type="button">
+<span class="material-symbols-outlined text-[20px]">favorite</span> Conjoint(e)
+</button>
+<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Enfant" type="button">
+<span class="material-symbols-outlined text-[20px]">child_care</span> Enfant
+</button>
+<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Parent" type="button">
+<span class="material-symbols-outlined text-[20px]">elderly</span> Parent
+</button>
+<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Autre" type="button">
+<span class="material-symbols-outlined text-[20px]">diversity_1</span> Autre
+</button>
+</div>
+<p class="field-error-msg" id="lien-error">Veuillez sélectionner un lien de parenté.</p>
+<!-- Conjoint block -->
+<div class="hidden-block grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-outline-variant" id="block-conjoint">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Régime matrimonial *</label>
+<select class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" data-field="regimeMatrimonial">
+<option value="">Sélectionner…</option>
+<option>Monogamie</option>
+<option>Polygamie</option>
+<option>Séparation de biens</option>
+</select>
+<p class="field-error-msg">Champ obligatoire.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Date de mariage *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="dateMariage" type="date"/>
+<p class="field-error-msg">Champ obligatoire.</p>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Numéro CNIB du conjoint *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="cnibConjoint" type="text"/>
+<p class="field-error-msg">Champ obligatoire.</p>
+</div>
+</div>
+<!-- Enfant block -->
+<div class="hidden-block pt-4 border-t border-outline-variant" id="block-enfant">
+<div class="space-y-1.5 mb-4">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Cet enfant est-il issu d'un précédent mariage de votre conjoint(e) ? *</label>
+<div class="flex gap-3">
+<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant biologique" type="button">Non, enfant biologique</button>
+<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant du conjoint" type="button">Oui, enfant du conjoint</button>
+</div>
+<p class="field-error-msg" id="enfant-type-error">Veuillez préciser.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Nom du second parent *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="nomSecondParent" type="text"/>
+<p class="field-error-msg">Champ obligatoire.</p>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Scolarité</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="scolarite" placeholder="Optionnel" type="text"/>
+</div>
+</div>
+<div class="mt-4 bg-tertiary/10 border border-tertiary/30 rounded-lg p-3.5 flex gap-2.5">
+<span class="material-symbols-outlined text-tertiary text-[20px] shrink-0">info</span>
+<p class="text-xs text-on-surface-variant leading-relaxed">La CAMA prend en charge les enfants du conjoint issus d'un précédent mariage, dès lors que les pièces le justifient.</p>
+</div>
+</div>
+<!-- Autre block -->
+<div class="hidden-block pt-4 border-t border-outline-variant" id="block-autre">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Précisez le lien de parenté *</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="precisionAutre" placeholder="Ex: neveu, nièce à charge…" type="text"/>
+<p class="field-error-msg">Champ obligatoire.</p>
+</div>
+</div>
+</div>
+<!-- Étape 3 -->
+<div class="wizard-step" data-step="3">
+<h2 class="text-base font-semibold text-on-surface mb-1">Identifiants administratifs</h2>
+<p class="text-on-surface-variant text-xs mb-5">Numéros d'identification du membre, le cas échéant.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Numéro CAMA du membre</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="numeroCamaMembre" placeholder="Si déjà attribué" type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Numéro IIU</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="numeroIIU" type="text"/>
+<p class="text-xs text-on-surface-variant">Identifiant informatique unique, à confirmer.</p>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="text-sm font-medium text-on-surface-variant ml-1" id="cnib-label">Numéro CNIB du membre</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="cnibMembre" type="text"/>
+<p class="text-xs text-on-surface-variant" id="cnib-hint">Calculé automatiquement selon l'âge renseigné à l'étape 1.</p>
+<p class="field-error-msg">La CNIB est obligatoire à partir de 15 ans.</p>
+</div>
+</div>
+</div>
+<!-- Étape 4 -->
+<div class="wizard-step" data-step="4">
+<h2 class="text-base font-semibold text-on-surface mb-1">Pièces justificatives</h2>
+<p class="text-on-surface-variant text-xs mb-2">Formats acceptés : PDF, JPEG, PNG5 Mo max par fichier, 25 Mo max au total.</p>
+<div class="flex items-center gap-2 mb-5">
+<div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary transition-all" id="upload-total-bar" style="width:0%"></div>
+</div>
+<span class="text-xs text-on-surface-variant whitespace-nowrap" id="upload-total-label">0 / 25 Mo</span>
+</div>
+<div id="pieces-list" class="space-y-4"></div>
+</div>
+<!-- Étape 5 -->
+<div class="wizard-step" data-step="5">
+<h2 class="text-base font-semibold text-on-surface mb-1">Récapitulatif et soumission</h2>
+<p class="text-on-surface-variant text-xs mb-5">Vérifiez les informations avant de soumettre le dossier.</p>
+<div id="recap-content" class="space-y-3 mb-5"></div>
+<div class="space-y-2.5 bg-surface-container-low rounded-lg p-4">
+<label class="flex items-start gap-2.5 cursor-pointer">
+<input class="w-4 h-4 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer" id="chk-honneur" type="checkbox"/>
+<span class="text-xs text-on-surface-variant leading-relaxed">Je déclare sur l'honneur que les informations fournies sont exactes et complètes.</span>
+</label>
+<label class="flex items-start gap-2.5 cursor-pointer">
+<input class="w-4 h-4 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer" id="chk-consentement" type="checkbox"/>
+<span class="text-xs text-on-surface-variant leading-relaxed">Je consens au traitement de mes données et à la conservation des pièces justificatives conformément à la politique de confidentialité de la CAMA.</span>
+</label>
+</div>
+</div>
+<!-- Navigation -->
+<div class="flex justify-between items-center mt-6 pt-5 border-t border-outline-variant gap-3" id="wizard-nav">
+<div class="flex items-center gap-2">
+<button class="hidden sm:flex px-4 py-2.5 rounded-lg border border-outline-variant text-on-surface-variant text-sm font-semibold hover:bg-surface-container-low transition-colors items-center gap-1.5" id="btn-draft" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span> Enregistrer brouillon
+</button>
+<button class="hidden sm:flex px-4 py-2.5 rounded-lg text-error text-sm font-semibold hover:bg-error/5 transition-colors items-center gap-1.5" id="btn-cancel" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span> Annuler
+</button>
+<button class="px-4 py-2.5 rounded-lg border border-outline text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-colors flex items-center gap-1.5" id="btn-prev" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span> Précédent
+</button>
+</div>
+<button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5 ml-auto" id="btn-next" type="button">
+                    Suivant <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<button class="px-5 py-2.5 rounded-lg bg-secondary text-on-secondary text-sm font-semibold hover:opacity-90 active:scale-95 transition-all flex items-center gap-1.5 ml-auto disabled:opacity-40 disabled:cursor-not-allowed" disabled="" id="btn-submit" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span> Soumettre le dossier
+                </button>
+</div>
+</div>
+<!-- Success panel -->
+<div class="hidden bg-white rounded-xl border border-secondary p-6 md:p-8 text-center" id="success-panel">
+<span class="material-symbols-outlined text-secondary text-5xl mb-3">check_circle</span>
+<h2 class="text-lg font-bold text-on-surface mb-2">Dossier soumis avec succès</h2>
+<p class="text-sm text-on-surface-variant mb-1">Votre numéro de dossier :</p>
+<p class="text-xl font-bold text-primary mb-3" id="success-ref">—</p>
+<p class="text-sm text-on-surface-variant max-w-md mx-auto mb-6 leading-relaxed">Vous recevrez un e-mail de confirmation. Le service gestionnaire instruira votre dossier et vous serez notifié à chaque changement de statut.</p>
+<div class="flex flex-col sm:flex-row gap-2.5 justify-center">
+<a class="px-5 py-2.5 rounded-lg bg-primary text-on-primary text-sm font-semibold hover:opacity-90 transition-all" href="dashboard.html">Retour au tableau de bord</a>
+<button class="px-5 py-2.5 rounded-lg border border-outline text-on-surface text-sm font-semibold hover:bg-surface-container-low transition-colors" onclick="window.location.reload()">Ajouter un autre membre</button>
+</div>
+</div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
+            © 2026 CAMACaisse d'Assurance Maladie des Armées. Tous droits réservés.
+        </footer>
+</div>
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="dashboard.html">
+<span class="material-symbols-outlined text-[22px]">dashboard</span>
+<span class="text-[10px] font-label-md">Accueil</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="mes-membres.html">
+<span class="material-symbols-outlined text-[22px]">group</span>
+<span class="text-[10px] font-label-md">Famille</span>
+</a>
+<a class="flex flex-col items-center justify-center -mt-7" href="ajouter-membre.html">
+<span class="w-13 h-13 w-[52px] h-[52px] rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-4 border-surface-container-low">
+<span class="material-symbols-outlined">add</span>
+</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="historique.html">
+<span class="material-symbols-outlined text-[22px]">history</span>
+<span class="text-[10px] font-label-md">Historique</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html">
+<span class="material-symbols-outlined text-[22px]">person</span>
+<span class="text-[10px] font-label-md">Profil</span>
+</a>
+</nav>
+<script src="assure-data.js"></script>
+<script src="assure-shell.js"></script>
+<script>
+        const MOCK_ASSURE = CamaAssureData.getAssureProfile();
+
+        // ---- Wizard state ----
+        let currentStep = 1;
+        const TOTAL_STEPS = 5;
+        const wizardState = {
+            nom: '', prenom: '', sexe: '', dateNaissance: '', lieuNaissance: '', nationalite: 'Burkinabè',
+            lien: '', enfantType: '', regimeMatrimonial: '', dateMariage: '', cnibConjoint: '',
+            nomSecondParent: '', scolarite: '', precisionAutre: '',
+            numeroCamaMembre: '', numeroIIU: '', cnibMembre: '',
+            pieces: {}
+        };
+
+        const PIECES_MATRIX = {
+            "Conjoint(e)": [
+                { key: "acte_mariage", label: "Acte de mariage", required: true },
+                { key: "cnib_conjoint", label: "Copie CNIB du conjoint", required: true },
+                { key: "acte_divorce", label: "Acte de divorce du précédent conjoint", required: false }
+            ],
+            "Enfant biologique": [
+                { key: "acte_naissance", label: "Acte de naissance", required: true },
+                { key: "cnib_parent", label: "Copie CNIB du parent", required: true },
+                { key: "certificat_scolarite", label: "Certificat médical de scolarité", required: false }
+            ],
+            "Enfant du conjoint": [
+                { key: "acte_naissance_enfant", label: "Acte de naissance", required: true },
+                { key: "acte_mariage_parent", label: "Acte de mariage avec le parent", required: true },
+                { key: "piece_garde", label: "Pièce justifiant la garde", required: false }
+            ],
+            "Parent": [
+                { key: "acte_naissance_assure", label: "Acte de naissance de l'assuré", required: true },
+                { key: "cnib_parent_p", label: "Copie CNIB du parent", required: true }
+            ],
+            "Autre": [
+                { key: "piece_autre", label: "Pièces définies par la CAMA en phase de cadrage", required: false }
+            ]
+        };
+
+        function pieceMatrixKey() {
+            if (wizardState.lien === 'Enfant') return wizardState.enfantType || 'Enfant biologique';
+            return wizardState.lien;
+        }
+
+        // ---- Field bindings ----
+        document.querySelectorAll('[data-field]').forEach(input => {
+            input.addEventListener('input', () => { wizardState[input.dataset.field] = input.value; });
+            input.addEventListener('change', () => { wizardState[input.dataset.field] = input.value; });
+        });
+
+        // Auto-uppercase the Nom field (visual + stored value)
+        document.getElementById('field-nom').addEventListener('input', (e) => {
+            e.target.value = e.target.value.toUpperCase();
+            wizardState.nom = e.target.value;
+        });
+
+        // Cancel enrollment
+        document.getElementById('btn-cancel').addEventListener('click', () => {
+            if (confirm("Voulez-vous vraiment annuler cet enrôlement ? Les informations saisies seront perdues.")) {
+                window.location.href = 'dashboard.html';
+            }
+        });
+
+        document.getElementById('btn-draft').addEventListener('click', () => {
+            const result = CamaAssureData.saveDraftDossier(wizardState);
+            if (result.error) {
+                showToast(`<span class="material-symbols-outlined">error</span> ${result.error}`);
+                return;
+            }
+            wizardState.draftId = result.draftId;
+            showToast(`<span class="material-symbols-outlined">save</span> Brouillon enregistré (réf. ${result.dossier.ref}).`);
+        });
+
+        document.querySelectorAll('[data-sexe]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('[data-sexe]').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                wizardState.sexe = btn.dataset.sexe;
+            });
+        });
+
+        document.querySelectorAll('.lien-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.lien-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                wizardState.lien = btn.dataset.lien;
+                document.getElementById('block-conjoint').classList.toggle('hidden-block', wizardState.lien !== 'Conjoint(e)');
+                document.getElementById('block-enfant').classList.toggle('hidden-block', wizardState.lien !== 'Enfant');
+                document.getElementById('block-autre').classList.toggle('hidden-block', wizardState.lien !== 'Autre');
+            });
+        });
+
+        document.querySelectorAll('.enfant-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.enfant-type-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                wizardState.enfantType = btn.dataset.enfantType;
+            });
+        });
+
+        // ---- Step navigation ----
+        function showStep(n) {
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.toggle('is-active', Number(s.dataset.step) === n));
+            document.querySelectorAll('.step-indicator').forEach(ind => {
+                const step = Number(ind.dataset.step);
+                const circle = ind.querySelector('.step-circle');
+                circle.classList.remove('bg-primary', 'text-on-primary', 'bg-secondary', 'text-on-secondary', 'bg-surface-container-high', 'text-on-surface-variant');
+                if (step === n) { circle.classList.add('bg-primary', 'text-on-primary'); circle.innerHTML = step; }
+                else if (step < n) { circle.classList.add('bg-secondary', 'text-on-secondary'); circle.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span>'; }
+                else { circle.classList.add('bg-surface-container-high', 'text-on-surface-variant'); circle.innerHTML = step; }
+            });
+            document.getElementById('btn-prev').style.visibility = n === 1 ? 'hidden' : 'visible';
+            document.getElementById('btn-next').classList.toggle('hidden', n === TOTAL_STEPS);
+            document.getElementById('btn-submit').classList.toggle('hidden', n !== TOTAL_STEPS);
+            if (n === 3) applyAgeRule();
+            if (n === 4) renderPiecesStep();
+            if (n === 5) renderRecap();
+            window.scrollTo({ top: document.getElementById('wizard-card').offsetTop - 90, behavior: 'smooth' });
+        }
+
+        function clearErrors(stepEl) {
+            stepEl.querySelectorAll('.field-error').forEach(el => el.classList.remove('field-error'));
+            stepEl.querySelectorAll('.field-error-msg').forEach(el => el.classList.remove('show'));
+        }
+
+        function showFieldError(input) {
+            input.classList.add('field-error');
+            const msg = input.parentElement.querySelector('.field-error-msg');
+            if (msg) msg.classList.add('show');
+        }
+
+        function computeAge() {
+            if (!wizardState.dateNaissance) return null;
+            const dob = new Date(wizardState.dateNaissance);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+            return age;
+        }
+
+        function applyAgeRule() {
+            const age = computeAge();
+            const hint = document.getElementById('cnib-hint');
+            const label = document.getElementById('cnib-label');
+            if (age !== null && age >= 15) {
+                label.textContent = 'Numéro CNIB du membre *';
+                hint.textContent = `Obligatoire à partir de 15 ans (âge calculé : ${age} ans).`;
+            } else if (age !== null) {
+                label.textContent = 'Numéro CNIB du membre';
+                hint.textContent = `Non requis avant 15 ans (âge calculé : ${age} ans).`;
+            } else {
+                label.textContent = 'Numéro CNIB du membre';
+                hint.textContent = 'Calculé automatiquement selon l\'âge renseigné à l\'étape 1.';
+            }
+        }
+
+        function validateStep(n) {
+            const stepEl = document.querySelector(`.wizard-step[data-step="${n}"]`);
+            clearErrors(stepEl);
+            let valid = true;
+
+            if (n === 1) {
+                ['nom', 'prenom', 'dateNaissance'].forEach(f => {
+                    const input = stepEl.querySelector(`[data-field="${f}"]`);
+                    if (!input.value.trim()) { showFieldError(input); valid = false; }
+                });
+                if (!wizardState.sexe) {
+                    document.getElementById('sexe-error').classList.add('show');
+                    valid = false;
+                } else {
+                    document.getElementById('sexe-error').classList.remove('show');
+                }
+            }
+
+            if (n === 2) {
+                if (!wizardState.lien) {
+                    document.getElementById('lien-error').classList.add('show');
+                    valid = false;
+                } else {
+                    document.getElementById('lien-error').classList.remove('show');
+                }
+                if (wizardState.lien === 'Conjoint(e)') {
+                    ['regimeMatrimonial', 'dateMariage', 'cnibConjoint'].forEach(f => {
+                        const input = stepEl.querySelector(`[data-field="${f}"]`);
+                        if (!input.value.trim()) { showFieldError(input); valid = false; }
+                    });
+                }
+                if (wizardState.lien === 'Enfant') {
+                    if (!wizardState.enfantType) {
+                        document.getElementById('enfant-type-error').classList.add('show');
+                        valid = false;
+                    } else {
+                        document.getElementById('enfant-type-error').classList.remove('show');
+                    }
+                    const input = stepEl.querySelector('[data-field="nomSecondParent"]');
+                    if (!input.value.trim()) { showFieldError(input); valid = false; }
+                }
+                if (wizardState.lien === 'Autre') {
+                    const input = stepEl.querySelector('[data-field="precisionAutre"]');
+                    if (!input.value.trim()) { showFieldError(input); valid = false; }
+                }
+            }
+
+            if (n === 3) {
+                const age = computeAge();
+                if (age !== null && age >= 15) {
+                    const input = stepEl.querySelector('[data-field="cnibMembre"]');
+                    if (!input.value.trim()) { showFieldError(input); valid = false; }
+                }
+            }
+
+            if (n === 4) {
+                const required = PIECES_MATRIX[pieceMatrixKey()].filter(p => p.required);
+                required.forEach(p => {
+                    if (!wizardState.pieces[p.key]) valid = false;
+                });
+                if (!valid) showToast('<span class="material-symbols-outlined">error</span> Veuillez téléverser toutes les pièces obligatoires.');
+            }
+
+            return valid;
+        }
+
+        document.getElementById('btn-next').addEventListener('click', () => {
+            if (!validateStep(currentStep)) return;
+            currentStep = Math.min(currentStep + 1, TOTAL_STEPS);
+            showStep(currentStep);
+        });
+        document.getElementById('btn-prev').addEventListener('click', () => {
+            currentStep = Math.max(currentStep - 1, 1);
+            showStep(currentStep);
+        });
+
+        // ---- Step 4: pieces upload ----
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        const MAX_TOTAL_SIZE = 25 * 1024 * 1024;
+        const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+
+        function totalUploadedSize() {
+            return Object.values(wizardState.pieces).reduce((sum, f) => sum + (f ? f.size : 0), 0);
+        }
+
+        function updateUploadTotal() {
+            const total = totalUploadedSize();
+            const pct = Math.min(100, (total / MAX_TOTAL_SIZE) * 100);
+            document.getElementById('upload-total-bar').style.width = pct + '%';
+            document.getElementById('upload-total-bar').classList.toggle('bg-error', total > MAX_TOTAL_SIZE);
+            document.getElementById('upload-total-label').textContent = `${(total / 1024 / 1024).toFixed(1)} / 25 Mo`;
+        }
+
+        function renderPiecesStep() {
+            const matrix = PIECES_MATRIX[pieceMatrixKey()];
+            const container = document.getElementById('pieces-list');
+            container.innerHTML = matrix.map(p => `
+                <div class="border border-outline-variant rounded-lg p-3.5" data-piece-row="${p.key}">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <p class="font-semibold text-sm flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[16px]">description</span>
+                            ${p.label} ${p.required ? '<span class="text-error">*</span>' : '<span class="text-xs text-on-surface-variant font-normal">(optionnel)</span>'}
+                        </p>
+                    </div>
+                    <div id="piece-preview-${p.key}"></div>
+                    <label class="dropzone flex flex-col items-center justify-center gap-1 border-2 border-dashed border-outline-variant rounded-lg py-5 px-3 text-center cursor-pointer hover:bg-surface-container-low hover:border-primary/40 transition-colors" data-dropzone="${p.key}">
+                        <span class="material-symbols-outlined text-on-surface-variant text-xl">cloud_upload</span>
+                        <span class="text-xs"><span class="text-primary font-semibold">Cliquez pour choisir</span> ou glissez-déposez</span>
+                        <span class="text-xs text-on-surface-variant">PDF, JPEG, PNG5 Mo max</span>
+                        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" data-piece-input="${p.key}"/>
+                    </label>
+                    <p class="text-error text-xs mt-1 hidden" id="piece-error-${p.key}"></p>
+                </div>
+            `).join('');
+
+            container.querySelectorAll('[data-piece-input]').forEach(input => {
+                input.addEventListener('change', (e) => handlePieceUpload(e.target));
+            });
+
+            container.querySelectorAll('[data-dropzone]').forEach(zone => {
+                const input = zone.querySelector('[data-piece-input]');
+                ['dragover', 'dragenter'].forEach(evt => zone.addEventListener(evt, (e) => {
+                    e.preventDefault();
+                    zone.classList.add('border-primary', 'bg-primary/5');
+                }));
+                ['dragleave', 'dragend'].forEach(evt => zone.addEventListener(evt, () => {
+                    zone.classList.remove('border-primary', 'bg-primary/5');
+                }));
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('border-primary', 'bg-primary/5');
+                    if (e.dataTransfer.files.length) {
+                        input.files = e.dataTransfer.files;
+                        handlePieceUpload(input);
+                    }
+                });
+            });
+
+            updateUploadTotal();
+        }
+
+        function handlePieceUpload(input) {
+            const key = input.dataset.pieceInput;
+            const errorEl = document.getElementById(`piece-error-${key}`);
+            errorEl.classList.add('hidden');
+            const file = input.files[0];
+            if (!file) return;
+
+            if (!ACCEPTED_TYPES.includes(file.type)) {
+                errorEl.textContent = 'Format non accepté. Utilisez PDF, JPEG ou PNG.';
+                errorEl.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+            if (file.size > MAX_FILE_SIZE) {
+                errorEl.textContent = 'Fichier trop volumineux (5 Mo maximum).';
+                errorEl.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+            const currentTotal = totalUploadedSize() - (wizardState.pieces[key] ? wizardState.pieces[key].size : 0);
+            if (currentTotal + file.size > MAX_TOTAL_SIZE) {
+                errorEl.textContent = 'Le volume total du dossier dépasserait 25 Mo.';
+                errorEl.classList.remove('hidden');
+                input.value = '';
+                return;
+            }
+
+            wizardState.pieces[key] = file;
+            renderPiecePreview(key);
+            updateUploadTotal();
+        }
+
+        function renderPiecePreview(key) {
+            const file = wizardState.pieces[key];
+            const el = document.getElementById(`piece-preview-${key}`);
+            if (!file) { el.innerHTML = ''; return; }
+            el.innerHTML = `
+                <div class="flex items-center justify-between bg-surface-container-low rounded-lg px-3 py-2 mb-2">
+                    <span class="text-sm flex items-center gap-2 truncate"><span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span> ${file.name} <span class="text-xs text-on-surface-variant">(${(file.size / 1024).toFixed(0)} Ko)</span></span>
+                    <button type="button" class="text-error" onclick="removePiece('${key}')"><span class="material-symbols-outlined text-[16px]">close</span></button>
+                </div>`;
+        }
+
+        function removePiece(key) {
+            delete wizardState.pieces[key];
+            renderPiecePreview(key);
+            updateUploadTotal();
+        }
+
+        // ---- Step 5: recap ----
+        function renderRecap() {
+            const age = computeAge();
+            const matrixKey = pieceMatrixKey();
+            const piecesEntries = PIECES_MATRIX[matrixKey].map(p => {
+                const file = wizardState.pieces[p.key];
+                return `<li class="flex items-center gap-2 text-xs">${file ? '<span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>' : '<span class="material-symbols-outlined text-outline text-[14px]">radio_button_unchecked</span>'} ${p.label}${file ? '' + file.name : ''}</li>`;
+            }).join('');
+
+            let lienExtra = '';
+            if (wizardState.lien === 'Conjoint(e)') {
+                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Régime : ${wizardState.regimeMatrimonial || '—'} · Mariage le ${wizardState.dateMariage || '—'} · CNIB conjoint : ${wizardState.cnibConjoint || '—'}</p>`;
+            } else if (wizardState.lien === 'Enfant') {
+                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Type : ${wizardState.enfantType || '—'} · Second parent : ${wizardState.nomSecondParent || '—'}${wizardState.scolarite ? ' · Scolarité : ' + wizardState.scolarite : ''}</p>`;
+            } else if (wizardState.lien === 'Autre') {
+                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Précision : ${wizardState.precisionAutre || '—'}</p>`;
+            }
+
+            document.getElementById('recap-content').innerHTML = `
+                <div class="bg-surface-container-low rounded-lg p-4">
+                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">badge</span> État civil</h3>
+                    <p class="font-semibold text-sm">${wizardState.prenom} ${wizardState.nom}</p>
+                    <p class="text-xs text-on-surface-variant mt-0.5">${wizardState.sexe || '—'} · né(e) le ${wizardState.dateNaissance || '—'}${wizardState.lieuNaissance ? ' à ' + wizardState.lieuNaissance : ''} · ${wizardState.nationalite}${age !== null ? ' · ' + age + ' ans' : ''}</p>
+                </div>
+                <div class="bg-surface-container-low rounded-lg p-4">
+                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">diversity_3</span> Lien de parenté</h3>
+                    <p class="font-semibold text-sm">${wizardState.lien || '—'}</p>
+                    ${lienExtra}
+                </div>
+                <div class="bg-surface-container-low rounded-lg p-4">
+                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">fingerprint</span> Identifiants</h3>
+                    <p class="text-xs text-on-surface-variant">Numéro CAMA : ${wizardState.numeroCamaMembre || '—'} · IIU : ${wizardState.numeroIIU || '—'} · CNIB : ${wizardState.cnibMembre || '—'}</p>
+                </div>
+                <div class="bg-surface-container-low rounded-lg p-4">
+                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">folder</span> Pièces justificatives</h3>
+                    <ul class="space-y-1">${piecesEntries}</ul>
+                </div>`;
+        }
+
+        ['chk-honneur', 'chk-consentement'].forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                const both = document.getElementById('chk-honneur').checked && document.getElementById('chk-consentement').checked;
+                document.getElementById('btn-submit').disabled = !both;
+            });
+        });
+
+        document.getElementById('btn-submit').addEventListener('click', (e) => {
+            const btn = e.currentTarget;
+            if (btn.disabled || btn.dataset.loading === 'true') return;
+            const originalContent = btn.innerHTML;
+            btn.dataset.loading = 'true';
+            btn.disabled = true;
+            btn.innerHTML = `
+                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Envoi en cours…`;
+
+            setTimeout(() => {
+                const dossier = CamaAssureData.submitDossier(wizardState);
+                document.getElementById('success-ref').textContent = dossier.ref;
+                document.getElementById('wizard-wrapper').classList.add('hidden');
+                document.getElementById('wizard-card').classList.add('hidden');
+                document.getElementById('success-panel').classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                btn.dataset.loading = 'false';
+                btn.innerHTML = originalContent;
+            }, 1100);
+        });
+
+        function showToast(message) {
+            let toast = document.getElementById('wizard-toast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'wizard-toast';
+                toast.className = 'fixed bottom-6 right-6 z-50';
+                toast.innerHTML = '<div class="bg-error text-white px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm font-medium" id="wizard-toast-content"></div>';
+                document.body.appendChild(toast);
+            }
+            document.getElementById('wizard-toast-content').innerHTML = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        function loadDraftFromUrl() {
+            const draftId = parseInt(new URLSearchParams(window.location.search).get('draft'), 10);
+            if (!draftId) return;
+            const d = CamaAssureData.getDossiers().find(x => x.id === draftId && x.statut === 'Brouillon');
+            if (!d) return;
+            const meta = d.wizardMeta || {};
+            Object.assign(wizardState, meta, { draftId: d.id });
+            document.querySelectorAll('[data-field]').forEach(input => {
+                const val = wizardState[input.dataset.field];
+                if (val != null && val !== '') input.value = val;
+            });
+            if (wizardState.sexe) {
+                document.querySelectorAll('[data-sexe]').forEach(b => b.classList.toggle('selected', b.dataset.sexe === wizardState.sexe));
+            }
+            if (wizardState.lien) {
+                document.querySelectorAll('.lien-btn').forEach(b => b.classList.toggle('selected', b.dataset.lien === wizardState.lien));
+                document.getElementById('block-conjoint').classList.toggle('hidden-block', wizardState.lien !== 'Conjoint(e)');
+                document.getElementById('block-enfant').classList.toggle('hidden-block', wizardState.lien !== 'Enfant');
+                document.getElementById('block-autre').classList.toggle('hidden-block', wizardState.lien !== 'Autre');
+            }
+            if (wizardState.enfantType) {
+                document.querySelectorAll('[data-enfant-type]').forEach(b => b.classList.toggle('selected', b.dataset.enfantType === wizardState.enfantType));
+            }
+        }
+
+        loadDraftFromUrl();
+        showStep(1);
+    </script>
+</body></html>

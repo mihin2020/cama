@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Menus du site | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = { darkMode: "class", theme: { extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}], "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+      } } }
+    </script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+        .menu-item { cursor: grab; }
+        .menu-item.dragging { opacity: .4; }
+        .menu-item.drop-before { box-shadow: 0 -3px 0 #9e001f; }
+        .menu-item.drop-after { box-shadow: 0 3px 0 #9e001f; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span>
+</a>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button>
+<div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Menus du site</h1><p class="text-caption text-on-surface-variant hidden sm:block">Organisez les onglets de navigation du header public</p></div>
+</div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">AO</div>
+<div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight">Ing. Awa OUÉDRAOGO</p><p class="text-caption text-on-surface-variant leading-tight">Administrateur technique</p></div>
+</a>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-6">
+
+<!-- header preview -->
+<div class="assure-card p-4">
+<p class="text-[11px] uppercase font-bold text-on-surface-variant tracking-wider mb-3">Aperçu du header public</p>
+<div class="border border-outline-variant rounded-xl overflow-hidden">
+<div class="flex items-center justify-between px-5 py-3 bg-white border-b border-outline-variant">
+<div class="flex items-center gap-2"><img src="../../images/logo_cama.png" class="h-8 w-8 object-contain"/><span class="font-extrabold tracking-tight" style="font-family:Montserrat">CAMA</span></div>
+<nav class="hidden md:flex items-center gap-1" id="header-preview"></nav>
+<span class="material-symbols-outlined md:hidden text-on-surface-variant">menu</span>
+</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- left: add items -->
+<div class="space-y-4">
+<div class="assure-card p-4">
+<p class="text-sm font-bold mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary">description</span>Ajouter des pages</p>
+<div class="space-y-1 max-h-64 overflow-y-auto no-scrollbar border border-outline-variant rounded-lg p-2" id="page-checklist"></div>
+<button class="mt-3 w-full bg-primary text-on-primary py-2 rounded-lg text-xs font-bold" id="btn-add-pages">Ajouter au menu</button>
+</div>
+<div class="assure-card p-4">
+<p class="text-sm font-bold mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary">link</span>Lien personnalisé</p>
+<input class="w-full mb-2 px-3 py-2 text-sm border border-outline-variant rounded-lg focus:outline-none focus:border-primary" id="custom-label" placeholder="Texte du lien (ex. Espace assuré)"/>
+<input class="w-full mb-2 px-3 py-2 text-sm border border-outline-variant rounded-lg focus:outline-none focus:border-primary" id="custom-url" placeholder="URL (ex. espace-assure.html)"/>
+<button class="w-full border border-primary text-primary py-2 rounded-lg text-xs font-bold" id="btn-add-custom">Ajouter au menu</button>
+</div>
+</div>
+
+<!-- right: menu structure -->
+<div class="assure-card p-4 lg:col-span-2">
+<div class="flex items-center justify-between mb-1">
+<p class="text-sm font-bold flex items-center gap-2"><span class="material-symbols-outlined text-[18px] text-primary">reorder</span>Structure du menu</p>
+<span class="text-[11px] text-on-surface-variant flex items-center gap-1" id="save-indicator"><span class="material-symbols-outlined text-[14px]">cloud_done</span>Enregistré</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mb-3">Glissez-déposez pour réordonner. Utilisez « décaler » pour créer un sous-menu déroulant.</p>
+<div class="space-y-1.5" id="menu-list"></div>
+</div>
+</div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMAStudio de contenu.</footer>
+</div>
+
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+
+<script src="cms-seed-pages.js"></script>
+<script src="cms-data.js"></script>
+<script>
+"use strict";
+const esc = s => String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function showToast(m){ const t=document.getElementById("toast"); document.getElementById("toast-content").innerHTML=m; t.classList.remove("hidden"); clearTimeout(showToast._t); showToast._t=setTimeout(()=>t.classList.add("hidden"),2200); }
+function flashSaved(){ const el=document.getElementById("save-indicator"); el.innerHTML='<span class="material-symbols-outlined text-[14px]">cloud_done</span>Enregistré'; }
+
+let MENU = CamaCMS.getMenu();
+function save(){ CamaCMS.saveMenu(MENU); flashSaved(); render(); }
+
+function itemUrl(it){
+  if(it.type==="custom") return it.url||"#";
+  const p=CamaCMS.getPage(it.pageId); return p?("page-"+p.slug):"#";
+}
+
+/* ---- render the editable menu list ---- */
+function render(){
+  const list=document.getElementById("menu-list");
+  list.innerHTML=MENU.length?MENU.map((it,i)=>{
+    const sub=it.depth>0;
+    const orphan = sub && (i===0 || MENU[i-1].depth>0 && false); // visual only
+    const typeChip = it.type==="page"
+      ? `<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary">Page</span>`
+      : `<span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-tertiary-container/40 text-tertiary">Lien</span>`;
+    return `<div class="menu-item flex items-center gap-2 bg-white border border-outline-variant rounded-lg px-2.5 py-2 ${sub?'ml-8':''}" draggable="true" data-i="${i}">
+      <span class="material-symbols-outlined text-[18px] text-on-surface-variant cursor-grab">drag_indicator</span>
+      ${sub?'<span class="material-symbols-outlined text-[16px] text-on-surface-variant">subdirectory_arrow_right</span>':''}
+      <span class="font-semibold text-sm flex-1 truncate">${esc(it.label)}</span>
+      ${typeChip}
+      <div class="flex items-center gap-0.5">
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container disabled:opacity-25" data-act="outdent" data-i="${i}" title="Promouvoir" ${it.depth===0?'disabled':''}><span class="material-symbols-outlined text-[17px]">format_indent_decrease</span></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container disabled:opacity-25" data-act="indent" data-i="${i}" title="Mettre en sous-menu" ${i===0?'disabled':''}><span class="material-symbols-outlined text-[17px]">format_indent_increase</span></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container disabled:opacity-25" data-act="up" data-i="${i}" title="Monter" ${i===0?'disabled':''}><span class="material-symbols-outlined text-[17px]">arrow_upward</span></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container disabled:opacity-25" data-act="down" data-i="${i}" title="Descendre" ${i===MENU.length-1?'disabled':''}><span class="material-symbols-outlined text-[17px]">arrow_downward</span></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-surface-container" data-act="rename" data-i="${i}" title="Renommer"><span class="material-symbols-outlined text-[17px]">edit</span></button>
+        <button class="w-7 h-7 flex items-center justify-center rounded text-on-surface-variant hover:bg-error/10 hover:text-error" data-act="remove" data-i="${i}" title="Retirer"><span class="material-symbols-outlined text-[17px]">close</span></button>
+      </div>
+    </div>`;
+  }).join(""):`<div class="text-center text-sm text-on-surface-variant py-8 border-2 border-dashed border-outline-variant rounded-lg">Aucun élément. Ajoutez des pages depuis la gauche.</div>`;
+  bindList();
+  renderHeaderPreview();
+  renderChecklist();
+}
+
+function bindList(){
+  const list=document.getElementById("menu-list");
+  list.querySelectorAll("[data-act]").forEach(b=>b.addEventListener("click",()=>act(b.dataset.act,+b.dataset.i)));
+  // drag reorder
+  list.querySelectorAll(".menu-item").forEach(el=>{
+    el.addEventListener("dragstart",e=>{ e.dataTransfer.setData("text/i",el.dataset.i); el.classList.add("dragging"); });
+    el.addEventListener("dragend",()=>{ el.classList.remove("dragging"); list.querySelectorAll(".menu-item").forEach(x=>x.classList.remove("drop-before","drop-after")); });
+    el.addEventListener("dragover",e=>{ e.preventDefault(); const r=el.getBoundingClientRect(); const after=e.clientY>r.top+r.height/2; el.classList.toggle("drop-after",after); el.classList.toggle("drop-before",!after); });
+    el.addEventListener("dragleave",()=>el.classList.remove("drop-before","drop-after"));
+    el.addEventListener("drop",e=>{ e.preventDefault(); const from=+e.dataTransfer.getData("text/i"); let to=+el.dataset.i; const r=el.getBoundingClientRect(); const after=e.clientY>r.top+r.height/2; if(after)to++; moveItem(from,to); });
+  });
+}
+function moveItem(from,to){ if(from===to||from===to-1){render();return;} const [m]=MENU.splice(from,1); if(from<to)to--; MENU.splice(to,0,m); normalize(); save(); }
+function normalize(){ if(MENU.length&&MENU[0].depth>0)MENU[0].depth=0; } // first item can't be a sub-item
+
+function act(a,i){
+  const it=MENU[i]; if(!it)return;
+  if(a==="up"&&i>0){ [MENU[i-1],MENU[i]]=[MENU[i],MENU[i-1]]; }
+  else if(a==="down"&&i<MENU.length-1){ [MENU[i+1],MENU[i]]=[MENU[i],MENU[i+1]]; }
+  else if(a==="indent"&&i>0){ it.depth=1; }
+  else if(a==="outdent"){ it.depth=0; }
+  else if(a==="rename"){ const v=prompt("Texte de l'onglet :",it.label); if(v==null)return; it.label=v.trim()||it.label; }
+  else if(a==="remove"){ MENU.splice(i,1); }
+  normalize(); save();
+}
+
+/* ---- header preview (top-level + dropdowns) ---- */
+function renderHeaderPreview(){
+  const nav=document.getElementById("header-preview");
+  const groups=[];
+  MENU.forEach(it=>{ if(it.depth===0)groups.push({it,children:[]}); else if(groups.length)groups[groups.length-1].children.push(it); });
+  nav.innerHTML=groups.length?groups.map(g=>{
+    if(g.children.length){
+      return `<div class="relative group"><button class="px-3 py-2 text-sm font-semibold text-on-surface hover:text-primary flex items-center gap-1">${esc(g.it.label)}<span class="material-symbols-outlined text-[16px]">expand_more</span></button>
+        <div class="absolute left-0 top-full hidden group-hover:block bg-white border border-outline-variant rounded-lg shadow-lg py-1 min-w-[180px] z-10">
+          ${g.children.map(c=>`<a href="${esc(itemUrl(c))}" class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary">${esc(c.label)}</a>`).join("")}
+        </div></div>`;
+    }
+    return `<a href="${esc(itemUrl(g.it))}" class="px-3 py-2 text-sm font-semibold text-on-surface hover:text-primary">${esc(g.it.label)}</a>`;
+  }).join(""):`<span class="text-xs text-on-surface-variant italic">Menu vide</span>`;
+}
+
+/* ---- left: page checklist + custom link ---- */
+function renderChecklist(){
+  const box=document.getElementById("page-checklist");
+  const pages=CamaCMS.getPages();
+  box.innerHTML=pages.length?pages.map(p=>`<label class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-container-low cursor-pointer text-sm">
+      <input type="checkbox" value="${p.id}" class="rounded border-outline-variant text-primary focus:ring-primary"/>
+      <span class="flex-1 truncate">${esc(p.title)}</span>
+      ${p.status==="draft"?'<span class="text-[9px] text-tertiary font-bold">brouillon</span>':''}
+    </label>`).join(""):`<p class="text-xs text-on-surface-variant px-1 py-2">Aucune page disponible.</p>`;
+}
+document.getElementById("btn-add-pages").addEventListener("click",()=>{
+  const checked=[...document.querySelectorAll("#page-checklist input:checked")];
+  if(!checked.length){ showToast('<span class="material-symbols-outlined">info</span> Sélectionnez au moins une page'); return; }
+  checked.forEach(cb=>{ const p=CamaCMS.getPage(cb.value); if(p)MENU.push({id:CamaCMS.uid(),type:"page",pageId:p.id,label:p.title,depth:0}); });
+  save(); showToast('<span class="material-symbols-outlined">add</span> Ajouté au menu');
+});
+document.getElementById("btn-add-custom").addEventListener("click",()=>{
+  const label=document.getElementById("custom-label").value.trim();
+  const url=document.getElementById("custom-url").value.trim();
+  if(!label){ showToast('<span class="material-symbols-outlined">info</span> Indiquez un texte de lien'); return; }
+  MENU.push({id:CamaCMS.uid(),type:"custom",url:url||"#",label,depth:0});
+  document.getElementById("custom-label").value=""; document.getElementById("custom-url").value="";
+  save(); showToast('<span class="material-symbols-outlined">add</span> Lien ajouté');
+});
+
+(function(){ const t=document.getElementById("sidebar-toggle"),o=document.getElementById("sidebar-overlay");
+  if(t)t.addEventListener("click",()=>document.body.classList.toggle("sidebar-open"));
+  if(o)o.addEventListener("click",()=>document.body.classList.remove("sidebar-open"));
+  render();
+})();
+</script>
+<script src="../admin-shell.js"></script>
+</body></html>

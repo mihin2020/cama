@@ -1,0 +1,202 @@
+/**
+ * Shell layoutSite vitrine CAMA
+ * Header institutionnel | bandeau d'alerte | menu mobile | footer | cookies
+ */
+
+@import url('anchor-top.css');
+
+/* ── Bandeau d'information (activable via CMS / localStorage) ── */
+#site-info-banner {
+    background: linear-gradient(90deg, #9e001f 0%, #c8102e 100%);
+    color: #ffffff;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+}
+
+#site-info-banner.is-warning {
+    background: linear-gradient(90deg, #745b00 0%, #d0a600 100%);
+    color: #241a00;
+}
+
+#site-info-banner.is-hidden {
+    display: none;
+}
+
+#site-info-banner .banner-close {
+    opacity: 0.75;
+    transition: opacity 0.15s;
+}
+
+#site-info-banner .banner-close:hover {
+    opacity: 1;
+}
+
+/* ── Header principal ── */
+#site-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5bdbb;
+    box-shadow: 0 2px 12px rgba(27, 28, 28, 0.06);
+}
+
+#site-header .site-header-accent {
+    height: 3px;
+    background: linear-gradient(90deg, #9e001f 0%, #c8102e 50%, #9e001f 100%);
+}
+
+#site-header .site-nav-link {
+    color: #5c403f;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+#site-header .site-nav-link:hover {
+    color: #9e001f;
+}
+
+#site-header .site-nav-link.is-active {
+    color: #9e001f;
+    border-bottom-color: #9e001f;
+    font-weight: 700;
+}
+
+#site-header .site-menu-btn {
+    color: #1b1c1c;
+    transition: background-color 0.15s;
+}
+
+#site-header .site-menu-btn:hover {
+    background-color: #f0eded;
+}
+
+#site-header .site-search-btn:hover {
+    background-color: #f0eded;
+}
+
+/* Dropdown Espace Assuré */
+#site-header .espace-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+}
+
+#site-header .espace-dropdown.is-open,
+#site-header .espace-assure-wrap:hover .espace-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#site-header .espace-assure-btn {
+    background-color: #9e001f;
+    color: #ffffff;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+#site-header .espace-assure-btn:hover {
+    opacity: 0.92;
+}
+
+#site-header .espace-assure-btn:active {
+    transform: scale(0.98);
+}
+
+/* Barre de recherche */
+#site-search-bar {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+    background-color: #f6f3f2;
+    border-bottom: 1px solid #e5bdbb;
+}
+
+#site-search-bar.is-open {
+    max-height: 80px;
+    opacity: 1;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+#site-search-bar input:focus {
+    outline: none;
+    ring: 2px;
+    border-color: #9e001f;
+}
+
+/* Menu mobile */
+#site-mobile-nav {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5bdbb;
+}
+
+#site-mobile-nav.is-open {
+    max-height: 480px;
+    opacity: 1;
+}
+
+#site-mobile-nav .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: #1b1c1c;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+#site-mobile-nav .mobile-nav-link:hover,
+#site-mobile-nav .mobile-nav-link.is-active {
+    background-color: #f6f3f2;
+    border-left-color: #c8102e;
+    color: #9e001f;
+}
+
+body.site-nav-open {
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    body.site-nav-open {
+        overflow: auto;
+    }
+}
+
+/* ── Footer ── */
+#site-footer {
+    background-color: #1b1c1c;
+    color: #e4e2e1;
+}
+
+/* ── Bannière cookies ── */
+#site-cookie-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background-color: #ffffff;
+    border-top: 1px solid #e5bdbb;
+    box-shadow: 0 -4px 24px rgba(27, 28, 28, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.35s ease;
+}
+
+#site-cookie-bar.is-visible {
+    transform: translateY(0);
+}
+
+#site-cookie-bar.is-hidden {
+    display: none;
+}
