@@ -3,7 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Assurés | Back-office CAMA</title>
+<title>Inscriptions | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -83,7 +83,11 @@
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur" href="dossiers.html">
 <span class="material-symbols-outlined text-[20px]">folder_shared</span> Dossiers
 </a>
-<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="inscriptions.html">
+<span class="material-symbols-outlined text-[20px]">how_to_reg</span> Inscriptions
+<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 hidden items-center justify-center" id="sidebar-inscriptions-badge">0</span>
+</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
 <span class="material-symbols-outlined text-[20px]">groups</span> Assurés
 </a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="utilisateurs-internes.html">
@@ -122,8 +126,8 @@
 <span class="material-symbols-outlined">menu</span>
 </button>
 <div>
-<h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Assurés</h1>
-<p class="text-caption text-on-surface-variant hidden sm:block">Comptes militaires · chaque membre listé = une demande d'enrôlement</p>
+<h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Inscriptions</h1>
+<p class="text-caption text-on-surface-variant hidden sm:block">Demandes de création de compte assuré en attente de validation</p>
 </div>
 </div>
 <a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
@@ -135,39 +139,57 @@
 </a>
 </header>
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
+<!-- Cartes de synthèse -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+<div class="assure-card p-4">
+<p class="text-caption text-on-surface-variant uppercase tracking-wide">En attente</p>
+<p class="text-headline-md font-headline-md text-tertiary" id="stat-pending">0</p>
+</div>
+<div class="assure-card p-4">
+<p class="text-caption text-on-surface-variant uppercase tracking-wide">Validées</p>
+<p class="text-headline-md font-headline-md text-secondary" id="stat-valid">0</p>
+</div>
+<div class="assure-card p-4">
+<p class="text-caption text-on-surface-variant uppercase tracking-wide">Refusées</p>
+<p class="text-headline-md font-headline-md text-error" id="stat-refused">0</p>
+</div>
+<div class="assure-card p-4">
+<p class="text-caption text-on-surface-variant uppercase tracking-wide">Total</p>
+<p class="text-headline-md font-headline-md text-on-surface" id="stat-total">0</p>
+</div>
+</div>
 <div class="assure-card p-4 mb-5 flex flex-wrap gap-3 items-center">
 <div class="relative flex-1 min-w-[200px]">
 <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
-<input class="w-full pl-8 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" id="search" placeholder="Nom, matricule, numéro CAMA…" type="text"/>
+<input class="w-full pl-8 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" id="search" placeholder="Nom, matricule, e-mail…" type="text"/>
 </div>
 <select class="px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" id="filter-statut">
-<option value="Tous">Tous les statuts</option>
-<option>Actif</option>
-<option>En attente de validation</option>
-<option>Désactivé</option>
+<option value="En attente de validation">En attente de validation</option>
+<option value="Actif">Validées</option>
+<option value="Refusé">Refusées</option>
+<option value="Tous">Toutes</option>
 </select>
-<button class="px-4 py-2 rounded-lg border border-outline text-on-surface text-xs font-bold flex items-center gap-1.5 hover:bg-surface-container-low" onclick="window.location.href='exports.html'"><span class="material-symbols-outlined text-[16px]">file_download</span> Exporter</button>
 </div>
 <div class="assure-card overflow-hidden">
 <div class="overflow-x-auto">
 <table class="w-full text-left">
 <thead>
 <tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
-<th class="px-5 py-3 font-medium">Assuré</th>
+<th class="px-5 py-3 font-medium">Demandeur</th>
 <th class="px-5 py-3 font-medium hidden md:table-cell">Matricule</th>
-<th class="px-5 py-3 font-medium hidden lg:table-cell">Membres</th>
-<th class="px-5 py-3 font-medium hidden lg:table-cell">Créé le</th>
+<th class="px-5 py-3 font-medium hidden lg:table-cell">Grade</th>
+<th class="px-5 py-3 font-medium hidden lg:table-cell">Soumis le</th>
 <th class="px-5 py-3 font-medium">Statut</th>
 <th class="px-5 py-3 font-medium text-right">Action</th>
 </tr>
 </thead>
-<tbody class="divide-y divide-outline-variant" id="assures-table"></tbody>
+<tbody class="divide-y divide-outline-variant" id="reg-table"></tbody>
 </table>
 </div>
 </div>
 </main>
 <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
-            © 2026 CAMABack-office institutionnel. Accès restreint et tracé.
+            © 2026 CAMA — Back-office institutionnel. Accès restreint et tracé.
         </footer>
 </div>
 <div class="modal-overlay fixed inset-0 bg-black/50 z-50 items-stretch justify-end" id="detail-overlay">
@@ -175,20 +197,17 @@
 </div>
 <nav class="md:hidden fixed bottom-0 left-0 w-full z-40 flex justify-around items-center h-16 bg-white border-t border-outline-variant shadow-lg">
 <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="dashboard.html"><span class="material-symbols-outlined text-[22px]">dashboard</span><span class="text-[10px] font-label-md">Accueil</span></a>
-<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="dossiers.html"><span class="material-symbols-outlined text-[22px]">folder_shared</span><span class="text-[10px] font-label-md">Dossiers</span></a>
-<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="assures.html"><span class="material-symbols-outlined text-[22px]">groups</span><span class="text-[10px] font-label-md">Assurés</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="inscriptions.html"><span class="material-symbols-outlined text-[22px]">how_to_reg</span><span class="text-[10px] font-label-md">Inscriptions</span></a>
+<a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="assures.html"><span class="material-symbols-outlined text-[22px]">groups</span><span class="text-[10px] font-label-md">Assurés</span></a>
 <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="notifications.html"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="text-[10px] font-label-md">Alertes</span></a>
 <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html"><span class="material-symbols-outlined text-[22px]">person</span><span class="text-[10px] font-label-md">Profil</span></a>
 </nav>
 <div class="fixed bottom-6 right-6 z-[70] hidden" id="toast">
 <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="../dossier-export.js"></script>
 <script src="../assure/assure-data.js"></script>
 <script>
-        let ASSURES = [];
+        let REGS = [];
 
         const ROLE_IDENTITIES = {
             gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
@@ -197,17 +216,18 @@
             direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
         };
 
-        function refreshAssures() {
-            ASSURES = CamaAssureData.getAdminAssures();
-        }
+        const STATUS_STYLES = {
+            "En attente de validation": "bg-tertiary text-on-tertiary",
+            "Actif": "bg-secondary text-on-secondary",
+            "Refusé": "bg-error text-on-error",
+            "Désactivé": "bg-error/10 text-error"
+        };
+        const STATUS_LABELS = { "Actif": "Validée", "En attente de validation": "En attente", "Refusé": "Refusée", "Désactivé": "Désactivée" };
 
-        const STATUS_COMPTE_STYLES = { "Actif": "bg-secondary text-on-secondary", "En attente de validation": "bg-tertiary text-on-tertiary", "Désactivé": "bg-error/10 text-error" };
-        const STATUS_DOSSIER_STYLES = { "Brouillon": "bg-surface-container-high text-on-surface-variant", "Soumis": "bg-primary/10 text-primary", "En instruction": "bg-tertiary/10 text-tertiary", "Pièce manquante demandée": "bg-tertiary text-on-tertiary", "Validé": "bg-secondary text-on-secondary", "Refusé": "bg-error text-on-error" };
-
-        function compteBadge(s) { return `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${STATUS_COMPTE_STYLES[s] || ''}">${s}</span>`; }
-        function dossierBadge(s) { return `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap ${STATUS_DOSSIER_STYLES[s] || ''}">${s}</span>`; }
-        function initials(name) { const p = name.split(' '); return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase(); }
-        function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+        function statusBadge(s) { return `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${STATUS_STYLES[s] || ''}">${STATUS_LABELS[s] || s}</span>`; }
+        function initials(name) { const p = (name || '').split(' '); return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase(); }
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+        function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3500); }
 
         function applyRole(role) {
             localStorage.setItem('cama_admin_role', role);
@@ -220,106 +240,143 @@
             if (select) select.value = role;
         }
 
+        function refresh() { REGS = CamaAssureData.getRegistrations(); }
+
+        function updateStats() {
+            document.getElementById('stat-pending').textContent = REGS.filter(r => r.statut === 'En attente de validation').length;
+            document.getElementById('stat-valid').textContent = REGS.filter(r => r.statut === 'Actif').length;
+            document.getElementById('stat-refused').textContent = REGS.filter(r => r.statut === 'Refusé').length;
+            document.getElementById('stat-total').textContent = REGS.length;
+            const badge = document.getElementById('sidebar-inscriptions-badge');
+            const pending = REGS.filter(r => r.statut === 'En attente de validation').length;
+            if (badge) {
+                badge.textContent = pending;
+                badge.classList.toggle('hidden', pending === 0);
+                badge.classList.toggle('flex', pending > 0);
+            }
+        }
+
         function renderTable() {
             const search = document.getElementById('search').value.trim().toLowerCase();
             const statut = document.getElementById('filter-statut').value;
-            const filtered = ASSURES.filter(a => {
-                if (statut !== 'Tous' && a.statut !== statut) return false;
-                if (search && !(a.nom.toLowerCase().includes(search) || a.matricule.toLowerCase().includes(search) || a.numeroCama.toLowerCase().includes(search))) return false;
+            const filtered = REGS.filter(r => {
+                if (statut !== 'Tous' && r.statut !== statut) return false;
+                if (search && !((r.fullName || '').toLowerCase().includes(search) || (r.matricule || '').toLowerCase().includes(search) || (r.email || '').toLowerCase().includes(search))) return false;
                 return true;
             });
-            document.getElementById('assures-table').innerHTML = filtered.map(a => `
-                <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetail(${a.id})">
+            document.getElementById('reg-table').innerHTML = filtered.map(r => `
+                <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetail(${r.id})">
                     <td class="px-5 py-3 text-xs">
                         <div class="flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-bold text-[10px] text-primary shrink-0">${initials(a.nom)}</div>
-                            <div><p class="font-bold">${a.nom}</p><p class="text-on-surface-variant text-[10px]">${a.numeroCama}</p></div>
+                            <div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden flex items-center justify-center font-bold text-[10px] text-primary shrink-0">${r.photo ? `<img src="${r.photo}" class="w-full h-full object-cover" alt=""/>` : esc(initials(r.fullName))}</div>
+                            <div><p class="font-bold">${esc(r.fullName)}</p><p class="text-on-surface-variant text-[10px]">${esc(r.email)}</p></div>
                         </div>
                     </td>
-                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden md:table-cell">${a.matricule}</td>
-                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${a.membres.length}</td>
-                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${a.dateCreation}</td>
-                    <td class="px-5 py-3">${compteBadge(a.statut)}</td>
+                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden md:table-cell">${esc(r.matricule)}</td>
+                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${esc(r.grade) || '—'}</td>
+                    <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${esc(r.dateCreation)}</td>
+                    <td class="px-5 py-3">${statusBadge(r.statut)}</td>
                     <td class="px-5 py-3 text-right"><span class="material-symbols-outlined text-on-surface-variant">chevron_right</span></td>
-                </tr>`).join('') || `<tr><td colspan="6" class="px-5 py-10 text-center text-on-surface-variant text-sm">Aucun assuré ne correspond.</td></tr>`;
+                </tr>`).join('') || `<tr><td colspan="6" class="px-5 py-10 text-center text-on-surface-variant text-sm">Aucune inscription ne correspond.</td></tr>`;
+        }
+
+        function infoRow(label, value) {
+            return `<div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">${label}</p><p class="text-xs font-bold break-words">${esc(value) || '—'}</p></div>`;
+        }
+
+        function docRow(label, value, isImage) {
+            if (!value) return `<div class="flex items-center justify-between py-2 border-b border-outline-variant last:border-0"><span class="text-xs text-on-surface-variant">${label}</span><span class="text-[11px] italic text-on-surface-variant">Non fourni</span></div>`;
+            const right = isImage
+                ? `<a href="${value}" target="_blank" class="flex items-center gap-1.5 text-primary text-xs font-bold hover:underline"><img src="${value}" class="w-8 h-8 rounded object-cover border border-outline-variant"/> Voir</a>`
+                : `<span class="flex items-center gap-1.5 text-xs font-semibold"><span class="material-symbols-outlined text-[16px] text-primary">attach_file</span> ${esc(value)}</span>`;
+            return `<div class="flex items-center justify-between py-2 border-b border-outline-variant last:border-0"><span class="text-xs text-on-surface-variant">${label}</span>${right}</div>`;
         }
 
         function openDetail(id) {
-            refreshAssures();
-            const a = ASSURES.find(x => x.id === id);
-            const membresHtml = a.membres.map(m => `
-                <div class="flex items-center justify-between py-2.5 border-b border-outline-variant last:border-0">
-                    <span class="text-xs">${m.nom} <span class="text-on-surface-variant">— ${m.lien}</span></span>
-                    ${dossierBadge(m.statut)}
-                </div>`).join('') || `<p class="text-xs text-on-surface-variant italic">Aucun membre enrôlé.</p>`;
-            const journalHtml = a.journal.map((j, i) => `
+            refresh();
+            const r = REGS.find(x => x.id === id);
+            if (!r) return;
+            const journalHtml = (r.journal || []).map((j, i) => `
                 <div class="flex gap-3">
-                    <div class="relative flex flex-col items-center"><div class="w-2 h-2 rounded-full bg-primary z-10 mt-1"></div>${i < a.journal.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}</div>
-                    <div class="pb-3"><p class="text-xs font-bold">${j.libelle}</p><p class="text-[11px] text-on-surface-variant">${j.date}</p></div>
+                    <div class="relative flex flex-col items-center"><div class="w-2 h-2 rounded-full bg-primary z-10 mt-1"></div>${i < r.journal.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}</div>
+                    <div class="pb-3"><p class="text-xs font-bold">${esc(j.libelle)}</p><p class="text-[11px] text-on-surface-variant">${esc(j.date)}</p></div>
                 </div>`).join('');
+
+            const isPending = r.statut === 'En attente de validation';
+            const actionsHtml = isPending
+                ? `<button class="flex-1 px-4 py-2.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5" onclick="validerReg(${r.id})"><span class="material-symbols-outlined text-[16px]">how_to_reg</span> Valider et activer</button>
+                   <button class="flex-1 px-4 py-2.5 rounded-lg bg-error text-on-error text-xs font-bold flex items-center justify-center gap-1.5" onclick="refuserReg(${r.id})"><span class="material-symbols-outlined text-[16px]">cancel</span> Refuser</button>`
+                : r.statut === 'Refusé'
+                    ? `<button class="flex-1 px-4 py-2.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold flex items-center justify-center gap-1.5" onclick="validerReg(${r.id})"><span class="material-symbols-outlined text-[16px]">restart_alt</span> Reconsidérer et valider</button>`
+                    : `<a href="assures.html" class="flex-1 px-4 py-2.5 rounded-lg border border-outline text-on-surface text-xs font-bold flex items-center justify-center gap-1.5"><span class="material-symbols-outlined text-[16px]">groups</span> Voir dans les assurés</a>`;
 
             document.getElementById('detail-panel').innerHTML = `
                 <div class="sticky top-0 bg-white border-b border-outline-variant px-5 py-4 flex items-center justify-between z-10">
-                    <div><p class="text-[11px] text-on-surface-variant">${a.numeroCama}</p><h2 class="font-title-lg text-title-lg">${a.nom}</h2></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-full bg-surface-container overflow-hidden flex items-center justify-center font-bold text-primary shrink-0">${r.photo ? `<img src="${r.photo}" class="w-full h-full object-cover" alt=""/>` : esc(initials(r.fullName))}</div>
+                        <div><h2 class="font-title-lg text-title-lg leading-tight">${esc(r.fullName)}</h2><p class="text-[11px] text-on-surface-variant">${r.numeroCama ? esc(r.numeroCama) : 'Numéro CAMA non attribué'}</p></div>
+                    </div>
                     <button class="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center" onclick="closeDetail()"><span class="material-symbols-outlined">close</span></button>
                 </div>
                 <div class="p-5 space-y-5">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Matricule</p><p class="text-xs font-bold">${a.matricule}</p></div>
-                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Statut</p>${compteBadge(a.statut)}</div>
-                        <div class="bg-white rounded-lg p-3 border border-outline-variant col-span-2"><p class="text-[10px] text-on-surface-variant uppercase">Compte créé le</p><p class="text-xs font-bold">${a.dateCreation}</p></div>
-                    </div>
+                    <div>${statusBadge(r.statut)}${r.motifRefus ? `<p class="text-[11px] text-error mt-2">Motif : ${esc(r.motifRefus)}</p>` : ''}</div>
                     <div>
-                        <div class="flex items-center justify-between mb-2">
-                            <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">family_restroom</span> Demandes d'enrôlement (${a.membres.length})</h3>
-                            ${a.membres.length ? `<button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureZip(${a.id})"><span class="material-symbols-outlined text-[14px]">folder_zip</span> Dossiers (ZIP)</button>` : ''}
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> Profil</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${infoRow('Matricule', r.matricule)}
+                            ${infoRow('Grade', r.grade)}
+                            ${infoRow('Téléphone', r.telephone)}
+                            ${infoRow('E-mail', r.email)}
+                            ${infoRow('Date de naissance', r.dateNaissance)}
+                            ${infoRow('Genre', r.genre)}
+                            ${infoRow('Lieu de naissance', r.lieuNaissance)}
+                            ${infoRow('Pays de naissance', r.paysNaissance)}
                         </div>
-                        <div class="bg-surface-container-low rounded-lg px-3">${membresHtml}</div>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">history</span> Journal des actions</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">folder_open</span> Pièces justificatives</h3>
+                        <div class="bg-surface-container-low rounded-lg px-3">
+                            ${docRow('Type de pièce', r.typePiece || '—', false)}
+                            ${docRow('Numéro de pièce', r.numeroPiece || '—', false)}
+                            ${docRow('Pièce d\'identité', r.pieceFichier, false)}
+                            ${docRow('Photo d\'identité', r.photo, true)}
+                            ${docRow('Carte professionnelle', r.carteProFichier, false)}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">history</span> Journal</h3>
                         <div class="bg-surface-container-low rounded-lg px-3 py-3">${journalHtml}</div>
                     </div>
                 </div>
-                <div class="sticky bottom-0 bg-white border-t border-outline-variant p-4 flex gap-2" data-roles="gestionnaire,superviseur,administrateur" id="detail-actions">
-                    ${a.statut === 'Désactivé'
-                        ? `<button class="px-4 py-2.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold flex items-center gap-1.5" onclick="toggleCompte(${a.id}, 'Actif')"><span class="material-symbols-outlined text-[16px]">check_circle</span> Réactiver le compte</button>`
-                        : `<button class="px-4 py-2.5 rounded-lg bg-error text-on-error text-xs font-bold flex items-center gap-1.5" onclick="toggleCompte(${a.id}, 'Désactivé')"><span class="material-symbols-outlined text-[16px]">block</span> Désactiver le compte</button>`}
-                    ${a.statut === 'En attente de validation' ? `<button class="px-4 py-2.5 rounded-lg bg-secondary text-on-secondary text-xs font-bold flex items-center gap-1.5" onclick="toggleCompte(${a.id}, 'Actif')"><span class="material-symbols-outlined text-[16px]">how_to_reg</span> Valider le compte</button>` : ''}
+                <div class="sticky bottom-0 bg-white border-t border-outline-variant p-4 flex gap-2" data-roles="gestionnaire,superviseur,administrateur">
+                    ${actionsHtml}
                 </div>`;
             applyRole(localStorage.getItem('cama_admin_role') || 'gestionnaire');
             document.getElementById('detail-overlay').classList.add('is-open');
         }
         function closeDetail() { document.getElementById('detail-overlay').classList.remove('is-open'); }
 
-        async function exportAssureZip(id) {
-            const a = ASSURES.find(x => x.id === id);
-            if (!a) return;
-            const membres = CamaAssureData.getMembres(a.nom);
-            if (!membres.length) { showToast('<span class="material-symbols-outlined">info</span> Aucun dossier pour cet assuré.'); return; }
-            const assure = { fullName: a.nom, nom: a.nom, numeroCama: a.numeroCama, matricule: a.matricule };
-            try {
-                await CamaDossierExport.exportZip(membres, assure);
-                showToast(`<span class="material-symbols-outlined">folder_zip</span> Archive de ${membres.length} dossier(s) générée.`);
-            } catch (e) {
-                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+        function validerReg(id) {
+            const reg = CamaAssureData.validateRegistration(id);
+            refresh(); updateStats(); renderTable(); closeDetail();
+            if (window.CamaAdminShell?.addNotif) {
+                CamaAdminShell.addNotif({ type: 'compte', icon: 'how_to_reg', color: 'secondary', titre: 'Compte assuré validé', contenu: `${reg.fullName} — ${reg.numeroCama} attribué.`, date: new Date().toLocaleString('fr-FR'), lien: 'assures.html' });
             }
+            showToast(`<span class="material-symbols-outlined">check_circle</span> Compte validé. Numéro attribué : ${reg.numeroCama}`);
         }
 
-        function toggleCompte(id, nouveauStatut) {
-            const motif = nouveauStatut === 'Désactivé' ? prompt('Motif de désactivation (obligatoire) :') : null;
-            if (nouveauStatut === 'Désactivé' && !motif) { showToast('<span class="material-symbols-outlined">error</span> Motif requis pour désactiver un compte.'); return; }
-            const a = ASSURES.find(x => x.id === id);
-            if (!a) return;
-            CamaAssureData.updateAssureCompteStatut(a.nom, nouveauStatut, motif);
-            refreshAssures();
-            showToast(`<span class="material-symbols-outlined">check_circle</span> Statut mis à jour : ${nouveauStatut}.`);
-            closeDetail();
-            renderTable();
+        function refuserReg(id) {
+            const motif = prompt('Motif du refus (communiqué à l\'assuré) :');
+            if (motif === null) return;
+            if (!motif.trim()) { showToast('<span class="material-symbols-outlined">error</span> Un motif est requis.'); return; }
+            CamaAssureData.rejectRegistration(id, motif.trim());
+            refresh(); updateStats(); renderTable(); closeDetail();
+            showToast('<span class="material-symbols-outlined">cancel</span> Demande refusée.');
         }
 
         document.getElementById('search').addEventListener('input', renderTable);
         document.getElementById('filter-statut').addEventListener('change', renderTable);
+        document.getElementById('detail-overlay').addEventListener('click', e => { if (e.target.id === 'detail-overlay') closeDetail(); });
 
         (function () {
             const toggle = document.getElementById('sidebar-toggle');
@@ -328,7 +385,8 @@
             if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
             applyRole(localStorage.getItem('cama_admin_role') || 'gestionnaire');
             document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
-            refreshAssures();
+            refresh();
+            updateStats();
             renderTable();
         })();
     </script>

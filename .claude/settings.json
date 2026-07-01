@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --check assure/assure-data.js)",
+      "Bash(node --check admin/admin-shell.js)",
+      "Bash(python -c ' *)",
+      "Bash(node --check site-content.js)",
+      "Bash(node --check site-shell.js)",
+      "Bash(python -)",
+      "Bash(node --check dossier-export.js)",
+      "Bash(node -e ' *)",
+      "Bash(grep -iE 'cama|hero|banner|\\\\.\\(jpg|jpeg|png|jfif|webp\\)$')",
+      "Bash(node --check countries.js)",
+      "Bash(node --check flag-select.js)",
+      "PowerShell(git config --global --add safe.directory C:/Users/HP/Desktop/CAMA)"
+    ]
+  }
+}

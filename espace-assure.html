@@ -117,6 +117,14 @@
         }
         .auth-tab-panel { display: none; }
         .auth-tab-panel.is-active { display: block; }
+        .reg-label { display:block; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; color: #5c403f; margin-left: 4px; }
+        .reg-input { width:100%; padding: 10px 14px; border:1px solid #e5bdbb; border-radius: 0.5rem; outline:none; font-size:14px; background:#fff; transition: all .15s ease; }
+        .reg-input:focus { border-color:#9e001f; box-shadow: 0 0 0 2px rgba(158,0,31,.25); }
+        .reg-input.is-invalid { border-color:#ba1a1a; box-shadow: 0 0 0 2px rgba(186,26,26,.2); }
+        .reg-file { width:100%; font-size:13px; color:#5c403f; }
+        .reg-file::file-selector-button { margin-right: 10px; padding: 8px 14px; border:0; border-radius:0.5rem; background:#f0eded; color:#1b1c1c; font-weight:600; font-size:13px; cursor:pointer; transition: background .15s ease; }
+        .reg-file::file-selector-button:hover { background:#e4e2e1; }
+        #pw-rules li.ok { color:#006e27; }
     </style>
 <link href="site-shell.css" rel="stylesheet"/>
 </head>
@@ -149,23 +157,26 @@
 <div class="p-8">
 <!-- Connexion -->
 <div class="auth-tab-panel" id="tab-connexion">
+<!-- Vue : formulaire de connexion -->
+<div id="view-login">
 <h3 class="font-title-lg text-title-lg mb-2">Connexion à mon espace</h3>
 <p class="text-on-surface-variant font-body-md text-sm mb-6">Accédez à votre tableau de bord assuré.</p>
+<div class="hidden mb-5" id="login-banner" role="alert"></div>
 <form class="space-y-5" id="login-form">
 <div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Adresse e-mail</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="vous@exemple.bf" type="email"/>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-email">Adresse e-mail</label>
+<input autocomplete="email" class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="login-email" placeholder="vous@exemple.bf" required type="email"/>
 </div>
 <div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Mot de passe</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="••••••••" type="password"/>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-password">Mot de passe</label>
+<input autocomplete="current-password" class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="login-password" placeholder="••••••••" required type="password"/>
 </div>
 <div class="flex items-center justify-between">
 <label class="flex items-center gap-2 text-sm text-on-surface-variant">
 <input class="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox"/>
                                         Se souvenir de moi
                                     </label>
-<a class="text-primary text-sm font-bold hover:underline" href="#">Mot de passe oublié ?</a>
+<button class="text-primary text-sm font-bold hover:underline" id="forgot-link" type="button">Mot de passe oublié ?</button>
 </div>
 <button class="w-full bg-primary text-white py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit">
 <span class="material-symbols-outlined">login</span>
@@ -173,46 +184,239 @@
                                 </button>
 </form>
 </div>
+<!-- Vue : double authentification -->
+<div class="hidden" id="view-2fa">
+<button class="text-sm text-on-surface-variant hover:text-primary mb-4 inline-flex items-center gap-1" id="twofa-back" type="button"><span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour</button>
+<h3 class="font-title-lg text-title-lg mb-2">Vérification en deux étapes</h3>
+<p class="text-on-surface-variant font-body-md text-sm mb-4">Un code de vérification à 4 chiffres a été envoyé à <strong id="twofa-email"></strong>. Saisissez-le pour finaliser la connexion.</p>
+<div class="bg-tertiary/10 border border-tertiary/30 rounded-lg p-3 mb-5 text-sm flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary shrink-0">mail</span>
+<span>Mode démonstration (aucun e-mail réel n'est envoyé). Votre code est&nbsp;: <strong class="tracking-[0.25em]" id="twofa-code-demo">----</strong></span>
+</div>
+<div class="hidden mb-4" id="twofa-banner" role="alert"></div>
+<form class="space-y-5" id="twofa-form">
+<input autocomplete="one-time-code" class="w-full text-center text-2xl font-bold tracking-[0.5em] px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" id="twofa-input" inputmode="numeric" maxlength="4" placeholder="••••" required/>
+<button class="w-full bg-primary text-white py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit"><span class="material-symbols-outlined">verified_user</span> Vérifier et se connecter</button>
+</form>
+<button class="text-primary text-sm font-bold hover:underline mt-4" id="twofa-resend" type="button">Renvoyer le code</button>
+</div>
+<!-- Vue : mot de passe oublié -->
+<div class="hidden" id="view-forgot">
+<button class="text-sm text-on-surface-variant hover:text-primary mb-4 inline-flex items-center gap-1" id="forgot-back" type="button"><span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour à la connexion</button>
+<h3 class="font-title-lg text-title-lg mb-2">Réinitialiser mon mot de passe</h3>
+<div class="hidden mb-4" id="forgot-banner" role="alert"></div>
+<!-- Étape 1 : e-mail -->
+<form class="space-y-5" id="forgot-step1">
+<p class="text-on-surface-variant font-body-md text-sm">Saisissez l'adresse e-mail de votre compte : un code de réinitialisation à 4 chiffres vous sera envoyé.</p>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="forgot-email">Adresse e-mail</label>
+<input autocomplete="email" class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="forgot-email" placeholder="vous@exemple.bf" required type="email"/>
+</div>
+<button class="w-full bg-primary text-white py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit"><span class="material-symbols-outlined">send</span> Envoyer le code</button>
+</form>
+<!-- Étape 2 : code + nouveau mot de passe -->
+<form class="space-y-5 hidden" id="forgot-step2">
+<div class="bg-tertiary/10 border border-tertiary/30 rounded-lg p-3 text-sm flex items-start gap-2">
+<span class="material-symbols-outlined text-[18px] text-tertiary shrink-0">mail</span>
+<span>Mode démonstration. Code de réinitialisation&nbsp;: <strong class="tracking-[0.25em]" id="forgot-code-demo">----</strong></span>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="forgot-code">Code de réinitialisation</label>
+<input class="w-full text-center text-xl font-bold tracking-[0.4em] px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none" id="forgot-code" inputmode="numeric" maxlength="4" placeholder="••••" required/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="forgot-newpw">Nouveau mot de passe</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="forgot-newpw" placeholder="Nouveau mot de passe" type="password"/>
+<ul class="text-caption text-on-surface-variant grid grid-cols-2 gap-x-3 gap-y-1 mt-1" id="forgot-pw-rules">
+<li class="flex items-center gap-1" data-rule="length"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> 12 caractères</li>
+<li class="flex items-center gap-1" data-rule="upper"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> 1 majuscule</li>
+<li class="flex items-center gap-1" data-rule="digit"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> 1 chiffre</li>
+<li class="flex items-center gap-1" data-rule="special"><span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span> 1 caractère spécial</li>
+</ul>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="forgot-newpw2">Confirmer le mot de passe</label>
+<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" id="forgot-newpw2" placeholder="Confirmer" type="password"/>
+</div>
+<button class="w-full bg-primary text-white py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit"><span class="material-symbols-outlined">lock_reset</span> Réinitialiser le mot de passe</button>
+</form>
+<!-- Étape 3 : succès -->
+<div class="hidden text-center py-6" id="forgot-done">
+<div class="w-16 h-16 mx-auto rounded-full bg-secondary-container text-secondary flex items-center justify-center mb-4"><span class="material-symbols-outlined text-[36px]">check_circle</span></div>
+<h3 class="font-title-lg text-title-lg mb-2">Mot de passe réinitialisé</h3>
+<p class="text-on-surface-variant font-body-md text-sm max-w-md mx-auto mb-6">Vous pouvez désormais vous connecter avec votre nouveau mot de passe.</p>
+<button class="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all inline-flex items-center gap-2" id="forgot-done-login" type="button"><span class="material-symbols-outlined">login</span> Aller à la connexion</button>
+</div>
+</div>
+</div>
 <!-- Inscription -->
 <div class="auth-tab-panel" id="tab-inscription">
-<h3 class="font-title-lg text-title-lg mb-2">Création de compte assuré</h3>
-<p class="text-on-surface-variant font-body-md text-sm mb-6">Réservé aux militaires en fonction. Votre compte sera vérifié avant activation.</p>
-<form class="grid grid-cols-1 md:grid-cols-2 gap-5">
-<div class="md:col-span-2 space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Nom complet</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="Ex: Jean-Baptiste Sawadogo" type="text"/>
+<!-- Écran de succès (masqué par défaut) -->
+<div class="hidden text-center py-8" id="register-success">
+<div class="w-16 h-16 mx-auto rounded-full bg-secondary-container text-secondary flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-[36px]">mark_email_read</span>
 </div>
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Matricule militaire</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="12345-X" type="text"/>
+<h3 class="font-title-lg text-title-lg mb-2">Demande enregistrée&nbsp;!</h3>
+<p class="text-on-surface-variant font-body-md text-sm max-w-md mx-auto mb-6">
+                                    Merci. Votre demande d'inscription a bien été transmise à la CAMA. Un gestionnaire va
+                                    <strong>vérifier vos informations et pièces justificatives</strong>. Dès que votre compte
+                                    sera validé, vous recevrez votre <strong>numéro CAMA</strong> et pourrez vous connecter.
+                                </p>
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-left text-sm mb-6 max-w-md mx-auto">
+<p class="flex items-center gap-2 text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-tertiary">hourglass_top</span> Statut&nbsp;: <strong class="text-on-surface">En attente de validation</strong></p>
 </div>
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Numéro CAMA</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="CAMA-000000" type="text"/>
+<button class="auth-goto-login bg-primary text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all inline-flex items-center gap-2" type="button">
+<span class="material-symbols-outlined">login</span> Aller à la connexion
+                                </button>
 </div>
-<div class="md:col-span-2 space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Adresse e-mail</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="vous@exemple.bf" type="email"/>
+<!-- Formulaire -->
+<div id="register-form-wrap">
+<h3 class="font-title-lg text-title-lg mb-1">Création de compte assuré</h3>
+<p class="text-on-surface-variant font-body-md text-sm mb-5">Réservé aux militaires en fonction. Aucun numéro CAMA n'est requis : il vous sera attribué après validation de votre dossier.</p>
+<div class="hidden mb-5" id="register-banner" role="alert"></div>
+<form class="space-y-7" id="register-form" novalidate="">
+<!-- Section : Profil -->
+<fieldset class="space-y-4">
+<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">badge</span> Informations de profil</legend>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="reg-label" for="r-matricule">N° Matricule <span class="text-error">*</span></label>
+<input class="reg-input" id="r-matricule" name="matricule" placeholder="Ex : 12345-X" required type="text"/>
 </div>
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Mot de passe</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="12 caractères minimum" type="password"/>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-telephone">Téléphone <span class="text-error">*</span></label>
+<input class="reg-input" id="r-telephone" name="telephone" placeholder="+226 70 xx xx xx" required type="tel"/>
 </div>
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Confirmation</label>
-<input class="w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" placeholder="••••••••" type="password"/>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-nom">Nom <span class="text-error">*</span></label>
+<input class="reg-input" id="r-nom" name="nom" placeholder="Nom de famille" required type="text"/>
 </div>
-<div class="md:col-span-2 flex items-start gap-3 py-1">
-<input class="w-5 h-5 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer" type="checkbox"/>
-<span class="text-caption text-on-surface-variant">J'accepte que mes données soient traitées conformément à la politique de confidentialité de la CAMA.</span>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-prenom">Prénom(s) <span class="text-error">*</span></label>
+<input class="reg-input" id="r-prenom" name="prenom" placeholder="Prénom(s)" required type="text"/>
 </div>
-<div class="md:col-span-2">
-<button class="w-full bg-secondary text-on-secondary py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2" type="submit">
-<span class="material-symbols-outlined">person_add</span>
-                                        Créer mon compte
-                                    </button>
+<div class="space-y-1.5 md:col-span-2">
+<label class="reg-label" for="r-email">Email valide <span class="text-error">*</span></label>
+<input autocomplete="email" class="reg-input" id="r-email" name="email" placeholder="vous@exemple.bf" required type="email"/>
 </div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-naissance">Date de naissance <span class="text-error">*</span></label>
+<input class="reg-input" id="r-naissance" name="dateNaissance" required type="date"/>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-genre">Genre <span class="text-error">*</span></label>
+<select class="reg-input" id="r-genre" name="genre" required>
+<option value="Masculin">Masculin</option>
+<option value="Féminin">Féminin</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-lieu">Lieu de naissance <span class="text-error">*</span></label>
+<input class="reg-input" id="r-lieu" name="lieuNaissance" placeholder="Ville de naissance" required type="text"/>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-pays-naissance">Pays de naissance <span class="text-error">*</span></label>
+<select class="reg-input" data-pays="" id="r-pays-naissance" name="paysNaissance" required>
+<option disabled selected value="">— Pays de naissance —</option>
+</select>
+</div>
+</div>
+</fieldset>
+<!-- Section : Pièce d'identité -->
+<fieldset class="space-y-4">
+<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">contact_page</span> Pièce d'identité</legend>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="reg-label" for="r-type-piece">Type de pièce d'identité <span class="text-error">*</span></label>
+<select class="reg-input" id="r-type-piece" name="typePiece" required>
+<option value="CNIB">Carte Nationale d'Identité (CNIB)</option>
+<option value="Passeport">Passeport</option>
+<option value="Carte de séjour">Carte de séjour</option>
+<option value="Carte militaire">Carte militaire</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-num-piece">Numéro de pièce d'identité <span class="text-error">*</span></label>
+<input class="reg-input" id="r-num-piece" name="numeroPiece" placeholder="Numéro de la pièce" required type="text"/>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="reg-label" for="r-piece-file">Pièce d'identité (scan / photo) <span class="text-error">*</span></label>
+<input accept="image/*,application/pdf" class="reg-file" id="r-piece-file" name="pieceFichier" required type="file"/>
+</div>
+</div>
+</fieldset>
+<!-- Section : Informations professionnelles -->
+<fieldset class="space-y-4">
+<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">military_tech</span> Informations professionnelles</legend>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5 md:col-span-2 flex items-center gap-4">
+<div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden flex items-center justify-center shrink-0 border border-outline-variant" id="r-photo-preview">
+<span class="material-symbols-outlined text-on-surface-variant">add_a_photo</span>
+</div>
+<div class="flex-1 space-y-1.5">
+<label class="reg-label" for="r-photo">Photo d'identité <span class="text-error">*</span></label>
+<input accept="image/*" class="reg-file" id="r-photo" name="photo" required type="file"/>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-grade">Grade <span class="text-error">*</span></label>
+<select class="reg-input" id="r-grade" name="grade" required>
+<option disabled selected value="">— Grade —</option>
+<option>Soldat de 2e classe</option>
+<option>Soldat de 1re classe</option>
+<option>Caporal</option>
+<option>Caporal-chef</option>
+<option>Sergent</option>
+<option>Sergent-chef</option>
+<option>Adjudant</option>
+<option>Adjudant-chef</option>
+<option>Aspirant</option>
+<option>Sous-lieutenant</option>
+<option>Lieutenant</option>
+<option>Capitaine</option>
+<option>Commandant</option>
+<option>Lieutenant-colonel</option>
+<option>Colonel</option>
+<option>Colonel-major</option>
+<option>Général</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-carte-pro">Carte professionnelle <span class="text-error">*</span></label>
+<input accept="image/*,application/pdf" class="reg-file" id="r-carte-pro" name="carteProFichier" required type="file"/>
+</div>
+</div>
+</fieldset>
+<!-- Section : Connexion -->
+<fieldset class="space-y-4">
+<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">lock</span> Informations de connexion</legend>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1.5">
+<label class="reg-label" for="r-password">Mot de passe <span class="text-error">*</span></label>
+<input autocomplete="new-password" class="reg-input" id="r-password" name="password" placeholder="Mot de passe" required type="password"/>
+</div>
+<div class="space-y-1.5">
+<label class="reg-label" for="r-password2">Confirmer le mot de passe <span class="text-error">*</span></label>
+<input autocomplete="new-password" class="reg-input" id="r-password2" name="password2" placeholder="Confirmer" required type="password"/>
+</div>
+</div>
+<!-- Indicateurs de robustesse -->
+<ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-caption text-on-surface-variant mt-1" id="pw-rules">
+<li class="flex items-center gap-1.5" data-rule="length"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Au moins 12 caractères</li>
+<li class="flex items-center gap-1.5" data-rule="upper"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Une majuscule</li>
+<li class="flex items-center gap-1.5" data-rule="digit"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un chiffre</li>
+<li class="flex items-center gap-1.5" data-rule="special"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un caractère spécial</li>
+</ul>
+</fieldset>
+<div class="flex items-start gap-3 py-1">
+<input class="w-5 h-5 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer shrink-0" id="r-cgu" required type="checkbox"/>
+<label class="text-caption text-on-surface-variant" for="r-cgu">En cochant cette case, je déclare que toutes les informations saisies sont exactes et complètes et j'accepte les <a class="text-primary font-semibold hover:underline" href="mention_legales.html">Conditions Générales d'Utilisation</a> et la <a class="text-primary font-semibold hover:underline" href="mention_legales.html">Politique de confidentialité</a>.</label>
+</div>
+<button class="w-full bg-secondary text-on-secondary py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60" id="register-submit" type="submit">
+<span class="material-symbols-outlined">person_add</span> Soumettre ma demande
+                                </button>
 </form>
+</div>
 </div>
 </div>
 </div>
@@ -230,7 +434,7 @@
             const buttons = document.querySelectorAll('.auth-tab-btn');
             const panels = document.querySelectorAll('.auth-tab-panel');
 
-            function activate(tab) {
+            window.authActivate = function (tab) {
                 buttons.forEach(btn => {
                     const isActive = btn.dataset.tab === tab;
                     btn.classList.toggle('text-primary', isActive);
@@ -241,27 +445,301 @@
                 panels.forEach(panel => {
                     panel.classList.toggle('is-active', panel.id === 'tab-' + tab);
                 });
-            }
+            };
 
             buttons.forEach(btn => {
-                btn.addEventListener('click', () => activate(btn.dataset.tab));
+                btn.addEventListener('click', () => window.authActivate(btn.dataset.tab));
             });
 
             const initial = window.location.hash === '#inscription' ? 'inscription' : 'connexion';
-            activate(initial);
+            window.authActivate(initial);
         })();
-
     </script>
+<script src="countries.js"></script>
+<script src="flag-select.js"></script>
 <script src="assure/assure-data.js"></script>
 <script>
-        // Login mock redirect
         (function () {
-            const form = document.getElementById('login-form');
-            if (!form) return;
-            form.addEventListener('submit', function (e) {
+            function banner(el, type, html) {
+                if (!el) return;
+                const styles = {
+                    error: 'bg-error-container text-on-error-container',
+                    success: 'bg-secondary-container text-on-secondary-container',
+                    info: 'bg-tertiary/15 text-on-surface',
+                    warning: 'bg-tertiary/20 text-on-surface'
+                };
+                const icons = { error: 'error', success: 'check_circle', info: 'info', warning: 'hourglass_top' };
+                el.className = `flex items-start gap-2 p-3.5 rounded-lg text-sm ${styles[type] || styles.info}`;
+                el.innerHTML = `<span class="material-symbols-outlined text-[20px] shrink-0">${icons[type] || 'info'}</span><span>${html}</span>`;
+                el.classList.remove('hidden');
+            }
+
+            // --- Remplissage des listes de pays (tous les pays, avec drapeau) ---
+            const PAYS_LIST = (window.CamaCountries || []).slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+            PAYS_LIST.sort((a, b) => (a.code === 'BF' ? -1 : b.code === 'BF' ? 1 : 0));
+            document.querySelectorAll('select[data-pays]').forEach(sel => {
+                const def = sel.dataset.pays;
+                PAYS_LIST.forEach(c => {
+                    const o = document.createElement('option');
+                    o.value = c.name;
+                    o.textContent = `${CamaFlag(c.code)}  ${c.name}`;
+                    if (c.name === def) o.selected = true;
+                    sel.appendChild(o);
+                });
+                const autre = document.createElement('option');
+                autre.value = 'Autre'; autre.textContent = '🏳️  Autre';
+                sel.appendChild(autre);
+            });
+            if (window.CamaFlagSelect) CamaFlagSelect.enhanceAll('select[data-pays]');
+
+            // ====================== CONNEXION + 2FA + RÉCUPÉRATION ======================
+            const loginForm = document.getElementById('login-form');
+            const loginBanner = document.getElementById('login-banner');
+            const gen4 = () => String(Math.floor(1000 + Math.random() * 9000));
+            const hideBanner = el => { if (el) el.className = 'hidden'; };
+            const pwRules = {
+                length: v => v.length >= 12, upper: v => /[A-Z]/.test(v),
+                digit: v => /[0-9]/.test(v), special: v => /[^A-Za-z0-9]/.test(v)
+            };
+
+            function showAuthView(name) {
+                ['login', '2fa', 'forgot'].forEach(v => {
+                    document.getElementById('view-' + v)?.classList.toggle('hidden', v !== name);
+                });
+            }
+
+            // --- Connexion : vérification des identifiants puis 2FA ---
+            let pendingLogin = null; // { profile, email, code }
+            if (loginForm) {
+                loginForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const email = document.getElementById('login-email').value;
+                    const password = document.getElementById('login-password').value;
+                    const res = CamaAssureData.verifyAssureCredentials(email, password);
+                    if (!res.ok) {
+                        const type = (res.status === 'pending' || res.status === 'refused' || res.status === 'disabled') ? 'warning' : 'error';
+                        banner(loginBanner, type, res.error);
+                        return;
+                    }
+                    hideBanner(loginBanner);
+                    pendingLogin = { profile: res.profile, email: res.email, code: gen4() };
+                    document.getElementById('twofa-email').textContent = res.email;
+                    document.getElementById('twofa-code-demo').textContent = pendingLogin.code;
+                    document.getElementById('twofa-input').value = '';
+                    hideBanner(document.getElementById('twofa-banner'));
+                    showAuthView('2fa');
+                    setTimeout(() => document.getElementById('twofa-input').focus(), 50);
+                });
+            }
+
+            const twofaForm = document.getElementById('twofa-form');
+            twofaForm?.addEventListener('submit', function (e) {
                 e.preventDefault();
-                CamaAssureData.setAssureSession();
+                const code = document.getElementById('twofa-input').value.trim();
+                if (!pendingLogin) { showAuthView('login'); return; }
+                if (code !== pendingLogin.code) {
+                    banner(document.getElementById('twofa-banner'), 'error', 'Code incorrect. Vérifiez le code reçu et réessayez.');
+                    return;
+                }
+                CamaAssureData.setAssureSession(pendingLogin.profile || undefined);
                 window.location.href = 'assure/dashboard.html';
+            });
+            document.getElementById('twofa-resend')?.addEventListener('click', () => {
+                if (!pendingLogin) return;
+                pendingLogin.code = gen4();
+                document.getElementById('twofa-code-demo').textContent = pendingLogin.code;
+                banner(document.getElementById('twofa-banner'), 'info', 'Un nouveau code a été envoyé.');
+            });
+            document.getElementById('twofa-back')?.addEventListener('click', () => { pendingLogin = null; showAuthView('login'); });
+
+            // --- Mot de passe oublié ---
+            const forgotBanner = document.getElementById('forgot-banner');
+            let pendingReset = null; // { email, code }
+
+            function resetForgotFlow() {
+                pendingReset = null;
+                hideBanner(forgotBanner);
+                document.getElementById('forgot-step1').reset();
+                document.getElementById('forgot-step2').reset();
+                document.getElementById('forgot-step1').classList.remove('hidden');
+                document.getElementById('forgot-step2').classList.add('hidden');
+                document.getElementById('forgot-done').classList.add('hidden');
+            }
+
+            document.getElementById('forgot-link')?.addEventListener('click', () => { resetForgotFlow(); showAuthView('forgot'); });
+            document.getElementById('forgot-back')?.addEventListener('click', () => showAuthView('login'));
+            document.getElementById('forgot-done-login')?.addEventListener('click', () => showAuthView('login'));
+
+            document.getElementById('forgot-step1')?.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const email = document.getElementById('forgot-email').value.trim();
+                if (!CamaAssureData.assureAccountExists(email)) {
+                    banner(forgotBanner, 'error', 'Aucun compte ne correspond à cette adresse e-mail.');
+                    return;
+                }
+                pendingReset = { email, code: gen4() };
+                document.getElementById('forgot-code-demo').textContent = pendingReset.code;
+                hideBanner(forgotBanner);
+                document.getElementById('forgot-step1').classList.add('hidden');
+                document.getElementById('forgot-step2').classList.remove('hidden');
+            });
+
+            const forgotPw = document.getElementById('forgot-newpw');
+            forgotPw?.addEventListener('input', () => {
+                document.querySelectorAll('#forgot-pw-rules li').forEach(li => {
+                    const ok = pwRules[li.dataset.rule](forgotPw.value);
+                    li.classList.toggle('text-secondary', ok);
+                    li.querySelector('.material-symbols-outlined').textContent = ok ? 'check_circle' : 'radio_button_unchecked';
+                });
+            });
+
+            document.getElementById('forgot-step2')?.addEventListener('submit', function (e) {
+                e.preventDefault();
+                if (!pendingReset) { showAuthView('forgot'); return; }
+                const code = document.getElementById('forgot-code').value.trim();
+                const npw = document.getElementById('forgot-newpw').value;
+                const npw2 = document.getElementById('forgot-newpw2').value;
+                if (code !== pendingReset.code) { banner(forgotBanner, 'error', 'Code de réinitialisation incorrect.'); return; }
+                if (!Object.values(pwRules).every(fn => fn(npw))) { banner(forgotBanner, 'error', 'Le mot de passe ne respecte pas les critères de sécurité.'); return; }
+                if (npw !== npw2) { banner(forgotBanner, 'error', 'Les deux mots de passe ne correspondent pas.'); return; }
+                const res = CamaAssureData.resetAssurePassword(pendingReset.email, npw);
+                if (!res.ok) { banner(forgotBanner, 'error', res.error || 'Réinitialisation impossible.'); return; }
+                document.getElementById('forgot-step2').classList.add('hidden');
+                document.getElementById('forgot-done').classList.remove('hidden');
+            });
+
+            // ====================== INSCRIPTION ======================
+            const regForm = document.getElementById('register-form');
+            if (!regForm) return;
+            const regBanner = document.getElementById('register-banner');
+            const pw = document.getElementById('r-password');
+            const pw2 = document.getElementById('r-password2');
+
+            // Aperçu photo
+            const photoInput = document.getElementById('r-photo');
+            const photoPreview = document.getElementById('r-photo-preview');
+            photoInput.addEventListener('change', function () {
+                const f = this.files[0];
+                if (f && f.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = e => { photoPreview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" alt="Aperçu"/>`; };
+                    reader.readAsDataURL(f);
+                }
+            });
+
+            // Robustesse du mot de passe
+            const rules = {
+                length: v => v.length >= 12,
+                upper: v => /[A-Z]/.test(v),
+                digit: v => /[0-9]/.test(v),
+                special: v => /[^A-Za-z0-9]/.test(v)
+            };
+            function checkRules(v) {
+                let allOk = true;
+                document.querySelectorAll('#pw-rules li').forEach(li => {
+                    const ok = rules[li.dataset.rule](v);
+                    if (!ok) allOk = false;
+                    li.classList.toggle('ok', ok);
+                    li.querySelector('.material-symbols-outlined').textContent = ok ? 'check_circle' : 'radio_button_unchecked';
+                });
+                return allOk;
+            }
+            pw.addEventListener('input', () => checkRules(pw.value));
+
+            function fileToDataUrl(file) {
+                return new Promise(resolve => {
+                    if (!file) return resolve(null);
+                    const reader = new FileReader();
+                    reader.onload = e => resolve(e.target.result);
+                    reader.onerror = () => resolve(null);
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function markInvalid(el, bad) {
+                if (el) el.classList.toggle('is-invalid', bad);
+            }
+
+            regForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                regBanner.classList.add('hidden');
+
+                // Validation HTML5 native d'abord
+                const requiredEls = regForm.querySelectorAll('[required]');
+                let firstInvalid = null;
+                requiredEls.forEach(el => {
+                    const empty = el.type === 'checkbox' ? !el.checked : !String(el.value).trim();
+                    markInvalid(el, empty);
+                    if (empty && !firstInvalid) firstInvalid = el;
+                });
+                if (firstInvalid) {
+                    banner(regBanner, 'error', 'Veuillez renseigner tous les champs obligatoires.');
+                    firstInvalid.focus();
+                    return;
+                }
+                if (!checkRules(pw.value)) {
+                    markInvalid(pw, true);
+                    banner(regBanner, 'error', 'Le mot de passe ne respecte pas les critères de sécurité.');
+                    pw.focus();
+                    return;
+                }
+                if (pw.value !== pw2.value) {
+                    markInvalid(pw2, true);
+                    banner(regBanner, 'error', 'Les deux mots de passe ne correspondent pas.');
+                    pw2.focus();
+                    return;
+                }
+
+                const btn = document.getElementById('register-submit');
+                btn.disabled = true;
+
+                const [photo] = await Promise.all([fileToDataUrl(photoInput.files[0])]);
+                const data = {
+                    matricule: document.getElementById('r-matricule').value,
+                    nom: document.getElementById('r-nom').value,
+                    prenom: document.getElementById('r-prenom').value,
+                    telephone: document.getElementById('r-telephone').value,
+                    email: document.getElementById('r-email').value,
+                    dateNaissance: (function () { const v = document.getElementById('r-naissance').value; if (!v) return ''; const [y, m, d] = v.split('-'); return `${d}/${m}/${y}`; })(),
+                    lieuNaissance: document.getElementById('r-lieu').value,
+                    paysNaissance: document.getElementById('r-pays-naissance').value,
+                    genre: document.getElementById('r-genre').value,
+                    typePiece: document.getElementById('r-type-piece').value,
+                    numeroPiece: document.getElementById('r-num-piece').value,
+                    pieceFichier: document.getElementById('r-piece-file').files[0]?.name || null,
+                    photo: photo,
+                    carteProFichier: document.getElementById('r-carte-pro').files[0]?.name || null,
+                    grade: document.getElementById('r-grade').value,
+                    password: pw.value
+                };
+
+                let res;
+                try {
+                    res = CamaAssureData.registerAssure(data);
+                } catch (err) {
+                    res = { error: 'Une erreur est survenue. Réessayez (l\'image est peut-être trop volumineuse).' };
+                }
+                btn.disabled = false;
+
+                if (res.error) {
+                    if (res.field) markInvalid(document.getElementById('r-' + (res.field === 'email' ? 'email' : 'matricule')), true);
+                    banner(regBanner, 'error', res.error);
+                    return;
+                }
+
+                // Succès : afficher l'écran de confirmation
+                document.getElementById('register-form-wrap').classList.add('hidden');
+                document.getElementById('register-success').classList.remove('hidden');
+                document.getElementById('register-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+
+            // Bouton "Aller à la connexion" depuis l'écran de succès
+            document.querySelectorAll('.auth-goto-login').forEach(b => {
+                b.addEventListener('click', () => {
+                    window.authActivate('connexion');
+                    banner(loginBanner, 'info', 'Votre demande est enregistrée. Vous pourrez vous connecter dès que la CAMA aura validé votre compte.');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
             });
         })();
     </script>

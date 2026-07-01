@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ressources | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = { darkMode: "class", theme: { extend: {
+    "colors": { "primary": "#9e001f", "surface-container-low": "#f6f3f2", "surface-container-high": "#eae7e7", "secondary": "#006e27", "tertiary": "#745b00", "on-surface-variant": "#5c403f", "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "primary-fixed": "#ffdad8", "error": "#ba1a1a" },
+    "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"] },
+    "fontSize": { "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "body-md": ["14px", {"lineHeight": "22px"}], "caption": ["11px", {"lineHeight": "15px"}], "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}] }
+} } }
+</script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+.material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+#sidebar { transition: transform 0.25s ease; }
+@media (max-width: 767px) { #sidebar { position: fixed; transform: translateX(-100%); } body.sidebar-open #sidebar { transform: translateX(0); } body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; } #content-shell { margin-left: 0 !important; } }
+#sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+.modal-overlay { display: none; } .modal-overlay.is-open { display: flex; }
+</style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html"><img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/><span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span></a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1"><span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span><select class="w-full text-[12px] font-bold py-0.5" id="role-select"><option value="administrateur">Administrateur technique</option><option value="superviseur">Superviseur / Responsable</option></select></div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="ressources.html"><span class="material-symbols-outlined text-[20px]">folder_open</span> Ressources</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="partenaires.html"><span class="material-symbols-outlined text-[20px]">handshake</span> Partenaires & centres</a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3"><button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button><div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Ressources</h1><p class="text-caption text-on-surface-variant hidden sm:block">Documents téléchargeables, classés par catégorie</p></div></div>
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html"><div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm">AO</div></a>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-5">
+<!-- Catégories -->
+<div class="assure-card p-5">
+<div class="flex items-center justify-between mb-3"><h2 class="font-title-lg text-sm font-bold">Catégories</h2></div>
+<div class="flex flex-wrap gap-2 mb-3" id="cats-list"></div>
+<div class="flex gap-2 max-w-sm"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" id="new-cat" placeholder="Nouvelle catégorie…" type="text"/><button class="px-3 py-2 text-xs font-bold bg-primary text-on-primary rounded-lg flex items-center gap-1" id="add-cat" type="button"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter</button></div>
+</div>
+<!-- Documents -->
+<div class="flex flex-wrap gap-2 items-center justify-between">
+<div class="flex flex-wrap gap-2" id="category-pills"></div>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5" onclick="openEditor(null)" type="button"><span class="material-symbols-outlined text-[16px]">add</span> Nouveau document</button>
+</div>
+<div class="assure-card overflow-x-auto"><table class="w-full text-xs"><thead><tr class="border-b border-outline-variant text-left text-[10px] uppercase text-on-surface-variant"><th class="p-3">Document</th><th class="p-3">Catégorie</th><th class="p-3">Format</th><th class="p-3">Statut</th><th class="p-3">Ordre</th><th class="p-3"></th></tr></thead><tbody id="res-tbody"></tbody></table></div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMA — Studio de contenu</footer>
+</div>
+<!-- Editor modal -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-50 items-center justify-center p-4" id="editor-overlay">
+<div class="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"><div class="flex items-center justify-between p-5 border-b border-outline-variant"><h3 class="font-semibold text-sm">Document</h3><button onclick="closeEditor()" type="button"><span class="material-symbols-outlined">close</span></button></div>
+<form class="p-5 space-y-4" id="res-form">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Titre</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-titre" required/></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Description</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-description" rows="3"></textarea></div>
+<div class="grid grid-cols-2 gap-3">
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Catégorie</label><select class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-categorie"></select></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Ordre</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-ordre" min="1" type="number" value="1"/></div>
+</div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Fichier (PDF, DOC, image…)</label><input class="w-full text-xs" id="f-fichier" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"/><p class="text-[10px] text-on-surface-variant mt-1" id="f-fichier-info">Optionnel. Pour les fichiers volumineux, renseignez plutôt une URL ci-dessous.</p></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">… ou URL externe</label><input class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="f-url" placeholder="https://…" type="text"/></div>
+<div><label class="flex items-center gap-2 text-xs font-semibold"><input checked class="rounded border-outline-variant text-primary" id="f-publie" type="checkbox"/> Publié</label></div>
+<div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs font-bold border border-outline-variant rounded-lg" onclick="closeEditor()" type="button">Annuler</button><button class="px-4 py-2 text-xs font-bold bg-primary text-on-primary rounded-lg" type="submit">Enregistrer</button></div>
+</form></div></div>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold" id="toast-content"></div></div>
+<script src="../../site-content.js"></script>
+<script>
+let RES = [];
+let CATS = [];
+let activeCat = 'Toutes';
+let pendingFile = null; // { url, format, taille }
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function showToast(m){ const t=document.getElementById('toast'); document.getElementById('toast-content').innerHTML=m; t.classList.remove('hidden'); setTimeout(()=>t.classList.add('hidden'),3000); }
+
+function load(){ RES = CamaSiteContent.getRessources(); CATS = CamaSiteContent.getRessourceCategories(); renderCats(); renderPills(); fillCatSelect(); render(); }
+function saveRes(){ CamaSiteContent.saveRessources(RES); render(); }
+function saveCats(){ CamaSiteContent.saveRessourceCategories(CATS); renderCats(); renderPills(); fillCatSelect(); }
+
+function renderCats(){
+    document.getElementById('cats-list').innerHTML = CATS.map(c => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-surface-container-high text-on-surface">${esc(c)}
+        <button type="button" title="Supprimer" onclick="removeCat('${esc(c)}')"><span class="material-symbols-outlined text-[14px] text-error">close</span></button></span>`).join('')
+        || '<span class="text-[11px] text-on-surface-variant italic">Aucune catégorie.</span>';
+}
+function removeCat(c){
+    const used = RES.filter(r => r.categorie === c).length;
+    if (used && !confirm(`${used} document(s) utilisent « ${c} ». Supprimer quand même la catégorie ?`)) return;
+    CATS = CATS.filter(x => x !== c); saveCats();
+    if (activeCat === c) { activeCat = 'Toutes'; renderPills(); render(); }
+}
+document.getElementById('add-cat').addEventListener('click', () => {
+    const v = document.getElementById('new-cat').value.trim();
+    if (!v) return;
+    if (CATS.includes(v)) { showToast('<span class="material-symbols-outlined">error</span> Catégorie déjà existante.'); return; }
+    CATS.push(v); document.getElementById('new-cat').value=''; saveCats();
+});
+
+function renderPills(){
+    const cats = ['Toutes', ...CATS];
+    document.getElementById('category-pills').innerHTML = cats.map(c => `<button type="button" class="px-3 py-1.5 rounded-full text-[11px] font-semibold border ${activeCat===c?'bg-primary text-on-primary border-primary':'bg-white text-on-surface-variant border-outline-variant'}" onclick="setCat('${esc(c)}')">${esc(c)}</button>`).join('');
+}
+function setCat(c){ activeCat=c; renderPills(); render(); }
+function fillCatSelect(){ document.getElementById('f-categorie').innerHTML = CATS.map(c => `<option>${esc(c)}</option>`).join(''); }
+
+function render(){
+    const list = (activeCat==='Toutes' ? RES : RES.filter(r=>r.categorie===activeCat)).slice().sort((a,b)=>(a.ordre||0)-(b.ordre||0));
+    document.getElementById('res-tbody').innerHTML = list.map(r => `
+        <tr class="border-b border-outline-variant last:border-0">
+            <td class="p-3 font-semibold max-w-xs truncate">${esc(r.titre)}</td>
+            <td class="p-3 text-on-surface-variant">${esc(r.categorie)}</td>
+            <td class="p-3 text-on-surface-variant">${esc(r.format||'PDF')}${r.taille?' · '+esc(r.taille):''}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-semibold ${r.publie?'bg-secondary text-on-secondary':'bg-surface-container-high text-on-surface-variant'}">${r.publie?'Publié':'Brouillon'}</span></td>
+            <td class="p-3 text-on-surface-variant">${r.ordre||1}</td>
+            <td class="p-3 text-right whitespace-nowrap"><button onclick="openEditor(${r.id})"><span class="material-symbols-outlined text-[18px]">edit</span></button><button class="ml-2" onclick="removeRes(${r.id})"><span class="material-symbols-outlined text-[18px] text-error">delete</span></button></td>
+        </tr>`).join('') || '<tr><td class="p-6 text-center text-on-surface-variant" colspan="6">Aucun document dans cette catégorie.</td></tr>';
+}
+
+function openEditor(id){
+    const f = document.getElementById('res-form'); f.reset(); f.dataset.editId = id || ''; pendingFile = null;
+    document.getElementById('f-fichier-info').textContent = 'Optionnel. Pour les fichiers volumineux, renseignez plutôt une URL ci-dessous.';
+    fillCatSelect();
+    if (id){
+        const r = RES.find(x=>x.id===id);
+        document.getElementById('f-titre').value = r.titre;
+        document.getElementById('f-description').value = r.description||'';
+        document.getElementById('f-categorie').value = r.categorie;
+        document.getElementById('f-ordre').value = r.ordre||1;
+        document.getElementById('f-url').value = (r.url && r.url!=='#') ? r.url : '';
+        document.getElementById('f-publie').checked = r.publie!==false;
+    }
+    document.getElementById('editor-overlay').classList.add('is-open');
+}
+function closeEditor(){ document.getElementById('editor-overlay').classList.remove('is-open'); }
+function removeRes(id){ if(!confirm('Supprimer ce document ?')) return; RES = RES.filter(r=>r.id!==id); saveRes(); }
+
+function extFormat(name){
+    const ext = (name.split('.').pop()||'').toLowerCase();
+    if (ext==='pdf') return 'PDF';
+    if (['doc','docx'].includes(ext)) return 'DOC';
+    if (['xls','xlsx'].includes(ext)) return 'XLS';
+    if (['png','jpg','jpeg'].includes(ext)) return 'IMG';
+    return ext.toUpperCase()||'PDF';
+}
+function humanSize(bytes){ return bytes < 1024*1024 ? (bytes/1024).toFixed(0)+' Ko' : (bytes/1024/1024).toFixed(1).replace('.',',')+' Mo'; }
+
+document.getElementById('f-fichier').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) { pendingFile = null; return; }
+    if (file.size > 3*1024*1024) {
+        document.getElementById('f-fichier-info').textContent = 'Fichier trop volumineux pour la démo (3 Mo max). Utilisez une URL.';
+        e.target.value=''; pendingFile=null; return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => { pendingFile = { url: reader.result, format: extFormat(file.name), taille: humanSize(file.size) };
+        document.getElementById('f-fichier-info').textContent = `Joint : ${file.name} (${humanSize(file.size)})`; };
+    reader.readAsDataURL(file);
+});
+
+document.getElementById('res-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const editId = e.target.dataset.editId;
+    const urlField = document.getElementById('f-url').value.trim();
+    const base = {
+        titre: document.getElementById('f-titre').value.trim(),
+        description: document.getElementById('f-description').value.trim(),
+        categorie: document.getElementById('f-categorie').value,
+        ordre: parseInt(document.getElementById('f-ordre').value,10)||1,
+        publie: document.getElementById('f-publie').checked
+    };
+    if (pendingFile) { base.url = pendingFile.url; base.format = pendingFile.format; base.taille = pendingFile.taille; }
+    else if (urlField) { base.url = urlField; base.format = extFormat(urlField) || 'PDF'; }
+
+    try {
+        if (editId) {
+            const r = RES.find(x=>x.id==editId);
+            if (!pendingFile && !urlField) { base.url = r.url; base.format = r.format; base.taille = r.taille; }
+            Object.assign(r, base);
+        } else {
+            if (!base.url) { base.url = '#'; base.format = base.format || 'PDF'; }
+            RES.push({ id: Date.now(), taille: base.taille || '', ...base });
+        }
+        CamaSiteContent.saveRessources(RES);
+    } catch (err) {
+        showToast('<span class="material-symbols-outlined">error</span> Stockage saturé : préférez une URL pour les gros fichiers.');
+        return;
+    }
+    closeEditor(); render(); showToast('<span class="material-symbols-outlined">check_circle</span> Document enregistré.');
+});
+
+document.getElementById('sidebar-toggle')?.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+document.getElementById('sidebar-overlay')?.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+load();
+</script>
+<script src="../admin-shell.js"></script>
+</body></html>

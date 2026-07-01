@@ -13,6 +13,7 @@
         { id: 'accueil', label: 'Accueil', href: 'index.html', icon: 'home' },
         { id: 'apropos', label: 'À propos', href: 'apropos.html', icon: 'info' },
         { id: 'services', label: 'Services', href: 'services.html', icon: 'medical_services' },
+        { id: 'ressources', label: 'Ressources', href: 'ressources.html', icon: 'folder_open' },
         { id: 'actualites', label: 'Actualités', href: 'actualite.html', icon: 'newspaper' },
         { id: 'contact', label: 'Contact', href: 'contact.html', icon: 'mail' }
     ];

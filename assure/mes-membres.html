@@ -168,6 +168,9 @@
 </div>
 </div>
 <div class="flex items-center gap-2 md:gap-4">
+<button class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all" id="btn-export-all" type="button">
+<span class="material-symbols-outlined text-[18px]">folder_zip</span> Tout télécharger (ZIP)
+</button>
 <a class="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm" href="ajouter-membre.html">
 <span class="material-symbols-outlined text-[18px]">add_circle</span> Ajouter
 </a>
@@ -231,6 +234,9 @@
 <div class="fixed bottom-6 right-6 z-50 hidden" id="toast">
 <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../dossier-export.js"></script>
 <script src="assure-data.js"></script>
 <script src="assure-shell.js"></script>
 <script>
@@ -287,7 +293,7 @@
                 btns.push(`<button class="px-3 py-1.5 rounded-lg border border-error text-error text-xs font-bold hover:bg-error/5 transition-colors flex items-center gap-1.5" onclick="deleteMembre(${m.id})"><span class="material-symbols-outlined text-[16px]">delete</span> Supprimer</button>`);
             }
             if (m.dossierId) {
-                btns.push(`<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold hover:bg-outline-variant transition-colors flex items-center gap-1.5" onclick="downloadAccuse('${m.dossierId}')"><span class="material-symbols-outlined text-[16px]">download</span> Télécharger l'accusé</button>`);
+                btns.push(`<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold hover:bg-outline-variant transition-colors flex items-center gap-1.5" onclick="exportDossier(${m.id})"><span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> Télécharger le dossier</button>`);
             }
             return btns.join('');
         }
@@ -406,10 +412,36 @@
         function requestWithdrawal(id) {
             showToast('<span class="material-symbols-outlined">check_circle</span> Demande de retrait envoyée au gestionnaire.');
         }
-        function downloadAccuse(dossierId) {
-            const hash = Math.random().toString(16).slice(2, 10);
-            showToast(`<span class="material-symbols-outlined">description</span> Accusé généré pour ${dossierId} (horodatage : ${new Date().toLocaleString('fr-FR')}, hash : ${hash})`);
+
+        function exportDossier(id) {
+            refreshMembres();
+            const idx = MOCK_MEMBRES.findIndex(m => m.id === id);
+            const membre = MOCK_MEMBRES[idx];
+            if (!membre) return;
+            try {
+                CamaDossierExport.exportMembre(membre, MOCK_ASSURE, idx + 1);
+                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Dossier PDF généré.');
+            } catch (e) {
+                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+            }
         }
+
+        async function exportAllZip() {
+            refreshMembres();
+            if (!MOCK_MEMBRES.length) { showToast('<span class="material-symbols-outlined">info</span> Aucun dossier à exporter.'); return; }
+            const btn = document.getElementById('btn-export-all');
+            const original = btn ? btn.innerHTML : '';
+            if (btn) { btn.disabled = true; btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[18px]">sync</span> Préparation…'; }
+            try {
+                await CamaDossierExport.exportZip(MOCK_MEMBRES, MOCK_ASSURE);
+                showToast(`<span class="material-symbols-outlined">folder_zip</span> Archive ZIP de ${MOCK_MEMBRES.length} dossier(s) générée.`);
+            } catch (e) {
+                showToast('<span class="material-symbols-outlined">error</span> Export ZIP indisponible (librairie non chargée).');
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = original; }
+            }
+        }
+        document.getElementById('btn-export-all')?.addEventListener('click', exportAllZip);
 
         function getActiveFilter() {
             const active = document.querySelector('.filter-pill.bg-primary');

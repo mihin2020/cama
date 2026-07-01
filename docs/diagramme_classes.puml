@@ -1,0 +1,374 @@
+@startuml CAMA_Diagramme_de_classes
+' Diagramme de classes CAMA — généré depuis le CDC + le code du prototype.
+' Rendu : VS Code (extension PlantUML), PlantText.com, diagrams.net, ou export PNG/SVG.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam linetype ortho
+hide circle
+skinparam class {
+  BackgroundColor #FBF9F8
+  BorderColor #9E001F
+  ArrowColor #5C403F
+  HeaderBackgroundColor #FFDAD8
+}
+
+' =================================================================
+package "Utilisateurs & accès" {
+  abstract class Utilisateur {
+    +id : int
+    +nom : string
+    +prenom : string
+    +email : string
+    +motDePasseHash : string
+    +deuxFA : bool
+    +dateCreation : DateTime
+    +derniereConnexion : DateTime
+    +seConnecter()
+    +reinitialiserMotDePasse()
+  }
+  class AssurePrincipal {
+    +matricule : string
+    +numeroCama : string
+    +numeroCNIB : string
+    +statut : StatutCompte
+    +creerCompte()
+    +ajouterMembre()
+    +soumettreDossier()
+    +exporterMesDonnees()
+  }
+  class UtilisateurInterne {
+    +role : RoleInterne
+    +actif : bool
+    +creerCompteInterne()
+    +affecterDossier()
+  }
+  class Visiteur {
+    +consulterPagesPubliques()
+    +envoyerMessageContact()
+  }
+  enum RoleInterne {
+    GESTIONNAIRE
+    SUPERVISEUR
+    ADMINISTRATEUR
+    DIRECTION
+  }
+  enum StatutCompte {
+    EN_ATTENTE_VALIDATION
+    ACTIF
+    DESACTIVE
+  }
+  class Permission {
+    +code : string
+    +libelle : string
+  }
+}
+
+' =================================================================
+package "Enrôlement (cœur métier)" {
+  class MembreFamille {
+    +id : int
+    +nom : string
+    +prenoms : string
+    +sexe : Sexe
+    +dateNaissance : Date
+    +lieuNaissance : string
+    +nationalite : string
+    +lien : LienParente
+    +numeroCama : string
+    +numeroIIU : string
+    +numeroCNIB : string
+    --conjoint--
+    +regimeMatrimonial : string
+    +dateMariage : Date
+    +cnibConjoint : string
+    --enfant--
+    +nomSecondParent : string
+    +scolarite : string
+  }
+  class Dossier {
+    +id : int
+    +ref : string
+    +beneficiaire : string
+    +statut : StatutDossier
+    +dateSoumission : Date
+    +dateDecision : Date
+    +motifRefus : string
+    +validationDeuxNiveaux : bool
+    +soumettre()
+    +valider()
+    +refuser(motif)
+    +demanderComplement(pieces)
+    +mettreEnAttente()
+    +genererAccuse() : PDF
+  }
+  enum LienParente {
+    CONJOINT
+    ENFANT_BIOLOGIQUE
+    ENFANT_CONJOINT
+    PARENT
+    AUTRE
+  }
+  enum Sexe {
+    MASCULIN
+    FEMININ
+  }
+  enum StatutDossier {
+    BROUILLON
+    SOUMIS
+    EN_INSTRUCTION
+    PIECE_MANQUANTE_DEMANDEE
+    EN_ATTENTE_SUPERVISION
+    VALIDE
+    REFUSE
+  }
+}
+
+' =================================================================
+package "Pièces & traçabilité" {
+  class PieceJustificative {
+    +id : int
+    +type : TypePiece
+    +nomFichier : string
+    +mimeReel : string
+    +tailleOctets : int
+    +statut : StatutPiece
+    +dateUpload : DateTime
+    +version : int
+    +scanAntivirusOk : bool
+    +telecharger() : urlSignee
+  }
+  class TypePiece {
+    +code : string
+    +libelle : string
+  }
+  enum StatutPiece {
+    SOUMISE
+    VALIDEE
+    MANQUANTE
+    REFUSEE
+  }
+  class JournalEntry {
+    +date : DateTime
+    +libelle : string
+  }
+  class Message {
+    +auteur : AuteurMessage
+    +texte : string
+    +date : DateTime
+  }
+  enum AuteurMessage {
+    ASSURE
+    GESTIONNAIRE
+  }
+  class JournalAudit {
+    +id : int
+    +action : string
+    +cible : string
+    +horodatage : DateTime
+    +adresseIP : string
+    .. lecture seule (CDC 9.9) ..
+  }
+}
+
+' =================================================================
+package "Communication" {
+  class Notification {
+    +id : int
+    +type : string
+    +titre : string
+    +contenu : string
+    +lien : string
+    +date : DateTime
+    +lu : bool
+    +marquerLu()
+  }
+  class ContactMessage {
+    +objet : string
+    +email : string
+    +message : string
+    +fichierJoint : string
+    +date : DateTime
+  }
+}
+
+' =================================================================
+package "Paramétrage & exports" {
+  class ParametreSysteme {
+    +dureeRetentionPieces : int
+    +validationDeuxNiveaux : bool
+    +motifsRefusPredefinis : string[]
+    +modelesEmail : string[]
+    +regleAffectation : string
+  }
+  class Export {
+    +id : int
+    +format : FormatExport
+    +perimetre : string
+    +filtres : string
+    +date : DateTime
+    +generer()
+  }
+  enum FormatExport {
+    CSV
+    XLSX
+    PDF
+  }
+}
+
+' =================================================================
+package "CMS / Site institutionnel" {
+  class Page {
+    +id : string
+    +title : string
+    +slug : string
+    +status : StatutPublication
+    +createdAt : DateTime
+    +updatedAt : DateTime
+    +publier()
+    +dupliquer()
+  }
+  class Section {
+    +uid : string
+    +type : string
+    +settings : object
+  }
+  class Column {
+    +uid : string
+    +width : int
+    +settings : object
+  }
+  class Widget {
+    +uid : string
+    +type : TypeWidget
+    +content : object
+    +style : object
+    +advanced : object
+  }
+  class Menu {
+    +getMenu()
+    +saveMenu()
+  }
+  class MenuItem {
+    +id : string
+    +type : TypeMenuItem
+    +label : string
+    +url : string
+    +depth : int
+  }
+  class Article {
+    +id : int
+    +titre : string
+    +slug : string
+    +contenu : string
+    +image : string
+    +statut : StatutPublication
+    +datePublication : DateTime
+    +auteur : string
+  }
+  class BanniereSlide {
+    +id : int
+    +image : string
+    +titre : string
+    +sousTitre : string
+    +lien : string
+    +ordre : int
+  }
+  class ChiffreCle {
+    +id : int
+    +libelle : string
+    +valeur : string
+    +ordre : int
+  }
+  class FAQ {
+    +id : int
+    +question : string
+    +reponse : string
+    +ordre : int
+    +statut : StatutPublication
+  }
+  class Categorie {
+    +id : int
+    +nom : string
+  }
+  enum StatutPublication {
+    BROUILLON
+    PLANIFIE
+    PUBLIE
+    DEPUBLIE
+  }
+  enum TypeWidget {
+    HEADING
+    TEXT
+    BUTTON
+    IMAGE
+    CARDS
+    STATS
+    ACCORDION
+    TABS
+    CTA
+    HTML
+    AUTRES
+  }
+  enum TypeMenuItem {
+    PAGE
+    CUSTOM
+  }
+}
+
+' =================================================================
+' Héritage
+Utilisateur <|-- AssurePrincipal
+Utilisateur <|-- UtilisateurInterne
+
+' Associations — utilisateurs
+UtilisateurInterne --> RoleInterne
+RoleInterne "1" --> "*" Permission : autorise
+AssurePrincipal --> StatutCompte
+
+' Associations — enrôlement
+AssurePrincipal "1" --> "*" MembreFamille : enrôle
+AssurePrincipal "1" --> "*" Dossier : soumet
+Dossier "1" --> "1" MembreFamille : concerne
+Dossier "*" --> "0..1" UtilisateurInterne : affecté à
+Dossier --> StatutDossier
+MembreFamille --> LienParente
+MembreFamille --> Sexe
+
+' Compositions — pièces & traçabilité
+Dossier "1" *-- "*" PieceJustificative
+Dossier "1" *-- "*" JournalEntry
+Dossier "1" *-- "*" Message
+PieceJustificative --> TypePiece
+PieceJustificative --> StatutPiece
+Message --> AuteurMessage
+Utilisateur "1" --> "*" JournalAudit : trace
+
+' Communication
+Utilisateur "1" --> "*" Notification : reçoit
+Dossier "1" --> "*" Notification : déclenche
+Visiteur ..> ContactMessage : envoie
+
+' Paramétrage & exports
+ParametreSysteme "1" --> "*" TypePiece : définit
+ParametreSysteme "1" --> "*" LienParente : lie pièces
+UtilisateurInterne "1" --> "*" Export : produit
+Export --> FormatExport
+
+' CMS
+Page "1" *-- "*" Section
+Section "1" *-- "*" Column
+Column "1" *-- "*" Widget
+Widget --> TypeWidget
+Menu "1" *-- "*" MenuItem
+MenuItem "*" --> "0..1" Page : pointe vers
+MenuItem --> TypeMenuItem
+Page --> StatutPublication
+Article "*" --> "0..1" Categorie
+FAQ "*" --> "0..1" Categorie
+Article --> StatutPublication
+FAQ --> StatutPublication
+UtilisateurInterne ..> Page : administre
+UtilisateurInterne ..> Article : rédige
+
+@enduml

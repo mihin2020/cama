@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ressources | CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: { extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "spacing": { "stack-md": "16px", "container-max-width": "1200px", "gutter": "24px", "stack-sm": "8px", "margin-mobile": "16px", "unit": "4px", "stack-lg": "32px", "margin-desktop": "32px" },
+            "fontFamily": { "headline-lg-mobile": ["Montserrat"], "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "display-lg": ["Montserrat"], "caption": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}], "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}], "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}], "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}], "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}]
+            }
+        } }
+      }
+    </script>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .shield-pattern { background-color: transparent; background-image: radial-gradient(#e5bdbb 0.5px, transparent 0.5px), radial-gradient(#e5bdbb 0.5px, #fbf9f8 0.5px); background-size: 20px 20px; background-position: 0 0,10px 10px; opacity: 0.1; }
+    </style>
+<link href="site-shell.css" rel="stylesheet"/>
+</head>
+<body class="bg-background text-on-background font-body-md" data-page="ressources">
+<div id="site-shell-top"></div>
+<main>
+<!-- Hero -->
+<section class="relative py-16 md:py-24 overflow-hidden text-white bg-cover bg-center" style="background-image: linear-gradient(rgba(27,28,28,0.82), rgba(27,28,28,0.7)), url('images/CAMA_6.jfif');">
+<div class="relative z-10 max-w-container-max-width mx-auto px-margin-desktop text-center">
+<span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider mb-6">
+<span class="material-symbols-outlined text-[18px]">folder_open</span> Centre de ressources
+</span>
+<h1 class="font-headline-lg text-headline-lg mb-4">Ressources & documents</h1>
+<p class="font-body-lg text-body-lg text-white/85 max-w-2xl mx-auto">Téléchargez les formulaires, guides, attestations et textes de référence de la CAMA, classés par catégorie.</p>
+</div>
+</section>
+<!-- Filtres + liste -->
+<section class="py-stack-lg bg-surface-container-low">
+<div class="max-w-container-max-width mx-auto px-margin-desktop">
+<div class="flex flex-wrap gap-2 mb-8 justify-center" id="cat-filters"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="ressources-grid"></div>
+<p class="hidden text-center text-on-surface-variant py-16" id="ressources-empty">Aucun document dans cette catégorie pour le moment.</p>
+</div>
+</section>
+</main>
+<div id="site-shell-bottom"></div>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold" id="toast-content"></div></div>
+<script src="site-shell.js"></script>
+<script src="site-content.js"></script>
+<script>
+        let RESSOURCES = [];
+        let CATEGORIES = [];
+        let activeCat = 'Toutes';
+
+        const FORMAT_ICON = { PDF: 'picture_as_pdf', DOC: 'description', XLS: 'table', IMG: 'image' };
+
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+        function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3200); }
+
+        function renderFilters() {
+            const cats = ['Toutes', ...CATEGORIES];
+            document.getElementById('cat-filters').innerHTML = cats.map(c => `
+                <button type="button" class="px-4 py-2 rounded-full text-sm font-semibold border transition-colors ${activeCat === c ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
+            document.querySelectorAll('#cat-filters [data-cat]').forEach(btn => {
+                btn.addEventListener('click', () => { activeCat = btn.dataset.cat; renderFilters(); renderGrid(); });
+            });
+        }
+
+        function renderGrid() {
+            const list = activeCat === 'Toutes' ? RESSOURCES : RESSOURCES.filter(r => r.categorie === activeCat);
+            const grid = document.getElementById('ressources-grid');
+            const empty = document.getElementById('ressources-empty');
+            empty.classList.toggle('hidden', list.length > 0);
+            grid.innerHTML = list.map(r => `
+                <article class="bg-white rounded-xl border border-outline-variant p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex items-start gap-3 mb-3">
+                        <span class="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined">${FORMAT_ICON[r.format] || 'description'}</span></span>
+                        <div class="min-w-0">
+                            <span class="inline-block text-[11px] font-semibold uppercase tracking-wide text-primary mb-0.5">${esc(r.categorie)}</span>
+                            <h3 class="font-title-lg text-base leading-snug text-on-surface">${esc(r.titre)}</h3>
+                        </div>
+                    </div>
+                    <p class="text-sm text-on-surface-variant flex-1 mb-4">${esc(r.description || '')}</p>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-on-surface-variant flex items-center gap-1.5"><span class="material-symbols-outlined text-[15px]">${FORMAT_ICON[r.format] || 'description'}</span> ${esc(r.format || 'PDF')}${r.taille ? ' · ' + esc(r.taille) : ''}</span>
+                        <a class="dl-btn inline-flex items-center gap-1.5 bg-primary text-on-primary px-3.5 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-all" href="${esc(r.url || '#')}" data-demo="${(!r.url || r.url === '#') ? '1' : '0'}" ${r.url && r.url !== '#' ? 'download target="_blank" rel="noopener"' : ''}>
+                            <span class="material-symbols-outlined text-[16px]">download</span> Télécharger
+                        </a>
+                    </div>
+                </article>`).join('');
+            grid.querySelectorAll('.dl-btn[data-demo="1"]').forEach(a => {
+                a.addEventListener('click', (e) => { e.preventDefault(); showToast('<span class="material-symbols-outlined">info</span> Document de démonstration — le fichier sera disponible en production.'); });
+            });
+        }
+
+        function init() {
+            CATEGORIES = CamaSiteContent.getRessourceCategories();
+            RESSOURCES = CamaSiteContent.getPublishedRessources();
+            renderFilters();
+            renderGrid();
+        }
+        init();
+    </script>
+</body></html>

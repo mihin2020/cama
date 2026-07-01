@@ -157,6 +157,115 @@
         updateBadges();
     }
 
+    function pendingInscriptionsCount() {
+        try {
+            const raw = localStorage.getItem('cama_assure_registrations');
+            if (!raw) return null; // donnée non encore initialisée
+            const list = JSON.parse(raw);
+            if (!Array.isArray(list)) return 0;
+            return list.filter(r => r.statut === 'En attente de validation').length;
+        } catch (_) { return 0; }
+    }
+
+    function updateInscriptionsBadge() {
+        const badge = document.getElementById('sidebar-inscriptions-badge');
+        if (!badge) return;
+        const fromData = window.CamaAssureData?.getPendingRegistrationsCount?.();
+        const count = (typeof fromData === 'number') ? fromData : (pendingInscriptionsCount() ?? 0);
+        badge.textContent = count > 9 ? '9+' : String(count);
+        badge.classList.toggle('hidden', count === 0);
+        badge.classList.toggle('flex', count > 0);
+    }
+
+    function injectInscriptionsNav() {
+        const nav = document.querySelector('#sidebar nav');
+        if (!nav) return;
+        // Déjà présent (ex. page inscriptions.html) → on met juste le badge à jour.
+        if (nav.querySelector('a[href$="inscriptions.html"]')) {
+            updateInscriptionsBadge();
+            return;
+        }
+        const assuresLink = nav.querySelector('a[href$="assures.html"]');
+        if (!assuresLink) return;
+        const href = assuresLink.getAttribute('href').replace('assures.html', 'inscriptions.html');
+
+        const link = document.createElement('a');
+        link.className = 'sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]';
+        link.setAttribute('data-roles', 'gestionnaire,superviseur,administrateur');
+        link.setAttribute('href', href);
+        link.innerHTML = '<span class="material-symbols-outlined text-[20px]">how_to_reg</span> Inscriptions' +
+            '<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 hidden items-center justify-center" id="sidebar-inscriptions-badge">0</span>';
+
+        // Masquer selon le rôle courant si nécessaire.
+        const role = localStorage.getItem('cama_admin_role') || 'gestionnaire';
+        if (!link.getAttribute('data-roles').split(',').includes(role)) {
+            link.classList.add('role-hidden');
+        }
+
+        assuresLink.parentNode.insertBefore(link, assuresLink);
+        updateInscriptionsBadge();
+    }
+
+    // Le Studio de contenu n'est accessible qu'aux rôles superviseur/administrateur.
+    // Si l'utilisateur arrive avec un rôle hors-CMS (gestionnaire/direction), on le
+    // normalise pour ne pas masquer tout le menu (dont Ressources/Partenaires).
+    function normalizeCmsRole() {
+        const path = window.location.pathname.replace(/\\/g, '/');
+        if (!path.includes('/admin/cms/')) return;
+        const r = localStorage.getItem('cama_admin_role');
+        if (r === 'superviseur' || r === 'administrateur') return;
+        localStorage.setItem('cama_admin_role', 'administrateur');
+        const sel = document.getElementById('role-select');
+        if (sel) sel.value = 'administrateur';
+        if (typeof window.applyRole === 'function') {
+            try { window.applyRole('administrateur'); return; } catch (_) { /* ignore */ }
+        }
+        document.querySelectorAll('#sidebar [data-roles]').forEach(el => {
+            if (el.dataset.roles.split(',').includes('administrateur')) el.classList.remove('role-hidden');
+        });
+    }
+
+    function injectCmsExtraNav() {
+        const path = window.location.pathname.replace(/\\/g, '/');
+        if (!path.includes('/admin/cms/')) return;
+        const nav = document.querySelector('#sidebar nav');
+        if (!nav) return;
+        const role = localStorage.getItem('cama_admin_role') || 'administrateur';
+
+        const addAfter = (anchor, href, icon, label) => {
+            if (nav.querySelector(`a[href$="${href}"]`)) return nav.querySelector(`a[href$="${href}"]`);
+            const a = document.createElement('a');
+            a.className = 'sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]';
+            a.setAttribute('data-roles', 'superviseur,administrateur');
+            a.setAttribute('href', href);
+            a.innerHTML = `<span class="material-symbols-outlined text-[20px]">${icon}</span> ${label}`;
+            if (!a.getAttribute('data-roles').split(',').includes(role)) a.classList.add('role-hidden');
+            if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(a, anchor.nextSibling);
+            else nav.appendChild(a);
+            return a;
+        };
+
+        const faqLink = nav.querySelector('a[href$="faq.html"]') || nav.lastElementChild;
+        const res = addAfter(faqLink, 'ressources.html', 'folder_open', 'Ressources');
+        addAfter(res, 'partenaires.html', 'handshake', 'Partenaires & centres');
+    }
+
+    function ensureAssureData(cb) {
+        if (window.CamaAssureData) { cb(); return; }
+        const p = window.location.pathname.replace(/\\/g, '/');
+        const src = p.includes('/admin/cms/') ? '../../assure/assure-data.js' : '../assure/assure-data.js';
+        if (document.querySelector('script[data-cama-assure-data]')) {
+            document.querySelector('script[data-cama-assure-data]').addEventListener('load', cb, { once: true });
+            return;
+        }
+        const s = document.createElement('script');
+        s.src = src;
+        s.dataset.camaAssureData = '1';
+        s.onload = cb;
+        s.onerror = cb;
+        document.head.appendChild(s);
+    }
+
     function initAnchorTop() {
         const run = () => window.CamaAnchorTop?.init();
         if (window.CamaAnchorTop) {
@@ -191,6 +300,9 @@
             localStorage.setItem(NOTIF_KEY, JSON.stringify(DEFAULT_NOTIFS));
         }
         mountBell();
+        ensureAssureData(injectInscriptionsNav);
+        normalizeCmsRole();
+        injectCmsExtraNav();
         document.querySelectorAll('.sidebar-logout').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();

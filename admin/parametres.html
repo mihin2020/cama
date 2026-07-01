@@ -103,6 +103,7 @@
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1100px] w-full mx-auto">
 <div class="flex flex-wrap gap-2 mb-5" id="tab-pills">
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary" data-tab="liens">Liens de parenté & pièces</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="membres">Membres rattachés</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="retention">Rétention</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="libelles">Libellés & modèles</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="affectation">Règles d'affectation</button>
@@ -118,11 +119,26 @@
 <tr><td class="px-5 py-3 text-xs font-bold">Conjoint(e)</td><td class="px-5 py-3 text-xs">Acte de mariage, copie CNIB du conjoint</td><td class="px-5 py-3 text-xs text-on-surface-variant">Acte de divorce du précédent conjoint</td></tr>
 <tr><td class="px-5 py-3 text-xs font-bold">Enfant biologique</td><td class="px-5 py-3 text-xs">Acte de naissance, copie CNIB du parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Certificat médical de scolarité</td></tr>
 <tr><td class="px-5 py-3 text-xs font-bold">Enfant du conjoint</td><td class="px-5 py-3 text-xs">Acte de naissance, acte de mariage avec le parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Pièce justifiant la garde</td></tr>
-<tr><td class="px-5 py-3 text-xs font-bold">Parent</td><td class="px-5 py-3 text-xs">Acte de naissance de l'assuré, copie CNIB du parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">—</td></tr>
-<tr><td class="px-5 py-3 text-xs font-bold">Autre</td><td class="px-5 py-3 text-xs text-on-surface-variant" colspan="2">Définies au cas par cas en phase de cadrage</td></tr>
 </tbody>
 </table></div>
-<div class="p-4 bg-surface-container-low text-[11px] text-on-surface-variant italic">Modification de cette matrice réservée à l'Administrateurimpacte le formulaire d'enrôlement de l'espace assuré.</div>
+<div class="p-4 bg-surface-container-low text-[11px] text-on-surface-variant italic">La CAMA prend en charge uniquement le(s) conjoint(s) et les enfants. Cette matrice impacte le formulaire d'enrôlement de l'espace assuré.</div>
+</div>
+</div>
+
+<!-- Membres rattachés -->
+<div class="tab-panel" data-tab="membres">
+<div class="assure-card p-6 max-w-xl">
+<h3 class="font-title-lg text-title-lg mb-1">Éligibilité des membres rattachés</h3>
+<p class="text-xs text-on-surface-variant mb-5">La CAMA prend en charge uniquement le ou les <strong>conjoints</strong> ainsi que les <strong>enfants</strong> d'un assuré.</p>
+<div class="border border-outline-variant rounded-lg p-4 mb-4">
+<label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-2" for="age-max-enfant">Âge maximal d'éligibilité des enfants</label>
+<div class="flex items-center gap-3">
+<input class="w-24 px-3 py-2 text-sm border border-outline-variant rounded-lg text-center" id="age-max-enfant" max="26" min="1" type="number"/>
+<span class="text-sm text-on-surface-variant">ans</span>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-2">Plafond autorisé : <strong>26 ans</strong>. Un enfant dont l'âge dépasse cette limite ne pourra plus être enrôlé.</p>
+</div>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" id="btn-save-membres" type="button">Enregistrer</button>
 </div>
 </div>
 
@@ -188,6 +204,7 @@
 <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant" href="profil.html"><span class="material-symbols-outlined text-[22px]">person</span><span class="text-[10px] font-label-md">Profil</span></a>
 </nav>
 <div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+<script src="../assure/assure-data.js"></script>
 <style>
         .toggle-switch { width: 44px; height: 24px; border-radius: 9999px; position: relative; transition: background-color 0.2s; cursor: pointer; }
         .toggle-switch .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 9999px; background: white; transition: transform 0.2s; }
@@ -214,6 +231,22 @@
             const select = document.getElementById('role-select'); if (select) select.value = role;
         }
         function saveSetting(label) { showToast(`<span class="material-symbols-outlined">check_circle</span> ${label} mis(e) à jour.`); }
+
+        // --- Membres rattachés : âge maximal d'éligibilité des enfants ---
+        (function initMembresSettings() {
+            const input = document.getElementById('age-max-enfant');
+            if (!input || !window.CamaAssureData) return;
+            const plafond = CamaAssureData.AGE_MAX_ENFANT_PLAFOND || 26;
+            input.max = plafond;
+            input.value = CamaAssureData.getAgeMaxEnfant();
+            document.getElementById('btn-save-membres').addEventListener('click', () => {
+                let val = parseInt(input.value, 10);
+                if (isNaN(val) || val < 1) { showToast('<span class="material-symbols-outlined">error</span> Saisissez un âge valide.'); return; }
+                const saved = CamaAssureData.saveSettings({ ageMaxEnfant: val });
+                input.value = saved.ageMaxEnfant;
+                showToast(`<span class="material-symbols-outlined">check_circle</span> Âge maximal des enfants fixé à ${saved.ageMaxEnfant} ans.`);
+            });
+        })();
         function addMotif() {
             const div = document.createElement('div');
             div.className = 'flex items-center gap-2';

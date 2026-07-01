@@ -124,7 +124,7 @@
         .field-error { border-color: #ba1a1a !important; }
         .field-error-msg { color: #ba1a1a; font-size: 12px; margin-top: 4px; display: none; }
         .field-error-msg.show { display: block; }
-        .hidden-block { display: none; }
+        .hidden-block { display: none !important; }
         .toggle-btn { transition: all 0.15s; }
         .toggle-btn.selected { background-color: #9e001f; color: white; border-color: #9e001f; }
     </style>
@@ -169,7 +169,7 @@
 </button>
 <div>
 <h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Ajouter un membre de famille</h1>
-<p class="text-xs text-on-surface-variant hidden sm:block">Formulaire d'enrôlement en 5 étapes</p>
+<p class="text-xs text-on-surface-variant hidden sm:block">Formulaire d'enrôlement en 4 étapes</p>
 </div>
 </div>
 <a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
@@ -184,7 +184,7 @@
 <!-- Stepper -->
 <div class="relative mb-6 md:mb-8" id="wizard-wrapper">
 <div class="hidden md:block absolute top-4 left-[10%] right-[10%] h-0.5 bg-outline-variant -z-0"></div>
-<div class="grid grid-cols-5 gap-1 relative">
+<div class="grid grid-cols-4 gap-1 relative">
 <div class="step-indicator flex flex-col items-center" data-step="1">
 <div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-primary text-on-primary">1</div>
 <span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">État civil</span>
@@ -195,14 +195,10 @@
 </div>
 <div class="step-indicator flex flex-col items-center" data-step="3">
 <div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">3</div>
-<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Identifiants</span>
+<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Pièces</span>
 </div>
 <div class="step-indicator flex flex-col items-center" data-step="4">
 <div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">4</div>
-<span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Pièces</span>
-</div>
-<div class="step-indicator flex flex-col items-center" data-step="5">
-<div class="step-circle w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center font-semibold text-xs md:text-sm relative z-10 transition-colors bg-surface-container-high text-on-surface-variant">5</div>
 <span class="text-[11px] md:text-xs font-medium text-center mt-1.5 text-on-surface-variant leading-tight">Récapitulatif</span>
 </div>
 </div>
@@ -243,7 +239,7 @@
 </div>
 <div class="space-y-1.5">
 <label class="text-sm font-medium text-on-surface-variant ml-1">Nationalité</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="nationalite" type="text" value="Burkinabè"/>
+<select class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" data-field="nationalite" id="field-nationalite"></select>
 </div>
 </div>
 </div>
@@ -251,20 +247,15 @@
 <div class="wizard-step" data-step="2">
 <h2 class="text-base font-semibold text-on-surface mb-1">Lien avec l'assuré</h2>
 <p class="text-on-surface-variant text-xs mb-5">Précisez le lien de parenté qui vous unit à ce membre.</p>
-<div class="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-5">
+<div class="grid grid-cols-2 gap-2.5 mb-3 max-w-sm">
 <button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Conjoint(e)" type="button">
 <span class="material-symbols-outlined text-[20px]">favorite</span> Conjoint(e)
 </button>
 <button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Enfant" type="button">
 <span class="material-symbols-outlined text-[20px]">child_care</span> Enfant
 </button>
-<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Parent" type="button">
-<span class="material-symbols-outlined text-[20px]">elderly</span> Parent
-</button>
-<button class="toggle-btn lien-btn px-3 py-3 border border-outline-variant rounded-lg text-sm font-medium flex flex-col items-center gap-1.5" data-lien="Autre" type="button">
-<span class="material-symbols-outlined text-[20px]">diversity_1</span> Autre
-</button>
 </div>
+<p class="text-[11px] text-on-surface-variant mb-4">La CAMA prend en charge uniquement le(s) conjoint(s) et les enfants de l'assuré.</p>
 <p class="field-error-msg" id="lien-error">Veuillez sélectionner un lien de parenté.</p>
 <!-- Conjoint block -->
 <div class="hidden-block grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-outline-variant" id="block-conjoint">
@@ -291,63 +282,38 @@
 </div>
 <!-- Enfant block -->
 <div class="hidden-block pt-4 border-t border-outline-variant" id="block-enfant">
+<div class="hidden items-start gap-2 bg-error/5 border border-error/30 rounded-lg p-3 mb-4 text-error text-xs" id="age-error">
+<span class="material-symbols-outlined text-[18px] shrink-0">error</span>
+<span id="age-error-text"></span>
+</div>
 <div class="space-y-1.5 mb-4">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Cet enfant est-il issu d'un précédent mariage de votre conjoint(e) ? *</label>
-<div class="flex gap-3">
-<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant biologique" type="button">Non, enfant biologique</button>
-<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant du conjoint" type="button">Oui, enfant du conjoint</button>
+<label class="text-sm font-medium text-on-surface-variant ml-1">Filiation de l'enfant *</label>
+<div class="flex flex-col sm:flex-row gap-3">
+<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant biologique" type="button">Enfant biologique</button>
+<button class="toggle-btn enfant-type-btn flex-1 px-3 py-2.5 border border-outline-variant rounded-lg text-sm font-medium" data-enfant-type="Enfant du conjoint" type="button">Enfant du conjoint</button>
 </div>
-<p class="field-error-msg" id="enfant-type-error">Veuillez préciser.</p>
+<p class="field-error-msg" id="enfant-type-error">Veuillez préciser la filiation de l'enfant.</p>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Sous-bloc affiché uniquement pour un enfant du conjoint -->
+<div class="hidden-block space-y-4 mb-4" id="block-enfant-conjoint">
 <div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Nom du second parent *</label>
+<label class="text-sm font-medium text-on-surface-variant ml-1">Nom du parent biologique (second parent) *</label>
 <input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="nomSecondParent" type="text"/>
-<p class="field-error-msg">Champ obligatoire.</p>
+<p class="field-error-msg">Champ obligatoire pour un enfant du conjoint.</p>
 </div>
-<div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Scolarité</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="scolarite" placeholder="Optionnel" type="text"/>
-</div>
-</div>
-<div class="mt-4 bg-tertiary/10 border border-tertiary/30 rounded-lg p-3.5 flex gap-2.5">
+<div class="bg-tertiary/10 border border-tertiary/30 rounded-lg p-3.5 flex gap-2.5">
 <span class="material-symbols-outlined text-tertiary text-[20px] shrink-0">info</span>
-<p class="text-xs text-on-surface-variant leading-relaxed">La CAMA prend en charge les enfants du conjoint issus d'un précédent mariage, dès lors que les pièces le justifient.</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">La CAMA prend en charge les enfants du conjoint dès lors que l'acte de mariage et la pièce justifiant la garde sont fournis (étape Pièces).</p>
 </div>
 </div>
-<!-- Autre block -->
-<div class="hidden-block pt-4 border-t border-outline-variant" id="block-autre">
 <div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Précisez le lien de parenté *</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="precisionAutre" placeholder="Ex: neveu, nièce à charge…" type="text"/>
-<p class="field-error-msg">Champ obligatoire.</p>
+<label class="text-sm font-medium text-on-surface-variant ml-1">Établissement / niveau de scolarité</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="scolarite" placeholder="Optionnel — utile pour la prise en charge après 15 ans" type="text"/>
 </div>
 </div>
 </div>
 <!-- Étape 3 -->
 <div class="wizard-step" data-step="3">
-<h2 class="text-base font-semibold text-on-surface mb-1">Identifiants administratifs</h2>
-<p class="text-on-surface-variant text-xs mb-5">Numéros d'identification du membre, le cas échéant.</p>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Numéro CAMA du membre</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="numeroCamaMembre" placeholder="Si déjà attribué" type="text"/>
-</div>
-<div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Numéro IIU</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="numeroIIU" type="text"/>
-<p class="text-xs text-on-surface-variant">Identifiant informatique unique, à confirmer.</p>
-</div>
-<div class="space-y-2 md:col-span-2">
-<label class="text-sm font-medium text-on-surface-variant ml-1" id="cnib-label">Numéro CNIB du membre</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none" data-field="cnibMembre" type="text"/>
-<p class="text-xs text-on-surface-variant" id="cnib-hint">Calculé automatiquement selon l'âge renseigné à l'étape 1.</p>
-<p class="field-error-msg">La CNIB est obligatoire à partir de 15 ans.</p>
-</div>
-</div>
-</div>
-<!-- Étape 4 -->
-<div class="wizard-step" data-step="4">
 <h2 class="text-base font-semibold text-on-surface mb-1">Pièces justificatives</h2>
 <p class="text-on-surface-variant text-xs mb-2">Formats acceptés : PDF, JPEG, PNG5 Mo max par fichier, 25 Mo max au total.</p>
 <div class="flex items-center gap-2 mb-5">
@@ -358,8 +324,8 @@
 </div>
 <div id="pieces-list" class="space-y-4"></div>
 </div>
-<!-- Étape 5 -->
-<div class="wizard-step" data-step="5">
+<!-- Étape 4 -->
+<div class="wizard-step" data-step="4">
 <h2 class="text-base font-semibold text-on-surface mb-1">Récapitulatif et soumission</h2>
 <p class="text-on-surface-variant text-xs mb-5">Vérifiez les informations avant de soumettre le dossier.</p>
 <div id="recap-content" class="space-y-3 mb-5"></div>
@@ -435,6 +401,8 @@
 <span class="text-[10px] font-label-md">Profil</span>
 </a>
 </nav>
+<script src="../countries.js"></script>
+<script src="../flag-select.js"></script>
 <script src="assure-data.js"></script>
 <script src="assure-shell.js"></script>
 <script>
@@ -442,12 +410,11 @@
 
         // ---- Wizard state ----
         let currentStep = 1;
-        const TOTAL_STEPS = 5;
+        const TOTAL_STEPS = 4;
         const wizardState = {
-            nom: '', prenom: '', sexe: '', dateNaissance: '', lieuNaissance: '', nationalite: 'Burkinabè',
+            nom: '', prenom: '', sexe: '', dateNaissance: '', lieuNaissance: '', nationalite: 'Burkina Faso',
             lien: '', enfantType: '', regimeMatrimonial: '', dateMariage: '', cnibConjoint: '',
-            nomSecondParent: '', scolarite: '', precisionAutre: '',
-            numeroCamaMembre: '', numeroIIU: '', cnibMembre: '',
+            nomSecondParent: '', scolarite: '',
             pieces: {}
         };
 
@@ -466,13 +433,6 @@
                 { key: "acte_naissance_enfant", label: "Acte de naissance", required: true },
                 { key: "acte_mariage_parent", label: "Acte de mariage avec le parent", required: true },
                 { key: "piece_garde", label: "Pièce justifiant la garde", required: false }
-            ],
-            "Parent": [
-                { key: "acte_naissance_assure", label: "Acte de naissance de l'assuré", required: true },
-                { key: "cnib_parent_p", label: "Copie CNIB du parent", required: true }
-            ],
-            "Autre": [
-                { key: "piece_autre", label: "Pièces définies par la CAMA en phase de cadrage", required: false }
             ]
         };
 
@@ -518,14 +478,37 @@
             });
         });
 
+        // Champs spécifiques à chaque lien : remis à zéro quand on change de lien.
+        const LIEN_SPECIFIC_FIELDS = ['regimeMatrimonial', 'dateMariage', 'cnibConjoint', 'enfantType', 'nomSecondParent', 'scolarite'];
+
+        function updateLienVisibility() {
+            const lien = wizardState.lien;
+            document.getElementById('block-conjoint').classList.toggle('hidden-block', lien !== 'Conjoint(e)');
+            document.getElementById('block-enfant').classList.toggle('hidden-block', lien !== 'Enfant');
+            updateEnfantTypeVisibility();
+        }
+
+        function updateEnfantTypeVisibility() {
+            const show = wizardState.lien === 'Enfant' && wizardState.enfantType === 'Enfant du conjoint';
+            document.getElementById('block-enfant-conjoint').classList.toggle('hidden-block', !show);
+        }
+
+        function resetLienSpecificFields() {
+            LIEN_SPECIFIC_FIELDS.forEach(f => {
+                wizardState[f] = '';
+                const el = document.querySelector(`[data-field="${f}"]`);
+                if (el) el.value = '';
+            });
+            document.querySelectorAll('.enfant-type-btn').forEach(b => b.classList.remove('selected'));
+        }
+
         document.querySelectorAll('.lien-btn').forEach(btn => {
             btn.addEventListener('click', () => {
+                if (wizardState.lien !== btn.dataset.lien) resetLienSpecificFields();
                 document.querySelectorAll('.lien-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 wizardState.lien = btn.dataset.lien;
-                document.getElementById('block-conjoint').classList.toggle('hidden-block', wizardState.lien !== 'Conjoint(e)');
-                document.getElementById('block-enfant').classList.toggle('hidden-block', wizardState.lien !== 'Enfant');
-                document.getElementById('block-autre').classList.toggle('hidden-block', wizardState.lien !== 'Autre');
+                updateLienVisibility();
             });
         });
 
@@ -534,6 +517,7 @@
                 document.querySelectorAll('.enfant-type-btn').forEach(b => b.classList.remove('selected'));
                 btn.classList.add('selected');
                 wizardState.enfantType = btn.dataset.enfantType;
+                updateEnfantTypeVisibility();
             });
         });
 
@@ -551,9 +535,8 @@
             document.getElementById('btn-prev').style.visibility = n === 1 ? 'hidden' : 'visible';
             document.getElementById('btn-next').classList.toggle('hidden', n === TOTAL_STEPS);
             document.getElementById('btn-submit').classList.toggle('hidden', n !== TOTAL_STEPS);
-            if (n === 3) applyAgeRule();
-            if (n === 4) renderPiecesStep();
-            if (n === 5) renderRecap();
+            if (n === 3) renderPiecesStep();
+            if (n === 4) renderRecap();
             window.scrollTo({ top: document.getElementById('wizard-card').offsetTop - 90, behavior: 'smooth' });
         }
 
@@ -576,22 +559,6 @@
             const m = today.getMonth() - dob.getMonth();
             if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
             return age;
-        }
-
-        function applyAgeRule() {
-            const age = computeAge();
-            const hint = document.getElementById('cnib-hint');
-            const label = document.getElementById('cnib-label');
-            if (age !== null && age >= 15) {
-                label.textContent = 'Numéro CNIB du membre *';
-                hint.textContent = `Obligatoire à partir de 15 ans (âge calculé : ${age} ans).`;
-            } else if (age !== null) {
-                label.textContent = 'Numéro CNIB du membre';
-                hint.textContent = `Non requis avant 15 ans (âge calculé : ${age} ans).`;
-            } else {
-                label.textContent = 'Numéro CNIB du membre';
-                hint.textContent = 'Calculé automatiquement selon l\'âge renseigné à l\'étape 1.';
-            }
         }
 
         function validateStep(n) {
@@ -632,24 +599,27 @@
                     } else {
                         document.getElementById('enfant-type-error').classList.remove('show');
                     }
-                    const input = stepEl.querySelector('[data-field="nomSecondParent"]');
-                    if (!input.value.trim()) { showFieldError(input); valid = false; }
-                }
-                if (wizardState.lien === 'Autre') {
-                    const input = stepEl.querySelector('[data-field="precisionAutre"]');
-                    if (!input.value.trim()) { showFieldError(input); valid = false; }
+                    if (wizardState.enfantType === 'Enfant du conjoint') {
+                        const input = stepEl.querySelector('[data-field="nomSecondParent"]');
+                        if (!input.value.trim()) { showFieldError(input); valid = false; }
+                    }
+                    // Contrôle de l'âge maximal d'éligibilité (paramétré côté back-office)
+                    const ageErr = document.getElementById('age-error');
+                    const ageMax = window.CamaAssureData?.getAgeMaxEnfant ? CamaAssureData.getAgeMaxEnfant() : 21;
+                    const age = computeAge();
+                    if (age !== null && age > ageMax) {
+                        document.getElementById('age-error-text').textContent = `Cet enfant a ${age} ans : il dépasse l'âge maximal d'éligibilité fixé à ${ageMax} ans. Il ne peut pas être enrôlé.`;
+                        ageErr.classList.remove('hidden');
+                        ageErr.classList.add('flex');
+                        valid = false;
+                    } else {
+                        ageErr.classList.add('hidden');
+                        ageErr.classList.remove('flex');
+                    }
                 }
             }
 
             if (n === 3) {
-                const age = computeAge();
-                if (age !== null && age >= 15) {
-                    const input = stepEl.querySelector('[data-field="cnibMembre"]');
-                    if (!input.value.trim()) { showFieldError(input); valid = false; }
-                }
-            }
-
-            if (n === 4) {
                 const required = PIECES_MATRIX[pieceMatrixKey()].filter(p => p.required);
                 required.forEach(p => {
                     if (!wizardState.pieces[p.key]) valid = false;
@@ -784,43 +754,66 @@
             updateUploadTotal();
         }
 
-        // ---- Step 5: recap ----
+        // ---- Step 4: recap ----
+        function fmtDate(iso) {
+            if (!iso) return '—';
+            const parts = String(iso).split('-');
+            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : iso;
+        }
+
+        function recapRow(label, value) {
+            const v = (value === undefined || value === null || String(value).trim() === '') ? '—' : value;
+            return `<div class="flex justify-between gap-4 py-1.5 border-b border-outline-variant/60 last:border-0">
+                <span class="text-xs text-on-surface-variant shrink-0">${label}</span>
+                <span class="text-xs font-medium text-on-surface text-right break-words">${v}</span>
+            </div>`;
+        }
+
+        function recapCard(icon, title, rowsHtml) {
+            return `<div class="bg-surface-container-low rounded-lg p-4">
+                <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">${icon}</span> ${title}</h3>
+                ${rowsHtml}
+            </div>`;
+        }
+
         function renderRecap() {
             const age = computeAge();
             const matrixKey = pieceMatrixKey();
-            const piecesEntries = PIECES_MATRIX[matrixKey].map(p => {
-                const file = wizardState.pieces[p.key];
-                return `<li class="flex items-center gap-2 text-xs">${file ? '<span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>' : '<span class="material-symbols-outlined text-outline text-[14px]">radio_button_unchecked</span>'} ${p.label}${file ? '' + file.name : ''}</li>`;
-            }).join('');
 
-            let lienExtra = '';
+            const etatCivil = [
+                recapRow('Nom', wizardState.nom),
+                recapRow('Prénom(s)', wizardState.prenom),
+                recapRow('Sexe', wizardState.sexe),
+                recapRow('Date de naissance', wizardState.dateNaissance ? `${fmtDate(wizardState.dateNaissance)}${age !== null ? ` (${age} ans)` : ''}` : ''),
+                recapRow('Lieu de naissance', wizardState.lieuNaissance),
+                recapRow('Nationalité', wizardState.nationalite)
+            ].join('');
+
+            const lienRows = [recapRow('Lien', wizardState.lien)];
             if (wizardState.lien === 'Conjoint(e)') {
-                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Régime : ${wizardState.regimeMatrimonial || '—'} · Mariage le ${wizardState.dateMariage || '—'} · CNIB conjoint : ${wizardState.cnibConjoint || '—'}</p>`;
+                lienRows.push(recapRow('Régime matrimonial', wizardState.regimeMatrimonial));
+                lienRows.push(recapRow('Date de mariage', wizardState.dateMariage ? fmtDate(wizardState.dateMariage) : ''));
+                lienRows.push(recapRow('CNIB du conjoint', wizardState.cnibConjoint));
             } else if (wizardState.lien === 'Enfant') {
-                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Type : ${wizardState.enfantType || '—'} · Second parent : ${wizardState.nomSecondParent || '—'}${wizardState.scolarite ? ' · Scolarité : ' + wizardState.scolarite : ''}</p>`;
-            } else if (wizardState.lien === 'Autre') {
-                lienExtra = `<p class="text-xs text-on-surface-variant mt-0.5">Précision : ${wizardState.precisionAutre || '—'}</p>`;
+                lienRows.push(recapRow('Filiation', wizardState.enfantType));
+                if (wizardState.enfantType === 'Enfant du conjoint') {
+                    lienRows.push(recapRow('Parent biologique', wizardState.nomSecondParent));
+                }
+                lienRows.push(recapRow('Scolarité', wizardState.scolarite));
             }
 
-            document.getElementById('recap-content').innerHTML = `
-                <div class="bg-surface-container-low rounded-lg p-4">
-                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">badge</span> État civil</h3>
-                    <p class="font-semibold text-sm">${wizardState.prenom} ${wizardState.nom}</p>
-                    <p class="text-xs text-on-surface-variant mt-0.5">${wizardState.sexe || '—'} · né(e) le ${wizardState.dateNaissance || '—'}${wizardState.lieuNaissance ? ' à ' + wizardState.lieuNaissance : ''} · ${wizardState.nationalite}${age !== null ? ' · ' + age + ' ans' : ''}</p>
-                </div>
-                <div class="bg-surface-container-low rounded-lg p-4">
-                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">diversity_3</span> Lien de parenté</h3>
-                    <p class="font-semibold text-sm">${wizardState.lien || '—'}</p>
-                    ${lienExtra}
-                </div>
-                <div class="bg-surface-container-low rounded-lg p-4">
-                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">fingerprint</span> Identifiants</h3>
-                    <p class="text-xs text-on-surface-variant">Numéro CAMA : ${wizardState.numeroCamaMembre || '—'} · IIU : ${wizardState.numeroIIU || '—'} · CNIB : ${wizardState.cnibMembre || '—'}</p>
-                </div>
-                <div class="bg-surface-container-low rounded-lg p-4">
-                    <h3 class="font-semibold text-xs uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[16px]">folder</span> Pièces justificatives</h3>
-                    <ul class="space-y-1">${piecesEntries}</ul>
-                </div>`;
+            const piecesEntries = PIECES_MATRIX[matrixKey].map(p => {
+                const file = wizardState.pieces[p.key];
+                return `<li class="flex items-start justify-between gap-3 text-xs py-1.5 border-b border-outline-variant/60 last:border-0">
+                    <span class="flex items-center gap-2">${file ? '<span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>' : '<span class="material-symbols-outlined text-outline text-[14px]">radio_button_unchecked</span>'} ${p.label}${p.required ? ' <span class="text-error">*</span>' : ''}</span>
+                    <span class="text-on-surface-variant text-right break-all">${file ? `${file.name} (${(file.size / 1024).toFixed(0)} Ko)` : 'Non fournie'}</span>
+                </li>`;
+            }).join('');
+
+            document.getElementById('recap-content').innerHTML =
+                recapCard('badge', 'État civil', etatCivil) +
+                recapCard('diversity_3', 'Lien de parenté', lienRows.join('')) +
+                recapCard('folder', 'Pièces justificatives', `<ul>${piecesEntries}</ul>`);
         }
 
         ['chk-honneur', 'chk-consentement'].forEach(id => {
@@ -885,16 +878,27 @@
             }
             if (wizardState.lien) {
                 document.querySelectorAll('.lien-btn').forEach(b => b.classList.toggle('selected', b.dataset.lien === wizardState.lien));
-                document.getElementById('block-conjoint').classList.toggle('hidden-block', wizardState.lien !== 'Conjoint(e)');
-                document.getElementById('block-enfant').classList.toggle('hidden-block', wizardState.lien !== 'Enfant');
-                document.getElementById('block-autre').classList.toggle('hidden-block', wizardState.lien !== 'Autre');
             }
             if (wizardState.enfantType) {
                 document.querySelectorAll('[data-enfant-type]').forEach(b => b.classList.toggle('selected', b.dataset.enfantType === wizardState.enfantType));
             }
+            updateLienVisibility();
         }
 
+        // --- Nationalité : sélecteur de tous les pays avec drapeau ---
+        function populateNationalite() {
+            const sel = document.getElementById('field-nationalite');
+            if (!sel || !window.CamaCountries) return;
+            const list = CamaCountries.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+            list.sort((a, b) => (a.code === 'BF' ? -1 : b.code === 'BF' ? 1 : 0)); // Burkina Faso en tête
+            sel.innerHTML = list.map(c => `<option value="${c.name}">${CamaFlag(c.code)}  ${c.name}</option>`).join('');
+            sel.value = wizardState.nationalite || 'Burkina Faso';
+            wizardState.nationalite = sel.value;
+        }
+        populateNationalite();
+
         loadDraftFromUrl();
+        if (window.CamaFlagSelect) CamaFlagSelect.enhance(document.getElementById('field-nationalite'));
         showStep(1);
     </script>
 </body></html>

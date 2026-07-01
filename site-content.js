@@ -6,6 +6,29 @@
     const CHIFFRES_KEY = 'cama_site_chiffres';
     const ARTICLES_KEY = 'cama_site_articles';
     const FAQ_KEY = 'cama_site_faq';
+    const RESSOURCES_KEY = 'cama_site_ressources';
+    const RESSOURCE_CATS_KEY = 'cama_site_ressource_cats';
+    const PARTENAIRES_KEY = 'cama_site_partenaires';
+
+    const DEFAULT_RESSOURCE_CATS = [
+        'Formulaires', 'Guides', 'Attestations', 'Guide du prescripteur', 'Textes législatifs'
+    ];
+
+    const DEFAULT_RESSOURCES = [
+        { id: 1, titre: 'Formulaire d\'enrôlement d\'un ayant droit', categorie: 'Formulaires', description: 'Formulaire à compléter pour rattacher un conjoint ou un enfant à votre dossier.', format: 'PDF', taille: '180 Ko', url: '#', ordre: 1, publie: true },
+        { id: 2, titre: 'Formulaire de demande de remboursement', categorie: 'Formulaires', description: 'À joindre à vos justificatifs de soins pour toute demande de remboursement.', format: 'PDF', taille: '210 Ko', url: '#', ordre: 2, publie: true },
+        { id: 3, titre: 'Guide de l\'assuré CAMA', categorie: 'Guides', description: 'Tout savoir sur vos droits, le parcours de soins et l\'utilisation de votre espace.', format: 'PDF', taille: '1,4 Mo', url: '#', ordre: 3, publie: true },
+        { id: 4, titre: 'Attestation de prise en charge (modèle)', categorie: 'Attestations', description: 'Modèle d\'attestation délivrée pour les soins programmés.', format: 'PDF', taille: '95 Ko', url: '#', ordre: 4, publie: true },
+        { id: 5, titre: 'Guide du prescripteur', categorie: 'Guide du prescripteur', description: 'Référentiel destiné aux médecins et structures de soins partenaires.', format: 'PDF', taille: '2,1 Mo', url: '#', ordre: 5, publie: true },
+        { id: 6, titre: 'Décret portant création de la CAMA', categorie: 'Textes législatifs', description: 'Texte de référence encadrant la Caisse d\'Assurance Maladie des Armées.', format: 'PDF', taille: '320 Ko', url: '#', ordre: 6, publie: true }
+    ];
+
+    const DEFAULT_PARTENAIRES = [
+        { id: 1, nom: 'Hôpital Militaire de Ouagadougou', type: 'Centre de santé', ville: 'Ouagadougou', description: 'Structure de référence pour les soins des militaires et de leurs ayants droit.', image: 'images/CAMA_1.jfif', lat: 12.3714, lon: -1.5197, mapsUrl: 'https://www.google.com/maps/search/?api=1&query=12.3714,-1.5197', ordre: 1, publie: true },
+        { id: 2, nom: 'CHU Sourô Sanou', type: 'Centre de santé', ville: 'Bobo-Dioulasso', description: 'Centre hospitalier universitaire partenaire pour la prise en charge spécialisée.', image: 'images/CAMA_6.jfif', lat: 11.1771, lon: -4.2979, mapsUrl: 'https://www.google.com/maps/search/?api=1&query=11.1771,-4.2979', ordre: 2, publie: true },
+        { id: 3, nom: 'Clinique Les Genêts', type: 'Partenaire', ville: 'Ouagadougou', description: 'Établissement conventionné offrant un tiers payant aux assurés CAMA.', image: 'images/CAMA_8.jfif', lat: 12.3650, lon: -1.5340, mapsUrl: 'https://www.google.com/maps/search/?api=1&query=12.3650,-1.5340', ordre: 3, publie: true },
+        { id: 4, nom: 'Pharmacie de la Liberté', type: 'Partenaire', ville: 'Ouagadougou', description: 'Officine partenaire pratiquant le tiers payant pharmaceutique.', image: 'images/CAMA_5.jfif', lat: 12.3580, lon: -1.5125, mapsUrl: 'https://www.google.com/maps/search/?api=1&query=12.3580,-1.5125', ordre: 4, publie: true }
+    ];
 
     const DEFAULT_SLIDES = [
         { id: 1, titre: 'La santé de nos héros, notre priorité', sousTitre: 'Lancée officiellement le 13 février 2025, la CAMA assure une couverture santé robuste aux militaires et à leurs familles.', image: 'images/CAMA_8.jfif', ordre: 1, actif: true, lien: 'espace-assure.html', lienLabel: 'Espace Assuré' },
@@ -164,6 +187,41 @@
 
     function getPublishedArticles() {
         return getArticles().filter(a => a.statut === 'Publié');
+    }
+
+    /* ---- Ressources (documents téléchargeables par catégorie) ---- */
+    function getRessourceCategories() {
+        const stored = readJson(RESSOURCE_CATS_KEY, DEFAULT_RESSOURCE_CATS);
+        return stored.length ? stored : DEFAULT_RESSOURCE_CATS.slice();
+    }
+    function saveRessourceCategories(cats) {
+        writeJson(RESSOURCE_CATS_KEY, cats);
+    }
+    function getRessources() {
+        const stored = readJson(RESSOURCES_KEY, DEFAULT_RESSOURCES);
+        return stored.length ? stored : DEFAULT_RESSOURCES.slice();
+    }
+    function saveRessources(items) {
+        writeJson(RESSOURCES_KEY, items);
+    }
+    function getPublishedRessources() {
+        return getRessources()
+            .filter(r => r.publie !== false)
+            .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+    }
+
+    /* ---- Partenaires & centres de santé ---- */
+    function getPartenaires() {
+        const stored = readJson(PARTENAIRES_KEY, DEFAULT_PARTENAIRES);
+        return stored.length ? stored : DEFAULT_PARTENAIRES.slice();
+    }
+    function savePartenaires(items) {
+        writeJson(PARTENAIRES_KEY, items);
+    }
+    function getPublishedPartenaires() {
+        return getPartenaires()
+            .filter(p => p.publie !== false)
+            .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
     }
 
     function getArticle(id) {
@@ -606,6 +664,14 @@
         getPublishedArticles,
         getArticle,
         articleUrl,
+        getRessourceCategories,
+        saveRessourceCategories,
+        getRessources,
+        saveRessources,
+        getPublishedRessources,
+        getPartenaires,
+        savePartenaires,
+        getPublishedPartenaires,
         initHome,
         initServicesFaq,
         initActualitesList,

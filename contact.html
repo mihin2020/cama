@@ -7,9 +7,22 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
 <style>
         .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
         .contact-section { scroll-margin-top: calc(var(--site-header-height, 75px) + 16px); }
+        #map { height: 100%; width: 100%; z-index: 0; }
+        .cama-pin { background: transparent; border: 0; }
+        .cama-pin-badge { width: 32px; height: 32px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: #fff; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+        .cama-pin-badge .material-symbols-outlined { font-size: 18px; }
+        .cama-pin.is-active .cama-pin-badge { transform: scale(1.18); box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+        .leaflet-popup-content { font-family: Inter, sans-serif; font-size: 12px; margin: 10px 12px; }
+        .cama-pop strong { font-size: 13px; }
+        .cama-pop a { color: #9e001f; font-weight: 700; }
+        .loc-scroll { scrollbar-width: thin; scrollbar-color: #e5bdbb transparent; }
+        .loc-scroll::-webkit-scrollbar { width: 6px; }
+        .loc-scroll::-webkit-scrollbar-track { background: transparent; }
+        .loc-scroll::-webkit-scrollbar-thumb { background: #e5bdbb; border-radius: 9999px; }
         .location-card { transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s; }
         .location-card.is-active { border-color: #9e001f; background-color: #fff8f7; box-shadow: 0 2px 12px rgba(158, 0, 31, 0.08); }
         .location-card.is-active .location-icon { background-color: #9e001f; color: #fff; }
@@ -121,16 +134,6 @@
 </div>
 </form>
 </div>
-<div class="mt-5 flex flex-col sm:flex-row gap-3">
-<div class="flex-1 bg-primary/5 border border-primary/20 rounded-xl px-5 py-4 flex items-center gap-3">
-<span class="material-symbols-outlined text-primary text-[28px]">emergency</span>
-<div class="min-w-0">
-<p class="text-sm font-bold text-on-surface">Urgence médicale</p>
-<p class="text-xs text-on-surface-variant">Prise en charge 7j/7militaires et ayants-droit</p>
-</div>
-<a class="shrink-0 bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold hover:opacity-90" href="tel:112">112</a>
-</div>
-</div>
 </div>
 </div>
 </section>
@@ -139,12 +142,25 @@
 <section class="contact-section bg-surface-container-low border-t border-outline-variant py-stack-lg" id="section-carte">
 <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
 <div class="mb-6">
-<h2 class="font-headline-md text-xl md:text-2xl text-on-surface mb-1">Nos antennes</h2>
+<h2 class="font-headline-md text-xl md:text-2xl text-on-surface mb-1">Cartographie : antennes, partenaires & centres de santé</h2>
 <p class="text-sm text-on-surface-variant max-w-2xl">Sélectionnez un point pour afficher la carte et les coordonnées.</p>
+<div class="flex flex-wrap gap-2 mt-4">
+<span class="inline-flex items-center gap-1.5 bg-white border border-outline-variant rounded-full px-3 py-1.5 text-xs font-semibold text-on-surface shadow-sm"><span class="material-symbols-outlined text-[16px] text-primary">account_balance</span> Siège / antenne CAMA</span>
+<span class="inline-flex items-center gap-1.5 bg-white border border-outline-variant rounded-full px-3 py-1.5 text-xs font-semibold text-on-surface shadow-sm"><span class="material-symbols-outlined text-[16px] text-secondary">local_hospital</span> Centre de santé</span>
+<span class="inline-flex items-center gap-1.5 bg-white border border-outline-variant rounded-full px-3 py-1.5 text-xs font-semibold text-on-surface shadow-sm"><span class="material-symbols-outlined text-[16px] text-tertiary">handshake</span> Partenaire</span>
+</div>
 </div>
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
-<!-- Liste des points -->
-<div class="lg:col-span-4 flex flex-col gap-2 max-h-[520px] lg:max-h-none overflow-y-auto" id="locations-list" role="listbox" aria-label="Points CAMA"></div>
+<!-- Liste des points : recherche + filtres + liste défilante -->
+<div class="lg:col-span-4 flex flex-col gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-9 pr-3 py-2.5 text-sm border border-outline-variant rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none" id="loc-search" placeholder="Rechercher un point…" type="text"/>
+</div>
+<div class="flex flex-wrap gap-1.5" id="loc-filters"></div>
+<div class="flex flex-col gap-2 overflow-y-auto loc-scroll pr-1 max-h-[60vh] lg:max-h-none lg:h-[392px]" id="locations-list" role="listbox" aria-label="Points CAMA"></div>
+<p class="text-xs text-on-surface-variant" id="loc-count"></p>
+</div>
 <!-- Carte + détail -->
 <div class="lg:col-span-8">
 <div class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm flex flex-col min-h-[380px] lg:min-h-[440px]">
@@ -157,8 +173,8 @@
 <span class="material-symbols-outlined text-[16px]">directions</span> Itinéraire
 </a>
 </div>
-<div class="relative flex-1 min-h-[280px] bg-[#ebe6dc]">
-<iframe class="absolute inset-0 w-full h-full border-0" id="map-iframe" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Carte OpenStreetMap CAMA" src=""></iframe>
+<div class="relative flex-1 min-h-[320px] bg-[#ebe6dc]">
+<div class="absolute inset-0" id="map"></div>
 </div>
 </div>
 </div>
@@ -167,9 +183,13 @@
 </section>
 </main>
 <div id="site-shell-bottom"></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="site-shell.js"></script>
+<script src="site-content.js"></script>
 <script>
-    const LOCATIONS = [
+    function osmLink(lat, lon) { return `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=15/${lat}/${lon}`; }
+
+    const ANTENNES = [
         {
             id: 'siege',
             name: 'Siège CAMAOuagadougou',
@@ -232,43 +252,175 @@
         }
     ];
 
-    let activeId = 'siege';
+    // Partenaires & centres de santé gérés depuis le back-office (CMS)
+    const PARTENAIRES = (window.CamaSiteContent && CamaSiteContent.getPublishedPartenaires)
+        ? CamaSiteContent.getPublishedPartenaires() : [];
 
-    function renderLocationList() {
-        const list = document.getElementById('locations-list');
-        list.innerHTML = LOCATIONS.map(loc => `
-            <button type="button" role="option" aria-selected="${loc.id === activeId}" data-id="${loc.id}"
-                class="location-card w-full text-left p-4 rounded-xl border border-outline-variant bg-white ${loc.id === activeId ? 'is-active' : ''}">
-                <div class="flex gap-3">
-                    <div class="location-icon w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${loc.type === 'siege' ? 'bg-primary/10 text-primary' : 'bg-surface-container-low text-on-surface-variant'}">
-                        <span class="material-symbols-outlined text-[20px]">${loc.type === 'siege' ? 'account_balance' : 'place'}</span>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-on-surface truncate">${loc.name}</p>
-                        <p class="text-xs text-on-surface-variant mt-0.5 line-clamp-2">${loc.address}</p>
-                    </div>
+    const PARTNER_LOCATIONS = PARTENAIRES
+        .filter(p => typeof p.lat === 'number' && typeof p.lon === 'number')
+        .map(p => ({
+            id: 'partenaire-' + p.id,
+            name: p.nom,
+            type: p.type === 'Centre de santé' ? 'centre' : 'partenaire',
+            address: [p.ville, p.description].filter(Boolean).join(' — '),
+            hours: '', phone: '', email: '',
+            lat: p.lat, lon: p.lon,
+            osm: p.mapsUrl || osmLink(p.lat, p.lon)
+        }));
+
+    const LOCATIONS = [...ANTENNES, ...PARTNER_LOCATIONS];
+
+    const TYPE_ICON = { siege: 'account_balance', antenne: 'place', centre: 'local_hospital', partenaire: 'handshake' };
+    const TYPE_STYLE = { siege: 'bg-primary/10 text-primary', antenne: 'bg-surface-container-low text-on-surface-variant', centre: 'bg-secondary/10 text-secondary', partenaire: 'bg-tertiary/10 text-tertiary' };
+
+    function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+    function renderPartenairesCards() {
+        const grid = document.getElementById('partenaires-grid');
+        const empty = document.getElementById('partenaires-empty');
+        if (!grid) return;
+        empty.classList.toggle('hidden', PARTENAIRES.length > 0);
+        grid.innerHTML = PARTENAIRES.map(p => {
+            const isCentre = p.type === 'Centre de santé';
+            const hasPoint = typeof p.lat === 'number' && typeof p.lon === 'number';
+            return `
+            <article class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm flex flex-col">
+                <div class="h-36 bg-surface-container-low bg-cover bg-center" style="background-image:url('${escHtml(p.image || 'images/CAMA_1.jfif')}')"></div>
+                <div class="p-4 flex flex-col flex-1">
+                    <span class="inline-flex items-center gap-1 self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2 ${isCentre ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'}">
+                        <span class="material-symbols-outlined text-[14px]">${isCentre ? 'local_hospital' : 'handshake'}</span> ${escHtml(p.type)}
+                    </span>
+                    <h3 class="font-title-lg text-base text-on-surface leading-snug">${escHtml(p.nom)}</h3>
+                    ${p.ville ? `<p class="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">place</span> ${escHtml(p.ville)}</p>` : ''}
+                    <p class="text-sm text-on-surface-variant mt-2 flex-1">${escHtml(p.description || '')}</p>
+                    ${hasPoint ? `<button type="button" class="mt-3 self-start text-xs font-bold text-primary flex items-center gap-1 hover:underline" data-goto="partenaire-${p.id}"><span class="material-symbols-outlined text-[16px]">map</span> Voir sur la carte</button>` : ''}
                 </div>
-            </button>`).join('');
-        list.querySelectorAll('.location-card').forEach(btn => {
-            btn.addEventListener('click', () => selectLocation(btn.dataset.id));
+            </article>`;
+        }).join('');
+        grid.querySelectorAll('[data-goto]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('section-carte').scrollIntoView({ behavior: 'smooth' });
+                selectLocation(btn.dataset.goto);
+            });
         });
     }
 
-    function renderLocationMeta(loc) {
-        document.getElementById('location-meta').innerHTML = `
-            ${loc.address}<br/>
-            ${loc.hours} · <a href="tel:${loc.phone.replace(/\s/g, '')}" class="hover:text-primary">${loc.phone}</a> · <a href="mailto:${loc.email}" class="hover:text-primary">${loc.email}</a>`;
+    let activeId = 'siege';
+    let activeFilter = 'all';
+    let searchQuery = '';
+
+    const FILTERS = [
+        { key: 'all', label: 'Tous', match: () => true },
+        { key: 'cama', label: 'Antennes CAMA', match: t => t === 'siege' || t === 'antenne' },
+        { key: 'centre', label: 'Centres de santé', match: t => t === 'centre' },
+        { key: 'partenaire', label: 'Partenaires', match: t => t === 'partenaire' }
+    ];
+
+    function getFilteredLocations() {
+        const f = FILTERS.find(x => x.key === activeFilter) || FILTERS[0];
+        const q = searchQuery.trim().toLowerCase();
+        return LOCATIONS.filter(loc => f.match(loc.type) && (!q || (loc.name + ' ' + loc.address).toLowerCase().includes(q)));
     }
 
-    function selectLocation(id) {
+    function renderFilters() {
+        const wrap = document.getElementById('loc-filters');
+        if (!wrap) return;
+        wrap.innerHTML = FILTERS.map(f => {
+            const n = LOCATIONS.filter(loc => f.match(loc.type)).length;
+            const active = f.key === activeFilter;
+            return `<button type="button" data-filter="${f.key}" class="px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${active ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'}">${f.label} <span class="opacity-70">${n}</span></button>`;
+        }).join('');
+        wrap.querySelectorAll('[data-filter]').forEach(b => b.addEventListener('click', () => {
+            activeFilter = b.dataset.filter; renderFilters(); renderLocationList();
+        }));
+    }
+
+    function renderLocationList() {
+        const list = document.getElementById('locations-list');
+        const filtered = getFilteredLocations();
+        list.innerHTML = filtered.map(loc => `
+            <button type="button" role="option" aria-selected="${loc.id === activeId}" data-id="${loc.id}"
+                class="location-card w-full text-left p-3.5 rounded-xl border border-outline-variant bg-white ${loc.id === activeId ? 'is-active' : ''}">
+                <div class="flex gap-3 items-center">
+                    <div class="location-icon w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${TYPE_STYLE[loc.type] || 'bg-surface-container-low text-on-surface-variant'}">
+                        <span class="material-symbols-outlined text-[20px]">${TYPE_ICON[loc.type] || 'place'}</span>
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-sm font-bold text-on-surface truncate">${loc.name}</p>
+                        <p class="text-xs text-on-surface-variant mt-0.5 line-clamp-1">${loc.address}</p>
+                    </div>
+                </div>
+            </button>`).join('') || '<div class="text-center text-on-surface-variant text-sm py-10">Aucun point ne correspond.</div>';
+        list.querySelectorAll('.location-card').forEach(btn => {
+            btn.addEventListener('click', () => selectLocation(btn.dataset.id));
+        });
+        const count = document.getElementById('loc-count');
+        if (count) count.textContent = `${filtered.length} point${filtered.length > 1 ? 's' : ''} affiché${filtered.length > 1 ? 's' : ''}`;
+    }
+
+    function renderLocationMeta(loc) {
+        const parts = [];
+        if (loc.hours) parts.push(loc.hours);
+        if (loc.phone) parts.push(`<a href="tel:${loc.phone.replace(/\s/g, '')}" class="hover:text-primary">${loc.phone}</a>`);
+        if (loc.email) parts.push(`<a href="mailto:${loc.email}" class="hover:text-primary">${loc.email}</a>`);
+        document.getElementById('location-meta').innerHTML = `${loc.address}${parts.length ? '<br/>' + parts.join(' · ') : ''}`;
+    }
+
+    // ── Carte interactive Leaflet : tous les points visibles ──
+    const PIN_COLOR = { siege: '#9e001f', antenne: '#9e001f', centre: '#006e27', partenaire: '#745b00' };
+    let map = null;
+    const markers = {};
+
+    function pinIcon(type, active) {
+        const color = PIN_COLOR[type] || '#9e001f';
+        const icon = TYPE_ICON[type] || 'place';
+        return L.divIcon({
+            className: 'cama-pin' + (active ? ' is-active' : ''),
+            html: `<span class="cama-pin-badge" style="background:${color}"><span class="material-symbols-outlined">${icon}</span></span>`,
+            iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -16]
+        });
+    }
+
+    function popupHtml(loc) {
+        return `<div class="cama-pop"><strong>${escHtml(loc.name)}</strong><br/>${escHtml(loc.address)}`
+            + (loc.osm ? `<br/><a href="${loc.osm}" target="_blank" rel="noopener">Itinéraire ↗</a>` : '') + '</div>';
+    }
+
+    function initMap() {
+        map = L.map('map', { scrollWheelZoom: false }).setView([12.3714, -1.5197], 6);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+        const bounds = [];
+        LOCATIONS.forEach(loc => {
+            const m = L.marker([loc.lat, loc.lon], { icon: pinIcon(loc.type, loc.id === activeId), title: loc.name }).addTo(map);
+            m.bindPopup(popupHtml(loc));
+            m.on('click', () => selectLocation(loc.id, { pan: false }));
+            markers[loc.id] = m;
+            bounds.push([loc.lat, loc.lon]);
+        });
+        if (bounds.length) map.fitBounds(bounds, { padding: [40, 40], maxZoom: 13 });
+        setTimeout(() => map.invalidateSize(), 250);
+    }
+
+    function selectLocation(id, opts) {
         const loc = LOCATIONS.find(l => l.id === id);
         if (!loc) return;
+        const pan = !opts || opts.pan !== false;
+        const prev = activeId;
         activeId = id;
-        document.getElementById('map-iframe').src = loc.embed;
         document.getElementById('map-location-label').textContent = loc.name;
         document.getElementById('map-external-link').href = loc.osm;
         renderLocationMeta(loc);
         renderLocationList();
+        if (map) {
+            if (markers[prev]) markers[prev].setIcon(pinIcon(LOCATIONS.find(l => l.id === prev).type, false));
+            if (markers[id]) {
+                markers[id].setIcon(pinIcon(loc.type, true));
+                if (pan) map.setView([loc.lat, loc.lon], Math.max(map.getZoom(), 13), { animate: true });
+                if (!opts || opts.popup !== false) markers[id].openPopup();
+            }
+        }
     }
 
     document.getElementById('contact-form').addEventListener('submit', function (e) {
@@ -289,9 +441,15 @@
         }, 1200);
     });
 
-    selectLocation('siege');
+    renderFilters();
+    document.getElementById('loc-search')?.addEventListener('input', (e) => { searchQuery = e.target.value; renderLocationList(); });
+    initMap();
+    selectLocation('siege', { pan: false, popup: false });
     if (window.location.hash === '#carte' || window.location.hash === '#section-carte') {
-        setTimeout(() => document.getElementById('section-carte').scrollIntoView({ behavior: 'smooth' }), 300);
+        setTimeout(() => {
+            document.getElementById('section-carte').scrollIntoView({ behavior: 'smooth' });
+            if (map) map.invalidateSize();
+        }, 300);
     }
 </script>
 </body></html>

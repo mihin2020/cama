@@ -12,6 +12,25 @@
     box-shadow: 4px 0 24px rgba(27, 28, 28, 0.12);
 }
 
+/* Scrollbar discrète et esthétique pour la navigation latérale */
+#sidebar nav {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
+#sidebar nav::-webkit-scrollbar {
+    width: 6px;
+}
+#sidebar nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+#sidebar nav::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.16);
+    border-radius: 9999px;
+}
+#sidebar nav:hover::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.34);
+}
+
 #sidebar .sidebar-brand-title {
     color: #ffffff;
 }

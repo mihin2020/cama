@@ -280,6 +280,18 @@
 </div>
 </div>
 </section>
+<!-- Partenaires & centres de santé -->
+<section class="py-stack-lg" id="section-partenaires">
+<div class="px-margin-desktop max-w-container-max-width mx-auto">
+<div class="text-center mb-12">
+<span class="text-primary font-label-md uppercase tracking-widest">Réseau de soins</span>
+<h2 class="font-headline-md text-headline-md mt-2">Partenaires & centres de santé</h2>
+<p class="text-on-surface-variant font-body-md mt-2 max-w-2xl mx-auto">Le réseau conventionné de la CAMA pour la prise en charge de ses assurés.</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="partenaires-grid"></div>
+<p class="hidden text-center text-on-surface-variant py-10" id="partenaires-empty">Aucun partenaire publié pour le moment.</p>
+</div>
+</section>
 <!-- FAQ Section -->
 <section class="py-stack-lg bg-surface-container-lowest" id="faq">
 <div class="px-margin-desktop max-w-container-max-width mx-auto">
@@ -334,6 +346,35 @@
 <script>
         document.addEventListener('cama:site-shell-ready', () => CamaSiteContent.initServicesFaq());
         if (document.getElementById('site-header')) CamaSiteContent.initServicesFaq();
+    </script>
+<script>
+        // Partenaires & centres de santé (gérés depuis le back-office)
+        (function () {
+            const grid = document.getElementById('partenaires-grid');
+            if (!grid || !window.CamaSiteContent || !CamaSiteContent.getPublishedPartenaires) return;
+            const PARTS = CamaSiteContent.getPublishedPartenaires();
+            const empty = document.getElementById('partenaires-empty');
+            if (empty) empty.classList.toggle('hidden', PARTS.length > 0);
+            const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+            const mapsHref = p => p.mapsUrl ? p.mapsUrl : ((typeof p.lat === 'number' && typeof p.lon === 'number') ? `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lon}` : null);
+            grid.innerHTML = PARTS.map(p => {
+                const isCentre = p.type === 'Centre de santé';
+                const gm = mapsHref(p);
+                return `<article class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm flex flex-col">
+                    <div class="h-36 bg-surface-container-low bg-cover bg-center" style="background-image:url('${esc(p.image || 'images/CAMA_1.jfif')}')"></div>
+                    <div class="p-4 flex flex-col flex-1">
+                        <span class="inline-flex items-center gap-1 self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2 ${isCentre ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'}"><span class="material-symbols-outlined text-[14px]">${isCentre ? 'local_hospital' : 'handshake'}</span> ${esc(p.type)}</span>
+                        <h3 class="font-title-lg text-base text-on-surface leading-snug">${esc(p.nom)}</h3>
+                        ${p.ville ? `<p class="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">place</span> ${esc(p.ville)}</p>` : ''}
+                        <p class="text-sm text-on-surface-variant mt-2 flex-1">${esc(p.description || '')}</p>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            ${gm ? `<a href="${esc(gm)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 bg-primary text-on-primary px-3 py-2 rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm"><span class="material-symbols-outlined text-[16px]">map</span> Google Maps</a>` : ''}
+                            <a href="contact.html#section-carte" class="inline-flex items-center gap-1.5 border border-outline text-on-surface px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-low transition-all"><span class="material-symbols-outlined text-[16px]">location_on</span> Nos antennes</a>
+                        </div>
+                    </div>
+                </article>`;
+            }).join('');
+        })();
     </script>
 <script>
         // Services carousel

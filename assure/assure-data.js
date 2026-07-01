@@ -7,6 +7,14 @@
     const ASSURE_SESSION_KEY = 'cama_assure_session';
     const ADMIN_SESSION_KEY = 'cama_admin_session';
     const ASSURES_COMPTES_KEY = 'cama_assures_comptes';
+    const REGISTRATIONS_KEY = 'cama_assure_registrations';
+    const ADMIN_NOTIFS_KEY = 'cama_admin_notifs';
+    const SETTINGS_KEY = 'cama_settings';
+
+    const AGE_MAX_ENFANT_PLAFOND = 26;
+    const DEFAULT_SETTINGS = {
+        ageMaxEnfant: 21 // plafond paramétrable, borné à AGE_MAX_ENFANT_PLAFOND
+    };
 
     const ASSURE_PROFILE = {
         nom: 'TRAORÉ',
@@ -95,6 +103,27 @@
             journal: [{ date: '17/06/2026 09:00', libelle: 'Compte créé, en attente de validation manuelle' }] },
         { assureNom: 'Brahima OUATTARA', matricule: '2207-D', numeroCama: 'CAMA-102207', statut: 'Désactivé', dateCreation: '02/03/2023',
             journal: [{ date: '02/03/2023 08:00', libelle: 'Compte créé' }, { date: '14/05/2026 16:00', libelle: 'Compte désactivé (motif : mutation hors service actif)' }] }
+    ];
+
+    const DEFAULT_REGISTRATIONS = [
+        {
+            id: 9001, matricule: '6118-E', nom: 'NIKIÉMA', prenom: 'Salif', fullName: 'Salif NIKIÉMA',
+            telephone: '+226 70 11 22 33', email: 'salif.nikiema@armee.bf',
+            dateNaissance: '14/02/1986', lieuNaissance: 'Koudougou', paysNaissance: 'Burkina Faso', genre: 'Masculin',
+            typePiece: 'CNIB', numeroPiece: 'B0456712', pieceFichier: 'cnib_nikiema.pdf', photo: null, carteProFichier: 'carte_pro_nikiema.jpg',
+            paysResidence: 'Burkina Faso', nationalite: 'Burkina Faso', grade: 'Sergent',
+            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '26/06/2026 09:12',
+            journal: [{ date: '26/06/2026 09:12', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
+        },
+        {
+            id: 9002, matricule: '7322-F', nom: 'COMPAORÉ', prenom: 'Edwige', fullName: 'Edwige COMPAORÉ',
+            telephone: '+226 76 44 55 66', email: 'edwige.compaore@armee.bf',
+            dateNaissance: '30/09/1992', lieuNaissance: 'Ouagadougou', paysNaissance: 'Burkina Faso', genre: 'Féminin',
+            typePiece: 'Passeport', numeroPiece: 'BF9981245', pieceFichier: 'passeport_compaore.pdf', photo: null, carteProFichier: 'carte_pro_compaore.jpg',
+            paysResidence: 'Burkina Faso', nationalite: 'Burkina Faso', grade: 'Adjudant',
+            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '28/06/2026 16:40',
+            journal: [{ date: '28/06/2026 16:40', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
+        }
     ];
 
     function readJson(key, fallback) {
@@ -217,6 +246,7 @@
 
     function resolveLien(state) {
         if (state.lien === 'Enfant') return state.enfantType || 'Enfant biologique';
+        if (state.lien === 'Parent' && state.lienParentPrecis) return `Parent (${state.lienParentPrecis})`;
         if (state.lien === 'Autre' && state.precisionAutre) return `Autre (${state.precisionAutre})`;
         return state.lien;
     }
@@ -297,7 +327,7 @@
             ...dossiers.map(d => d.assureNom)
         ]);
 
-        return [...names].map((assureNom, index) => {
+        const legacy = [...names].map((assureNom, index) => {
             const base = DEFAULT_ASSURE_ACCOUNTS.find(a => a.assureNom === assureNom) || {
                 assureNom,
                 matricule: '—',
@@ -322,10 +352,47 @@
                 }))
             };
         });
+
+        // Comptes issus d'une inscription en ligne déjà validée (ou désactivée).
+        const fromRegistrations = getRegistrations()
+            .filter(r => r.statut === 'Actif' || r.statut === 'Désactivé')
+            .map((r, i) => ({
+                id: 90000 + i,
+                nom: r.fullName,
+                matricule: r.matricule,
+                numeroCama: r.numeroCama || '—',
+                statut: r.statut,
+                dateCreation: r.dateCreation,
+                journal: r.journal || [],
+                membres: getDossiersForAssure(r.fullName).map(d => ({
+                    nom: d.beneficiaire,
+                    lien: d.lien,
+                    statut: d.statut
+                })),
+                fromRegistration: true
+            }))
+            .filter(r => !legacy.some(l => l.nom === r.nom));
+
+        return [...legacy, ...fromRegistrations];
     }
 
     function updateAssureCompteStatut(assureNom, nouveauStatut, motif) {
         const now = nowFr();
+
+        // Si le compte provient d'une inscription en ligne, on agit sur l'enregistrement.
+        const regs = getRegistrations();
+        const reg = regs.find(r => r.fullName === assureNom && r.numeroCama);
+        if (reg) {
+            if (nouveauStatut === 'Désactivé') {
+                reg.journal.push({ date: now, libelle: `Compte désactivé (motif : ${motif || 'non précisé'})` });
+            } else if (nouveauStatut === 'Actif') {
+                reg.journal.push({ date: now, libelle: 'Compte réactivé' });
+            }
+            reg.statut = nouveauStatut;
+            saveRegistrations(regs);
+            return getAdminAssures().find(a => a.nom === assureNom);
+        }
+
         const overrides = getAssureComptesOverrides();
         const base = DEFAULT_ASSURE_ACCOUNTS.find(a => a.assureNom === assureNom) || {
             assureNom, matricule: '—', numeroCama: '—', statut: 'Actif', dateCreation: formatDateFr(todayIso()), journal: []
@@ -550,6 +617,227 @@
         saveAssureNotifications(notifs);
     }
 
+    /* ------------------------------------------------------------------ *
+     * Inscription en ligne des assurés + authentification
+     * ------------------------------------------------------------------ */
+
+    function getRegistrations() {
+        return readJson(REGISTRATIONS_KEY, DEFAULT_REGISTRATIONS);
+    }
+
+    function saveRegistrations(list) {
+        writeJson(REGISTRATIONS_KEY, list);
+    }
+
+    function getPendingRegistrationsCount() {
+        return getRegistrations().filter(r => r.statut === 'En attente de validation').length;
+    }
+
+    function normalizeEmail(email) {
+        return (email || '').trim().toLowerCase();
+    }
+
+    // Écrit directement dans le flux de notifications du back-office, afin que
+    // l'espace public (où admin-shell.js n'est pas chargé) puisse alerter l'admin.
+    function pushAdminNotif(notif) {
+        let list;
+        try { list = JSON.parse(localStorage.getItem(ADMIN_NOTIFS_KEY) || 'null'); } catch { list = null; }
+        if (!Array.isArray(list)) list = [];
+        list.unshift({ lu: false, ...notif });
+        localStorage.setItem(ADMIN_NOTIFS_KEY, JSON.stringify(list));
+    }
+
+    function emailExists(email) {
+        const e = normalizeEmail(email);
+        if (e === normalizeEmail(ASSURE_PROFILE.email)) return true;
+        return getRegistrations().some(r => normalizeEmail(r.email) === e);
+    }
+
+    function matriculeExists(matricule) {
+        const m = (matricule || '').trim().toLowerCase();
+        if (!m) return false;
+        if (ASSURE_PROFILE.matricule.toLowerCase() === m) return true;
+        if (DEFAULT_ASSURE_ACCOUNTS.some(a => (a.matricule || '').toLowerCase() === m)) return true;
+        return getRegistrations().some(r => (r.matricule || '').toLowerCase() === m);
+    }
+
+    function generateCamaNumber() {
+        return `CAMA-1${Math.floor(10000 + Math.random() * 90000)}`;
+    }
+
+    function registerAssure(data) {
+        const required = ['matricule', 'nom', 'prenom', 'telephone', 'email', 'dateNaissance', 'password'];
+        const missing = required.filter(k => !String(data[k] || '').trim());
+        if (missing.length) return { error: 'Veuillez renseigner tous les champs obligatoires.' };
+        if (emailExists(data.email)) return { error: 'Un compte existe déjà avec cette adresse e-mail.', field: 'email' };
+        if (matriculeExists(data.matricule)) return { error: 'Ce matricule est déjà enregistré.', field: 'matricule' };
+
+        const regs = getRegistrations();
+        const now = nowFr();
+        const reg = {
+            id: Date.now(),
+            matricule: data.matricule.trim(),
+            nom: data.nom.trim(),
+            prenom: data.prenom.trim(),
+            fullName: `${data.prenom.trim()} ${data.nom.trim()}`.trim(),
+            telephone: data.telephone.trim(),
+            email: data.email.trim(),
+            dateNaissance: data.dateNaissance,
+            lieuNaissance: data.lieuNaissance || '',
+            paysNaissance: data.paysNaissance || '',
+            genre: data.genre || '',
+            typePiece: data.typePiece || '',
+            numeroPiece: data.numeroPiece || '',
+            pieceFichier: data.pieceFichier || null,
+            photo: data.photo || null,
+            carteProFichier: data.carteProFichier || null,
+            paysResidence: data.paysResidence || '',
+            nationalite: data.nationalite || '',
+            grade: data.grade || '',
+            password: data.password,
+            statut: 'En attente de validation',
+            numeroCama: '',
+            dateCreation: now,
+            journal: [{ date: now, libelle: 'Demande d\'inscription soumise par l\'assuré' }]
+        };
+        regs.unshift(reg);
+        saveRegistrations(regs);
+
+        pushAdminNotif({
+            type: 'compte', icon: 'person_add', color: 'tertiary',
+            titre: 'Nouvelle inscription assuré',
+            contenu: `${reg.fullName} (matricule ${reg.matricule}) a soumis une demande d'inscription.`,
+            date: now,
+            lien: 'inscriptions.html'
+        });
+
+        return { ok: true, registration: reg };
+    }
+
+    function loginAssure(email, password) {
+        const e = normalizeEmail(email);
+        if (!e || !password) return { error: 'Veuillez saisir votre e-mail et votre mot de passe.' };
+
+        // Compte de démonstration historique.
+        if (e === normalizeEmail(ASSURE_PROFILE.email) && password === 'Demo2026!') {
+            setAssureSession();
+            return { ok: true };
+        }
+
+        const reg = getRegistrations().find(r => normalizeEmail(r.email) === e);
+        if (!reg) return { error: 'Aucun compte ne correspond à cette adresse e-mail.' };
+        if (reg.password !== password) return { error: 'Mot de passe incorrect.' };
+
+        if (reg.statut === 'En attente de validation') {
+            return { status: 'pending', error: 'Votre compte est en attente de validation par la CAMA. Vous recevrez un e-mail dès son activation.' };
+        }
+        if (reg.statut === 'Refusé') {
+            return { status: 'refused', error: `Votre demande d'inscription a été refusée${reg.motifRefus ? ' : ' + reg.motifRefus : ''}. Contactez la CAMA pour plus d'informations.` };
+        }
+        if (reg.statut === 'Désactivé') {
+            return { status: 'disabled', error: 'Ce compte a été désactivé. Veuillez contacter la CAMA.' };
+        }
+
+        setAssureSession({
+            nom: reg.nom,
+            prenom: reg.prenom,
+            fullName: reg.fullName,
+            matricule: reg.matricule,
+            numeroCama: reg.numeroCama,
+            email: reg.email,
+            statut: 'Actif'
+        });
+        return { ok: true };
+    }
+
+    // Vérifie les identifiants SANS ouvrir de session (préalable à la 2FA).
+    function verifyAssureCredentials(email, password) {
+        const e = normalizeEmail(email);
+        if (!e || !password) return { error: 'Veuillez saisir votre e-mail et votre mot de passe.' };
+
+        if (e === normalizeEmail(ASSURE_PROFILE.email) && password === 'Demo2026!') {
+            return { ok: true, profile: null, email: ASSURE_PROFILE.email };
+        }
+        const reg = getRegistrations().find(r => normalizeEmail(r.email) === e);
+        if (!reg) return { error: 'Aucun compte ne correspond à cette adresse e-mail.' };
+        if (reg.password !== password) return { error: 'Mot de passe incorrect.' };
+        if (reg.statut === 'En attente de validation') return { status: 'pending', error: 'Votre compte est en attente de validation par la CAMA. Vous recevrez un e-mail dès son activation.' };
+        if (reg.statut === 'Refusé') return { status: 'refused', error: `Votre demande d'inscription a été refusée${reg.motifRefus ? ' : ' + reg.motifRefus : ''}. Contactez la CAMA.` };
+        if (reg.statut === 'Désactivé') return { status: 'disabled', error: 'Ce compte a été désactivé. Veuillez contacter la CAMA.' };
+        return {
+            ok: true,
+            email: reg.email,
+            profile: { nom: reg.nom, prenom: reg.prenom, fullName: reg.fullName, matricule: reg.matricule, numeroCama: reg.numeroCama, email: reg.email, statut: 'Actif' }
+        };
+    }
+
+    function assureAccountExists(email) {
+        const e = normalizeEmail(email);
+        if (e === normalizeEmail(ASSURE_PROFILE.email)) return true;
+        return getRegistrations().some(r => normalizeEmail(r.email) === e);
+    }
+
+    function resetAssurePassword(email, newPassword) {
+        const e = normalizeEmail(email);
+        if (e === normalizeEmail(ASSURE_PROFILE.email)) {
+            return { ok: true, demo: true }; // compte de démonstration : non persistant
+        }
+        const regs = getRegistrations();
+        const reg = regs.find(r => normalizeEmail(r.email) === e);
+        if (!reg) return { error: 'Aucun compte ne correspond à cette adresse e-mail.' };
+        reg.password = newPassword;
+        reg.journal.push({ date: nowFr(), libelle: 'Mot de passe réinitialisé par l\'assuré' });
+        saveRegistrations(regs);
+        return { ok: true };
+    }
+
+    function validateRegistration(id) {
+        const regs = getRegistrations();
+        const reg = regs.find(r => r.id === id);
+        if (!reg) return null;
+        const now = nowFr();
+        if (!reg.numeroCama) reg.numeroCama = generateCamaNumber();
+        reg.statut = 'Actif';
+        delete reg.motifRefus;
+        reg.journal.push({ date: now, libelle: `Inscription validée — numéro ${reg.numeroCama} attribué, compte activé` });
+        saveRegistrations(regs);
+        return reg;
+    }
+
+    function rejectRegistration(id, motif) {
+        const regs = getRegistrations();
+        const reg = regs.find(r => r.id === id);
+        if (!reg) return null;
+        const now = nowFr();
+        reg.statut = 'Refusé';
+        reg.motifRefus = motif || 'Non précisé';
+        reg.journal.push({ date: now, libelle: `Inscription refusée : ${reg.motifRefus}` });
+        saveRegistrations(regs);
+        return reg;
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Paramètres globaux (configurables côté back-office)
+     * ------------------------------------------------------------------ */
+
+    function getSettings() {
+        return { ...DEFAULT_SETTINGS, ...readJson(SETTINGS_KEY, {}) };
+    }
+
+    function saveSettings(patch) {
+        const current = getSettings();
+        const next = { ...current, ...patch };
+        if (typeof next.ageMaxEnfant === 'number') {
+            next.ageMaxEnfant = Math.max(1, Math.min(AGE_MAX_ENFANT_PLAFOND, Math.round(next.ageMaxEnfant)));
+        }
+        writeJson(SETTINGS_KEY, next);
+        return next;
+    }
+
+    function getAgeMaxEnfant() {
+        return getSettings().ageMaxEnfant;
+    }
+
     function setAssureSession(profile) {
         const session = { ...ASSURE_PROFILE, ...profile, derniereConnexion: nowFr() };
         localStorage.setItem(ASSURE_SESSION_KEY, JSON.stringify(session));
@@ -625,6 +913,19 @@
         getAdminAssures,
         groupDossiersByAssure,
         updateAssureCompteStatut,
+        getRegistrations,
+        getPendingRegistrationsCount,
+        registerAssure,
+        loginAssure,
+        verifyAssureCredentials,
+        assureAccountExists,
+        resetAssurePassword,
+        validateRegistration,
+        rejectRegistration,
+        getSettings,
+        saveSettings,
+        getAgeMaxEnfant,
+        AGE_MAX_ENFANT_PLAFOND,
         getAssureNotifications,
         saveAssureNotifications,
         addAssureNotification,
