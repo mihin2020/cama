@@ -33,13 +33,42 @@ classDiagram
 
     class AssurePrincipal {
         +string matricule
+        +string numeroInformatique
+        +string grade
+        +string categorie
+        +string numeroCim
         +string numeroCama
-        +string numeroCNIB
+        +string numeroIup
+        +Sexe sexe
+        +string armee
+        +string region
+        +string corps
+        +string service
+        +string section
+        +string sousSection
+        +string telephones
+        +string personneAPrevenir
+        +string telPersonneAPrevenir
         +StatutCompte statut
         +creerCompte()
         +ajouterMembre()
         +soumettreDossier()
-        +exporterMesDonnees()
+        +peutSoumettreDossiers() bool
+        +exporterFormulaireFamilial() PDF
+    }
+
+    class StructureOrganisationnelle {
+        +string[] armees
+        +string[] categories
+        +string[] groupesSanguins
+        +Region[] regions
+    }
+    note for StructureOrganisationnelle "Configurable back-office\n(parametres.html, clé cama_org_structure)\nHiérarchie Région > Corps > Service > Section > Sous-section"
+
+    class Region {
+        +string id
+        +string libelle
+        +Corps[] corps
     }
 
     class UtilisateurInterne {
@@ -88,17 +117,25 @@ classDiagram
         +Sexe sexe
         +Date dateNaissance
         +string lieuNaissance
-        +string nationalite
+        +string groupeSanguin
+        +string refIdentite
+        +string telephone
         +LienParente lien
         +string numeroCama
-        +string numeroIIU
-        +string numeroCNIB
-        +string regimeMatrimonial
-        +Date dateMariage
-        +string cnibConjoint
-        +string nomSecondParent
-        +string scolarite
     }
+
+    class Conjoint {
+        +string refActeMariage
+        +string profession
+        +string lieuResidence
+    }
+    note for Conjoint "Marié(s) à la mairie uniquement (section 2)"
+
+    class Enfant {
+        +string refActeScolariteEtatCivil
+        +string nomPrenomsParent
+    }
+    note for Enfant "0 à 26 ans, du plus âgé au plus jeune (section 3)\nlibellé parent = mère (ou père si personnel féminin)"
 
     class Dossier {
         +int id
@@ -145,6 +182,10 @@ classDiagram
 
     AssurePrincipal "1" --> "*" MembreFamille : enrôle
     AssurePrincipal "1" --> "*" Dossier : soumet
+    AssurePrincipal "*" --> "1" StructureOrganisationnelle : rattaché à
+    StructureOrganisationnelle "1" *-- "*" Region : contient
+    MembreFamille <|-- Conjoint
+    MembreFamille <|-- Enfant
     Dossier "1" --> "1" MembreFamille : concerne
     Dossier --> StatutDossier
     Dossier "*" --> "0..1" UtilisateurInterne : affecté à (gestionnaire)
@@ -411,10 +452,11 @@ classDiagram
 
 | Classe | Source | Référence |
 |---|---|---|
-| Utilisateur / AssurePrincipal | 🟢 + 🟡 | `assure-data.js` (ASSURE_PROFILE, loginAdmin) ; CDC §5, §8.1 |
+| Utilisateur / AssurePrincipal | 🟢 + 🟡 | `assure-data.js` (ASSURE_PROFILE, registerAssure, champs militaires) ; CDC §5, §8.1 |
+| StructureOrganisationnelle / Region | 🟢 | `assure-data.js` (cama_org_structure, getOrgStructure) ; `admin/parametres.html` onglet Structure militaire |
 | UtilisateurInterne / RoleInterne | 🟢 | `assure-data.js` loginAdmin ; `dashboard.html` role-select ; CDC §5.2 |
 | Permission (matrice de droits) | 🟡 | CDC §5.2 |
-| MembreFamille | 🟢 (champs partiels) + 🟡 | `assure-data.js` (dossier.prenom/nom/sexe…) ; CDC §8.3 |
+| MembreFamille / Conjoint / Enfant | 🟢 | `assure-data.js` (dossier + champs formulaire officiel) ; `ajouter-membre.html` ; sections 2 et 3 du formulaire |
 | Dossier / StatutDossier | 🟢 | `assure-data.js` DEFAULT_DOSSIERS, submitDossier ; CDC §8.4, §9.3 |
 | PieceJustificative / StatutPiece / TypePiece | 🟢 + 🟡 | `assure-data.js` PIECE_LABELS, pieces[] ; CDC §8.3.4, §9.4 |
 | JournalEntry / Message | 🟢 | `assure-data.js` journal[], messages[] |

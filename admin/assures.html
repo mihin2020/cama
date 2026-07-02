@@ -3,6 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="auth-guard.js"></script>
 <title>Assurés | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -272,7 +273,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">family_restroom</span> Demandes d'enrôlement (${a.membres.length})</h3>
-                            ${a.membres.length ? `<button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureZip(${a.id})"><span class="material-symbols-outlined text-[14px]">folder_zip</span> Dossiers (ZIP)</button>` : ''}
+                            ${a.membres.length ? `<div class="flex items-center gap-3"><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureFormulaire(${a.id})"><span class="material-symbols-outlined text-[14px]">picture_as_pdf</span> Formulaire (PDF)</button><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureZip(${a.id})"><span class="material-symbols-outlined text-[14px]">folder_zip</span> Dossiers (ZIP)</button></div>` : ''}
                         </div>
                         <div class="bg-surface-container-low rounded-lg px-3">${membresHtml}</div>
                     </div>
@@ -291,6 +292,26 @@
             document.getElementById('detail-overlay').classList.add('is-open');
         }
         function closeDetail() { document.getElementById('detail-overlay').classList.remove('is-open'); }
+
+        function assureProfileFor(a) {
+            const reg = CamaAssureData.getRegistrations().find(x => x.fullName === a.nom);
+            if (reg) return CamaAssureData.registrationToProfile(reg);
+            const demo = CamaAssureData.getAssureProfile();
+            if (demo.fullName === a.nom) return demo;
+            return { fullName: a.nom, nom: a.nom, numeroCama: a.numeroCama, matricule: a.matricule };
+        }
+
+        function exportAssureFormulaire(id) {
+            const a = ASSURES.find(x => x.id === id);
+            if (!a) return;
+            const membres = CamaAssureData.getMembres(a.nom);
+            try {
+                CamaDossierExport.exportDossierFamilial(assureProfileFor(a), membres);
+                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Formulaire familial généré.');
+            } catch (e) {
+                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+            }
+        }
 
         async function exportAssureZip(id) {
             const a = ASSURES.find(x => x.id === id);

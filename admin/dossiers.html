@@ -3,6 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="auth-guard.js"></script>
 <title>Dossiers | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -64,12 +65,30 @@
         #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
         summary::-webkit-details-marker { display: none; }
         summary { list-style: none; }
+        details.assure-accordion > summary .accordion-chevron { transition: transform 0.2s ease; }
+        details.assure-accordion[open] > summary .accordion-chevron { transform: rotate(180deg); }
         .modal-overlay { display: none; }
         .modal-overlay.is-open { display: flex; }
         .view-pill.is-active { background-color: #9e001f; color: #fff; border-color: #9e001f; }
+        .queue-tab.is-active { background-color: #9e001f; color: #fff; border-color: #9e001f; }
+        .queue-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9999px; font-size: 10px; background: rgba(0,0,0,.12); }
+        .queue-tab.is-active .queue-badge { background: rgba(255,255,255,.25); }
+        .affect-tab.is-active .queue-badge { background: rgba(255,255,255,.25); }
+        .affect-tab.is-active[data-affect="tous"] { background-color: #9e001f; color: #fff; border-color: #9e001f; }
+        .affect-tab.is-active[data-affect="non_affecte"] { background-color: #745b00; color: #fff; border-color: #745b00; }
+        .affect-tab.is-active[data-affect="affecte"] { background-color: #006e27; color: #fff; border-color: #006e27; }
         .view-pill { min-height: 44px; }
         .dossier-mobile-card:active { transform: scale(0.995); }
         .detail-action-btn { min-height: 44px; justify-content: center; }
+        .detail-nav-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 14px; border-radius: 0.5rem;
+            border: 1px solid #e5bdbb; background: #f6f3f2;
+            font-size: 12px; font-weight: 700; color: #1b1c1c;
+            min-height: 40px; transition: background .15s ease;
+        }
+        .detail-nav-btn:hover { background: #f0eded; }
+        .detail-nav-btn .material-symbols-outlined { color: #9e001f; font-size: 20px; }
         @media (max-width: 767px) {
             #app-header h1 { font-size: 1rem; line-height: 1.35; }
             #pagination button,
@@ -150,8 +169,8 @@
 </button>
 <div>
 <h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Dossiers</h1>
-<p class="text-[11px] text-on-surface-variant sm:hidden">1 demande = 1 membre</p>
-<p class="text-caption text-on-surface-variant hidden sm:block">1 demande = 1 membre de famille · regroupement par assuré possible</p>
+<p class="text-[11px] text-on-surface-variant sm:hidden">1 dossier familial = 1 assuré</p>
+<p class="text-caption text-on-surface-variant hidden sm:block">Traitement par dossier familial (assuré principal) · affectation et validation au niveau du dossier</p>
 </div>
 </div>
 <a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
@@ -164,18 +183,58 @@
 </header>
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
 <!-- Modèle explicite -->
-<details class="info-banner-details mb-4 md:mb-5 rounded-xl border border-primary/20 bg-primary/5 overflow-hidden" open>
+<details class="info-banner-details mb-4 md:mb-5 rounded-xl border border-primary/20 bg-primary/5 overflow-hidden">
 <summary class="flex items-center gap-3 p-4 cursor-pointer list-none select-none">
 <span class="material-symbols-outlined text-primary text-[22px] shrink-0">info</span>
 <span class="font-bold text-sm text-on-surface flex-1">Comment lire cette page</span>
 <span class="material-symbols-outlined text-on-surface-variant info-chevron text-[20px]">expand_more</span>
 </summary>
 <div class="px-4 pb-4 pt-0 text-xs text-on-surface-variant leading-relaxed border-t border-primary/10">
-<p class="md:hidden mb-2"><strong class="text-on-surface">Assuré</strong> = le militaire. <strong class="text-on-surface">Demande</strong> = un membre de sa famille (réf. <code class="text-[10px] bg-white px-1 rounded">CAMA-…</code>).</p>
-<p class="hidden md:block"><strong class="text-on-surface">Assuré principal</strong> = le militaire connecté (ex. Issouf TRAORÉ). Chaque <strong class="text-on-surface">demande d'enrôlement</strong> concerne <strong class="text-on-surface">un seul membre</strong> de sa famille (conjoint, enfant, parent…) avec sa propre référence (<code class="text-[10px] bg-white px-1 rounded">CAMA-2026-…</code>).</p>
-<p class="mt-2"><strong class="text-on-surface">Par assuré</strong> : vue famille · <strong class="text-on-surface">Par demande</strong> : file de traitement.</p>
+<p class="md:hidden mb-2"><strong class="text-on-surface">Assuré</strong> = le militaire. <strong class="text-on-surface">Dossier familial</strong> = l'ensemble des membres déclarés (conjoints, enfants…).</p>
+<p class="hidden md:block"><strong class="text-on-surface">Assuré principal</strong> = le militaire (ex. Issouf TRAORÉ). Le <strong class="text-on-surface">dossier familial</strong> regroupe toutes les demandes d'enrôlement de ses ayants droit. L'<strong class="text-on-surface">affectation</strong> et le <strong class="text-on-surface">traitement</strong> se font au niveau du dossier assuré.</p>
+<p class="mt-2">Utilisez les onglets pour séparer les dossiers <strong>à traiter</strong>, <strong>validés</strong>, <strong>refusés</strong> et <strong>à compléter</strong>.</p>
 </div>
 </details>
+<!-- File d'attente -->
+<div class="mb-4">
+<p class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant mb-2">File de traitement</p>
+<div class="flex flex-wrap gap-2" id="queue-tabs">
+<button class="queue-tab is-active px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-primary text-on-primary" data-queue="a_traiter" type="button">À traiter <span class="queue-badge ml-1">0</span></button>
+<button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="valides" type="button">Validés <span class="queue-badge ml-1">0</span></button>
+<button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="refuses" type="button">Refusés <span class="queue-badge ml-1">0</span></button>
+<button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="complement" type="button">À compléter <span class="queue-badge ml-1">0</span></button>
+</div>
+</div>
+<!-- Filtre affectation (superviseur / admin) -->
+<div class="mb-4" data-roles="superviseur,administrateur">
+<p class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant mb-2">Affectation des dossiers</p>
+<div class="flex flex-wrap gap-2" id="affectation-tabs">
+<button class="affect-tab is-active px-3 py-2 rounded-full text-xs font-bold border border-outline-variant" data-affect="tous" type="button">Tous <span class="queue-badge ml-1" id="affect-badge-tous">0</span></button>
+<button class="affect-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-affect="non_affecte" type="button">Non affectés <span class="queue-badge ml-1" id="affect-badge-non">0</span></button>
+<button class="affect-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-affect="affecte" type="button">Affectés <span class="queue-badge ml-1" id="affect-badge-oui">0</span></button>
+</div>
+</div>
+<!-- Vue gestionnaire : dossiers affectés uniquement -->
+<div class="assure-card p-4 mb-4 border border-secondary/25 bg-secondary/5" data-roles="gestionnaire" id="gestionnaire-scope-banner">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-[22px] shrink-0">assignment_ind</span>
+<div class="text-xs text-on-surface-variant leading-relaxed">
+<p class="font-bold text-on-surface text-sm mb-0.5">Mes dossiers affectés</p>
+<p>Vous ne voyez que les dossiers familiaux qui vous ont été <strong class="text-on-surface">affectés par le superviseur</strong>. Les dossiers non affectés ou assignés à un autre gestionnaire n'apparaissent pas ici.</p>
+<p class="mt-1.5 text-[11px]" id="gestionnaire-scope-label">—</p>
+</div>
+</div>
+</div>
+<!-- Affectation groupée (superviseur / admin) -->
+<div class="assure-card p-4 mb-4 hidden" data-roles="superviseur,administrateur" id="batch-assign-bar">
+<div class="flex flex-col gap-3">
+<p class="text-xs text-on-surface-variant"><span class="font-bold text-on-surface" id="batch-selected-count">0</span> dossier(s) familial(aux) sélectionné(s). Le superviseur peut affecter un ou plusieurs dossiers à un gestionnaire CAMA.</p>
+<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+<select class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white min-w-0" id="batch-gestionnaire"></select>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shrink-0" id="batch-assign-btn" type="button">Affecter la sélection</button>
+</div>
+</div>
+</div>
 <!-- Filters -->
 <div class="assure-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3 items-stretch lg:items-center">
 <select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-statut">
@@ -188,12 +247,8 @@
 <option>Validé</option>
 <option>Refusé</option>
 </select>
-<select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-gestionnaire">
-<option value="Tous">Tous les gestionnaires</option>
-<option>Lt. Aminata KABORÉ</option>
-<option>Sgt. Daniel ZONGO</option>
-<option>Adj. Rasmané BANCÉ</option>
-<option value="Non affecté">Non affecté</option>
+<select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white hidden" id="filter-gestionnaire">
+<option value="Tous">Tous les gestionnaires affectés</option>
 </select>
 <select class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" id="filter-lien">
 <option value="Tous">Tous les liens</option>
@@ -210,46 +265,14 @@
 </div>
 <button class="filter-field w-full sm:w-auto py-3 sm:py-2 px-4 rounded-lg border border-primary/30 bg-primary/5 text-primary font-bold text-sm sm:text-xs hover:bg-primary/10 transition-colors sm:border-0 sm:bg-transparent sm:px-0 sm:hover:bg-transparent sm:hover:underline sm:col-span-2 lg:col-span-1" id="filter-reset" type="button">Réinitialiser les filtres</button>
 </div>
-<!-- Vue -->
-<div class="mb-4">
-<p class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant mb-2">Affichage</p>
-<div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-2">
-<button class="view-pill px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-full text-sm sm:text-[11px] font-semibold border border-outline-variant bg-white text-on-surface-variant transition-colors flex items-center justify-center gap-1.5" data-view="demande" type="button">
-<span class="material-symbols-outlined text-[18px] sm:hidden">list</span>
-<span>Par demande</span>
-</button>
-<button class="view-pill is-active px-3 py-3 sm:py-1.5 rounded-xl sm:rounded-full text-sm sm:text-[11px] font-semibold border border-outline-variant bg-white text-on-surface-variant transition-colors flex items-center justify-center gap-1.5" data-view="assure" type="button">
-<span class="material-symbols-outlined text-[18px] sm:hidden">family_restroom</span>
-<span>Par assuré</span>
-</button>
-</div>
-</div>
-<!-- Vue par demande -->
-<div class="assure-card overflow-hidden" id="view-demande">
-<div class="md:hidden divide-y divide-outline-variant" id="dossiers-cards"></div>
-<div class="hidden md:block overflow-x-auto">
-<table class="w-full text-left">
-<thead>
-<tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
-<th class="px-5 py-3 font-medium">Référence</th>
-<th class="px-5 py-3 font-medium">Membre (bénéficiaire)</th>
-<th class="px-5 py-3 font-medium hidden sm:table-cell">Assuré principal</th>
-<th class="px-5 py-3 font-medium hidden md:table-cell">Lien</th>
-<th class="px-5 py-3 font-medium hidden lg:table-cell">Soumis le</th>
-<th class="px-5 py-3 font-medium hidden md:table-cell">Gestionnaire</th>
-<th class="px-5 py-3 font-medium">Statut</th>
-<th class="px-5 py-3 font-medium text-right">Action</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-outline-variant" id="dossiers-table"></tbody>
-</table>
-</div>
-<div class="px-4 sm:px-5 py-4 border-t border-outline-variant" id="pagination"></div>
-</div>
-<!-- Vue par assuré -->
-<div class="hidden space-y-3" id="view-assure"></div>
+<!-- Vue par assuré (dossier familial) -->
+<div class="space-y-3" id="view-assure"></div>
 <div class="hidden px-1 py-4" id="pagination-assure"></div>
 </main>
+<!-- Profil assuré modal -->
+<div class="modal-overlay fixed inset-0 bg-black/50 z-[55] items-center justify-center p-4" id="profile-overlay">
+<div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5 sm:p-6" id="profile-modal-content"></div>
+</div>
 <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
             © 2026 CAMA — Back-office institutionnel. Accès restreint et tracé.
         </footer>
@@ -296,9 +319,12 @@
             direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
         };
 
-        const PIECES_REQUETABLES = ["Acte de naissance", "Copie CNIB", "Acte de mariage", "Certificat médical de scolarité", "Pièce justifiant la garde", "Acte de divorce"];
+        const PIECES_REQUETABLES = ["Acte de naissance", "Copie CNIB", "Acte de mariage", "Pièce justifiant la garde", "Acte de divorce"];
 
         let DOSSIERS = CamaAssureData.getDossiers();
+        let queueTab = localStorage.getItem('cama_admin_queue_tab') || 'a_traiter';
+        let affectationTab = localStorage.getItem('cama_admin_affect_tab') || 'tous';
+        const selectedAssures = new Set();
 
         function persistDossiers() {
             CamaAssureData.saveDossiers(DOSSIERS);
@@ -330,49 +356,219 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
-        function applyRole(role) {
+        let groupedPageCache = [];
+        let scopedGroupsCache = null;
+
+        function syncRoleUi(role) {
             localStorage.setItem('cama_admin_role', role);
+            if (role === 'gestionnaire') {
+                const session = CamaAssureData.getAdminSession();
+                const nom = session?.role === 'gestionnaire' ? session.nom : ROLE_IDENTITIES.gestionnaire.nom;
+                localStorage.setItem('cama_demo_gestionnaire_nom', nom);
+            }
             document.querySelectorAll('[data-roles]').forEach(el => {
                 const roles = el.dataset.roles.split(',');
                 el.classList.toggle('role-hidden', !roles.includes(role));
             });
-            const identity = ROLE_IDENTITIES[role];
-            document.getElementById('topbar-name').textContent = identity.nom;
+            const identity = ROLE_IDENTITIES[role] || ROLE_IDENTITIES.gestionnaire;
+            document.getElementById('topbar-name').textContent = role === 'gestionnaire'
+                ? (CamaAssureData.getAdminGestionnaireNom() || identity.nom)
+                : identity.nom;
             document.getElementById('topbar-role').textContent = identity.role;
-            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
+            document.getElementById('topbar-avatar').textContent = initials(document.getElementById('topbar-name').textContent);
             const select = document.getElementById('role-select');
             if (select) select.value = role;
+            updateGestionnaireScopeBanner();
+        }
+
+        function applyRole(role) {
+            syncRoleUi(role);
+            reloadDossiersFromStore();
+            renderView(currentPage);
+        }
+
+        function reloadDossiersFromStore() {
+            DOSSIERS = CamaAssureData.getDossiers();
+        }
+
+        function getScopedDossiers() {
+            return CamaAssureData.getDossiersForAdminView();
+        }
+
+        function canAccessDossier(d) {
+            if (!d) return false;
+            if (!CamaAssureData.isAdminGestionnaireView()) return true;
+            const nom = CamaAssureData.getAdminGestionnaireNom();
+            return nom && d.gestionnaire === nom;
+        }
+
+        function updateGestionnaireScopeBanner() {
+            const el = document.getElementById('gestionnaire-scope-label');
+            if (!el || !CamaAssureData.isAdminGestionnaireView()) return;
+            const nom = CamaAssureData.getAdminGestionnaireNom();
+            const n = getScopedDossiers().length;
+            el.textContent = nom
+                ? `Connecté en tant que ${nom} · ${n} demande(s) membre(s) dans votre périmètre.`
+                : 'Aucun gestionnaire identifié.';
         }
 
         // ---- Filtering, sorting, pagination ----
         const PAGE_SIZE = 5;
         const GROUP_PAGE_SIZE = 4;
         let currentPage = 1;
-        let viewMode = localStorage.getItem('cama_admin_dossiers_view') || 'assure';
 
-        function setViewMode(mode) {
-            viewMode = mode;
-            localStorage.setItem('cama_admin_dossiers_view', mode);
-            document.querySelectorAll('.view-pill').forEach(btn => {
-                btn.classList.toggle('is-active', btn.dataset.view === mode);
+        function canBatchAssign() {
+            const role = getCurrentRole();
+            return role === 'superviseur' || role === 'administrateur';
+        }
+
+        function isDossierAffecte(gestionnaire) {
+            return !!(gestionnaire && gestionnaire !== 'Non affecté');
+        }
+
+        function affectationLabel(gestionnaire) {
+            return isDossierAffecte(gestionnaire) ? `Affecté à ${gestionnaire}` : 'Non affecté';
+        }
+
+        function affectationBadgeHtml(gestionnaire) {
+            const aff = isDossierAffecte(gestionnaire);
+            const cls = aff ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary';
+            return `<span class="px-3 py-1.5 rounded-full text-xs font-bold ${cls}">${affectationLabel(gestionnaire)}</span>`;
+        }
+
+        function buildGestionnaireOptions(selected) {
+            const charges = CamaAssureData.getGestionnaireCharge(DOSSIERS);
+            let html = `<option value="Non affecté" ${selected === 'Non affecté' ? 'selected' : ''}>Non affecté</option>`;
+            charges.forEach(g => {
+                const sel = selected === g.nom ? 'selected' : '';
+                html += `<option value="${g.nom.replace(/"/g, '&quot;')}" ${sel}>Affecté à ${g.nom} — ${g.assignes} assigné(s) · ${g.nonTraites} à traiter · ${g.valides} validé(s)</option>`;
             });
-            document.getElementById('view-demande').classList.toggle('hidden', mode !== 'demande');
-            document.getElementById('view-assure').classList.toggle('hidden', mode !== 'assure');
-            document.getElementById('pagination').classList.toggle('hidden', mode !== 'demande');
-            document.getElementById('pagination-assure').classList.toggle('hidden', mode !== 'assure');
+            return html;
+        }
+
+        function buildBatchGestionnaireOptions() {
+            const charges = CamaAssureData.getGestionnaireCharge(DOSSIERS);
+            let html = '<option value="" disabled selected>— Choisir un gestionnaire —</option>';
+            charges.forEach(g => {
+                html += `<option value="${g.nom.replace(/"/g, '&quot;')}">Affecté à ${g.nom} — ${g.assignes} assigné(s) · ${g.nonTraites} à traiter · ${g.valides} validé(s)</option>`;
+            });
+            return html;
+        }
+
+        function refreshGestionnaireSelects() {
+            const batch = document.getElementById('batch-gestionnaire');
+            if (batch) {
+                batch.innerHTML = buildBatchGestionnaireOptions();
+            }
+            const filter = document.getElementById('filter-gestionnaire');
+            if (filter) {
+                const prev = filter.value;
+                const base = '<option value="Tous">Tous les gestionnaires affectés</option>';
+                const gestOpts = CamaAssureData.getGestionnairesCama().map(n =>
+                    `<option value="${n.replace(/"/g, '&quot;')}" ${prev === n ? 'selected' : ''}>${n}</option>`
+                ).join('');
+                filter.innerHTML = base + gestOpts;
+                if ([...filter.options].some(o => o.value === prev)) filter.value = prev;
+            }
+            const filterGest = document.getElementById('filter-gestionnaire');
+            if (filterGest) {
+                filterGest.classList.toggle('hidden', affectationTab !== 'affecte');
+            }
+        }
+
+        function updateAffectationBadges(groups) {
+            const list = groups || CamaAssureData.groupDossiersByAssure(getFiltered()).filter(g => g.queue === queueTab);
+            const non = list.filter(g => !isDossierAffecte(g.gestionnaire)).length;
+            const oui = list.filter(g => isDossierAffecte(g.gestionnaire)).length;
+            const elTous = document.getElementById('affect-badge-tous');
+            const elNon = document.getElementById('affect-badge-non');
+            const elOui = document.getElementById('affect-badge-oui');
+            if (elTous) elTous.textContent = list.length;
+            if (elNon) elNon.textContent = non;
+            if (elOui) elOui.textContent = oui;
+        }
+
+        function setAffectationTab(tab) {
+            affectationTab = tab;
+            localStorage.setItem('cama_admin_affect_tab', tab);
+            document.querySelectorAll('.affect-tab').forEach(btn => {
+                const active = btn.dataset.affect === tab;
+                btn.classList.toggle('is-active', active);
+                btn.classList.toggle('bg-white', !active);
+                btn.classList.toggle('text-on-surface-variant', !active);
+            });
+            if (tab !== 'affecte') {
+                document.getElementById('filter-gestionnaire').value = 'Tous';
+            }
+            refreshGestionnaireSelects();
             renderView(1);
+        }
+
+        function filterGroupsByAffectation(groups) {
+            if (CamaAssureData.isAdminGestionnaireView()) return groups;
+            const gestFilt = document.getElementById('filter-gestionnaire').value;
+            return groups.filter(g => {
+                if (affectationTab === 'non_affecte' && isDossierAffecte(g.gestionnaire)) return false;
+                if (affectationTab === 'affecte' && !isDossierAffecte(g.gestionnaire)) return false;
+                if (affectationTab === 'affecte' && gestFilt !== 'Tous' && g.gestionnaire !== gestFilt) return false;
+                return true;
+            });
+        }
+
+        function updateQueueBadges() {
+            if (!scopedGroupsCache) {
+                scopedGroupsCache = CamaAssureData.groupDossiersByAssure(getScopedDossiers());
+            }
+            const counts = { a_traiter: 0, valides: 0, refuses: 0, complement: 0 };
+            scopedGroupsCache.forEach(g => { if (counts[g.queue] !== undefined) counts[g.queue]++; });
+            document.querySelectorAll('.queue-tab').forEach(btn => {
+                const q = btn.dataset.queue;
+                const badge = btn.querySelector('.queue-badge');
+                if (badge) badge.textContent = counts[q] || 0;
+            });
+        }
+
+        function setQueueTab(tab) {
+            queueTab = tab;
+            localStorage.setItem('cama_admin_queue_tab', tab);
+            document.querySelectorAll('.queue-tab').forEach(btn => {
+                btn.classList.toggle('is-active', btn.dataset.queue === tab);
+                btn.classList.toggle('bg-primary', btn.dataset.queue === tab);
+                btn.classList.toggle('text-on-primary', btn.dataset.queue === tab);
+                btn.classList.toggle('bg-white', btn.dataset.queue !== tab);
+                btn.classList.toggle('text-on-surface-variant', btn.dataset.queue !== tab);
+            });
+            selectedAssures.clear();
+            updateBatchBar();
+            renderView(1);
+        }
+
+        function updateBatchBar() {
+            const bar = document.getElementById('batch-assign-bar');
+            const countEl = document.getElementById('batch-selected-count');
+            if (countEl) countEl.textContent = selectedAssures.size;
+            if (bar && canBatchAssign()) bar.classList.toggle('hidden', selectedAssures.size === 0);
+        }
+
+        function renderView(page) {
+            reloadDossiersFromStore();
+            scopedGroupsCache = CamaAssureData.groupDossiersByAssure(getScopedDossiers());
+            refreshGestionnaireSelects();
+            updateQueueBadges();
+            const filteredGroups = CamaAssureData.groupDossiersByAssure(getFiltered());
+            updateAffectationBadges(filteredGroups);
+            updateGestionnaireScopeBanner();
+            renderGrouped(page, filteredGroups);
         }
 
         function getFiltered() {
             const statut = document.getElementById('filter-statut').value;
-            const gestionnaire = document.getElementById('filter-gestionnaire').value;
             const lien = document.getElementById('filter-lien').value;
             const periode = document.getElementById('filter-periode').value;
             const search = document.getElementById('filter-search').value.trim().toLowerCase();
 
-            return DOSSIERS.filter(d => {
+            return getScopedDossiers().filter(d => {
                 if (statut !== 'Tous' && d.statut !== statut) return false;
-                if (gestionnaire !== 'Tous' && d.gestionnaire !== gestionnaire) return false;
                 if (lien !== 'Tous' && d.lien !== lien) return false;
                 if (periode && d.dateSoumission !== periode) return false;
                 if (search && !(
@@ -382,34 +578,6 @@
                 )) return false;
                 return true;
             }).sort((a, b) => b.dateSoumission.localeCompare(a.dateSoumission));
-        }
-
-        function renderView(page) {
-            if (viewMode === 'assure') renderGrouped(page);
-            else renderTable(page);
-        }
-
-        function renderDemandeCard(d) {
-            return `
-                <button type="button" class="dossier-mobile-card w-full text-left p-4 hover:bg-surface-container-low active:bg-surface-container transition-colors" onclick="openDetail(${d.id})">
-                    <div class="flex items-start justify-between gap-2 mb-3">
-                        <span class="text-[11px] font-bold text-primary break-all">${d.ref}</span>
-                        ${statusBadge(d.statut)}
-                    </div>
-                    <div class="flex items-center gap-3 mb-3">
-                        <div class="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${initials(d.beneficiaire)}</div>
-                        <div class="min-w-0 flex-1">
-                            <p class="font-bold text-base text-on-surface leading-tight">${d.beneficiaire}</p>
-                            <p class="text-xs text-on-surface-variant mt-0.5">${d.lien}</p>
-                        </div>
-                    </div>
-                    <dl class="grid grid-cols-1 gap-2 text-xs bg-surface-container-low rounded-lg p-3">
-                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Assuré</dt><dd class="font-semibold text-on-surface text-right">${d.assureNom}</dd></div>
-                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Soumis le</dt><dd class="font-semibold">${formatDate(d.dateSoumission)}</dd></div>
-                        <div class="flex justify-between gap-2"><dt class="text-on-surface-variant shrink-0">Gestionnaire</dt><dd class="font-semibold text-right ${d.gestionnaire === 'Non affecté' ? 'text-tertiary' : 'text-on-surface'}">${d.gestionnaire}</dd></div>
-                    </div>
-                    <span class="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">Ouvrir la demande <span class="material-symbols-outlined text-[18px]">chevron_right</span></span>
-                </button>`;
         }
 
         function renderMembreRowCard(d) {
@@ -424,116 +592,129 @@
                 </button>`;
         }
 
-        function renderTable(page) {
-            currentPage = page || 1;
-            const filtered = getFiltered();
-            const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-            currentPage = Math.min(currentPage, totalPages);
-            const start = (currentPage - 1) * PAGE_SIZE;
-            const pageItems = filtered.slice(start, start + PAGE_SIZE);
-
-            const tbody = document.getElementById('dossiers-table');
-            const cardsEl = document.getElementById('dossiers-cards');
-            const emptyMsg = `<p class="p-8 text-center text-on-surface-variant text-sm">Aucune demande ne correspond à ces filtres.</p>`;
-            if (!pageItems.length) {
-                tbody.innerHTML = `<tr><td colspan="8" class="px-5 py-10 text-center text-on-surface-variant text-sm">Aucune demande ne correspond à ces filtres.</td></tr>`;
-                cardsEl.innerHTML = emptyMsg;
-            } else {
-                tbody.innerHTML = pageItems.map(d => `
-                    <tr class="hover:bg-surface-container-low transition-colors cursor-pointer" onclick="openDetail(${d.id})">
-                        <td class="px-5 py-3 font-bold text-xs">${d.ref}</td>
-                        <td class="px-5 py-3 text-xs">
-                            <div class="flex items-center gap-2">
-                                <div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-bold text-[10px] text-primary shrink-0">${initials(d.beneficiaire)}</div>
-                                <div>
-                                    <p class="font-semibold">${d.beneficiaire}</p>
-                                    <p class="text-[10px] text-on-surface-variant sm:hidden">Assuré : ${d.assureNom}</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="px-5 py-3 text-xs hidden sm:table-cell">
-                            <p class="font-semibold text-on-surface">${d.assureNom}</p>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-on-surface-variant hidden md:table-cell">${d.lien}</td>
-                        <td class="px-5 py-3 text-xs text-on-surface-variant hidden lg:table-cell">${formatDate(d.dateSoumission)}</td>
-                        <td class="px-5 py-3 text-xs hidden md:table-cell ${d.gestionnaire === 'Non affecté' ? 'text-tertiary font-bold' : 'text-on-surface-variant'}">${d.gestionnaire}</td>
-                        <td class="px-5 py-3">${statusBadge(d.statut)}</td>
-                        <td class="px-5 py-3 text-right"><span class="material-symbols-outlined text-on-surface-variant">chevron_right</span></td>
-                    </tr>
-                `).join('');
-                cardsEl.innerHTML = pageItems.map(d => renderDemandeCard(d)).join('');
-            }
-            renderPagination(totalPages, filtered.length, 'pagination', 'demande');
+        function renderAssureCardBody(g) {
+            const assureEsc = g.assureNom.replace(/'/g, "\\'");
+            return `
+                <div class="border-t border-outline-variant px-4 py-3 sm:px-5 bg-surface-container-low/50">
+                    <div class="flex flex-wrap items-center justify-end gap-2 mb-3 pt-1">
+                        <button type="button" class="text-primary text-xs font-bold flex items-center gap-1 shrink-0 px-2 py-1 rounded-lg hover:bg-primary/5" onclick="openAssureProfile('${assureEsc}')"><span class="material-symbols-outlined text-[16px]">person</span> Profil assuré</button>
+                    </div>
+                    <div class="sm:hidden mb-2">${affectationBadgeHtml(g.gestionnaire)}</div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                        <p class="text-[10px] uppercase tracking-wide text-on-surface-variant font-bold">Demandes d'enrôlement des membres</p>
+                        <div class="flex flex-wrap items-center gap-2">
+                            ${canBatchAssign() ? `<div class="flex items-center gap-2"><label class="text-[10px] text-on-surface-variant whitespace-nowrap">Affecter à</label><select class="text-[11px] px-2 py-1.5 border border-outline-variant rounded-lg bg-white max-w-[280px]" onchange="assignFamilyGestionnaire('${assureEsc}', this.value)">${buildGestionnaireOptions(g.gestionnaire)}</select></div>` : ''}
+                            <button type="button" class="text-[11px] font-bold text-primary hover:underline" onclick="openFamilyDetail('${assureEsc}')">Traiter le dossier familial</button>
+                        </div>
+                    </div>
+                    <div class="md:hidden space-y-2 mb-3">
+                        ${g.dossiers.filter(d => d.statut !== 'Brouillon').map(d => renderMembreRowCard(d)).join('') || '<p class="text-xs text-on-surface-variant italic">Aucun membre soumis.</p>'}
+                    </div>
+                    <div class="hidden md:block overflow-x-auto rounded-lg border border-outline-variant bg-white">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-surface-container-low text-[10px] uppercase text-on-surface-variant">
+                                <tr>
+                                    <th class="px-3 py-2">Référence</th>
+                                    <th class="px-3 py-2">Membre</th>
+                                    <th class="px-3 py-2">Lien</th>
+                                    <th class="px-3 py-2">Date</th>
+                                    <th class="px-3 py-2">Affectation</th>
+                                    <th class="px-3 py-2">Statut</th>
+                                    <th class="px-3 py-2 text-right"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-outline-variant">
+                                ${g.dossiers.filter(d => d.statut !== 'Brouillon').map(d => `
+                                    <tr class="hover:bg-surface-container-low cursor-pointer" onclick="openDetail(${d.id})">
+                                        <td class="px-3 py-2.5 font-bold">${d.ref}</td>
+                                        <td class="px-3 py-2.5">${d.beneficiaire}</td>
+                                        <td class="px-3 py-2.5 text-on-surface-variant">${d.lien}</td>
+                                        <td class="px-3 py-2.5 text-on-surface-variant">${formatDate(d.dateSoumission)}</td>
+                                        <td class="px-3 py-2.5 text-on-surface-variant">${affectationLabel(g.gestionnaire)}</td>
+                                        <td class="px-3 py-2.5">${statusBadge(d.statut)}</td>
+                                        <td class="px-3 py-2.5 text-right"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">chevron_right</span></td>
+                                    </tr>
+                                `).join('') || '<tr><td colspan="7" class="px-3 py-6 text-center text-on-surface-variant italic">Aucun membre soumis.</td></tr>'}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
         }
 
-        function renderGrouped(page) {
+        function fillAssureAccordionBody(detailsEl) {
+            const body = detailsEl.querySelector('.assure-accordion-body');
+            if (!body || body.dataset.loaded === '1') return;
+            const assureNom = decodeURIComponent(detailsEl.dataset.assure || '');
+            const g = groupedPageCache.find(x => x.assureNom === assureNom);
+            if (!g) {
+                body.innerHTML = '<p class="px-4 py-6 text-xs text-on-surface-variant text-center">Impossible de charger ce dossier.</p>';
+                body.dataset.loaded = '1';
+                return;
+            }
+            body.innerHTML = renderAssureCardBody(g);
+            body.dataset.loaded = '1';
+        }
+
+        function bindAccordionLazyLoad() {
+            const container = document.getElementById('view-assure');
+            if (!container || container.dataset.accordionBound) return;
+            container.dataset.accordionBound = '1';
+            container.addEventListener('toggle', (e) => {
+                const details = e.target;
+                if (details.tagName !== 'DETAILS' || !details.classList.contains('assure-accordion') || !details.open) return;
+                fillAssureAccordionBody(details);
+            }, true);
+        }
+
+        function renderGrouped(page, precomputedGroups) {
             currentPage = page || 1;
-            const groups = CamaAssureData.groupDossiersByAssure(getFiltered());
+            let groups = precomputedGroups || CamaAssureData.groupDossiersByAssure(getFiltered());
+            groups = groups.filter(g => g.queue === queueTab);
+            groups = filterGroupsByAffectation(groups);
             const totalPages = Math.max(1, Math.ceil(groups.length / GROUP_PAGE_SIZE));
             currentPage = Math.min(currentPage, totalPages);
             const start = (currentPage - 1) * GROUP_PAGE_SIZE;
             const pageGroups = groups.slice(start, start + GROUP_PAGE_SIZE);
+            groupedPageCache = pageGroups;
             const container = document.getElementById('view-assure');
+            const queueLabels = { a_traiter: 'à traiter', valides: 'validés', refuses: 'refusés', complement: 'à compléter' };
 
             if (!pageGroups.length) {
-                container.innerHTML = `<div class="assure-card p-10 text-center text-on-surface-variant text-sm">Aucun assuré ne correspond à ces filtres.</div>`;
+                container.innerHTML = `<div class="assure-card p-10 text-center text-on-surface-variant text-sm">Aucun dossier familial ${queueLabels[queueTab] || ''} ne correspond à ces filtres.</div>`;
             } else {
                 container.innerHTML = pageGroups.map(g => `
-                    <details class="assure-card overflow-hidden group" ${g.pending > 0 ? 'open' : ''}>
-                        <summary class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 px-4 py-4 sm:px-5 cursor-pointer hover:bg-surface-container-low transition-colors list-none">
+                    <details class="assure-card assure-accordion overflow-hidden group" data-assure="${encodeURIComponent(g.assureNom)}">
+                        <summary class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 px-4 py-4 sm:px-5 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
                             <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
+                                ${canBatchAssign() ? `<label class="flex items-center shrink-0" onclick="event.stopPropagation()"><input type="checkbox" class="assure-select w-4 h-4 rounded border-outline-variant" data-assure="${g.assureNom.replace(/"/g, '&quot;')}" ${selectedAssures.has(g.assureNom) ? 'checked' : ''}/></label>` : ''}
                                 <div class="w-11 h-11 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">${initials(g.assureNom)}</div>
                                 <div class="min-w-0 flex-1">
                                     <p class="font-bold text-base sm:text-sm text-on-surface truncate">${g.assureNom}</p>
                                     <p class="text-xs text-on-surface-variant">${g.matricule} · ${g.numeroCama}</p>
+                                    ${g.lastTraitement ? `<p class="text-[10px] text-on-surface-variant mt-0.5">Dernier traitement : ${g.lastTraitement}</p>` : ''}
                                 </div>
-                                <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform sm:hidden shrink-0">expand_more</span>
+                                <span class="material-symbols-outlined text-on-surface-variant accordion-chevron sm:hidden shrink-0">expand_more</span>
                             </div>
                             <div class="flex flex-wrap gap-2 items-center w-full sm:w-auto">
                                 <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">${g.total} demande${g.total > 1 ? 's' : ''}</span>
                                 ${g.pending > 0 ? `<span class="px-3 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary">${g.pending} à traiter</span>` : `<span class="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary/10 text-secondary">À jour</span>`}
+                                <span class="hidden sm:inline">${affectationBadgeHtml(g.gestionnaire)}</span>
                             </div>
-                            <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform hidden sm:block shrink-0">expand_more</span>
+                            <span class="material-symbols-outlined text-on-surface-variant accordion-chevron hidden sm:block shrink-0">expand_more</span>
                         </summary>
-                        <div class="border-t border-outline-variant px-4 py-3 sm:px-5 bg-surface-container-low/50">
-                            <p class="text-[10px] uppercase tracking-wide text-on-surface-variant font-bold mb-3">Demandes d'enrôlement des membres</p>
-                            <div class="md:hidden space-y-2 mb-3">
-                                ${g.dossiers.map(d => renderMembreRowCard(d)).join('')}
-                            </div>
-                            <div class="hidden md:block overflow-x-auto rounded-lg border border-outline-variant bg-white">
-                                <table class="w-full text-left text-xs">
-                                    <thead class="bg-surface-container-low text-[10px] uppercase text-on-surface-variant">
-                                        <tr>
-                                            <th class="px-3 py-2">Référence</th>
-                                            <th class="px-3 py-2">Membre</th>
-                                            <th class="px-3 py-2">Lien</th>
-                                            <th class="px-3 py-2">Date</th>
-                                            <th class="px-3 py-2">Statut</th>
-                                            <th class="px-3 py-2 text-right"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-outline-variant">
-                                        ${g.dossiers.map(d => `
-                                            <tr class="hover:bg-surface-container-low cursor-pointer" onclick="openDetail(${d.id})">
-                                                <td class="px-3 py-2.5 font-bold">${d.ref}</td>
-                                                <td class="px-3 py-2.5">${d.beneficiaire}</td>
-                                                <td class="px-3 py-2.5 text-on-surface-variant">${d.lien}</td>
-                                                <td class="px-3 py-2.5 text-on-surface-variant">${formatDate(d.dateSoumission)}</td>
-                                                <td class="px-3 py-2.5">${statusBadge(d.statut)}</td>
-                                                <td class="px-3 py-2.5 text-right"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">chevron_right</span></td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="mt-3 flex justify-stretch sm:justify-end">
-                                <a class="w-full sm:w-auto text-center sm:text-left py-3 sm:py-0 text-sm sm:text-[11px] font-bold text-primary hover:underline inline-flex items-center justify-center sm:justify-start gap-1 rounded-lg border border-primary/20 sm:border-0 bg-white sm:bg-transparent" href="assures.html">Voir la fiche assuré <span class="material-symbols-outlined text-[16px]">open_in_new</span></a>
-                            </div>
-                        </div>
+                        <div class="assure-accordion-body" data-lazy="1"></div>
                     </details>
                 `).join('');
             }
             renderPagination(totalPages, groups.length, 'pagination-assure', 'assure');
+            document.querySelectorAll('.assure-select').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (cb.checked) selectedAssures.add(cb.dataset.assure);
+                    else selectedAssures.delete(cb.dataset.assure);
+                    updateBatchBar();
+                });
+            });
+            syncRoleUi(getCurrentRole());
         }
 
         function formatDate(iso) {
@@ -562,37 +743,264 @@
         ['filter-statut', 'filter-gestionnaire', 'filter-lien', 'filter-periode'].forEach(id => {
             document.getElementById(id).addEventListener('change', () => renderView(1));
         });
-        document.getElementById('filter-search').addEventListener('input', () => renderView(1));
+        let searchDebounce;
+        document.getElementById('filter-search').addEventListener('input', () => {
+            clearTimeout(searchDebounce);
+            searchDebounce = setTimeout(() => renderView(1), 250);
+        });
         document.getElementById('filter-reset').addEventListener('click', () => {
             document.getElementById('filter-statut').value = 'Tous';
             document.getElementById('filter-gestionnaire').value = 'Tous';
             document.getElementById('filter-lien').value = 'Tous';
             document.getElementById('filter-periode').value = '';
             document.getElementById('filter-search').value = '';
-            renderView(1);
+            setAffectationTab('tous');
         });
-        document.querySelectorAll('.view-pill').forEach(btn => {
-            btn.addEventListener('click', () => setViewMode(btn.dataset.view));
+        document.querySelectorAll('.affect-tab').forEach(btn => {
+            btn.addEventListener('click', () => setAffectationTab(btn.dataset.affect));
+        });
+        document.querySelectorAll('.queue-tab').forEach(btn => {
+            btn.addEventListener('click', () => setQueueTab(btn.dataset.queue));
+        });
+        document.getElementById('batch-assign-btn')?.addEventListener('click', () => {
+            if (!canBatchAssign() || !selectedAssures.size) return;
+            const gest = document.getElementById('batch-gestionnaire').value;
+            if (!gest) {
+                showToast('<span class="material-symbols-outlined">error</span> Veuillez choisir un gestionnaire.');
+                return;
+            }
+            const n = selectedAssures.size;
+            selectedAssures.forEach(nom => CamaAssureData.assignDossiersToGestionnaire(nom, gest));
+            DOSSIERS = CamaAssureData.getDossiers();
+            selectedAssures.clear();
+            updateBatchBar();
+            showToast(`<span class="material-symbols-outlined">check_circle</span> ${n} dossier(s) affecté(s) — Affecté à ${gest}.`);
+            renderView(currentPage);
         });
 
-        function getCurrentRole() { return localStorage.getItem('cama_admin_role') || 'gestionnaire'; }
+        function getCurrentRole() { return CamaAssureData.getAdminEffectiveRole(); }
         function isValidation2N() { return window.CamaAdminShell?.isValidation2Niveaux?.() ?? localStorage.getItem('cama_validation_2niveaux') === 'true'; }
 
         function getValidationUi(d) {
+            if (['Validé', 'Refusé', 'Brouillon'].includes(d.statut)) return { label: 'Valider', sub: '', show: false };
             const role = getCurrentRole();
-            if (!isValidation2N()) return { label: 'Valider', sub: 'Cette action notifie l\'assuré par e-mail.', show: true };
-            if (d.statut === 'En attente supervision') {
-                if (role === 'superviseur' || role === 'administrateur') return { label: 'Valider (niveau 2)', sub: 'Validation finalele dossier sera clos.', show: true };
-                return { label: 'En attente supervision', sub: 'Ce dossier attend la validation du superviseur.', show: false };
+            if (d.statut === 'En attente supervision' && role === 'gestionnaire') {
+                return { label: 'Valider', sub: '', show: false };
             }
-            if (role === 'gestionnaire') return { label: 'Pré-valider', sub: 'Transmission au superviseur (validation à 2 niveaux).', show: true };
-            return { label: 'Valider', sub: 'Validation directe par le superviseur.', show: true };
+            if (isValidation2N() && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
+                return { label: 'Valider (niveau 2)', sub: 'Validation finale — le dossier quittera la file active.', show: true };
+            }
+            if (role === 'superviseur' && d.statut === 'En attente supervision') {
+                return { label: 'Valider (supervision)', sub: 'Validation finale par le superviseur.', show: true };
+            }
+            return { label: 'Valider', sub: role === 'superviseur' ? 'Le superviseur peut traiter et valider ce dossier.' : 'Le gestionnaire peut valider directement. L\'assuré sera notifié.', show: true };
+        }
+
+        function canEditAssureProfile() {
+            const role = getCurrentRole();
+            return ['gestionnaire', 'superviseur', 'administrateur'].includes(role);
+        }
+
+        function escHtml(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+        function openAssureProfile(assureNom) {
+            const scoped = getScopedDossiers();
+            if (CamaAssureData.isAdminGestionnaireView() && !scoped.some(d => d.assureNom === assureNom)) {
+                showToast('<span class="material-symbols-outlined">error</span> Ce dossier ne fait pas partie de votre périmètre.');
+                return;
+            }
+            const p = CamaAssureData.getAssureDetailForAdmin(assureNom);
+            if (!p) { showToast('<span class="material-symbols-outlined">error</span> Profil introuvable.'); return; }
+            const editable = canEditAssureProfile();
+            const nameParts = assureNom.split(' ');
+            const prenom = nameParts.slice(0, -1).join(' ') || '';
+            const nom = nameParts[nameParts.length - 1] || '';
+
+            if (!editable) {
+                const rows = [
+                    ['Matricule', p.matricule], ['N° CAMA', p.numeroCama], ['Statut compte', p.statut],
+                    ['E-mail', p.email], ['Sexe', p.sexe], ['Grade', p.grade], ['Catégorie', p.categorie],
+                    ['N° informatique', p.numeroInformatique], ['N° CIM', p.numeroCim], ['N° IUP', p.numeroIup],
+                    ['Armée', p.armee], ['Région', p.region], ['Corps', p.corps], ['Service', p.service],
+                    ['Section', p.section], ['Sous-section', p.sousSection],
+                    ['Téléphones', p.telephones], ['Personne à prévenir', p.personneAPrevenir], ['Tél. à prévenir', p.telPersonneAPrevenir]
+                ];
+                document.getElementById('profile-modal-content').innerHTML = `
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div><p class="text-[10px] uppercase text-primary font-bold">Profil assuré</p><h3 class="font-title-lg text-title-lg">${assureNom}</h3></div>
+                        <button type="button" class="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center" onclick="closeAssureProfile()"><span class="material-symbols-outlined">close</span></button>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">${rows.map(([l, v]) => `<div class="bg-surface-container-low rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">${l}</p><p class="text-xs font-bold break-words">${v && String(v).trim() ? v : '—'}</p></div>`).join('')}</div>`;
+            } else {
+                document.getElementById('profile-modal-content').innerHTML = `
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div><p class="text-[10px] uppercase text-primary font-bold">Profil assuré — édition</p><h3 class="font-title-lg text-title-lg">${assureNom}</h3></div>
+                        <button type="button" class="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center" onclick="closeAssureProfile()"><span class="material-symbols-outlined">close</span></button>
+                    </div>
+                    <form id="admin-profile-form" class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <input type="hidden" id="ap-assure-nom" value="${escHtml(assureNom)}"/>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Prénom(s)</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-prenom" value="${escHtml(prenom)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Nom</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-nom" value="${escHtml(nom)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Matricule</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-matricule" value="${escHtml(p.matricule === '—' ? '' : p.matricule)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">N° CAMA</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-numerocama" value="${escHtml(p.numeroCama === '—' ? '' : p.numeroCama)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Statut compte</label>
+                            <select class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg bg-white" id="ap-statut">
+                                <option ${p.statut === 'Actif' ? 'selected' : ''}>Actif</option>
+                                <option ${p.statut === 'En attente de validation' ? 'selected' : ''}>En attente de validation</option>
+                                <option ${p.statut === 'Désactivé' ? 'selected' : ''}>Désactivé</option>
+                                <option ${p.statut === 'Refusé' ? 'selected' : ''}>Refusé</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">E-mail</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-email" type="email" value="${escHtml(p.email === '—' ? '' : p.email)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Sexe</label>
+                            <select class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg bg-white" id="ap-sexe">
+                                <option value="">—</option><option ${p.sexe === 'Masculin' ? 'selected' : ''}>Masculin</option><option ${p.sexe === 'Féminin' ? 'selected' : ''}>Féminin</option>
+                            </select>
+                        </div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Grade</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-grade" value="${escHtml(p.grade)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Catégorie</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-categorie" value="${escHtml(p.categorie)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">N° informatique</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-num-inf" value="${escHtml(p.numeroInformatique)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">N° CIM</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-cim" value="${escHtml(p.numeroCim)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">N° IUP</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-iup" value="${escHtml(p.numeroIup)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Armée</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-armee" value="${escHtml(p.armee)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Région</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-region" value="${escHtml(p.region)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Corps</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-corps" value="${escHtml(p.corps)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Service</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-service" value="${escHtml(p.service)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Section</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-section" value="${escHtml(p.section)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Sous-section</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-sous-section" value="${escHtml(p.sousSection)}"/></div>
+                        <div class="sm:col-span-2"><label class="text-[10px] font-bold uppercase text-on-surface-variant">Téléphones</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-telephones" value="${escHtml(p.telephones === '—' ? '' : p.telephones)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Personne à prévenir</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-personne" value="${escHtml(p.personneAPrevenir === '—' ? '' : p.personneAPrevenir)}"/></div>
+                        <div><label class="text-[10px] font-bold uppercase text-on-surface-variant">Tél. personne à prévenir</label><input class="w-full mt-1 px-2 py-2 border border-outline-variant rounded-lg" id="ap-tel-personne" value="${escHtml(p.telPersonneAPrevenir === '—' ? '' : p.telPersonneAPrevenir)}"/></div>
+                        <div class="sm:col-span-2 flex justify-end gap-2 pt-2">
+                            <button type="button" class="px-4 py-2 rounded-lg border border-outline text-xs" onclick="closeAssureProfile()">Annuler</button>
+                            <button type="submit" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold">Enregistrer le profil</button>
+                        </div>
+                    </form>`;
+                document.getElementById('admin-profile-form').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const key = document.getElementById('ap-assure-nom').value;
+                    const patch = {
+                        prenom: document.getElementById('ap-prenom').value.trim(),
+                        nom: document.getElementById('ap-nom').value.trim(),
+                        matricule: document.getElementById('ap-matricule').value.trim(),
+                        numeroCama: document.getElementById('ap-numerocama').value.trim(),
+                        statut: document.getElementById('ap-statut').value,
+                        email: document.getElementById('ap-email').value.trim(),
+                        sexe: document.getElementById('ap-sexe').value,
+                        grade: document.getElementById('ap-grade').value.trim(),
+                        categorie: document.getElementById('ap-categorie').value.trim(),
+                        numeroInformatique: document.getElementById('ap-num-inf').value.trim(),
+                        numeroCim: document.getElementById('ap-cim').value.trim(),
+                        numeroIup: document.getElementById('ap-iup').value.trim(),
+                        armee: document.getElementById('ap-armee').value.trim(),
+                        region: document.getElementById('ap-region').value.trim(),
+                        corps: document.getElementById('ap-corps').value.trim(),
+                        service: document.getElementById('ap-service').value.trim(),
+                        section: document.getElementById('ap-section').value.trim(),
+                        sousSection: document.getElementById('ap-sous-section').value.trim(),
+                        telephones: document.getElementById('ap-telephones').value.trim(),
+                        personneAPrevenir: document.getElementById('ap-personne').value.trim(),
+                        telPersonneAPrevenir: document.getElementById('ap-tel-personne').value.trim()
+                    };
+                    const res = CamaAssureData.updateAssureProfileAdmin(key, patch);
+                    if (res.error) { showToast(`<span class="material-symbols-outlined">error</span> ${res.error}`); return; }
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Profil assuré mis à jour.');
+                    closeAssureProfile();
+                    renderView(currentPage);
+                });
+            }
+            document.getElementById('profile-overlay').classList.add('is-open');
+        }
+        function closeAssureProfile() { document.getElementById('profile-overlay').classList.remove('is-open'); }
+
+        function detailNavBtn(label, onclickAttr) {
+            return `<button type="button" class="detail-nav-btn shrink-0" onclick="${onclickAttr}"><span class="material-symbols-outlined">arrow_back</span><span>${label}</span></button>`;
+        }
+
+        let currentFamilyAssure = null;
+        function openFamilyDetail(assureNom) {
+            const scoped = getScopedDossiers();
+            if (CamaAssureData.isAdminGestionnaireView() && !scoped.some(d => d.assureNom === assureNom)) {
+                showToast('<span class="material-symbols-outlined">error</span> Ce dossier ne fait pas partie de votre périmètre.');
+                return;
+            }
+            currentFamilyAssure = assureNom;
+            const group = CamaAssureData.groupDossiersByAssure(getScopedDossiers()).find(g => g.assureNom === assureNom);
+            if (!group) return;
+            const membresHtml = group.dossiers.filter(d => d.statut !== 'Brouillon').map(d => `
+                <button type="button" class="w-full text-left p-3 rounded-lg border border-outline-variant bg-white hover:bg-surface-container-low flex items-center justify-between gap-2" onclick="openDetail(${d.id})">
+                    <div class="min-w-0"><p class="text-xs font-bold text-on-surface">${d.beneficiaire}</p><p class="text-[10px] text-on-surface-variant">${d.ref} · ${d.lien} · soumis ${formatDate(d.dateSoumission)}</p></div>
+                    ${statusBadge(d.statut)}
+                </button>`).join('') || '<p class="text-xs text-on-surface-variant italic">Aucun membre soumis.</p>';
+
+            document.getElementById('detail-panel').innerHTML = `
+                <div class="sticky top-0 bg-white border-b border-outline-variant px-4 py-4 sm:px-5 z-10">
+                    <div class="flex items-start gap-3 mb-3">
+                        ${detailNavBtn('Retour à la liste des dossiers', 'closeDetail()')}
+                    </div>
+                    <div class="min-w-0">
+                        <p class="text-[10px] uppercase tracking-wide text-primary font-bold mb-0.5">Dossier familial</p>
+                        <h2 class="font-title-lg text-lg text-on-surface leading-tight">${assureNom}</h2>
+                        <p class="text-xs text-on-surface-variant mt-1">${group.matricule} · ${group.numeroCama} · ${group.total} membre(s)</p>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5 space-y-5 pb-24">
+                    <button type="button" class="text-primary text-xs font-bold flex items-center gap-1" onclick="openAssureProfile('${assureNom.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined text-[16px]">person</span> Voir le profil de l'assuré</button>
+                    ${canBatchAssign() ? `<div>
+                        <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation du dossier familial</label>
+                        <select class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg bg-white" onchange="assignFamilyGestionnaire('${assureNom.replace(/'/g, "\\'")}', this.value)">
+                            ${buildGestionnaireOptions(group.gestionnaire)}
+                        </select>
+                        <p class="text-[10px] text-on-surface-variant mt-1.5">Charge affichée : assignés · à traiter · validés</p>
+                    </div>` : `<div class="bg-surface-container-low rounded-lg p-3 text-xs">${affectationBadgeHtml(group.gestionnaire)}</div>`}
+                    ${group.lastTraitement ? `<div class="bg-surface-container-low rounded-lg p-3 text-xs"><strong>Dernier traitement :</strong> ${group.lastTraitement}${group.lastTraitementLibelle ? ` — ${group.lastTraitementLibelle}` : ''}</div>` : ''}
+                    <div><h3 class="text-xs font-bold uppercase text-on-surface-variant mb-2">Membres du dossier</h3><div class="space-y-2">${membresHtml}</div></div>
+                </div>`;
+            document.getElementById('detail-overlay').classList.add('is-open');
+        }
+
+        function assignFamilyGestionnaire(assureNom, value) {
+            CamaAssureData.assignDossiersToGestionnaire(assureNom, value);
+            DOSSIERS = CamaAssureData.getDossiers();
+            const msg = value === 'Non affecté' ? 'Dossier familial marqué comme non affecté.' : `Dossier familial — Affecté à ${value}.`;
+            showToast(`<span class="material-symbols-outlined">check_circle</span> ${msg}`);
+            renderView(currentPage);
+            if (currentFamilyAssure) openFamilyDetail(currentFamilyAssure);
         }
 
         // ---- Detail drawer ----
+        function beneficiaireInfoHtml(d) {
+            const info = [
+                ['Sexe', d.sexe],
+                ['Date de naissance', d.dateNaissance],
+                ['Lieu de naissance', d.lieuNaissance],
+                ['Groupe sanguin', d.groupeSanguin],
+                ['N° Carte CAMA', d.numeroCama],
+                ['Téléphone', d.telephone],
+                ["Réf. document d'identité", d.refIdentite]
+            ];
+            if ((d.lien || '').startsWith('Enfant')) {
+                info.push(["Réf. acte scolarité / état civil", d.refActeScolariteEtatCivil]);
+                info.push(['Nom et prénoms du parent', d.nomPrenomsParent]);
+            } else if (d.lien === 'Conjoint(e)') {
+                info.push(['Réf. acte de mariage', d.refActeMariage]);
+                info.push(['Profession', d.profession]);
+                info.push(['Lieu de résidence', d.lieuResidence]);
+            }
+            return info
+                .filter(([, v]) => v && String(v).trim() && v !== '—')
+                .map(([l, v]) => `<div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">${l}</p><p class="text-xs font-bold break-words">${v}</p></div>`)
+                .join('') || '<p class="text-xs text-on-surface-variant italic">Informations complémentaires non renseignées.</p>';
+        }
+
         function openDetail(id) {
             const d = DOSSIERS.find(x => x.id === id);
+            if (!canAccessDossier(d)) {
+                showToast('<span class="material-symbols-outlined">error</span> Ce dossier ne fait pas partie de votre périmètre.');
+                return;
+            }
             if (!d) return;
+            currentFamilyAssure = d.assureNom;
 
             const piecesHtml = d.pieces.length ? d.pieces.map(p => `
                 <div class="piece-row-mobile flex items-center justify-between py-2.5 border-b border-outline-variant last:border-0 gap-2">
@@ -629,14 +1037,16 @@
                 : `<span class="detail-action-btn detail-action-btn--wide px-4 py-3 rounded-lg bg-primary-fixed/30 text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2"><span class="material-symbols-outlined text-[18px]">hourglass_top</span> En attente supervision</span>`;
 
             document.getElementById('detail-panel').innerHTML = `
-                <div class="sticky top-0 bg-white border-b border-outline-variant px-4 py-4 sm:px-5 flex items-start justify-between gap-3 z-10">
-                    <div class="min-w-0 flex-1 pr-2">
+                <div class="sticky top-0 bg-white border-b border-outline-variant px-4 py-4 sm:px-5 z-10">
+                    <div class="flex items-start gap-3 mb-3">
+                        ${detailNavBtn('Retour au dossier familial', `openFamilyDetail('${d.assureNom.replace(/'/g, "\\'")}')`)}
+                    </div>
+                    <div class="min-w-0">
                         <p class="text-[10px] uppercase tracking-wide text-primary font-bold mb-0.5">Demande — membre de famille</p>
                         <p class="text-[11px] text-on-surface-variant break-all">${d.ref}</p>
                         <h2 class="font-title-lg text-lg sm:text-title-lg text-on-surface leading-tight mt-1">${d.beneficiaire}</h2>
                         <p class="text-xs text-on-surface-variant mt-1">Assuré : <strong class="text-on-surface">${d.assureNom}</strong></p>
                     </div>
-                    <button class="w-11 h-11 rounded-full hover:bg-surface-container-low flex items-center justify-center shrink-0" onclick="closeDetail()" type="button" aria-label="Fermer"><span class="material-symbols-outlined">close</span></button>
                 </div>
                 <div class="p-4 sm:p-5 space-y-5 pb-36 sm:pb-5">
                     ${motif}
@@ -648,13 +1058,12 @@
                         <div class="bg-white rounded-lg p-3 border border-outline-variant sm:col-span-2"><p class="text-[10px] text-on-surface-variant uppercase">Statut de cette demande</p><div class="mt-1">${statusBadge(d.statut)}</div></div>
                     </div>
                     <div>
-                        <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation</label>
-                        <select class="w-full px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" onchange="assignGestionnaire(${d.id}, this.value)">
-                            <option value="Non affecté" ${d.gestionnaire === 'Non affecté' ? 'selected' : ''}>Non affecté</option>
-                            <option ${d.gestionnaire === 'Lt. Aminata KABORÉ' ? 'selected' : ''}>Lt. Aminata KABORÉ</option>
-                            <option ${d.gestionnaire === 'Sgt. Daniel ZONGO' ? 'selected' : ''}>Sgt. Daniel ZONGO</option>
-                            <option ${d.gestionnaire === 'Adj. Rasmané BANCÉ' ? 'selected' : ''}>Adj. Rasmané BANCÉ</option>
-                        </select>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> État civil du bénéficiaire</h3>
+                        <div class="grid grid-cols-2 gap-2">${beneficiaireInfoHtml(d)}</div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation (dossier familial)</label>
+                        <p class="text-xs text-on-surface-variant mb-1">${affectationLabel(d.gestionnaire)} — modifiable depuis la vue dossier familial.</p>
                     </div>
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">folder</span> Pièces justificatives</h3>
@@ -680,18 +1089,14 @@
                     <button class="detail-action-btn px-4 py-3 rounded-lg border border-outline text-on-surface text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'attente')" type="button"><span class="material-symbols-outlined text-[18px]">pause_circle</span> En attente</button>
                 </div>`;
 
-            applyRole(localStorage.getItem('cama_admin_role') || 'gestionnaire');
+            syncRoleUi(localStorage.getItem('cama_admin_role') || 'gestionnaire');
             document.getElementById('detail-overlay').classList.add('is-open');
         }
         function closeDetail() { document.getElementById('detail-overlay').classList.remove('is-open'); }
 
         function assignGestionnaire(id, value) {
             const d = DOSSIERS.find(x => x.id === id);
-            d.gestionnaire = value;
-            d.journal.push({ date: new Date().toLocaleString('fr-FR'), libelle: `Affecté à ${value}` });
-            persistDossiers();
-            showToast(`<span class="material-symbols-outlined">check_circle</span> Dossier affecté à ${value}.`);
-            renderView(currentPage);
+            if (d) assignFamilyGestionnaire(d.assureNom, value);
         }
         function sendMessage(id) {
             const input = document.getElementById(`msg-input-${id}`);
@@ -749,26 +1154,25 @@
 
         function confirmAction(id, action) {
             const d = DOSSIERS.find(x => x.id === id);
+            if (!canAccessDossier(d)) {
+                showToast('<span class="material-symbols-outlined">error</span> Action non autorisée sur ce dossier.');
+                closeActionModal();
+                return;
+            }
             const now = new Date().toLocaleString('fr-FR');
             let notifyAction = null;
             let notifyExtra = {};
             if (action === 'valider') {
                 const role = getCurrentRole();
                 const twoLevel = isValidation2N();
-                if (twoLevel && role === 'gestionnaire' && d.statut !== 'En attente supervision') {
-                    d.statut = 'En attente supervision';
-                    d.journal.push({ date: now, libelle: 'Pré-validation gestionnaireen attente supervision' });
-                    notifyAction = 'supervision';
-                    window.CamaAdminShell?.addNotif?.({ type: 'supervision', icon: 'verified_user', color: 'tertiary', titre: 'Validation niveau 1', contenu: `${d.ref} transmis au superviseur.`, date: now, lu: false, lien: 'dossiers.html' });
-                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier pré-validé. En attente du superviseur.');
-                } else if (twoLevel && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
+                if (twoLevel && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
                     d.statut = 'Validé';
                     d.journal.push({ date: now, libelle: 'Validation finale superviseur (niveau 2)' });
                     notifyAction = 'valider';
-                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé (niveau 2). L\'assuré a été notifié.');
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé (niveau 2).');
                 } else {
                     d.statut = 'Validé';
-                    d.journal.push({ date: now, libelle: 'Dossier validé' });
+                    d.journal.push({ date: now, libelle: role === 'gestionnaire' ? 'Dossier validé par le gestionnaire' : 'Dossier validé' });
                     notifyAction = 'valider';
                     showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé. L\'assuré a été notifié.');
                 }
@@ -799,8 +1203,9 @@
             if (notifyAction) CamaAssureData.notifyAssureFromAdminAction(d, notifyAction, notifyExtra);
             persistDossiers();
             closeActionModal();
-            closeDetail();
             renderView(currentPage);
+            if (currentFamilyAssure) openFamilyDetail(currentFamilyAssure);
+            else closeDetail();
         }
 
         (function () {
@@ -808,10 +1213,25 @@
             const overlay = document.getElementById('sidebar-overlay');
             if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
             if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
-            const savedRole = localStorage.getItem('cama_admin_role') || 'gestionnaire';
-            applyRole(savedRole);
+            bindAccordionLazyLoad();
+            const savedRole = localStorage.getItem('cama_admin_role') || CamaAssureData.getAdminSession()?.role || 'gestionnaire';
+            if (CamaAssureData.isAdminGestionnaireView()) {
+                affectationTab = 'tous';
+                localStorage.setItem('cama_admin_affect_tab', 'tous');
+            }
+            syncRoleUi(savedRole);
+            reloadDossiersFromStore();
             document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
-            setViewMode(viewMode);
+            setQueueTab(queueTab);
+            if (!CamaAssureData.isAdminGestionnaireView()) {
+                document.querySelectorAll('.affect-tab').forEach(btn => {
+                    const active = btn.dataset.affect === affectationTab;
+                    btn.classList.toggle('is-active', active);
+                    btn.classList.toggle('bg-white', !active);
+                    btn.classList.toggle('text-on-surface-variant', !active);
+                });
+                refreshGestionnaireSelects();
+            }
         })();
     </script>
 <script src="admin-shell.js"></script>

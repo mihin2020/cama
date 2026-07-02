@@ -5,6 +5,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <script src="auth-guard.js"></script>
     <title>Tableau de bord | Back-office CAMA</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
@@ -188,7 +189,7 @@
                 <span class="material-symbols-outlined text-[20px]">folder_shared</span> Dossiers
             </a>
             <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
-                data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+                data-roles="gestionnaire,superviseur,administrateur,direction" href="assures.html">
                 <span class="material-symbols-outlined text-[20px]">groups</span> Assurés
             </a>
             <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
@@ -196,7 +197,7 @@
                 <span class="material-symbols-outlined text-[20px]">manage_accounts</span> Comptes internes
             </a>
             <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
-                data-roles="gestionnaire,superviseur,administrateur" href="exports.html">
+                data-roles="gestionnaire,superviseur,administrateur,direction" href="exports.html">
                 <span class="material-symbols-outlined text-[20px]">file_download</span> Exports
             </a>
             <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]"
@@ -259,8 +260,19 @@
             </div>
         </header>
         <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
-            <!-- Stat cards (9.7) -->
-            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Bandeau Direction Générale -->
+            <div class="assure-card p-4 mb-6 border border-primary/25 bg-primary/5" data-roles="direction" id="direction-banner">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary text-[28px] shrink-0">insights</span>
+                    <div>
+                        <p class="font-bold text-sm text-on-surface mb-0.5">Vue stratégique — Direction Générale</p>
+                        <p class="text-xs text-on-surface-variant leading-relaxed">Synthèse en temps réel de l'activité CAMA : assurés, dossiers, charge des équipes et indicateurs de performance. Consultation en lecture seule.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat cards principales -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -270,15 +282,17 @@
                     </div>
                     <p class="text-headline-md font-headline-lg" id="stat-assures">0</p>
                     <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Assurés inscrits</p>
+                    <p class="text-[10px] text-on-surface-variant mt-1" id="stat-assures-sub">— actifs</p>
                 </div>
                 <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
                         <div class="w-10 h-10 rounded-xl bg-tertiary/10 text-tertiary flex items-center justify-center">
                             <span class="material-symbols-outlined text-[20px]">pending_actions</span></div>
-                        <span class="text-tertiary text-[11px] font-bold">À traiter</span>
+                        <span class="text-tertiary text-[11px] font-bold" id="stat-attente-badge">À traiter</span>
                     </div>
                     <p class="text-headline-md font-headline-lg" id="stat-attente">0</p>
                     <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Dossiers en attente</p>
+                    <p class="text-[10px] text-on-surface-variant mt-1" id="stat-familles-sub">— familles</p>
                 </div>
                 <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                     <div class="flex items-center justify-between mb-3">
@@ -300,6 +314,39 @@
                     </div>
                     <p class="text-headline-md font-headline-lg" id="stat-delai">0j</p>
                     <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Délai moyen de traitement</p>
+                    <p class="text-[10px] text-on-surface-variant mt-1" id="stat-retard-sub">— en retard</p>
+                </div>
+            </section>
+
+            <!-- Stat cards complémentaires (DG / supervision) -->
+            <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" data-roles="superviseur,administrateur,direction" id="stats-extended">
+                <div class="assure-card p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+                        <span class="text-[11px] text-on-surface-variant uppercase tracking-wide">Dossiers validés</span>
+                    </div>
+                    <p class="text-2xl font-bold text-secondary" id="stat-valides">0</p>
+                </div>
+                <div class="assure-card p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-error text-[20px]">cancel</span>
+                        <span class="text-[11px] text-on-surface-variant uppercase tracking-wide">Dossiers refusés</span>
+                    </div>
+                    <p class="text-2xl font-bold text-error" id="stat-refuses">0</p>
+                </div>
+                <div class="assure-card p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-tertiary text-[20px]">person_add</span>
+                        <span class="text-[11px] text-on-surface-variant uppercase tracking-wide">Inscriptions en attente</span>
+                    </div>
+                    <p class="text-2xl font-bold text-tertiary" id="stat-inscriptions">0</p>
+                </div>
+                <div class="assure-card p-4">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="material-symbols-outlined text-primary text-[20px]">assignment_late</span>
+                        <span class="text-[11px] text-on-surface-variant uppercase tracking-wide">Non affectés</span>
+                    </div>
+                    <p class="text-2xl font-bold text-primary" id="stat-non-affectes">0</p>
                 </div>
             </section>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -310,7 +357,8 @@
                         <h3 class="font-title-lg text-title-lg flex items-center gap-2"><span
                                 class="material-symbols-outlined text-primary text-[20px]">priority_high</span> Dossiers
                             prioritaires</h3>
-                        <a class="text-primary font-bold text-xs hover:underline" href="dossiers.html">Voir tout</a>
+                        <a class="text-primary font-bold text-xs hover:underline" href="dossiers.html" data-roles="gestionnaire,superviseur,administrateur">Voir tout</a>
+                        <a class="text-primary font-bold text-xs hover:underline hidden" href="assures.html" data-roles="direction">Voir les assurés</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -337,11 +385,12 @@
                     <div class="p-5 space-y-4 flex-1" id="activity-feed"></div>
                 </div>
             </div>
-            <!-- Charge par gestionnaire + stockage -->
+            <!-- Charge par gestionnaire + répartition + stockage -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <div class="lg:col-span-2 assure-card overflow-hidden">
-                    <div class="px-5 py-4 border-b border-outline-variant bg-surface-container-low">
+                <div class="lg:col-span-2 assure-card overflow-hidden" data-roles="superviseur,administrateur,direction">
+                    <div class="px-5 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between gap-3">
                         <h3 class="font-title-lg text-title-lg">Charge par gestionnaire</h3>
+                        <a class="text-primary font-bold text-xs hover:underline shrink-0" href="dossiers.html" data-roles="superviseur,administrateur">Affecter des dossiers</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left">
@@ -349,14 +398,30 @@
                                 <tr
                                     class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
                                     <th class="px-5 py-2.5 font-medium">Gestionnaire</th>
-                                    <th class="px-5 py-2.5 font-medium text-center">Ouverts</th>
-                                    <th class="px-5 py-2.5 font-medium text-center">Traités</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">Assignés</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">À traiter</th>
+                                    <th class="px-5 py-2.5 font-medium text-center">Validés</th>
                                     <th class="px-5 py-2.5 font-medium text-center">En retard</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-outline-variant" id="charge-list"></tbody>
+                            <tfoot class="bg-surface-container-low border-t border-outline-variant" data-roles="direction">
+                                <tr id="charge-totals-row" class="hidden">
+                                    <td class="px-5 py-2.5 text-xs font-bold">Total</td>
+                                    <td class="px-5 py-2.5 text-xs text-center font-bold" id="charge-total-assignes">0</td>
+                                    <td class="px-5 py-2.5 text-xs text-center font-bold text-primary" id="charge-total-traiter">0</td>
+                                    <td class="px-5 py-2.5 text-xs text-center font-bold text-secondary" id="charge-total-valides">0</td>
+                                    <td class="px-5 py-2.5 text-xs text-center font-bold text-error" id="charge-total-retard">0</td>
+                                </tr>
+                            </tfoot>
                         </table>
                     </div>
+                </div>
+                <div class="space-y-6">
+                <div class="assure-card p-5" data-roles="superviseur,administrateur,direction">
+                    <h3 class="font-title-lg text-title-lg mb-4 flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">pie_chart</span> Répartition par statut</h3>
+                    <div class="space-y-3" id="statut-bars"></div>
+                    <p class="text-[10px] text-on-surface-variant mt-4" id="statut-total-label">—</p>
                 </div>
                 <div class="assure-card p-5">
                     <h3 class="font-title-lg text-title-lg mb-4">Volumétrie de stockage</h3>
@@ -369,6 +434,7 @@
                     </div>
                     <p class="text-[11px] text-on-surface-variant">Projection mensuelle : <span class="font-bold"
                             id="stat-projection">—</span></p>
+                </div>
                 </div>
             </div>
         </main>
@@ -388,7 +454,7 @@
             <span class="text-[10px] font-label-md">Dossiers</span>
         </a>
         <a class="flex flex-col items-center justify-center gap-0.5 text-on-surface-variant"
-            data-roles="gestionnaire,superviseur,administrateur" href="assures.html">
+            data-roles="gestionnaire,superviseur,administrateur,direction" href="assures.html">
             <span class="material-symbols-outlined text-[22px]">groups</span>
             <span class="text-[10px] font-label-md">Assurés</span>
         </a>
@@ -401,6 +467,7 @@
             <span class="text-[10px] font-label-md">Profil</span>
         </a>
     </nav>
+    <script src="../assure/assure-data.js"></script>
     <script>
         const ROLE_IDENTITIES = {
             gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
@@ -423,11 +490,139 @@
             { color: "error", libelle: "Dossier refuséKarim SANOU", meta: "Hier · Superviseur SAWADOGO" }
         ];
 
-        const CHARGE_GESTIONNAIRES = [
-            { nom: "Lt. Aminata KABORÉ", ouverts: 12, traites: 48, retard: 1 },
-            { nom: "Sgt. Daniel ZONGO", ouverts: 9, traites: 36, retard: 0 },
-            { nom: "Adj. Rasmané BANCÉ", ouverts: 15, traites: 41, retard: 3 }
-        ];
+        const STATUT_COLORS = {
+            "Soumis": "bg-primary",
+            "En instruction": "bg-tertiary",
+            "Pièce manquante demandée": "bg-tertiary",
+            "En attente supervision": "bg-primary-fixed",
+            "Validé": "bg-secondary",
+            "Refusé": "bg-error"
+        };
+
+        function renderChargeGestionnaires(charges) {
+            if (!window.CamaAssureData) return;
+            const el = document.getElementById('charge-list');
+            if (!el) return;
+            const list = charges || CamaAssureData.getGestionnaireCharge();
+            el.innerHTML = list.map(g => `
+                <tr class="hover:bg-surface-container-low transition-colors">
+                    <td class="px-5 py-3 text-xs font-bold">${g.nom}</td>
+                    <td class="px-5 py-3 text-xs text-center">${g.assignes}</td>
+                    <td class="px-5 py-3 text-xs text-center font-bold ${g.nonTraites > 0 ? 'text-primary' : 'text-on-surface-variant'}">${g.nonTraites}</td>
+                    <td class="px-5 py-3 text-xs text-center text-secondary font-bold">${g.valides}</td>
+                    <td class="px-5 py-3 text-xs text-center ${g.retard > 0 ? 'text-error font-bold' : 'text-on-surface-variant'}">${g.retard}</td>
+                </tr>
+            `).join('') || '<tr><td colspan="5" class="px-5 py-6 text-center text-xs text-on-surface-variant italic">Aucun gestionnaire configuré.</td></tr>';
+
+            const totalsRow = document.getElementById('charge-totals-row');
+            const showTotals = localStorage.getItem('cama_admin_role') === 'direction';
+            if (totalsRow && list.length && showTotals) {
+                totalsRow.classList.remove('hidden');
+                document.getElementById('charge-total-assignes').textContent = list.reduce((s, g) => s + g.assignes, 0);
+                document.getElementById('charge-total-traiter').textContent = list.reduce((s, g) => s + g.nonTraites, 0);
+                document.getElementById('charge-total-valides').textContent = list.reduce((s, g) => s + g.valides, 0);
+                document.getElementById('charge-total-retard').textContent = list.reduce((s, g) => s + g.retard, 0);
+            } else if (totalsRow) {
+                totalsRow.classList.add('hidden');
+            }
+        }
+
+        function renderStatutBars(byStatut, total) {
+            const el = document.getElementById('statut-bars');
+            const label = document.getElementById('statut-total-label');
+            if (!el) return;
+            const order = ['Soumis', 'En instruction', 'Pièce manquante demandée', 'En attente supervision', 'Validé', 'Refusé'];
+            const entries = order.filter(s => byStatut[s]).map(s => ({ statut: s, count: byStatut[s] }));
+            if (!entries.length) {
+                el.innerHTML = '<p class="text-xs text-on-surface-variant italic">Aucun dossier soumis.</p>';
+                if (label) label.textContent = '';
+                return;
+            }
+            const max = Math.max(...entries.map(e => e.count));
+            el.innerHTML = entries.map(e => {
+                const pct = Math.round((e.count / max) * 100);
+                const barCls = STATUT_COLORS[e.statut] || 'bg-on-surface-variant';
+                return `<div>
+                    <div class="flex justify-between text-[11px] mb-1"><span class="font-semibold text-on-surface">${e.statut}</span><span class="font-bold">${e.count}</span></div>
+                    <div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden"><div class="h-full ${barCls} rounded-full transition-all" style="width:${pct}%"></div></div>
+                </div>`;
+            }).join('');
+            if (label) label.textContent = `${total} dossier(s) membre(s) au total (hors brouillons)`;
+        }
+
+        function activityColor(libelle) {
+            if (/validé/i.test(libelle)) return 'secondary';
+            if (/refusé/i.test(libelle)) return 'error';
+            if (/soumis|complément|pièce/i.test(libelle)) return 'primary';
+            return 'tertiary';
+        }
+
+        function renderDashboard() {
+            if (!window.CamaAssureData?.getDashboardStats) return;
+            const s = CamaAssureData.getDashboardStats();
+
+            document.getElementById('stat-assures').textContent = s.assuresTotal.toLocaleString('fr-FR');
+            document.getElementById('stat-assures-sub').textContent = `${s.assuresActifs} actif${s.assuresActifs > 1 ? 's' : ''}`;
+            document.getElementById('stat-attente').textContent = s.dossiersEnAttente.toLocaleString('fr-FR');
+            document.getElementById('stat-attente-badge').textContent = s.famillesATraiter > 0 ? `${s.famillesATraiter} famille(s)` : 'À traiter';
+            document.getElementById('stat-familles-sub').textContent = `${s.famillesDossiers} dossier(s) familial(aux)`;
+            document.getElementById('stat-taux-validation').textContent = `${s.tauxValidation}%`;
+            document.getElementById('stat-delai').textContent = `${s.delaiMoyenJours}j`;
+            document.getElementById('stat-retard-sub').textContent = s.totalRetard > 0 ? `${s.totalRetard} en retard` : 'Aucun retard';
+
+            const elValides = document.getElementById('stat-valides');
+            const elRefuses = document.getElementById('stat-refuses');
+            const elInsc = document.getElementById('stat-inscriptions');
+            const elNonAff = document.getElementById('stat-non-affectes');
+            if (elValides) elValides.textContent = s.dossiersValides;
+            if (elRefuses) elRefuses.textContent = s.dossiersRefuses;
+            if (elInsc) elInsc.textContent = s.inscriptionsEnAttente;
+            if (elNonAff) elNonAff.textContent = s.nonAffectes;
+
+            const stockGo = Math.max(12, Math.round(s.dossiersTotal * 0.8 + s.assuresTotal * 2));
+            document.getElementById('stat-stockage').textContent = stockGo;
+            document.getElementById('stockage-bar').style.width = `${Math.min(95, Math.round(stockGo / 300 * 100))}%`;
+            document.getElementById('stat-projection').textContent = `+${Math.max(1, Math.round(s.dossiersEnAttente * 0.15))} Go / mois`;
+
+            const priorityList = document.getElementById('priority-list');
+            if (priorityList) {
+                const items = s.priority.length ? s.priority : [];
+                priorityList.innerHTML = items.length ? items.map(d => `
+                    <tr class="hover:bg-surface-container-low transition-colors">
+                        <td class="px-5 py-3 font-bold text-xs">${d.ref}</td>
+                        <td class="px-5 py-3 text-xs hidden sm:table-cell">${d.nom}</td>
+                        <td class="px-5 py-3">${statusBadge(d.statut)}</td>
+                        <td class="px-5 py-3 text-right"><span class="text-on-surface-variant text-[11px]">—</span></td>
+                    </tr>
+                `).join('') : '<tr><td colspan="4" class="px-5 py-8 text-center text-xs text-on-surface-variant italic">Aucun dossier en attente de traitement.</td></tr>';
+            }
+
+            const feed = document.getElementById('activity-feed');
+            if (feed) {
+                const acts = s.recentActivity.length
+                    ? s.recentActivity.map(a => ({
+                        libelle: `${a.libelle} — ${a.beneficiaire}`,
+                        meta: `${a.ref} · ${a.date}`,
+                        color: activityColor(a.libelle)
+                    }))
+                    : ACTIVITY_FEED.map(a => ({ libelle: a.libelle, meta: a.meta, color: a.color }));
+                feed.innerHTML = acts.map((a, i) => `
+                    <div class="flex gap-3">
+                        <div class="relative flex flex-col items-center">
+                            <div class="w-2.5 h-2.5 rounded-full bg-${a.color} z-10 mt-1"></div>
+                            ${i < acts.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}
+                        </div>
+                        <div class="pb-4">
+                            <p class="text-xs font-bold text-on-surface">${a.libelle}</p>
+                            <p class="text-[11px] text-on-surface-variant mt-0.5">${a.meta}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            renderChargeGestionnaires(s.charges);
+            renderStatutBars(s.byStatut, s.dossiersTotal);
+        }
 
         const STATUS_STYLES = {
             "Brouillon": "bg-surface-container-high text-on-surface-variant",
@@ -457,9 +652,18 @@
             document.getElementById('topbar-role').textContent = identity.role;
             document.getElementById('topbar-avatar').textContent = initials(identity.nom);
             const badge = document.getElementById('role-badge');
-            if (badge) badge.textContent = identity.role.split(' / ')[0].split(' ')[0] === 'Gestionnaire' ? 'Gestionnaire' : identity.role;
+            if (badge) {
+                badge.textContent = role === 'direction' ? 'Direction' : role === 'gestionnaire' ? 'Gestionnaire' : identity.role.split(' / ')[0];
+            }
+            const subtitle = document.querySelector('#app-header .text-caption');
+            if (subtitle) {
+                subtitle.textContent = role === 'direction'
+                    ? 'Vue stratégique — indicateurs consolidés CAMA'
+                    : 'Indicateurs et statistiques de la plateforme';
+            }
             const select = document.getElementById('role-select');
             if (select) select.value = role;
+            renderDashboard();
         }
 
         (function () {
@@ -473,47 +677,6 @@
 
             const select = document.getElementById('role-select');
             if (select) select.addEventListener('change', (e) => applyRole(e.target.value));
-        })();
-
-        (function () {
-            document.getElementById('stat-assures').textContent = '12 450';
-            document.getElementById('stat-attente').textContent = '842';
-            document.getElementById('stat-taux-validation').textContent = '94.8%';
-            document.getElementById('stat-delai').textContent = '3.2j';
-            document.getElementById('stat-stockage').textContent = '184';
-            document.getElementById('stockage-bar').style.width = '61%';
-            document.getElementById('stat-projection').textContent = '+12 Go / mois';
-
-            document.getElementById('priority-list').innerHTML = PRIORITY_DOSSIERS.map(d => `
-                <tr class="hover:bg-surface-container-low transition-colors">
-                    <td class="px-5 py-3 font-bold text-xs">${d.ref}</td>
-                    <td class="px-5 py-3 text-xs hidden sm:table-cell">${d.nom}</td>
-                    <td class="px-5 py-3">${statusBadge(d.statut)}</td>
-                    <td class="px-5 py-3 text-right"><a class="text-primary font-bold text-xs hover:underline" href="dossiers.html">Examiner</a></td>
-                </tr>
-            `).join('');
-
-            document.getElementById('activity-feed').innerHTML = ACTIVITY_FEED.map((a, i) => `
-                <div class="flex gap-3">
-                    <div class="relative flex flex-col items-center">
-                        <div class="w-2.5 h-2.5 rounded-full bg-${a.color} z-10 mt-1"></div>
-                        ${i < ACTIVITY_FEED.length - 1 ? '<div class="w-0.5 flex-1 bg-outline-variant"></div>' : ''}
-                    </div>
-                    <div class="pb-4">
-                        <p class="text-xs font-bold text-on-surface">${a.libelle}</p>
-                        <p class="text-[11px] text-on-surface-variant mt-0.5">${a.meta}</p>
-                    </div>
-                </div>
-            `).join('');
-
-            document.getElementById('charge-list').innerHTML = CHARGE_GESTIONNAIRES.map(g => `
-                <tr class="hover:bg-surface-container-low transition-colors">
-                    <td class="px-5 py-3 text-xs font-bold">${g.nom}</td>
-                    <td class="px-5 py-3 text-xs text-center">${g.ouverts}</td>
-                    <td class="px-5 py-3 text-xs text-center text-secondary font-bold">${g.traites}</td>
-                    <td class="px-5 py-3 text-xs text-center ${g.retard > 0 ? 'text-error font-bold' : 'text-on-surface-variant'}">${g.retard}</td>
-                </tr>
-            `).join('');
         })();
     </script>
 <script src="admin-shell.js"></script>

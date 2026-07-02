@@ -3,6 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="auth-guard.js"></script>
 <title>Inscriptions | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -321,26 +322,36 @@
                 <div class="p-5 space-y-5">
                     <div>${statusBadge(r.statut)}${r.motifRefus ? `<p class="text-[11px] text-error mt-2">Motif : ${esc(r.motifRefus)}</p>` : ''}</div>
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> Profil</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> Informations administratives</h3>
                         <div class="grid grid-cols-2 gap-2">
-                            ${infoRow('Matricule', r.matricule)}
+                            ${infoRow('Matricule militaire', r.matricule)}
+                            ${infoRow('Sexe', r.sexe || r.genre)}
                             ${infoRow('Grade', r.grade)}
-                            ${infoRow('Téléphone', r.telephone)}
+                            ${infoRow('Catégorie', r.categorie)}
+                            ${infoRow('N° informatique', r.numeroInformatique)}
+                            ${infoRow('N° CIM', r.numeroCim)}
+                            ${infoRow('N° IUP', r.numeroIup)}
+                            ${infoRow('N° Carte CAMA', r.numeroCama || 'Non attribué')}
+                            ${infoRow('Téléphones', r.telephones || r.telephone)}
                             ${infoRow('E-mail', r.email)}
-                            ${infoRow('Date de naissance', r.dateNaissance)}
-                            ${infoRow('Genre', r.genre)}
-                            ${infoRow('Lieu de naissance', r.lieuNaissance)}
-                            ${infoRow('Pays de naissance', r.paysNaissance)}
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">folder_open</span> Pièces justificatives</h3>
-                        <div class="bg-surface-container-low rounded-lg px-3">
-                            ${docRow('Type de pièce', r.typePiece || '—', false)}
-                            ${docRow('Numéro de pièce', r.numeroPiece || '—', false)}
-                            ${docRow('Pièce d\'identité', r.pieceFichier, false)}
-                            ${docRow('Photo d\'identité', r.photo, true)}
-                            ${docRow('Carte professionnelle', r.carteProFichier, false)}
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">account_tree</span> Structure de rattachement</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${infoRow('Armée', r.armee)}
+                            ${infoRow('Région', r.region)}
+                            ${infoRow('Corps', r.corps)}
+                            ${infoRow('Service', r.service)}
+                            ${infoRow('Section', r.section)}
+                            ${infoRow('Sous-section', r.sousSection)}
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">contact_emergency</span> Personne à prévenir</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            ${infoRow('Nom et prénom(s)', r.personneAPrevenir)}
+                            ${infoRow('Téléphone', r.telPersonneAPrevenir)}
                         </div>
                     </div>
                     <div>

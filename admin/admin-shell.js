@@ -288,14 +288,28 @@
         document.head.appendChild(script);
     }
 
-    function init() {
-        if (!localStorage.getItem('cama_admin_session')) {
-            const path = window.location.pathname.replace(/\\/g, '/');
-            if (!path.includes('login.html')) {
-                window.location.href = path.includes('/admin/cms/') ? '../login.html' : 'login.html';
-                return;
-            }
+    function hasAdminSession() {
+        if (window.CamaAssureData?.getAdminSession) {
+            return !!CamaAssureData.getAdminSession();
         }
+        try {
+            const raw = localStorage.getItem('cama_admin_session');
+            if (!raw) return false;
+            const s = JSON.parse(raw);
+            return !!(s && s.role && s.email);
+        } catch {
+            return false;
+        }
+    }
+
+    function init() {
+        const path = window.location.pathname.replace(/\\/g, '/');
+        const onLogin = /login\.html$/i.test(path);
+        if (!onLogin && !hasAdminSession()) {
+            window.location.replace(path.includes('/admin/cms/') ? '../login.html' : 'login.html');
+            return;
+        }
+        document.documentElement.classList.remove('cama-auth-pending');
         if (!localStorage.getItem(NOTIF_KEY)) {
             localStorage.setItem(NOTIF_KEY, JSON.stringify(DEFAULT_NOTIFS));
         }
@@ -313,7 +327,7 @@
                     localStorage.removeItem('cama_admin_role');
                 }
                 const path = window.location.pathname.replace(/\\/g, '/');
-                window.location.href = path.includes('/admin/cms/') ? '../login.html' : 'login.html';
+                window.location.replace(path.includes('/admin/cms/') ? '../login.html' : 'login.html');
             });
         });
         initAnchorTop();

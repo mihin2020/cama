@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Créer un compte assuré | CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-primary":"#ffffff",secondary:"#006e27","on-secondary":"#ffffff",tertiary:"#745b00",error:"#ba1a1a","on-background":"#1b1c1c","on-surface":"#1b1c1c","on-surface-variant":"#5c403f","outline-variant":"#e5bdbb","surface-container-low":"#f6f3f2",background:"#fbf9f8"},fontFamily:{headline:"Montserrat",body:"Inter"}}}};
+</script>
+<link href="site-shell.css" rel="stylesheet"/>
+<link href="auth-assure.css" rel="stylesheet"/>
+<style>
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}
+.shield-pattern{background-image:radial-gradient(#e5bdbb .5px,transparent .5px),radial-gradient(#e5bdbb .5px,#fbf9f8 .5px);background-size:20px 20px;background-position:0 0,10px 10px;opacity:.1}
+</style>
+</head>
+<body class="bg-background text-on-background font-body selection:bg-primary/20" data-page="inscription-assure">
+<div id="site-shell-top"></div>
+<main>
+<section class="relative py-12 md:py-14 overflow-hidden bg-on-background text-white">
+<div class="shield-pattern absolute inset-0"></div>
+<div class="relative z-10 max-w-3xl mx-auto px-4 md:px-8 text-center">
+<a class="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm mb-4" href="espace-assure.html"><span class="material-symbols-outlined text-[18px]">arrow_back</span> Retour à la connexion</a>
+<h1 class="font-headline text-2xl md:text-3xl font-bold mb-2">Créer mon compte assuré</h1>
+<p class="text-white/85 text-sm md:text-base max-w-xl mx-auto">Inscription réservée aux militaires en fonction. Procédez étape par étape — votre numéro CAMA vous sera attribué après validation.</p>
+</div>
+</section>
+
+<section class="py-8 md:py-12 bg-surface-container-low">
+<div class="max-w-2xl mx-auto px-4 md:px-8">
+<div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+<!-- Progression -->
+<div class="px-6 pt-6 pb-4 border-b border-outline-variant bg-surface-container-low/50">
+<div class="flex items-center justify-between gap-1 mb-3" id="wizard-dots"></div>
+<p class="text-xs font-bold text-primary uppercase tracking-wide" id="wizard-step-label">Étape 1 sur 6</p>
+<p class="text-sm text-on-surface-variant mt-0.5" id="wizard-step-title">Identité</p>
+</div>
+
+<div class="p-6 md:p-8">
+<div class="hidden mb-5" id="register-banner" role="alert"></div>
+
+<!-- Succès -->
+<div class="hidden text-center py-6" id="register-success">
+<div class="w-16 h-16 mx-auto rounded-full bg-secondary/15 text-secondary flex items-center justify-center mb-4"><span class="material-symbols-outlined text-[36px]">check_circle</span></div>
+<h3 class="text-xl font-bold mb-2">Compte créé !</h3>
+<p class="text-on-surface-variant text-sm mb-6">Votre demande a été enregistrée. Accédez à votre tableau de bord en accès limité en attendant la validation CAMA.</p>
+<a class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-bold hover:opacity-90" href="assure/dashboard.html"><span class="material-symbols-outlined">dashboard</span> Accéder au tableau de bord</a>
+</div>
+
+<form id="register-form" novalidate>
+<!-- Étape 1 : Identité -->
+<div class="wizard-step is-active space-y-4" data-step="1">
+<h2 class="text-lg font-bold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">badge</span> Qui êtes-vous ?</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Renseignez votre identité telle qu'elle figure sur vos documents militaires.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5"><label class="reg-label" for="r-nom">Nom <span class="text-error">*</span></label><input class="reg-input" id="r-nom" required type="text" placeholder="Nom de famille"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-prenom">Prénom(s) <span class="text-error">*</span></label><input class="reg-input" id="r-prenom" required type="text" placeholder="Prénom(s)"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-genre">Sexe <span class="text-error">*</span></label>
+<select class="reg-input" id="r-genre" required><option value="Masculin">Masculin</option><option value="Féminin">Féminin</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-matricule">Matricule militaire <span class="text-error">*</span></label><input class="reg-input" id="r-matricule" required type="text" placeholder="Ex. 12345-X"/></div>
+</div>
+</div>
+
+<!-- Étape 2 : Grade -->
+<div class="wizard-step space-y-4" data-step="2">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">military_tech</span> Situation administrative</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Grade, catégorie et numéros administratifs (optionnels sauf grade et catégorie).</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5"><label class="reg-label" for="r-grade">Grade <span class="text-error">*</span></label>
+<select class="reg-input" id="r-grade" required><option disabled selected value="">— Grade —</option>
+<option>Soldat de 2e classe</option><option>Soldat de 1re classe</option><option>Caporal</option><option>Caporal-chef</option>
+<option>Sergent</option><option>Sergent-chef</option><option>Adjudant</option><option>Adjudant-chef</option>
+<option>Aspirant</option><option>Sous-lieutenant</option><option>Lieutenant</option><option>Capitaine</option>
+<option>Commandant</option><option>Lieutenant-colonel</option><option>Colonel</option><option>Colonel-major</option><option>Général</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-categorie">Catégorie <span class="text-error">*</span></label><select class="reg-input" id="r-categorie" required><option disabled selected value="">— Catégorie —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-informatique">N° informatique</label><input class="reg-input" id="r-num-informatique" type="text"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-cim">N° CIM</label><input class="reg-input" id="r-num-cim" type="text"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-carte-cama">N° Carte CAMA</label><input class="reg-input" id="r-carte-cama" type="text" placeholder="Si déjà attribué"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-iup">N° IUP</label><input class="reg-input" id="r-num-iup" type="text"/></div>
+</div>
+</div>
+
+<!-- Étape 3 : Rattachement -->
+<div class="wizard-step space-y-4" data-step="3">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">account_tree</span> Structure de rattachement</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Sélectionnez votre unité dans la hiérarchie militaire.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5"><label class="reg-label" for="r-armee">Armée <span class="text-error">*</span></label><select class="reg-input" id="r-armee" required><option disabled selected value="">— Armée —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-region">Région <span class="text-error">*</span></label><select class="reg-input" id="r-region" required><option disabled selected value="">— Région —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-corps">Corps</label><select class="reg-input" id="r-corps" disabled><option disabled selected value="">— Corps —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-service">Service</label><select class="reg-input" id="r-service" disabled><option disabled selected value="">— Service —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-section">Section</label><select class="reg-input" id="r-section" disabled><option disabled selected value="">— Section —</option></select></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-sous-section">Sous-section</label><select class="reg-input" id="r-sous-section" disabled><option disabled selected value="">— Sous-section —</option></select></div>
+</div>
+</div>
+
+<!-- Étape 4 : Contact -->
+<div class="wizard-step space-y-4" data-step="4">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">contact_phone</span> Coordonnées</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Tous les pays sont disponibles avec indicatif et drapeau.</p>
+<div class="grid grid-cols-1 gap-4">
+<div class="space-y-1.5"><label class="reg-label">Téléphones <span class="text-error">*</span></label><div id="phone-assure-wrap"></div></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-email">E-mail <span class="text-error">*</span></label><input class="reg-input" id="r-email" required type="email" placeholder="vous@exemple.bf" autocomplete="email"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-personne">Personne à prévenir</label><input class="reg-input" id="r-personne" type="text" placeholder="Nom et prénom(s)"/></div>
+<div class="space-y-1.5"><label class="reg-label">Téléphone (personne à prévenir)</label><div id="phone-personne-wrap"></div></div>
+</div>
+</div>
+
+<!-- Étape 5 : Récapitulatif -->
+<div class="wizard-step space-y-4" data-step="5">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">fact_check</span> Récapitulatif de votre inscription</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Vérifiez l'exactitude de toutes les informations avant de finaliser.</p>
+<div class="recap-grid" id="recap-content"></div>
+<div class="flex items-start gap-3 pt-3 border-t border-outline-variant">
+<input class="w-5 h-5 mt-0.5 text-primary rounded shrink-0" id="r-cgu" required type="checkbox"/>
+<label class="text-xs text-on-surface-variant" for="r-cgu">J'accepte les <a class="text-primary font-semibold hover:underline" href="mention_legales.html">CGU</a> et la <a class="text-primary font-semibold hover:underline" href="mention_legales.html">politique de confidentialité</a>. Je certifie l'exactitude des informations ci-dessus.</label>
+</div>
+</div>
+
+<!-- Étape 6 : Sécurité -->
+<div class="wizard-step space-y-4" data-step="6">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">lock</span> Sécurité du compte</h2>
+<p class="text-sm text-on-surface-variant -mt-2">Choisissez un mot de passe robuste pour protéger votre espace.</p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div class="space-y-1.5 sm:col-span-2"><label class="reg-label" for="r-password">Mot de passe <span class="text-error">*</span></label><input class="reg-input" id="r-password" required type="password" autocomplete="new-password"/></div>
+<div class="space-y-1.5 sm:col-span-2"><label class="reg-label" for="r-password2">Confirmer <span class="text-error">*</span></label><input class="reg-input" id="r-password2" required type="password" autocomplete="new-password"/></div>
+</div>
+<ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-on-surface-variant" id="pw-rules">
+<li class="flex items-center gap-1.5" data-rule="length"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Au moins 12 caractères</li>
+<li class="flex items-center gap-1.5" data-rule="upper"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Une majuscule</li>
+<li class="flex items-center gap-1.5" data-rule="digit"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un chiffre</li>
+<li class="flex items-center gap-1.5" data-rule="special"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un caractère spécial</li>
+</ul>
+</div>
+
+<!-- Navigation -->
+<div class="flex flex-col-reverse sm:flex-row justify-between gap-3 mt-8 pt-6 border-t border-outline-variant">
+<button class="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container-low hidden" id="wizard-prev" type="button"><span class="material-symbols-outlined text-[18px] align-middle">arrow_back</span> Précédent</button>
+<button class="px-5 py-2.5 rounded-lg bg-primary text-white font-bold text-sm hover:opacity-90 sm:ml-auto flex items-center justify-center gap-1" id="wizard-next" type="button">Suivant <span class="material-symbols-outlined text-[18px]">arrow_forward</span></button>
+<button class="hidden px-5 py-2.5 rounded-lg bg-secondary text-white font-bold text-sm hover:opacity-90 sm:ml-auto flex items-center justify-center gap-1" id="register-submit" type="submit"><span class="material-symbols-outlined text-[18px]">person_add</span> Créer mon compte</button>
+</div>
+</form>
+</div>
+</div>
+
+<p class="text-center text-sm text-on-surface-variant mt-6">Déjà inscrit ? <a class="text-primary font-bold hover:underline" href="espace-assure.html">Se connecter</a></p>
+</div>
+</section>
+</main>
+<div id="site-shell-bottom"></div>
+<script src="site-shell.js"></script>
+<script src="countries.js"></script>
+<script src="dial-codes.js"></script>
+<script src="phone-input.js"></script>
+<script src="assure/assure-data.js"></script>
+<script>
+(function () {
+    const STEPS = [
+        { title: 'Identité', label: 'Étape 1 sur 6 — Identité' },
+        { title: 'Situation administrative', label: 'Étape 2 sur 6 — Grade & catégorie' },
+        { title: 'Rattachement', label: 'Étape 3 sur 6 — Structure militaire' },
+        { title: 'Coordonnées', label: 'Étape 4 sur 6 — Contact' },
+        { title: 'Récapitulatif', label: 'Étape 5 sur 6 — Vérification' },
+        { title: 'Sécurité', label: 'Étape 6 sur 6 — Mot de passe' }
+    ];
+    let currentStep = 1;
+    const regForm = document.getElementById('register-form');
+    const regBanner = document.getElementById('register-banner');
+
+    function banner(el, type, html) {
+        const styles = { error: 'bg-red-50 text-red-900 border border-red-200', success: 'bg-green-50 text-green-900', info: 'bg-amber-50 text-amber-900' };
+        const icons = { error: 'error', success: 'check_circle', info: 'info' };
+        el.className = `flex items-start gap-2 p-3.5 rounded-lg text-sm mb-4 ${styles[type] || styles.info}`;
+        el.innerHTML = `<span class="material-symbols-outlined text-[20px] shrink-0">${icons[type]}</span><span>${html}</span>`;
+        el.classList.remove('hidden');
+    }
+
+    function renderDots() {
+        document.getElementById('wizard-dots').innerHTML = STEPS.map((_, i) => {
+            const n = i + 1;
+            let cls = 'wizard-progress-dot';
+            if (n < currentStep) cls += ' is-done';
+            if (n === currentStep) cls += ' is-active';
+            return `<span class="${cls}" title="${STEPS[i].title}"></span>`;
+        }).join('');
+        document.getElementById('wizard-step-label').textContent = STEPS[currentStep - 1].label;
+        document.getElementById('wizard-step-title').textContent = STEPS[currentStep - 1].title;
+    }
+
+    function showStep(n) {
+        currentStep = n;
+        document.querySelectorAll('.wizard-step').forEach(s => s.classList.toggle('is-active', parseInt(s.dataset.step, 10) === n));
+        document.getElementById('wizard-prev').classList.toggle('hidden', n === 1);
+        document.getElementById('wizard-next').classList.toggle('hidden', n === STEPS.length);
+        document.getElementById('register-submit').classList.toggle('hidden', n !== STEPS.length);
+        if (n === 5) renderRecap();
+        renderDots();
+        regBanner.classList.add('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function recapVal(v) {
+        const s = String(v == null ? '' : v).trim();
+        return s || '—';
+    }
+
+    function recapRow(label, value) {
+        return `<div class="recap-row"><span>${label}</span><strong>${recapVal(value)}</strong></div>`;
+    }
+
+    function renderRecap() {
+        const telAssure = phoneAssure.getValues();
+        const telPersonne = phonePersonne.getValues();
+        const blocks = [
+            {
+                title: 'Identité',
+                rows: [
+                    ['Nom', val('r-nom')],
+                    ['Prénom(s)', val('r-prenom')],
+                    ['Sexe', val('r-genre')],
+                    ['Matricule militaire', val('r-matricule')]
+                ]
+            },
+            {
+                title: 'Situation administrative',
+                rows: [
+                    ['Grade', val('r-grade')],
+                    ['Catégorie', val('r-categorie')],
+                    ['N° informatique', val('r-num-informatique')],
+                    ['N° CIM', val('r-num-cim')],
+                    ['N° Carte CAMA', val('r-carte-cama')],
+                    ['N° IUP', val('r-num-iup')]
+                ]
+            },
+            {
+                title: 'Rattachement',
+                rows: [
+                    ['Armée', val('r-armee')],
+                    ['Région', val('r-region')],
+                    ['Corps', val('r-corps')],
+                    ['Service', val('r-service')],
+                    ['Section', val('r-section')],
+                    ['Sous-section', val('r-sous-section')]
+                ]
+            },
+            {
+                title: 'Coordonnées',
+                rows: [
+                    ['Téléphone(s)', telAssure],
+                    ['E-mail', val('r-email')],
+                    ['Personne à prévenir', val('r-personne')],
+                    ['Tél. personne à prévenir', telPersonne]
+                ]
+            }
+        ];
+        document.getElementById('recap-content').innerHTML = blocks.map(b => `
+            <div class="recap-block sm:col-span-1">
+                <h3>${b.title}</h3>
+                ${b.rows.map(([l, v]) => recapRow(l, v)).join('')}
+            </div>
+        `).join('');
+    }
+
+    function markInvalid(el, bad) { if (el) el.classList.toggle('is-invalid', bad); }
+    const val = id => (document.getElementById(id)?.value || '').trim();
+
+    function validateStep(n) {
+        regBanner.classList.add('hidden');
+        const stepEl = document.querySelector(`.wizard-step[data-step="${n}"]`);
+        const required = stepEl.querySelectorAll('[required]');
+        let firstInvalid = null;
+        required.forEach(el => {
+            const empty = el.type === 'checkbox' ? !el.checked : !String(el.value).trim();
+            markInvalid(el, empty);
+            if (empty && !firstInvalid) firstInvalid = el;
+        });
+        if (n === 4 && !phoneAssure.isValid()) {
+            banner(regBanner, 'error', 'Veuillez renseigner au moins un numéro de téléphone.');
+            return false;
+        }
+        if (n === 5 && !document.getElementById('r-cgu').checked) {
+            banner(regBanner, 'error', 'Veuillez accepter les CGU et certifier l\'exactitude des informations.');
+            return false;
+        }
+        if (firstInvalid) {
+            banner(regBanner, 'error', 'Veuillez compléter les champs obligatoires de cette étape.');
+            firstInvalid.focus();
+            return false;
+        }
+        return true;
+    }
+
+    document.getElementById('wizard-next').addEventListener('click', () => {
+        if (validateStep(currentStep)) showStep(currentStep + 1);
+    });
+    document.getElementById('wizard-prev').addEventListener('click', () => showStep(currentStep - 1));
+
+    // Org structure
+    const org = CamaAssureData.getOrgStructure();
+    const selArmee = document.getElementById('r-armee');
+    const selCategorie = document.getElementById('r-categorie');
+    const selRegion = document.getElementById('r-region');
+    const selCorps = document.getElementById('r-corps');
+    const selService = document.getElementById('r-service');
+    const selSection = document.getElementById('r-section');
+    const selSousSection = document.getElementById('r-sous-section');
+
+    function fillSelect(sel, items, ph) {
+        sel.innerHTML = `<option disabled selected value="">${ph}</option>` + (items || []).map(x => `<option>${x}</option>`).join('');
+        sel.disabled = !(items && items.length);
+    }
+    function resetSelect(sel, ph) { sel.innerHTML = `<option disabled selected value="">${ph}</option>`; sel.disabled = true; }
+
+    (org.armees || []).forEach(a => selArmee.insertAdjacentHTML('beforeend', `<option>${a}</option>`));
+    (org.categories || []).forEach(c => selCategorie.insertAdjacentHTML('beforeend', `<option>${c}</option>`));
+    (org.regions || []).forEach(r => selRegion.insertAdjacentHTML('beforeend', `<option>${r.libelle}</option>`));
+
+    const regionNode = () => (org.regions || []).find(r => r.libelle === selRegion.value);
+    const corpsNode = () => (regionNode()?.corps || []).find(c => c.libelle === selCorps.value);
+    const serviceNode = () => (corpsNode()?.services || []).find(s => s.libelle === selService.value);
+    const sectionNode = () => (serviceNode()?.sections || []).find(s => s.libelle === selSection.value);
+
+    selRegion.addEventListener('change', () => {
+        fillSelect(selCorps, (regionNode()?.corps || []).map(c => c.libelle), '— Corps —');
+        resetSelect(selService, '— Service —'); resetSelect(selSection, '— Section —'); resetSelect(selSousSection, '— Sous-section —');
+    });
+    selCorps.addEventListener('change', () => {
+        fillSelect(selService, (corpsNode()?.services || []).map(s => s.libelle), '— Service —');
+        resetSelect(selSection, '— Section —'); resetSelect(selSousSection, '— Sous-section —');
+    });
+    selService.addEventListener('change', () => {
+        fillSelect(selSection, (serviceNode()?.sections || []).map(s => s.libelle), '— Section —');
+        resetSelect(selSousSection, '— Sous-section —');
+    });
+    selSection.addEventListener('change', () => {
+        fillSelect(selSousSection, (sectionNode()?.sousSections || []).map(s => s.libelle), '— Sous-section —');
+    });
+
+    const rules = { length: v => v.length >= 12, upper: v => /[A-Z]/.test(v), digit: v => /[0-9]/.test(v), special: v => /[^A-Za-z0-9]/.test(v) };
+    const pw = document.getElementById('r-password');
+    const pw2 = document.getElementById('r-password2');
+    pw.addEventListener('input', () => {
+        document.querySelectorAll('#pw-rules li').forEach(li => {
+            const ok = rules[li.dataset.rule](pw.value);
+            li.classList.toggle('ok', ok);
+            li.querySelector('.material-symbols-outlined').textContent = ok ? 'check_circle' : 'radio_button_unchecked';
+        });
+    });
+
+    const phoneAssure = CamaPhoneInput.mount(document.getElementById('phone-assure-wrap'), { required: true, max: 2, inputClass: 'reg-input flex-1' });
+    const phonePersonne = CamaPhoneInput.mount(document.getElementById('phone-personne-wrap'), { required: false, max: 2, inputClass: 'reg-input flex-1' });
+
+    regForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!validateStep(6)) return;
+        if (!Object.values(rules).every(fn => fn(pw.value))) {
+            banner(regBanner, 'error', 'Le mot de passe ne respecte pas les critères.');
+            return;
+        }
+        if (pw.value !== pw2.value) {
+            banner(regBanner, 'error', 'Les mots de passe ne correspondent pas.');
+            return;
+        }
+        const btn = document.getElementById('register-submit');
+        btn.disabled = true;
+        const data = {
+            nom: val('r-nom'), prenom: val('r-prenom'), sexe: val('r-genre'), matricule: val('r-matricule'),
+            numeroInformatique: val('r-num-informatique'), grade: val('r-grade'), categorie: val('r-categorie'),
+            numeroCim: val('r-num-cim'), numeroCama: val('r-carte-cama'), numeroIup: val('r-num-iup'),
+            armee: val('r-armee'), region: val('r-region'), corps: val('r-corps'), service: val('r-service'),
+            section: val('r-section'), sousSection: val('r-sous-section'),
+            telephones: phoneAssure.getValues(), email: val('r-email'),
+            personneAPrevenir: val('r-personne'), telPersonneAPrevenir: phonePersonne.getValues(),
+            password: pw.value
+        };
+        let res;
+        try { res = CamaAssureData.registerAssure(data); } catch { res = { error: 'Erreur inattendue.' }; }
+        btn.disabled = false;
+        if (res.error) {
+            if (res.field) markInvalid(document.getElementById('r-' + (res.field === 'email' ? 'email' : 'matricule')), true);
+            banner(regBanner, 'error', res.error);
+            return;
+        }
+        CamaAssureData.setAssureSession(res.profile);
+        regForm.classList.add('hidden');
+        document.querySelector('.border-b').classList.add('hidden');
+        document.getElementById('register-success').classList.remove('hidden');
+    });
+
+    showStep(1);
+})();
+</script>
+</body></html>

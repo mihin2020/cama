@@ -22,7 +22,7 @@
         active: true,
         type: 'info',
         message: 'Campagne d\'enrôlement 2026 : créez votre espace assuré et enrôlez vos ayants droit en ligne.',
-        link: 'espace-assure.html#inscription',
+        link: 'inscription-assure.html',
         linkLabel: 'Commencer l\'enrôlement'
     };
 
@@ -105,7 +105,7 @@
                                 <span class="material-symbols-outlined text-[16px] hidden sm:inline">expand_more</span>
                             </button>
                             <div class="espace-dropdown absolute right-0 top-full mt-2 w-60 bg-white rounded-lg border border-outline-variant shadow-lg overflow-hidden z-50" id="espace-dropdown">
-                                <a class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors" href="espace-assure.html#connexion">
+                                <a class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors" href="espace-assure.html">
                                     <span class="material-symbols-outlined text-primary">login</span>
                                     <span>
                                         <span class="block font-bold text-sm text-on-surface">Se connecter</span>
@@ -113,7 +113,7 @@
                                     </span>
                                 </a>
                                 <div class="h-px bg-outline-variant"></div>
-                                <a class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors" href="espace-assure.html#inscription">
+                                <a class="flex items-center gap-3 px-4 py-3 hover:bg-surface-container-low transition-colors" href="inscription-assure.html">
                                     <span class="material-symbols-outlined text-secondary">person_add</span>
                                     <span>
                                         <span class="block font-bold text-sm text-on-surface">Créer un compte</span>
@@ -140,8 +140,8 @@
                 </div>
                 <div id="site-mobile-nav" aria-hidden="true">${mobileNav}
                     <div class="border-t border-outline-variant mx-4 my-2"></div>
-                    <a class="mobile-nav-link" href="espace-assure.html#connexion"><span class="material-symbols-outlined text-[20px]">login</span>Se connecter</a>
-                    <a class="mobile-nav-link" href="espace-assure.html#inscription"><span class="material-symbols-outlined text-[20px]">person_add</span>Créer un compte</a>
+                    <a class="mobile-nav-link" href="espace-assure.html"><span class="material-symbols-outlined text-[20px]">login</span>Se connecter</a>
+                    <a class="mobile-nav-link" href="inscription-assure.html"><span class="material-symbols-outlined text-[20px]">person_add</span>Créer un compte</a>
                 </div>
             </header>`;
     }

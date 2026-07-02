@@ -2,6 +2,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="../auth-guard.js"></script>
 <title>Éditeur de pages | Studio de contenu CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -1014,6 +1015,7 @@ function fullDocument(preview){
   return `<!DOCTYPE html>
 <html lang="fr"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <script src="../auth-guard.js"></script>
 ${base}
 <title>${pageLabel(currentPage)} | CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script>

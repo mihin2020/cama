@@ -3,6 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="auth-guard.js"></script>
 <title>Mon profil | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -106,8 +107,20 @@
 </div>
 <div class="grid grid-cols-2 gap-4">
 <div class="bg-surface-container-low rounded-lg p-3.5"><p class="text-[10px] text-on-surface-variant uppercase">Identifiant CAMA</p><p class="text-sm font-semibold" id="identity-id">—</p></div>
-<div class="bg-surface-container-low rounded-lg p-3.5"><p class="text-[10px] text-on-surface-variant uppercase">Dernière connexion</p><p class="text-sm font-semibold" id="identity-derniere">—</p></div>
+<div class="bg-surface-container-low rounded-lg p-3.5"><p class="text-[10px] text-on-surface-variant uppercase">E-mail professionnel</p><p class="text-sm font-semibold break-all" id="identity-email">—</p></div>
+<div class="bg-surface-container-low rounded-lg p-3.5 col-span-2 sm:col-span-1"><p class="text-[10px] text-on-surface-variant uppercase">Dernière connexion</p><p class="text-sm font-semibold" id="identity-derniere">—</p></div>
 </div>
+</section>
+<section class="assure-card p-5 md:p-6 hidden" data-roles="gestionnaire" id="gestionnaire-workload">
+<h2 class="text-base font-semibold mb-1">Mes dossiers affectés</h2>
+<p class="text-xs text-on-surface-variant mb-4">Synthèse des dossiers familiaux qui vous ont été assignés par le superviseur.</p>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+<div class="bg-surface-container-low rounded-lg p-3.5 text-center"><p class="text-[10px] text-on-surface-variant uppercase">Assignés</p><p class="text-xl font-bold text-on-surface" id="gw-assignes">0</p></div>
+<div class="bg-surface-container-low rounded-lg p-3.5 text-center"><p class="text-[10px] text-on-surface-variant uppercase">À traiter</p><p class="text-xl font-bold text-primary" id="gw-traiter">0</p></div>
+<div class="bg-surface-container-low rounded-lg p-3.5 text-center"><p class="text-[10px] text-on-surface-variant uppercase">Validés</p><p class="text-xl font-bold text-secondary" id="gw-valides">0</p></div>
+<div class="bg-surface-container-low rounded-lg p-3.5 text-center"><p class="text-[10px] text-on-surface-variant uppercase">En retard</p><p class="text-xl font-bold text-error" id="gw-retard">0</p></div>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-4"><a class="text-primary font-bold hover:underline" href="dossiers.html">Voir mes dossiers →</a></p>
 </section>
 <section class="assure-card p-5 md:p-6">
 <h2 class="text-base font-semibold mb-1">Sécurité de session</h2>
@@ -135,6 +148,7 @@
 <a class="flex flex-col items-center justify-center gap-0.5 text-primary" href="profil.html"><span class="material-symbols-outlined text-[22px]">person</span><span class="text-[10px] font-label-md">Profil</span></a>
 </nav>
 <div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+<script src="../assure/assure-data.js"></script>
 <script>
         const ROLE_IDENTITIES = {
             gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA", id: "INT-0231" },
@@ -144,19 +158,38 @@
         };
         function initials(name) { const p = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' '); return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase(); }
         function showToast(m) { const t = document.getElementById('toast'); document.getElementById('toast-content').innerHTML = m; t.classList.remove('hidden'); setTimeout(() => t.classList.add('hidden'), 3000); }
+
+        function renderGestionnaireWorkload() {
+            const section = document.getElementById('gestionnaire-workload');
+            if (!section || !CamaAssureData.isAdminGestionnaireView()) return;
+            const nom = CamaAssureData.getAdminGestionnaireNom();
+            const w = CamaAssureData.getGestionnaireWorkload(nom);
+            document.getElementById('gw-assignes').textContent = w.assignes;
+            document.getElementById('gw-traiter').textContent = w.nonTraites;
+            document.getElementById('gw-valides').textContent = w.valides;
+            document.getElementById('gw-retard').textContent = w.retard;
+        }
+
         function applyRole(role) {
             localStorage.setItem('cama_admin_role', role);
             document.querySelectorAll('[data-roles]').forEach(el => { el.classList.toggle('role-hidden', !el.dataset.roles.split(',').includes(role)); });
-            const identity = ROLE_IDENTITIES[role];
-            document.getElementById('topbar-name').textContent = identity.nom;
-            document.getElementById('topbar-role').textContent = identity.role;
-            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
-            document.getElementById('identity-avatar').textContent = initials(identity.nom);
-            document.getElementById('identity-name').textContent = identity.nom;
-            document.getElementById('identity-role').textContent = identity.role;
-            document.getElementById('identity-id').textContent = identity.id;
-            document.getElementById('identity-derniere').textContent = "18/06/2026 09:14";
+            const identity = CamaAssureData.getAdminIdentity();
+            const displayNom = role === 'gestionnaire' && CamaAssureData.isAdminGestionnaireView()
+                ? (CamaAssureData.getAdminGestionnaireNom() || identity.nom)
+                : (ROLE_IDENTITIES[role]?.nom || identity.nom);
+            const displayRole = ROLE_IDENTITIES[role]?.role || identity.roleLabel;
+            const displayId = role === 'gestionnaire' && identity.role === 'gestionnaire' ? identity.id : (ROLE_IDENTITIES[role]?.id || identity.id);
+            document.getElementById('topbar-name').textContent = displayNom;
+            document.getElementById('topbar-role').textContent = displayRole;
+            document.getElementById('topbar-avatar').textContent = initials(displayNom);
+            document.getElementById('identity-avatar').textContent = initials(displayNom);
+            document.getElementById('identity-name').textContent = displayNom;
+            document.getElementById('identity-role').textContent = displayRole;
+            document.getElementById('identity-id').textContent = displayId;
+            document.getElementById('identity-email').textContent = identity.email;
+            document.getElementById('identity-derniere').textContent = identity.lastLogin;
             const select = document.getElementById('role-select'); if (select) select.value = role;
+            renderGestionnaireWorkload();
         }
 
         let sessionSeconds = 0;
@@ -188,7 +221,7 @@
             const overlay = document.getElementById('sidebar-overlay');
             if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
             if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
-            applyRole(localStorage.getItem('cama_admin_role') || 'gestionnaire');
+            applyRole(localStorage.getItem('cama_admin_role') || CamaAssureData.getAdminSession()?.role || 'gestionnaire');
             document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
         })();
     </script>

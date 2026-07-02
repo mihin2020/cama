@@ -3,6 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="auth-guard.js"></script>
 <title>Paramètres | Back-office CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -55,6 +56,50 @@
         #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
         .tab-panel { display: none; }
         .tab-panel.is-active { display: block; }
+        /* Hiérarchie de rattachement */
+        .org-guide-step {
+            display: flex; flex-direction: column; align-items: center; gap: 4px;
+            min-width: 72px; padding: 10px 8px; border-radius: 0.5rem;
+            background: #fff; border: 1px solid #e5bdbb; text-align: center;
+        }
+        .org-guide-step .step-num {
+            width: 22px; height: 22px; border-radius: 9999px; background: #9e001f; color: #fff;
+            font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+        }
+        .org-guide-arrow { color: #906f6e; font-size: 18px; align-self: center; padding: 0 2px; }
+        .org-region-block {
+            background: #fff; border: 1px solid #e5bdbb; border-radius: 0.75rem;
+            overflow: hidden; box-shadow: 0 1px 3px rgba(27,28,28,.04);
+        }
+        .org-level-pill {
+            display: inline-flex; align-items: center; gap: 4px; shrink: 0;
+            padding: 3px 8px; border-radius: 9999px; font-size: 10px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.03em; white-space: nowrap;
+        }
+        .org-level-pill .material-symbols-outlined { font-size: 14px; }
+        .org-level-pill--1 { background: rgba(158,0,31,.1); color: #9e001f; }
+        .org-level-pill--2 { background: rgba(0,110,39,.1); color: #006e27; }
+        .org-level-pill--3 { background: rgba(116,91,0,.1); color: #745b00; }
+        .org-level-pill--4 { background: rgba(144,111,110,.12); color: #5c403f; }
+        .org-level-pill--5 { background: #f0eded; color: #5c403f; }
+        .org-node-children { margin-top: 8px; }
+        .org-node-row input:focus { outline: 2px solid rgba(158,0,31,.25); border-color: #9e001f; }
+        .org-add-btn {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 6px 12px; border-radius: 0.5rem; font-size: 11px; font-weight: 700;
+            border: 1px dashed #e5bdbb; color: #9e001f; background: #fbf9f8;
+            transition: background .15s ease;
+        }
+        .org-add-btn:hover { background: rgba(158,0,31,.06); border-color: #9e001f; }
+        .org-path-preview {
+            font-size: 11px; color: #5c403f; padding: 8px 12px; border-radius: 0.5rem;
+            background: #f6f3f2; border: 1px solid #e5bdbb; line-height: 1.5;
+        }
+        .org-path-preview strong { color: #1b1c1c; font-weight: 600; }
+        .org-empty-state {
+            text-align: center; padding: 2.5rem 1.5rem; border: 2px dashed #e5bdbb;
+            border-radius: 0.75rem; background: #fbf9f8;
+        }
     </style>
 </head>
 <body class="bg-surface-container-low text-on-background font-body-md">
@@ -107,6 +152,7 @@
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="retention">Rétention</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="libelles">Libellés & modèles</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="affectation">Règles d'affectation</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="structure">Structure militaire</button>
 </div>
 
 <!-- Liens de parenté -->
@@ -193,6 +239,71 @@
 <button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Règles d\'affectation')">Enregistrer</button>
 </div>
 </div>
+
+<!-- Structure militaire -->
+<div class="tab-panel" data-tab="structure">
+<div class="assure-card p-6 mb-4">
+<h3 class="font-title-lg text-title-lg mb-1">Listes simples</h3>
+<p class="text-xs text-on-surface-variant mb-4">Valeurs proposées en liste déroulante à l'inscription (indépendantes de la hiérarchie ci-dessous).</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="border border-outline-variant rounded-lg p-4">
+<h4 class="text-[11px] font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">military_tech</span> Armées</h4>
+<p class="text-[10px] text-on-surface-variant mb-2">Ex. Armée de Terre, Gendarmerie…</p>
+<div class="space-y-2 mb-2" id="list-armees"></div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" type="button" data-add-simple="armees"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter une armée</button>
+</div>
+<div class="border border-outline-variant rounded-lg p-4">
+<h4 class="text-[11px] font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> Catégories</h4>
+<p class="text-[10px] text-on-surface-variant mb-2">Ex. Officier, Sous-officier…</p>
+<div class="space-y-2 mb-2" id="list-categories"></div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" type="button" data-add-simple="categories"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter une catégorie</button>
+</div>
+<div class="border border-outline-variant rounded-lg p-4">
+<h4 class="text-[11px] font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">bloodtype</span> Groupes sanguins</h4>
+<p class="text-[10px] text-on-surface-variant mb-2">Ex. A+, O-, AB+…</p>
+<div class="space-y-2 mb-2" id="list-groupesSanguins"></div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" type="button" data-add-simple="groupesSanguins"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter un groupe</button>
+</div>
+</div>
+</div>
+
+<div class="assure-card p-6">
+<div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+<div>
+<h3 class="font-title-lg text-title-lg mb-1">Hiérarchie de rattachement</h3>
+<p class="text-xs text-on-surface-variant max-w-2xl">Définissez l'arborescence dans laquelle l'assuré choisit son unité à l'inscription. Chaque niveau débloque le suivant, comme des menus déroulants en cascade.</p>
+</div>
+<button class="shrink-0 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold flex items-center gap-1 justify-center" type="button" id="btn-add-region"><span class="material-symbols-outlined text-[18px]">add</span> Nouvelle région</button>
+</div>
+
+<!-- Guide visuel des 5 niveaux -->
+<div class="rounded-xl border border-primary/20 bg-primary/5 p-4 mb-5">
+<p class="text-[11px] font-bold uppercase tracking-wide text-primary mb-3 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">route</span> Parcours de l'assuré à l'inscription</p>
+<div class="flex flex-wrap items-center justify-center gap-1 sm:gap-0">
+<div class="org-guide-step"><span class="step-num">1</span><span class="material-symbols-outlined text-primary text-[20px]">map</span><span class="text-[10px] font-bold text-on-surface">Région</span></div>
+<span class="org-guide-arrow hidden sm:inline">›</span>
+<div class="org-guide-step"><span class="step-num">2</span><span class="material-symbols-outlined text-secondary text-[20px]">shield</span><span class="text-[10px] font-bold text-on-surface">Corps</span></div>
+<span class="org-guide-arrow hidden sm:inline">›</span>
+<div class="org-guide-step"><span class="step-num">3</span><span class="material-symbols-outlined text-tertiary text-[20px]">apartment</span><span class="text-[10px] font-bold text-on-surface">Service</span></div>
+<span class="org-guide-arrow hidden sm:inline">›</span>
+<div class="org-guide-step"><span class="step-num">4</span><span class="material-symbols-outlined text-on-surface-variant text-[20px]">groups</span><span class="text-[10px] font-bold text-on-surface">Section</span></div>
+<span class="org-guide-arrow hidden sm:inline">›</span>
+<div class="org-guide-step"><span class="step-num">5</span><span class="material-symbols-outlined text-on-surface-variant text-[20px]">folder_open</span><span class="text-[10px] font-bold text-on-surface">Sous-section</span></div>
+</div>
+<p class="text-[11px] text-on-surface-variant mt-3 text-center sm:text-left">Exemple de chemin complet : <strong class="text-on-surface">1re Région (Ouaga)</strong> → <strong class="text-on-surface">11e RIC</strong> → <strong class="text-on-surface">Service Administratif</strong> → <strong class="text-on-surface">Section Personnel</strong> → <strong class="text-on-surface">Bureau Solde</strong></p>
+</div>
+
+<div class="org-path-preview mb-4 hidden" id="org-path-preview"></div>
+<p class="text-[11px] text-on-surface-variant mb-3" id="org-stats"></p>
+
+<div class="space-y-4" id="org-tree"></div>
+</div>
+
+<div class="mt-4 flex items-center gap-3">
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-structure">Enregistrer la structure</button>
+<button class="px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant text-xs font-bold" type="button" id="btn-reset-structure">Réinitialiser</button>
+</div>
+</div>
 </main>
 <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMABack-office institutionnel. Accès restreint et tracé.</footer>
 </div>
@@ -247,6 +358,248 @@
                 showToast(`<span class="material-symbols-outlined">check_circle</span> Âge maximal des enfants fixé à ${saved.ageMaxEnfant} ans.`);
             });
         })();
+        // --- Structure militaire de rattachement ---
+        (function initStructure() {
+            if (!window.CamaAssureData) return;
+            let structure = CamaAssureData.getOrgStructure();
+            const SIMPLE_KEYS = ['armees', 'categories', 'groupesSanguins'];
+            const CHILD_KEYS = ['corps', 'services', 'sections', 'sousSections'];
+            const LEVEL_LABELS = ['Région', 'Corps', 'Service', 'Section', 'Sous-section'];
+            const LEVEL_ICONS = ['map', 'shield', 'apartment', 'groups', 'folder_open'];
+            const LEVEL_PLACEHOLDERS = [
+                'Ex. 1re Région Militaire (Ouagadougou)',
+                'Ex. 11e Régiment d\'Infanterie Commando',
+                'Ex. Service Administratif',
+                'Ex. Section Personnel',
+                'Ex. Bureau Solde'
+            ];
+            const ADD_CHILD_LABELS = [
+                'Ajouter un corps dans cette région',
+                'Ajouter un service',
+                'Ajouter une section',
+                'Ajouter une sous-section'
+            ];
+            const BORDER_CLASS = ['border-primary/40', 'border-secondary/40', 'border-tertiary/40', 'border-outline-variant', 'border-outline-variant'];
+
+            function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+            function newId() { return 'n-' + Date.now().toString(36) + Math.floor(Math.random() * 1000); }
+            function pathStr(path) { return esc(JSON.stringify(path)); }
+
+            function getNode(path) {
+                let arr = structure.regions;
+                let node = null, parentArr = arr;
+                for (let d = 0; d < path.length; d++) {
+                    parentArr = arr;
+                    node = arr[path[d]];
+                    if (!node) break;
+                    if (d < path.length - 1) arr = node[CHILD_KEYS[d]] || [];
+                }
+                return { node, parentArr, index: path[path.length - 1] };
+            }
+
+            function countNodes() {
+                let corps = 0, services = 0, sections = 0, sousSections = 0;
+                (structure.regions || []).forEach(r => {
+                    (r.corps || []).forEach(c => {
+                        corps++;
+                        (c.services || []).forEach(s => {
+                            services++;
+                            (s.sections || []).forEach(sec => {
+                                sections++;
+                                sousSections += (sec.sousSections || []).length;
+                            });
+                        });
+                    });
+                });
+                return { regions: (structure.regions || []).length, corps, services, sections, sousSections };
+            }
+
+            function firstCompletePath() {
+                for (const r of structure.regions || []) {
+                    if (!r.libelle?.trim()) continue;
+                    for (const c of r.corps || []) {
+                        if (!c.libelle?.trim()) continue;
+                        for (const s of c.services || []) {
+                            if (!s.libelle?.trim()) continue;
+                            for (const sec of s.sections || []) {
+                                if (!sec.libelle?.trim()) continue;
+                                const ss = (sec.sousSections || []).find(x => x.libelle?.trim());
+                                if (ss) {
+                                    return [r.libelle, c.libelle, s.libelle, sec.libelle, ss.libelle];
+                                }
+                                return [r.libelle, c.libelle, s.libelle, sec.libelle];
+                            }
+                        }
+                    }
+                }
+                const r = structure.regions?.[0];
+                if (r?.libelle?.trim()) return [r.libelle];
+                return null;
+            }
+
+            function renderStats() {
+                const c = countNodes();
+                const el = document.getElementById('org-stats');
+                if (el) {
+                    el.textContent = c.regions
+                        ? `${c.regions} région${c.regions > 1 ? 's' : ''} · ${c.corps} corps · ${c.services} services · ${c.sections} sections · ${c.sousSections} sous-sections`
+                        : 'Aucune région configurée pour le moment.';
+                }
+                const preview = document.getElementById('org-path-preview');
+                const path = firstCompletePath();
+                if (preview) {
+                    if (path && path.length) {
+                        preview.classList.remove('hidden');
+                        preview.innerHTML = '<span class="material-symbols-outlined text-[14px] align-middle text-primary mr-1">visibility</span><strong>Aperçu inscription :</strong> ' +
+                            path.map((p, i) => `<strong>${esc(p)}</strong>${i < path.length - 1 ? ' <span class="text-on-surface-variant">→</span> ' : ''}`).join('');
+                    } else {
+                        preview.classList.add('hidden');
+                    }
+                }
+            }
+
+            function levelPill(depth) {
+                const d = Math.min(depth, 5);
+                return `<span class="org-level-pill org-level-pill--${d}"><span class="material-symbols-outlined">${LEVEL_ICONS[d - 1]}</span>Niv. ${d} · ${LEVEL_LABELS[d - 1]}</span>`;
+            }
+
+            function renderNode(node, path) {
+                const depth = path.length;
+                const childKey = depth <= 4 ? CHILD_KEYS[depth - 1] : null;
+                const children = childKey ? (node[childKey] || []) : [];
+                const border = BORDER_CLASS[Math.min(depth - 1, 4)];
+
+                let html = `<div class="org-node org-node-depth-${depth}">
+                    <div class="org-node-row flex flex-wrap items-center gap-2 p-2.5 rounded-lg bg-white border border-outline-variant/80">
+                        ${levelPill(depth)}
+                        <input class="flex-1 min-w-[140px] px-2.5 py-2 text-xs border border-outline-variant rounded-lg bg-surface-container-lowest" data-edit='${pathStr(path)}' value="${esc(node.libelle)}" placeholder="${LEVEL_PLACEHOLDERS[depth - 1]}" aria-label="${LEVEL_LABELS[depth - 1]}"/>
+                        <button type="button" class="text-error shrink-0 p-1 rounded hover:bg-error/10" data-del='${pathStr(path)}' title="Supprimer ce ${LEVEL_LABELS[depth - 1].toLowerCase()}"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                    </div>`;
+
+                if (childKey) {
+                    html += `<div class="org-node-children ml-3 sm:ml-5 pl-3 border-l-2 ${border} space-y-2">`;
+                    html += children.map((c, i) => renderNode(c, path.concat(i))).join('');
+                    html += `<button type="button" class="org-add-btn mt-1" data-add-child='${pathStr(path)}'><span class="material-symbols-outlined text-[16px]">add</span>${ADD_CHILD_LABELS[depth - 1]}</button>`;
+                    html += `</div>`;
+                }
+                html += `</div>`;
+                return html;
+            }
+
+            function renderRegionBlock(region, path) {
+                const corpsCount = (region.corps || []).length;
+                return `<div class="org-region-block">
+                    <div class="flex flex-wrap items-center gap-2 p-4 bg-primary/5 border-b border-outline-variant">
+                        ${levelPill(1)}
+                        <input class="flex-1 min-w-[180px] px-3 py-2 text-sm font-semibold border border-outline-variant rounded-lg bg-white" data-edit='${pathStr(path)}' value="${esc(region.libelle)}" placeholder="${LEVEL_PLACEHOLDERS[0]}" aria-label="Région"/>
+                        <span class="text-[10px] text-on-surface-variant whitespace-nowrap">${corpsCount} corps</span>
+                        <button type="button" class="text-error shrink-0 px-2 py-1 rounded-lg text-[11px] font-bold hover:bg-error/10 flex items-center gap-1" data-del='${pathStr(path)}' title="Supprimer cette région"><span class="material-symbols-outlined text-[16px]">delete</span><span class="hidden sm:inline">Supprimer</span></button>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        ${corpsCount
+                            ? (region.corps || []).map((c, i) => renderNode(c, path.concat(i))).join('')
+                            : `<p class="text-[11px] text-on-surface-variant italic py-2 pl-1">Aucun corps dans cette région. Ajoutez-en un pour que l'assuré puisse continuer sa sélection.</p>`}
+                        <button type="button" class="org-add-btn" data-add-child='${pathStr(path)}'><span class="material-symbols-outlined text-[16px]">add</span>${ADD_CHILD_LABELS[0]}</button>
+                    </div>
+                </div>`;
+            }
+
+            function renderSimple(key) {
+                const c = document.getElementById('list-' + key);
+                if (!c) return;
+                c.innerHTML = (structure[key] || []).map((v, i) =>
+                    `<div class="flex items-center gap-2"><input class="flex-1 px-2 py-1.5 text-xs border border-outline-variant rounded-lg" data-simple="${key}" data-i="${i}" value="${esc(v)}"/><button type="button" class="text-error p-1 rounded hover:bg-error/10" data-simple-del="${key}" data-i="${i}" title="Supprimer"><span class="material-symbols-outlined text-[16px]">delete</span></button></div>`
+                ).join('') || '<p class="text-[11px] text-on-surface-variant italic">Aucune entrée.</p>';
+            }
+
+            function renderTree() {
+                const tree = document.getElementById('org-tree');
+                if (!tree) return;
+                tree.innerHTML = structure.regions.length
+                    ? structure.regions.map((r, i) => renderRegionBlock(r, [i])).join('')
+                    : `<div class="org-empty-state">
+                        <span class="material-symbols-outlined text-[40px] text-on-surface-variant mb-2">account_tree</span>
+                        <p class="text-sm font-bold text-on-surface mb-1">Aucune région configurée</p>
+                        <p class="text-xs text-on-surface-variant mb-4 max-w-sm mx-auto">Commencez par ajouter une <strong>région militaire</strong>, puis déployez les corps, services, sections et sous-sections.</p>
+                        <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold inline-flex items-center gap-1" id="btn-add-region-empty"><span class="material-symbols-outlined text-[18px]">add</span> Créer la première région</button>
+                       </div>`;
+                const emptyBtn = document.getElementById('btn-add-region-empty');
+                if (emptyBtn) emptyBtn.addEventListener('click', addRegion);
+                renderStats();
+            }
+
+            function addRegion() {
+                structure.regions.push({ id: newId(), libelle: 'Nouvelle région', corps: [] });
+                renderTree();
+            }
+
+            function renderAll() { SIMPLE_KEYS.forEach(renderSimple); renderTree(); }
+
+            document.querySelectorAll('[data-add-simple]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const key = btn.dataset.addSimple;
+                    structure[key] = structure[key] || [];
+                    structure[key].push('');
+                    renderSimple(key);
+                });
+            });
+
+            document.getElementById('btn-add-region').addEventListener('click', addRegion);
+
+            const panel = document.querySelector('.tab-panel[data-tab="structure"]');
+            panel.addEventListener('input', (e) => {
+                const t = e.target;
+                if (t.dataset.simple !== undefined) {
+                    structure[t.dataset.simple][parseInt(t.dataset.i, 10)] = t.value;
+                } else if (t.dataset.edit !== undefined) {
+                    const { node } = getNode(JSON.parse(t.dataset.edit));
+                    if (node) node.libelle = t.value;
+                    renderStats();
+                }
+            });
+            panel.addEventListener('click', (e) => {
+                const del = e.target.closest('[data-simple-del]');
+                const addChild = e.target.closest('[data-add-child]');
+                const delNode = e.target.closest('[data-del]');
+                if (del) {
+                    structure[del.dataset.simpleDel].splice(parseInt(del.dataset.i, 10), 1);
+                    renderSimple(del.dataset.simpleDel);
+                } else if (addChild) {
+                    const path = JSON.parse(addChild.dataset.addChild);
+                    const { node } = getNode(path);
+                    const childKey = CHILD_KEYS[path.length - 1];
+                    node[childKey] = node[childKey] || [];
+                    const grandChildKey = path.length < 4 ? CHILD_KEYS[path.length] : null;
+                    const child = { id: newId(), libelle: '' };
+                    if (grandChildKey) child[grandChildKey] = [];
+                    node[childKey].push(child);
+                    renderTree();
+                } else if (delNode) {
+                    const path = JSON.parse(delNode.dataset.del);
+                    const { parentArr, index } = getNode(path);
+                    parentArr.splice(index, 1);
+                    renderTree();
+                }
+            });
+
+            document.getElementById('btn-save-structure').addEventListener('click', () => {
+                SIMPLE_KEYS.forEach(k => { structure[k] = (structure[k] || []).map(v => v.trim()).filter(Boolean); });
+                CamaAssureData.saveOrgStructure(structure);
+                structure = CamaAssureData.getOrgStructure();
+                renderAll();
+                showToast('<span class="material-symbols-outlined">check_circle</span> Structure militaire enregistrée.');
+            });
+
+            document.getElementById('btn-reset-structure').addEventListener('click', () => {
+                localStorage.removeItem('cama_org_structure');
+                structure = CamaAssureData.getOrgStructure();
+                renderAll();
+                showToast('<span class="material-symbols-outlined">restart_alt</span> Structure réinitialisée.');
+            });
+
+            renderAll();
+        })();
+
         function addMotif() {
             const div = document.createElement('div');
             div.className = 'flex items-center gap-2';

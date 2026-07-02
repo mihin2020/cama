@@ -152,7 +152,7 @@
 </a>
 </nav>
 <a class="flex items-center justify-center gap-2 bg-primary text-on-primary px-4 py-2.5 rounded-lg font-bold font-label-md text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm mb-2 mx-1" href="ajouter-membre.html">
-<span class="material-symbols-outlined text-[20px]">add_circle</span> Ajouter un membre
+<span class="material-symbols-outlined text-[20px]">group_add</span> Mon dossier familial
 </a>
 <a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
 <span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
@@ -206,18 +206,36 @@
 </div>
 </div>
 </section>
+<!-- Informations administratives du militaire (section 1) -->
+<section class="assure-card p-5 md:p-6">
+<h2 class="text-base font-semibold text-on-surface mb-1">Informations administratives du militaire</h2>
+<p class="text-on-surface-variant text-xs mb-5">Données déclarées à l'inscription. Contactez la CAMA pour toute correction.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="militaire-grid"></div>
+</section>
 <!-- Editable contact info -->
 <section class="assure-card p-5 md:p-6">
 <h2 class="text-base font-semibold text-on-surface mb-1">Coordonnées</h2>
-<p class="text-on-surface-variant text-xs mb-5">Utilisées pour vous contacter et vous envoyer les notifications.</p>
+<p class="text-on-surface-variant text-xs mb-5">Modifiez vos coordonnées de contact. Les données militaires sont gérées par la CAMA.</p>
 <form class="grid grid-cols-1 md:grid-cols-2 gap-4" id="contact-form">
 <div class="space-y-1.5">
 <label class="text-sm font-medium text-on-surface-variant ml-1">Adresse e-mail</label>
 <input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" id="field-email" type="email"/>
 </div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Téléphone(s)</label>
+<div id="phone-profil-wrap"></div>
+</div>
 <div class="space-y-1.5">
-<label class="text-sm font-medium text-on-surface-variant ml-1">Téléphone</label>
-<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" placeholder="+226 70 00 00 00" type="tel"/>
+<label class="text-sm font-medium text-on-surface-variant ml-1" for="field-personne">Personne à prévenir</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" id="field-personne" type="text"/>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-sm font-medium text-on-surface-variant ml-1">Téléphone(s) personne à prévenir</label>
+<div id="phone-personne-profil-wrap"></div>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-on-surface-variant ml-1" for="field-numerocama">N° Carte CAMA</label>
+<input class="w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none bg-white" id="field-numerocama" placeholder="Si déjà attribué" type="text"/>
 </div>
 <div class="md:col-span-2">
 <button class="bg-primary text-on-primary px-5 py-2.5 rounded-lg text-sm font-semibold hover:opacity-90 active:scale-95 transition-all" type="submit">Enregistrer</button>
@@ -290,6 +308,9 @@
 <div class="fixed bottom-6 right-6 z-50 hidden" id="toast">
 <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div>
 </div>
+<script src="../countries.js"></script>
+<script src="../dial-codes.js"></script>
+<script src="../phone-input.js"></script>
 <script src="assure-data.js"></script>
 <script src="assure-shell.js"></script>
 <script>
@@ -303,15 +324,49 @@
             setTimeout(() => toast.classList.add('hidden'), 3000);
         }
 
+        let phoneProfil, phonePersonneProfil;
+
         (function () {
             document.getElementById('identity-avatar').textContent = CamaAssureShell.initials(MOCK_ASSURE.prenom, MOCK_ASSURE.nom);
             document.getElementById('identity-name').textContent = `${MOCK_ASSURE.prenom} ${MOCK_ASSURE.nom}`;
             document.getElementById('identity-statut').textContent = MOCK_ASSURE.statut;
+            if ((MOCK_ASSURE.statut || 'Actif') !== 'Actif') {
+                const st = document.getElementById('identity-statut');
+                st.classList.remove('bg-secondary', 'text-on-secondary');
+                st.classList.add('bg-tertiary', 'text-on-tertiary');
+            }
             document.getElementById('identity-matricule').textContent = MOCK_ASSURE.matricule;
-            document.getElementById('identity-numerocama').textContent = MOCK_ASSURE.numeroCama;
+            document.getElementById('identity-numerocama').textContent = MOCK_ASSURE.numeroCama || 'En attente d\'attribution';
             document.getElementById('identity-creation').textContent = MOCK_ASSURE.dateCreation;
+
+            const milGrid = document.getElementById('militaire-grid');
+            if (milGrid) {
+                const rows = [
+                    ['Sexe', MOCK_ASSURE.sexe],
+                    ['Grade', MOCK_ASSURE.grade],
+                    ['Catégorie', MOCK_ASSURE.categorie],
+                    ['N° informatique', MOCK_ASSURE.numeroInformatique],
+                    ['N° CIM', MOCK_ASSURE.numeroCim],
+                    ['N° IUP', MOCK_ASSURE.numeroIup],
+                    ['Armée', MOCK_ASSURE.armee],
+                    ['Région', MOCK_ASSURE.region],
+                    ['Corps', MOCK_ASSURE.corps],
+                    ['Service', MOCK_ASSURE.service],
+                    ['Section', MOCK_ASSURE.section],
+                    ['Sous-section', MOCK_ASSURE.sousSection],
+                    ['Personne à prévenir', MOCK_ASSURE.personneAPrevenir],
+                    ['Tél. personne à prévenir', MOCK_ASSURE.telPersonneAPrevenir]
+                ];
+                milGrid.innerHTML = rows.map(([l, v]) =>
+                    `<div class="bg-surface-container-low rounded-lg p-3.5"><p class="text-xs text-on-surface-variant uppercase tracking-wide mb-1">${l}</p><p class="text-sm font-semibold text-on-surface break-words">${v && String(v).trim() ? v : '—'}</p></div>`
+                ).join('');
+            }
             document.getElementById('identity-derniere').textContent = MOCK_ASSURE.derniereConnexion;
             document.getElementById('field-email').value = MOCK_ASSURE.email;
+            document.getElementById('field-personne').value = MOCK_ASSURE.personneAPrevenir || '';
+            document.getElementById('field-numerocama').value = MOCK_ASSURE.numeroCama || '';
+            phoneProfil = CamaPhoneInput.mount(document.getElementById('phone-profil-wrap'), { max: 2, values: MOCK_ASSURE.telephones || MOCK_ASSURE.telephone, inputClass: 'w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white flex-1' });
+            phonePersonneProfil = CamaPhoneInput.mount(document.getElementById('phone-personne-profil-wrap'), { max: 2, values: MOCK_ASSURE.telPersonneAPrevenir, inputClass: 'w-full px-3 py-2.5 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white flex-1' });
 
             const toggle2fa = document.getElementById('twofa-toggle');
             if (MOCK_ASSURE.deuxFA) { toggle2fa.classList.remove('off'); toggle2fa.classList.add('on'); }
@@ -334,6 +389,17 @@
 
         document.getElementById('contact-form').addEventListener('submit', (e) => {
             e.preventDefault();
+            const res = CamaAssureData.updateAssureContact({
+                email: document.getElementById('field-email').value.trim(),
+                telephones: phoneProfil.getValues(),
+                personneAPrevenir: document.getElementById('field-personne').value.trim(),
+                telPersonneAPrevenir: phonePersonneProfil.getValues(),
+                numeroCama: document.getElementById('field-numerocama').value.trim()
+            });
+            if (res.error) {
+                showToast(`<span class="material-symbols-outlined">error</span> ${res.error}`);
+                return;
+            }
             showToast('<span class="material-symbols-outlined">check_circle</span> Coordonnées mises à jour.');
         });
 

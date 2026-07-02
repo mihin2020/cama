@@ -3,7 +3,7 @@
 <html class="light" lang="fr"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Espace Assuré | CAMA</title>
+<title>Connexion | Espace Assuré CAMA</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
@@ -117,15 +117,8 @@
         }
         .auth-tab-panel { display: none; }
         .auth-tab-panel.is-active { display: block; }
-        .reg-label { display:block; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; color: #5c403f; margin-left: 4px; }
-        .reg-input { width:100%; padding: 10px 14px; border:1px solid #e5bdbb; border-radius: 0.5rem; outline:none; font-size:14px; background:#fff; transition: all .15s ease; }
-        .reg-input:focus { border-color:#9e001f; box-shadow: 0 0 0 2px rgba(158,0,31,.25); }
-        .reg-input.is-invalid { border-color:#ba1a1a; box-shadow: 0 0 0 2px rgba(186,26,26,.2); }
-        .reg-file { width:100%; font-size:13px; color:#5c403f; }
-        .reg-file::file-selector-button { margin-right: 10px; padding: 8px 14px; border:0; border-radius:0.5rem; background:#f0eded; color:#1b1c1c; font-weight:600; font-size:13px; cursor:pointer; transition: background .15s ease; }
-        .reg-file::file-selector-button:hover { background:#e4e2e1; }
-        #pw-rules li.ok { color:#006e27; }
     </style>
+<link href="auth-assure.css" rel="stylesheet"/>
 <link href="site-shell.css" rel="stylesheet"/>
 </head>
 <body class="bg-background text-on-background font-body-md selection:bg-primary-fixed selection:text-on-primary-fixed" data-page="espace-assure">
@@ -139,25 +132,17 @@
 <span class="material-symbols-outlined text-[18px]">verified_user</span>
                     Plateforme d'enrôlement
                 </span>
-<h1 class="font-headline-lg text-headline-lg mb-4">Votre Espace Assuré</h1>
-<p class="font-body-lg text-body-lg text-white/85 max-w-2xl mx-auto">Créez votre dossier en ligne, enrôlez les membres de votre famille et suivez l'état de vos demandes en toute sécurité, où que vous soyez.</p>
+<h1 class="font-headline-lg text-headline-lg mb-4">Connexion à mon espace</h1>
+<p class="font-body-lg text-body-lg text-white/85 max-w-2xl mx-auto">Accédez à votre tableau de bord, gérez votre dossier familial et suivez vos demandes d'enrôlement.</p>
 </div>
 </section>
 <!-- Auth Card -->
 <section class="py-stack-lg bg-surface-container-low">
 <div class="max-w-container-max-width mx-auto px-margin-desktop">
 <div class="flex justify-center">
-<!-- Auth tabs -->
-<div class="w-full max-w-2xl">
+<div class="w-full max-w-md">
 <div class="bg-white rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
-<div class="grid grid-cols-2">
-<button class="auth-tab-btn px-6 py-5 font-bold font-label-md text-label-md text-center border-b-2 transition-colors" data-tab="connexion" id="tab-btn-connexion">Se connecter</button>
-<button class="auth-tab-btn px-6 py-5 font-bold font-label-md text-label-md text-center border-b-2 transition-colors" data-tab="inscription" id="tab-btn-inscription">Créer un compte</button>
-</div>
 <div class="p-8">
-<!-- Connexion -->
-<div class="auth-tab-panel" id="tab-connexion">
-<!-- Vue : formulaire de connexion -->
 <div id="view-login">
 <h3 class="font-title-lg text-title-lg mb-2">Connexion à mon espace</h3>
 <p class="text-on-surface-variant font-body-md text-sm mb-6">Accédez à votre tableau de bord assuré.</p>
@@ -248,177 +233,9 @@
 <button class="bg-primary text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all inline-flex items-center gap-2" id="forgot-done-login" type="button"><span class="material-symbols-outlined">login</span> Aller à la connexion</button>
 </div>
 </div>
-</div>
-<!-- Inscription -->
-<div class="auth-tab-panel" id="tab-inscription">
-<!-- Écran de succès (masqué par défaut) -->
-<div class="hidden text-center py-8" id="register-success">
-<div class="w-16 h-16 mx-auto rounded-full bg-secondary-container text-secondary flex items-center justify-center mb-4">
-<span class="material-symbols-outlined text-[36px]">mark_email_read</span>
-</div>
-<h3 class="font-title-lg text-title-lg mb-2">Demande enregistrée&nbsp;!</h3>
-<p class="text-on-surface-variant font-body-md text-sm max-w-md mx-auto mb-6">
-                                    Merci. Votre demande d'inscription a bien été transmise à la CAMA. Un gestionnaire va
-                                    <strong>vérifier vos informations et pièces justificatives</strong>. Dès que votre compte
-                                    sera validé, vous recevrez votre <strong>numéro CAMA</strong> et pourrez vous connecter.
-                                </p>
-<div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 text-left text-sm mb-6 max-w-md mx-auto">
-<p class="flex items-center gap-2 text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-tertiary">hourglass_top</span> Statut&nbsp;: <strong class="text-on-surface">En attente de validation</strong></p>
-</div>
-<button class="auth-goto-login bg-primary text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all inline-flex items-center gap-2" type="button">
-<span class="material-symbols-outlined">login</span> Aller à la connexion
-                                </button>
-</div>
-<!-- Formulaire -->
-<div id="register-form-wrap">
-<h3 class="font-title-lg text-title-lg mb-1">Création de compte assuré</h3>
-<p class="text-on-surface-variant font-body-md text-sm mb-5">Réservé aux militaires en fonction. Aucun numéro CAMA n'est requis : il vous sera attribué après validation de votre dossier.</p>
-<div class="hidden mb-5" id="register-banner" role="alert"></div>
-<form class="space-y-7" id="register-form" novalidate="">
-<!-- Section : Profil -->
-<fieldset class="space-y-4">
-<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">badge</span> Informations de profil</legend>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1.5">
-<label class="reg-label" for="r-matricule">N° Matricule <span class="text-error">*</span></label>
-<input class="reg-input" id="r-matricule" name="matricule" placeholder="Ex : 12345-X" required type="text"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-telephone">Téléphone <span class="text-error">*</span></label>
-<input class="reg-input" id="r-telephone" name="telephone" placeholder="+226 70 xx xx xx" required type="tel"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-nom">Nom <span class="text-error">*</span></label>
-<input class="reg-input" id="r-nom" name="nom" placeholder="Nom de famille" required type="text"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-prenom">Prénom(s) <span class="text-error">*</span></label>
-<input class="reg-input" id="r-prenom" name="prenom" placeholder="Prénom(s)" required type="text"/>
-</div>
-<div class="space-y-1.5 md:col-span-2">
-<label class="reg-label" for="r-email">Email valide <span class="text-error">*</span></label>
-<input autocomplete="email" class="reg-input" id="r-email" name="email" placeholder="vous@exemple.bf" required type="email"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-naissance">Date de naissance <span class="text-error">*</span></label>
-<input class="reg-input" id="r-naissance" name="dateNaissance" required type="date"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-genre">Genre <span class="text-error">*</span></label>
-<select class="reg-input" id="r-genre" name="genre" required>
-<option value="Masculin">Masculin</option>
-<option value="Féminin">Féminin</option>
-</select>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-lieu">Lieu de naissance <span class="text-error">*</span></label>
-<input class="reg-input" id="r-lieu" name="lieuNaissance" placeholder="Ville de naissance" required type="text"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-pays-naissance">Pays de naissance <span class="text-error">*</span></label>
-<select class="reg-input" data-pays="" id="r-pays-naissance" name="paysNaissance" required>
-<option disabled selected value="">— Pays de naissance —</option>
-</select>
-</div>
-</div>
-</fieldset>
-<!-- Section : Pièce d'identité -->
-<fieldset class="space-y-4">
-<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">contact_page</span> Pièce d'identité</legend>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1.5">
-<label class="reg-label" for="r-type-piece">Type de pièce d'identité <span class="text-error">*</span></label>
-<select class="reg-input" id="r-type-piece" name="typePiece" required>
-<option value="CNIB">Carte Nationale d'Identité (CNIB)</option>
-<option value="Passeport">Passeport</option>
-<option value="Carte de séjour">Carte de séjour</option>
-<option value="Carte militaire">Carte militaire</option>
-</select>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-num-piece">Numéro de pièce d'identité <span class="text-error">*</span></label>
-<input class="reg-input" id="r-num-piece" name="numeroPiece" placeholder="Numéro de la pièce" required type="text"/>
-</div>
-<div class="space-y-1.5 md:col-span-2">
-<label class="reg-label" for="r-piece-file">Pièce d'identité (scan / photo) <span class="text-error">*</span></label>
-<input accept="image/*,application/pdf" class="reg-file" id="r-piece-file" name="pieceFichier" required type="file"/>
-</div>
-</div>
-</fieldset>
-<!-- Section : Informations professionnelles -->
-<fieldset class="space-y-4">
-<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">military_tech</span> Informations professionnelles</legend>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1.5 md:col-span-2 flex items-center gap-4">
-<div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden flex items-center justify-center shrink-0 border border-outline-variant" id="r-photo-preview">
-<span class="material-symbols-outlined text-on-surface-variant">add_a_photo</span>
-</div>
-<div class="flex-1 space-y-1.5">
-<label class="reg-label" for="r-photo">Photo d'identité <span class="text-error">*</span></label>
-<input accept="image/*" class="reg-file" id="r-photo" name="photo" required type="file"/>
-</div>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-grade">Grade <span class="text-error">*</span></label>
-<select class="reg-input" id="r-grade" name="grade" required>
-<option disabled selected value="">— Grade —</option>
-<option>Soldat de 2e classe</option>
-<option>Soldat de 1re classe</option>
-<option>Caporal</option>
-<option>Caporal-chef</option>
-<option>Sergent</option>
-<option>Sergent-chef</option>
-<option>Adjudant</option>
-<option>Adjudant-chef</option>
-<option>Aspirant</option>
-<option>Sous-lieutenant</option>
-<option>Lieutenant</option>
-<option>Capitaine</option>
-<option>Commandant</option>
-<option>Lieutenant-colonel</option>
-<option>Colonel</option>
-<option>Colonel-major</option>
-<option>Général</option>
-</select>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-carte-pro">Carte professionnelle <span class="text-error">*</span></label>
-<input accept="image/*,application/pdf" class="reg-file" id="r-carte-pro" name="carteProFichier" required type="file"/>
-</div>
-</div>
-</fieldset>
-<!-- Section : Connexion -->
-<fieldset class="space-y-4">
-<legend class="flex items-center gap-2 font-label-md text-label-md uppercase tracking-wide text-primary mb-1"><span class="material-symbols-outlined text-[18px]">lock</span> Informations de connexion</legend>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<div class="space-y-1.5">
-<label class="reg-label" for="r-password">Mot de passe <span class="text-error">*</span></label>
-<input autocomplete="new-password" class="reg-input" id="r-password" name="password" placeholder="Mot de passe" required type="password"/>
-</div>
-<div class="space-y-1.5">
-<label class="reg-label" for="r-password2">Confirmer le mot de passe <span class="text-error">*</span></label>
-<input autocomplete="new-password" class="reg-input" id="r-password2" name="password2" placeholder="Confirmer" required type="password"/>
-</div>
-</div>
-<!-- Indicateurs de robustesse -->
-<ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-caption text-on-surface-variant mt-1" id="pw-rules">
-<li class="flex items-center gap-1.5" data-rule="length"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Au moins 12 caractères</li>
-<li class="flex items-center gap-1.5" data-rule="upper"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Une majuscule</li>
-<li class="flex items-center gap-1.5" data-rule="digit"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un chiffre</li>
-<li class="flex items-center gap-1.5" data-rule="special"><span class="material-symbols-outlined text-[15px]">radio_button_unchecked</span> Un caractère spécial</li>
-</ul>
-</fieldset>
-<div class="flex items-start gap-3 py-1">
-<input class="w-5 h-5 mt-0.5 text-primary border-outline-variant rounded focus:ring-primary cursor-pointer shrink-0" id="r-cgu" required type="checkbox"/>
-<label class="text-caption text-on-surface-variant" for="r-cgu">En cochant cette case, je déclare que toutes les informations saisies sont exactes et complètes et j'accepte les <a class="text-primary font-semibold hover:underline" href="mention_legales.html">Conditions Générales d'Utilisation</a> et la <a class="text-primary font-semibold hover:underline" href="mention_legales.html">Politique de confidentialité</a>.</label>
-</div>
-<button class="w-full bg-secondary text-on-secondary py-3.5 rounded-lg font-bold hover:opacity-90 active:scale-95 transition-all shadow-md flex items-center justify-center gap-2 disabled:opacity-60" id="register-submit" type="submit">
-<span class="material-symbols-outlined">person_add</span> Soumettre ma demande
-                                </button>
-</form>
-</div>
-</div>
-</div>
+<div class="border-t border-outline-variant bg-surface-container-low/50 px-8 py-5 text-center">
+<p class="text-sm text-on-surface-variant">Pas encore de compte ? <a class="text-primary font-bold hover:underline" href="inscription-assure.html">Créer un compte assuré</a></p>
+<p class="text-xs text-on-surface-variant mt-2">Inscription guidée en 5 étapes pour les militaires en fonction.</p>
 </div>
 </div>
 </div>
@@ -428,37 +245,11 @@
 <!-- Footer -->
 <div id="site-shell-bottom"></div>
 <script src="site-shell.js"></script>
-<script>
-        // Auth tabs
-        (function () {
-            const buttons = document.querySelectorAll('.auth-tab-btn');
-            const panels = document.querySelectorAll('.auth-tab-panel');
-
-            window.authActivate = function (tab) {
-                buttons.forEach(btn => {
-                    const isActive = btn.dataset.tab === tab;
-                    btn.classList.toggle('text-primary', isActive);
-                    btn.classList.toggle('border-primary', isActive);
-                    btn.classList.toggle('text-on-surface-variant', !isActive);
-                    btn.classList.toggle('border-transparent', !isActive);
-                });
-                panels.forEach(panel => {
-                    panel.classList.toggle('is-active', panel.id === 'tab-' + tab);
-                });
-            };
-
-            buttons.forEach(btn => {
-                btn.addEventListener('click', () => window.authActivate(btn.dataset.tab));
-            });
-
-            const initial = window.location.hash === '#inscription' ? 'inscription' : 'connexion';
-            window.authActivate(initial);
-        })();
-    </script>
-<script src="countries.js"></script>
-<script src="flag-select.js"></script>
 <script src="assure/assure-data.js"></script>
 <script>
+        if (window.location.hash === '#inscription') {
+            window.location.replace('inscription-assure.html');
+        }
         (function () {
             function banner(el, type, html) {
                 if (!el) return;
@@ -473,24 +264,6 @@
                 el.innerHTML = `<span class="material-symbols-outlined text-[20px] shrink-0">${icons[type] || 'info'}</span><span>${html}</span>`;
                 el.classList.remove('hidden');
             }
-
-            // --- Remplissage des listes de pays (tous les pays, avec drapeau) ---
-            const PAYS_LIST = (window.CamaCountries || []).slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'));
-            PAYS_LIST.sort((a, b) => (a.code === 'BF' ? -1 : b.code === 'BF' ? 1 : 0));
-            document.querySelectorAll('select[data-pays]').forEach(sel => {
-                const def = sel.dataset.pays;
-                PAYS_LIST.forEach(c => {
-                    const o = document.createElement('option');
-                    o.value = c.name;
-                    o.textContent = `${CamaFlag(c.code)}  ${c.name}`;
-                    if (c.name === def) o.selected = true;
-                    sel.appendChild(o);
-                });
-                const autre = document.createElement('option');
-                autre.value = 'Autre'; autre.textContent = '🏳️  Autre';
-                sel.appendChild(autre);
-            });
-            if (window.CamaFlagSelect) CamaFlagSelect.enhanceAll('select[data-pays]');
 
             // ====================== CONNEXION + 2FA + RÉCUPÉRATION ======================
             const loginForm = document.getElementById('login-form');
@@ -606,140 +379,6 @@
                 if (!res.ok) { banner(forgotBanner, 'error', res.error || 'Réinitialisation impossible.'); return; }
                 document.getElementById('forgot-step2').classList.add('hidden');
                 document.getElementById('forgot-done').classList.remove('hidden');
-            });
-
-            // ====================== INSCRIPTION ======================
-            const regForm = document.getElementById('register-form');
-            if (!regForm) return;
-            const regBanner = document.getElementById('register-banner');
-            const pw = document.getElementById('r-password');
-            const pw2 = document.getElementById('r-password2');
-
-            // Aperçu photo
-            const photoInput = document.getElementById('r-photo');
-            const photoPreview = document.getElementById('r-photo-preview');
-            photoInput.addEventListener('change', function () {
-                const f = this.files[0];
-                if (f && f.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => { photoPreview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover" alt="Aperçu"/>`; };
-                    reader.readAsDataURL(f);
-                }
-            });
-
-            // Robustesse du mot de passe
-            const rules = {
-                length: v => v.length >= 12,
-                upper: v => /[A-Z]/.test(v),
-                digit: v => /[0-9]/.test(v),
-                special: v => /[^A-Za-z0-9]/.test(v)
-            };
-            function checkRules(v) {
-                let allOk = true;
-                document.querySelectorAll('#pw-rules li').forEach(li => {
-                    const ok = rules[li.dataset.rule](v);
-                    if (!ok) allOk = false;
-                    li.classList.toggle('ok', ok);
-                    li.querySelector('.material-symbols-outlined').textContent = ok ? 'check_circle' : 'radio_button_unchecked';
-                });
-                return allOk;
-            }
-            pw.addEventListener('input', () => checkRules(pw.value));
-
-            function fileToDataUrl(file) {
-                return new Promise(resolve => {
-                    if (!file) return resolve(null);
-                    const reader = new FileReader();
-                    reader.onload = e => resolve(e.target.result);
-                    reader.onerror = () => resolve(null);
-                    reader.readAsDataURL(file);
-                });
-            }
-
-            function markInvalid(el, bad) {
-                if (el) el.classList.toggle('is-invalid', bad);
-            }
-
-            regForm.addEventListener('submit', async function (e) {
-                e.preventDefault();
-                regBanner.classList.add('hidden');
-
-                // Validation HTML5 native d'abord
-                const requiredEls = regForm.querySelectorAll('[required]');
-                let firstInvalid = null;
-                requiredEls.forEach(el => {
-                    const empty = el.type === 'checkbox' ? !el.checked : !String(el.value).trim();
-                    markInvalid(el, empty);
-                    if (empty && !firstInvalid) firstInvalid = el;
-                });
-                if (firstInvalid) {
-                    banner(regBanner, 'error', 'Veuillez renseigner tous les champs obligatoires.');
-                    firstInvalid.focus();
-                    return;
-                }
-                if (!checkRules(pw.value)) {
-                    markInvalid(pw, true);
-                    banner(regBanner, 'error', 'Le mot de passe ne respecte pas les critères de sécurité.');
-                    pw.focus();
-                    return;
-                }
-                if (pw.value !== pw2.value) {
-                    markInvalid(pw2, true);
-                    banner(regBanner, 'error', 'Les deux mots de passe ne correspondent pas.');
-                    pw2.focus();
-                    return;
-                }
-
-                const btn = document.getElementById('register-submit');
-                btn.disabled = true;
-
-                const [photo] = await Promise.all([fileToDataUrl(photoInput.files[0])]);
-                const data = {
-                    matricule: document.getElementById('r-matricule').value,
-                    nom: document.getElementById('r-nom').value,
-                    prenom: document.getElementById('r-prenom').value,
-                    telephone: document.getElementById('r-telephone').value,
-                    email: document.getElementById('r-email').value,
-                    dateNaissance: (function () { const v = document.getElementById('r-naissance').value; if (!v) return ''; const [y, m, d] = v.split('-'); return `${d}/${m}/${y}`; })(),
-                    lieuNaissance: document.getElementById('r-lieu').value,
-                    paysNaissance: document.getElementById('r-pays-naissance').value,
-                    genre: document.getElementById('r-genre').value,
-                    typePiece: document.getElementById('r-type-piece').value,
-                    numeroPiece: document.getElementById('r-num-piece').value,
-                    pieceFichier: document.getElementById('r-piece-file').files[0]?.name || null,
-                    photo: photo,
-                    carteProFichier: document.getElementById('r-carte-pro').files[0]?.name || null,
-                    grade: document.getElementById('r-grade').value,
-                    password: pw.value
-                };
-
-                let res;
-                try {
-                    res = CamaAssureData.registerAssure(data);
-                } catch (err) {
-                    res = { error: 'Une erreur est survenue. Réessayez (l\'image est peut-être trop volumineuse).' };
-                }
-                btn.disabled = false;
-
-                if (res.error) {
-                    if (res.field) markInvalid(document.getElementById('r-' + (res.field === 'email' ? 'email' : 'matricule')), true);
-                    banner(regBanner, 'error', res.error);
-                    return;
-                }
-
-                // Succès : afficher l'écran de confirmation
-                document.getElementById('register-form-wrap').classList.add('hidden');
-                document.getElementById('register-success').classList.remove('hidden');
-                document.getElementById('register-success').scrollIntoView({ behavior: 'smooth', block: 'center' });
-            });
-
-            // Bouton "Aller à la connexion" depuis l'écran de succès
-            document.querySelectorAll('.auth-goto-login').forEach(b => {
-                b.addEventListener('click', () => {
-                    window.authActivate('connexion');
-                    banner(loginBanner, 'info', 'Votre demande est enregistrée. Vous pourrez vous connecter dès que la CAMA aura validé votre compte.');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
             });
         })();
     </script>

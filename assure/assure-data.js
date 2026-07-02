@@ -11,19 +11,96 @@
     const ADMIN_NOTIFS_KEY = 'cama_admin_notifs';
     const SETTINGS_KEY = 'cama_settings';
 
+    const ORG_STRUCTURE_KEY = 'cama_org_structure';
+
     const AGE_MAX_ENFANT_PLAFOND = 26;
+    const GESTIONNAIRES_CAMA = [
+        'Lt. Aminata KABORÉ',
+        'Sgt. Daniel ZONGO',
+        'Adj. Rasmané BANCÉ'
+    ];
+    const ADMIN_ACCOUNTS = {
+        'gestionnaire@cama.bf': { role: 'gestionnaire', nom: 'Lt. Aminata KABORÉ', roleLabel: 'Gestionnaire CAMA', id: 'INT-0231', password: 'Demo2026!' },
+        'gestionnaire2@cama.bf': { role: 'gestionnaire', nom: 'Sgt. Daniel ZONGO', roleLabel: 'Gestionnaire CAMA', id: 'INT-0288', password: 'Demo2026!' },
+        'gestionnaire3@cama.bf': { role: 'gestionnaire', nom: 'Adj. Rasmané BANCÉ', roleLabel: 'Gestionnaire CAMA', id: 'INT-0312', password: 'Demo2026!' },
+        'superviseur@cama.bf': { role: 'superviseur', nom: 'Cdt. Paul SAWADOGO', roleLabel: 'Superviseur / Responsable', id: 'INT-0102', password: 'Demo2026!' },
+        'admin@cama.bf': { role: 'administrateur', nom: 'Ing. Awa OUÉDRAOGO', roleLabel: 'Administrateur technique', id: 'INT-0050', password: 'Demo2026!' },
+        'direction@cama.bf': { role: 'direction', nom: 'Col-Maj. Issa COMPAORÉ', roleLabel: 'Direction Générale', id: 'INT-0001', password: 'Demo2026!' }
+    };
+    const DOSSIER_OPEN_STATUTS = ['Soumis', 'En instruction', 'Pièce manquante demandée', 'En attente supervision'];
     const DEFAULT_SETTINGS = {
         ageMaxEnfant: 21 // plafond paramétrable, borné à AGE_MAX_ENFANT_PLAFOND
+    };
+
+    // Structure militaire de rattachement, configurable côté back-office.
+    // Hiérarchie : Région > Corps > Service > Section > Sous-section.
+    const DEFAULT_ORG_STRUCTURE = {
+        armees: ['Armée de Terre', 'Armée de l\'Air', 'Gendarmerie Nationale', 'Sapeurs-Pompiers Militaires'],
+        categories: ['Officier', 'Sous-officier', 'Militaire du rang', 'Personnel civil'],
+        groupesSanguins: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+        regions: [
+            {
+                id: 'reg-1', libelle: '1re Région Militaire (Ouagadougou)',
+                corps: [
+                    {
+                        id: 'corps-11', libelle: '11e Régiment d\'Infanterie Commando',
+                        services: [
+                            {
+                                id: 'srv-adm', libelle: 'Service Administratif',
+                                sections: [
+                                    { id: 'sec-pers', libelle: 'Section Personnel', sousSections: [{ id: 'ss-solde', libelle: 'Bureau Solde' }, { id: 'ss-effectif', libelle: 'Bureau Effectifs' }] },
+                                    { id: 'sec-log', libelle: 'Section Logistique', sousSections: [{ id: 'ss-appro', libelle: 'Bureau Approvisionnement' }] }
+                                ]
+                            },
+                            {
+                                id: 'srv-ops', libelle: 'Service Opérations',
+                                sections: [{ id: 'sec-instr', libelle: 'Section Instruction', sousSections: [] }]
+                            }
+                        ]
+                    },
+                    {
+                        id: 'corps-gsp', libelle: 'Groupement de Sécurité et de Protection',
+                        services: [{ id: 'srv-secu', libelle: 'Service Sécurité', sections: [] }]
+                    }
+                ]
+            },
+            {
+                id: 'reg-2', libelle: '2e Région Militaire (Bobo-Dioulasso)',
+                corps: [
+                    {
+                        id: 'corps-21', libelle: '21e Régiment d\'Infanterie Commando',
+                        services: [{ id: 'srv-adm2', libelle: 'Service Administratif', sections: [{ id: 'sec-pers2', libelle: 'Section Personnel', sousSections: [] }] }]
+                    }
+                ]
+            }
+        ]
     };
 
     const ASSURE_PROFILE = {
         nom: 'TRAORÉ',
         prenom: 'Issouf',
+        prenoms: 'Issouf',
         fullName: 'Issouf TRAORÉ',
+        sexe: 'Masculin',
         matricule: '4521-B',
+        numeroInformatique: 'INF-4521',
+        grade: 'Capitaine',
+        categorie: 'Officier',
+        numeroCim: 'CIM-104521',
         numeroCama: 'CAMA-104521',
-        statut: 'Actif',
+        numeroIup: 'IUP-104521',
+        armee: 'Armée de Terre',
+        region: '1re Région Militaire (Ouagadougou)',
+        corps: '11e Régiment d\'Infanterie Commando',
+        service: 'Service Administratif',
+        section: 'Section Personnel',
+        sousSection: 'Bureau Solde',
+        telephones: '+226 70 12 34 56',
+        telephone: '+226 70 12 34 56',
         email: 'issouf.traore@armee.bf',
+        personneAPrevenir: 'Aïcha TRAORÉ',
+        telPersonneAPrevenir: '+226 76 00 11 22',
+        statut: 'Actif',
         deuxFA: true,
         dateCreation: '12/01/2025',
         derniereConnexion: '18/06/2026 09:14'
@@ -58,10 +135,12 @@
 
     const DEFAULT_DOSSIERS = [
         { id: 1, ref: 'CAMA-2025-88213', beneficiaire: 'Aïcha TRAORÉ', assureNom: 'Issouf TRAORÉ', lien: 'Conjoint(e)', dateSoumission: '2025-02-15', gestionnaire: 'Lt. Aminata KABORÉ', statut: 'Validé', prenom: 'Aïcha', nom: 'TRAORÉ', sexe: 'Féminin', dateNaissance: '03/04/1990', numeroCama: 'CAMA-104522',
+            lieuNaissance: 'Ouagadougou', groupeSanguin: 'O+', refIdentite: 'CNIB B0912345', refActeMariage: 'AM-2015-0456 (Mairie de Ouaga)', profession: 'Enseignante', lieuResidence: 'Ouagadougou, secteur 15', telephone: '+226 70 55 66 77',
             pieces: [{ type: 'Acte de mariage', statut: 'Validée' }, { type: 'Copie CNIB du conjoint', statut: 'Validée' }],
             journal: [{ date: '15/02/2025 10:02', libelle: 'Dossier soumis par l\'assuré' }, { date: '20/02/2025 14:30', libelle: 'Affecté à Lt. Aminata KABORÉ' }, { date: '02/03/2025 09:15', libelle: 'Dossier validé' }],
             messages: [{ auteur: 'assure', texte: 'Bonjour, mon dossier est-il complet ?', date: '16/02/2025 08:00' }, { auteur: 'gestionnaire', texte: 'Bonjour, oui tout est en ordre, en cours d\'instruction.', date: '16/02/2025 09:12' }] },
         { id: 2, ref: 'CAMA-2025-91007', beneficiaire: 'Boubacar TRAORÉ', assureNom: 'Issouf TRAORÉ', lien: 'Enfant biologique', dateSoumission: '2026-05-01', gestionnaire: 'Lt. Aminata KABORÉ', statut: 'Pièce manquante demandée', prenom: 'Boubacar', nom: 'TRAORÉ', sexe: 'Masculin', dateNaissance: '22/09/2014',
+            lieuNaissance: 'Ouagadougou', groupeSanguin: 'O+', refIdentite: 'Acte naissance N° 2014-3321', refActeScolariteEtatCivil: 'Certificat scolarité 2025-2026', nomPrenomsParent: 'Aïcha TRAORÉ', telephone: '+226 70 55 66 77',
             pieces: [{ type: 'Acte de naissance', statut: 'Validée' }, { type: 'Copie CNIB du parent', statut: 'Validée' }, { type: 'Certificat médical de scolarité', statut: 'Manquante' }],
             journal: [{ date: '01/05/2026 08:40', libelle: 'Dossier soumis par l\'assuré' }, { date: '06/05/2026 11:00', libelle: 'Pièce complémentaire demandée : certificat de scolarité' }], messages: [] },
         { id: 3, ref: 'CAMA-2026-12044', beneficiaire: 'Marie OUÉDRAOGO', assureNom: 'Issouf TRAORÉ', lien: 'Parent', dateSoumission: '2026-05-28', gestionnaire: 'Sgt. Daniel ZONGO', statut: 'En instruction', prenom: 'Marie', nom: 'OUÉDRAOGO', sexe: 'Féminin', dateNaissance: '11/11/1958',
@@ -107,20 +186,24 @@
 
     const DEFAULT_REGISTRATIONS = [
         {
-            id: 9001, matricule: '6118-E', nom: 'NIKIÉMA', prenom: 'Salif', fullName: 'Salif NIKIÉMA',
-            telephone: '+226 70 11 22 33', email: 'salif.nikiema@armee.bf',
-            dateNaissance: '14/02/1986', lieuNaissance: 'Koudougou', paysNaissance: 'Burkina Faso', genre: 'Masculin',
-            typePiece: 'CNIB', numeroPiece: 'B0456712', pieceFichier: 'cnib_nikiema.pdf', photo: null, carteProFichier: 'carte_pro_nikiema.jpg',
-            paysResidence: 'Burkina Faso', nationalite: 'Burkina Faso', grade: 'Sergent',
+            id: 9001, matricule: '6118-E', nom: 'NIKIÉMA', prenom: 'Salif', prenoms: 'Salif', fullName: 'Salif NIKIÉMA',
+            sexe: 'Masculin', telephones: '+226 70 11 22 33', telephone: '+226 70 11 22 33', email: 'salif.nikiema@armee.bf',
+            numeroInformatique: 'INF-6118', grade: 'Sergent', categorie: 'Sous-officier',
+            numeroCim: 'CIM-206118', numeroIup: 'IUP-206118',
+            armee: 'Armée de Terre', region: '1re Région Militaire (Ouagadougou)', corps: '11e Régiment d\'Infanterie Commando',
+            service: 'Service Opérations', section: 'Section Instruction', sousSection: '',
+            personneAPrevenir: 'Mariam NIKIÉMA', telPersonneAPrevenir: '+226 78 33 44 55',
             password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '26/06/2026 09:12',
             journal: [{ date: '26/06/2026 09:12', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
         },
         {
-            id: 9002, matricule: '7322-F', nom: 'COMPAORÉ', prenom: 'Edwige', fullName: 'Edwige COMPAORÉ',
-            telephone: '+226 76 44 55 66', email: 'edwige.compaore@armee.bf',
-            dateNaissance: '30/09/1992', lieuNaissance: 'Ouagadougou', paysNaissance: 'Burkina Faso', genre: 'Féminin',
-            typePiece: 'Passeport', numeroPiece: 'BF9981245', pieceFichier: 'passeport_compaore.pdf', photo: null, carteProFichier: 'carte_pro_compaore.jpg',
-            paysResidence: 'Burkina Faso', nationalite: 'Burkina Faso', grade: 'Adjudant',
+            id: 9002, matricule: '7322-F', nom: 'COMPAORÉ', prenom: 'Edwige', prenoms: 'Edwige', fullName: 'Edwige COMPAORÉ',
+            sexe: 'Féminin', telephones: '+226 76 44 55 66', telephone: '+226 76 44 55 66', email: 'edwige.compaore@armee.bf',
+            numeroInformatique: 'INF-7322', grade: 'Adjudant', categorie: 'Sous-officier',
+            numeroCim: 'CIM-207322', numeroIup: 'IUP-207322',
+            armee: 'Armée de l\'Air', region: '2e Région Militaire (Bobo-Dioulasso)', corps: '21e Régiment d\'Infanterie Commando',
+            service: 'Service Administratif', section: 'Section Personnel', sousSection: '',
+            personneAPrevenir: 'Paul COMPAORÉ', telPersonneAPrevenir: '+226 70 99 88 77',
             password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '28/06/2026 16:40',
             journal: [{ date: '28/06/2026 16:40', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
         }
@@ -204,6 +287,15 @@
             dateSoumission: formatDateFr(d.dateSoumission) || d.dateSoumission,
             dateDecision: decisionEntry ? decisionEntry.date.split(' ')[0] : null,
             motifRefus: d.motifRefus || null,
+            lieuNaissance: d.lieuNaissance || '',
+            groupeSanguin: d.groupeSanguin || '',
+            refIdentite: d.refIdentite || '',
+            telephone: d.telephone || '',
+            profession: d.profession || '',
+            lieuResidence: d.lieuResidence || '',
+            refActeMariage: d.refActeMariage || '',
+            refActeScolariteEtatCivil: d.refActeScolariteEtatCivil || '',
+            nomPrenomsParent: d.nomPrenomsParent || '',
             pieces: d.pieces || [],
             historique: (d.journal || []).map(j => ({ date: j.date, libelle: j.libelle }))
         };
@@ -258,6 +350,21 @@
         }));
     }
 
+    // Champs issus du formulaire officiel (sections 2 et 3) conservés sur le dossier
+    // afin d'alimenter le back-office et l'export PDF.
+    const MEMBER_PDF_FIELDS = [
+        'lieuNaissance', 'groupeSanguin', 'refIdentite', 'telephone', 'profession',
+        'lieuResidence', 'refActeMariage', 'refActeScolariteEtatCivil', 'nomPrenomsParent'
+    ];
+
+    function pickMemberFields(state) {
+        const out = {};
+        MEMBER_PDF_FIELDS.forEach(k => {
+            if (state[k] !== undefined && state[k] !== null && state[k] !== '') out[k] = state[k];
+        });
+        return out;
+    }
+
     function submitDossier(wizardState) {
         const dossiers = getDossiers();
         const ref = generateRef();
@@ -277,6 +384,7 @@
             dateSoumission: todayIso(),
             gestionnaire: 'Non affecté',
             statut: 'Soumis',
+            ...pickMemberFields(wizardState),
             pieces: buildPiecesFromWizard(wizardState),
             journal: [{ date: now, libelle: 'Dossier soumis par l\'assuré' }],
             messages: [],
@@ -422,15 +530,29 @@
             const acc = accounts.find(a => a.nom === assureNom);
             const sorted = items.slice().sort((a, b) => b.dateSoumission.localeCompare(a.dateSoumission));
             const pending = sorted.filter(d => !['Validé', 'Refusé', 'Brouillon'].includes(d.statut)).length;
+            const gestionnaire = sorted.find(d => d.gestionnaire && d.gestionnaire !== 'Non affecté')?.gestionnaire || sorted[0]?.gestionnaire || 'Non affecté';
+            const lastJournal = sorted.flatMap(d => (d.journal || []).map(j => ({ ...j, ref: d.ref }))).sort((a, b) => String(b.date).localeCompare(String(a.date)))[0];
+            const submitted = sorted.filter(d => d.statut !== 'Brouillon');
+            const allValidated = submitted.length > 0 && submitted.every(d => d.statut === 'Validé');
+            const hasRefus = submitted.some(d => d.statut === 'Refusé');
+            const hasComplement = submitted.some(d => d.statut === 'Pièce manquante demandée');
+            const queue = allValidated ? 'valides'
+                : hasRefus && !submitted.some(d => !['Validé', 'Refusé', 'Brouillon'].includes(d.statut)) ? 'refuses'
+                : hasComplement ? 'complement'
+                : submitted.length > 0 ? 'a_traiter' : 'a_traiter';
             return {
                 assureNom,
                 matricule: acc?.matricule || '—',
                 numeroCama: acc?.numeroCama || '—',
                 statutCompte: acc?.statut || '—',
+                gestionnaire,
                 dossiers: sorted,
                 total: sorted.length,
                 pending,
-                latestDate: sorted[0]?.dateSoumission || ''
+                latestDate: sorted[0]?.dateSoumission || '',
+                lastTraitement: lastJournal?.date || '',
+                lastTraitementLibelle: lastJournal?.libelle || '',
+                queue
             };
         }).sort((a, b) => (b.latestDate || '').localeCompare(a.latestDate || ''));
     }
@@ -456,6 +578,7 @@
                 numeroCama: wizardState.numeroCamaMembre || dossier.numeroCama,
                 lien,
                 statut: 'Brouillon',
+                ...pickMemberFields(wizardState),
                 pieces: buildPiecesFromWizard(wizardState),
                 wizardMeta: { ...wizardState, pieces: undefined }
             });
@@ -476,6 +599,7 @@
                 dateSoumission: todayIso(),
                 gestionnaire: 'Non affecté',
                 statut: 'Brouillon',
+                ...pickMemberFields(wizardState),
                 pieces: buildPiecesFromWizard(wizardState),
                 journal: [{ date: now, libelle: 'Brouillon créé par l\'assuré' }],
                 messages: [],
@@ -665,38 +789,76 @@
         return `CAMA-1${Math.floor(10000 + Math.random() * 90000)}`;
     }
 
+    // Convertit un enregistrement d'inscription en profil de session complet
+    // (tous les champs présents pour éviter d'hériter des valeurs du compte démo).
+    function registrationToProfile(reg) {
+        return {
+            nom: reg.nom,
+            prenom: reg.prenom,
+            prenoms: reg.prenoms || reg.prenom,
+            fullName: reg.fullName,
+            sexe: reg.sexe || '',
+            matricule: reg.matricule,
+            numeroInformatique: reg.numeroInformatique || '',
+            grade: reg.grade || '',
+            categorie: reg.categorie || '',
+            numeroCim: reg.numeroCim || '',
+            numeroCama: reg.numeroCama || '',
+            numeroIup: reg.numeroIup || '',
+            armee: reg.armee || '',
+            region: reg.region || '',
+            corps: reg.corps || '',
+            service: reg.service || '',
+            section: reg.section || '',
+            sousSection: reg.sousSection || '',
+            telephones: reg.telephones || reg.telephone || '',
+            telephone: reg.telephone || reg.telephones || '',
+            email: reg.email,
+            personneAPrevenir: reg.personneAPrevenir || '',
+            telPersonneAPrevenir: reg.telPersonneAPrevenir || '',
+            statut: reg.statut,
+            deuxFA: true,
+            dateCreation: reg.dateCreation
+        };
+    }
+
     function registerAssure(data) {
-        const required = ['matricule', 'nom', 'prenom', 'telephone', 'email', 'dateNaissance', 'password'];
+        const required = ['matricule', 'nom', 'prenom', 'email', 'password'];
         const missing = required.filter(k => !String(data[k] || '').trim());
         if (missing.length) return { error: 'Veuillez renseigner tous les champs obligatoires.' };
         if (emailExists(data.email)) return { error: 'Un compte existe déjà avec cette adresse e-mail.', field: 'email' };
-        if (matriculeExists(data.matricule)) return { error: 'Ce matricule est déjà enregistré.', field: 'matricule' };
+        if (matriculeExists(data.matricule)) return { error: 'Ce matricule militaire est déjà enregistré.', field: 'matricule' };
 
         const regs = getRegistrations();
         const now = nowFr();
+        const tel = (data.telephones || data.telephone || '').trim();
         const reg = {
             id: Date.now(),
             matricule: data.matricule.trim(),
             nom: data.nom.trim(),
             prenom: data.prenom.trim(),
+            prenoms: data.prenom.trim(),
             fullName: `${data.prenom.trim()} ${data.nom.trim()}`.trim(),
-            telephone: data.telephone.trim(),
-            email: data.email.trim(),
-            dateNaissance: data.dateNaissance,
-            lieuNaissance: data.lieuNaissance || '',
-            paysNaissance: data.paysNaissance || '',
-            genre: data.genre || '',
-            typePiece: data.typePiece || '',
-            numeroPiece: data.numeroPiece || '',
-            pieceFichier: data.pieceFichier || null,
-            photo: data.photo || null,
-            carteProFichier: data.carteProFichier || null,
-            paysResidence: data.paysResidence || '',
-            nationalite: data.nationalite || '',
+            sexe: data.sexe || '',
+            numeroInformatique: (data.numeroInformatique || '').trim(),
             grade: data.grade || '',
+            categorie: data.categorie || '',
+            numeroCim: (data.numeroCim || '').trim(),
+            numeroCama: (data.numeroCama || '').trim(),
+            numeroIup: (data.numeroIup || '').trim(),
+            armee: data.armee || '',
+            region: data.region || '',
+            corps: data.corps || '',
+            service: data.service || '',
+            section: data.section || '',
+            sousSection: data.sousSection || '',
+            telephones: tel,
+            telephone: tel,
+            email: data.email.trim(),
+            personneAPrevenir: (data.personneAPrevenir || '').trim(),
+            telPersonneAPrevenir: (data.telPersonneAPrevenir || '').trim(),
             password: data.password,
             statut: 'En attente de validation',
-            numeroCama: '',
             dateCreation: now,
             journal: [{ date: now, libelle: 'Demande d\'inscription soumise par l\'assuré' }]
         };
@@ -711,7 +873,7 @@
             lien: 'inscriptions.html'
         });
 
-        return { ok: true, registration: reg };
+        return { ok: true, registration: reg, profile: registrationToProfile(reg) };
     }
 
     function loginAssure(email, password) {
@@ -728,9 +890,8 @@
         if (!reg) return { error: 'Aucun compte ne correspond à cette adresse e-mail.' };
         if (reg.password !== password) return { error: 'Mot de passe incorrect.' };
 
-        if (reg.statut === 'En attente de validation') {
-            return { status: 'pending', error: 'Votre compte est en attente de validation par la CAMA. Vous recevrez un e-mail dès son activation.' };
-        }
+        // Un compte encore en attente de validation peut accéder au tableau de bord
+        // en accès limité (aucune soumission tant que la CAMA n'a pas validé).
         if (reg.statut === 'Refusé') {
             return { status: 'refused', error: `Votre demande d'inscription a été refusée${reg.motifRefus ? ' : ' + reg.motifRefus : ''}. Contactez la CAMA pour plus d'informations.` };
         }
@@ -738,15 +899,7 @@
             return { status: 'disabled', error: 'Ce compte a été désactivé. Veuillez contacter la CAMA.' };
         }
 
-        setAssureSession({
-            nom: reg.nom,
-            prenom: reg.prenom,
-            fullName: reg.fullName,
-            matricule: reg.matricule,
-            numeroCama: reg.numeroCama,
-            email: reg.email,
-            statut: 'Actif'
-        });
+        setAssureSession(registrationToProfile(reg));
         return { ok: true };
     }
 
@@ -761,13 +914,14 @@
         const reg = getRegistrations().find(r => normalizeEmail(r.email) === e);
         if (!reg) return { error: 'Aucun compte ne correspond à cette adresse e-mail.' };
         if (reg.password !== password) return { error: 'Mot de passe incorrect.' };
-        if (reg.statut === 'En attente de validation') return { status: 'pending', error: 'Votre compte est en attente de validation par la CAMA. Vous recevrez un e-mail dès son activation.' };
+        // Les comptes en attente de validation sont autorisés à se connecter (accès limité).
         if (reg.statut === 'Refusé') return { status: 'refused', error: `Votre demande d'inscription a été refusée${reg.motifRefus ? ' : ' + reg.motifRefus : ''}. Contactez la CAMA.` };
         if (reg.statut === 'Désactivé') return { status: 'disabled', error: 'Ce compte a été désactivé. Veuillez contacter la CAMA.' };
         return {
             ok: true,
             email: reg.email,
-            profile: { nom: reg.nom, prenom: reg.prenom, fullName: reg.fullName, matricule: reg.matricule, numeroCama: reg.numeroCama, email: reg.email, statut: 'Actif' }
+            pending: reg.statut === 'En attente de validation',
+            profile: registrationToProfile(reg)
         };
     }
 
@@ -799,8 +953,14 @@
         if (!reg.numeroCama) reg.numeroCama = generateCamaNumber();
         reg.statut = 'Actif';
         delete reg.motifRefus;
-        reg.journal.push({ date: now, libelle: `Inscription validée — numéro ${reg.numeroCama} attribué, compte activé` });
+        reg.journal.push({ date: now, libelle: `Inscription validée — N° Carte CAMA ${reg.numeroCama} attribué, compte activé` });
         saveRegistrations(regs);
+
+        // Si l'assuré est connecté (accès limité), on met sa session à jour.
+        const session = getAssureSession();
+        if (session && normalizeEmail(session.email) === normalizeEmail(reg.email)) {
+            setAssureSession(registrationToProfile(reg));
+        }
         return reg;
     }
 
@@ -838,6 +998,242 @@
         return getSettings().ageMaxEnfant;
     }
 
+    /* ------------------------------------------------------------------ *
+     * Structure militaire de rattachement (Région > Corps > Service >
+     * Section > Sous-section), configurable depuis le back-office.
+     * ------------------------------------------------------------------ */
+
+    function getOrgStructure() {
+        const stored = readJson(ORG_STRUCTURE_KEY, DEFAULT_ORG_STRUCTURE);
+        return {
+            armees: stored.armees || DEFAULT_ORG_STRUCTURE.armees,
+            categories: stored.categories || DEFAULT_ORG_STRUCTURE.categories,
+            groupesSanguins: stored.groupesSanguins || DEFAULT_ORG_STRUCTURE.groupesSanguins,
+            regions: stored.regions || DEFAULT_ORG_STRUCTURE.regions
+        };
+    }
+
+    function saveOrgStructure(structure) {
+        writeJson(ORG_STRUCTURE_KEY, structure);
+        return getOrgStructure();
+    }
+
+    function getArmees() {
+        return getOrgStructure().armees.slice();
+    }
+
+    function getCategories() {
+        return getOrgStructure().categories.slice();
+    }
+
+    function getGroupesSanguins() {
+        return getOrgStructure().groupesSanguins.slice();
+    }
+
+    // Détermine si l'assuré est autorisé à soumettre des dossiers.
+    // Un compte encore « En attente de validation » peut préparer des brouillons
+    // mais ne peut pas soumettre tant que la CAMA n'a pas activé son compte.
+    function canSubmitDossiers(profile) {
+        const p = profile || getAssureProfile();
+        return (p.statut || 'Actif') === 'Actif';
+    }
+
+    function updateAssureContact(patch) {
+        const session = getAssureSession();
+        if (!session) return { error: 'Session expirée. Veuillez vous reconnecter.' };
+        const email = normalizeEmail(patch.email || session.email);
+        if (!email) return { error: 'Adresse e-mail invalide.' };
+        const other = getRegistrations().find(r => normalizeEmail(r.email) === email && normalizeEmail(r.email) !== normalizeEmail(session.email));
+        if (other) return { error: 'Cette adresse e-mail est déjà utilisée.' };
+
+        const telephones = (patch.telephones || patch.telephone || session.telephones || session.telephone || '').trim();
+        const telPersonneAPrevenir = (patch.telPersonneAPrevenir || session.telPersonneAPrevenir || '').trim();
+        const personneAPrevenir = (patch.personneAPrevenir || session.personneAPrevenir || '').trim();
+        const numeroCama = (patch.numeroCama !== undefined ? patch.numeroCama : session.numeroCama || '').trim();
+
+        const updated = {
+            ...session,
+            email,
+            telephones,
+            telephone: telephones.split('|')[0] || telephones,
+            telPersonneAPrevenir,
+            personneAPrevenir,
+            numeroCama: numeroCama || session.numeroCama
+        };
+        setAssureSession(updated);
+
+        const regs = getRegistrations();
+        const idx = regs.findIndex(r => normalizeEmail(r.email) === normalizeEmail(session.email));
+        if (idx >= 0) {
+            regs[idx] = { ...regs[idx], email, telephones, telephone: updated.telephone, telPersonneAPrevenir, personneAPrevenir, numeroCama: updated.numeroCama };
+            saveRegistrations(regs);
+        }
+        return { ok: true, profile: getAssureProfile() };
+    }
+
+    function getAssureDetailForAdmin(assureNom) {
+        const acc = getAdminAssures().find(a => a.nom === assureNom);
+        const reg = getRegistrations().find(r => r.fullName === assureNom);
+        const override = getAssureComptesOverrides()[assureNom] || {};
+        if (!reg && !acc) return null;
+        const base = reg ? registrationToProfile(reg) : {};
+        return {
+            nom: assureNom,
+            matricule: override.matricule || acc?.matricule || base.matricule || '—',
+            numeroCama: override.numeroCama || acc?.numeroCama || base.numeroCama || '—',
+            statut: override.statut || acc?.statut || base.statut || '—',
+            email: override.email || base.email || '—',
+            sexe: override.sexe || base.sexe || '',
+            grade: override.grade || base.grade || '',
+            categorie: override.categorie || base.categorie || '',
+            numeroInformatique: override.numeroInformatique || base.numeroInformatique || '',
+            numeroCim: override.numeroCim || base.numeroCim || '',
+            numeroIup: override.numeroIup || base.numeroIup || '',
+            armee: override.armee || base.armee || '',
+            region: override.region || base.region || '',
+            corps: override.corps || base.corps || '',
+            service: override.service || base.service || '',
+            section: override.section || base.section || '',
+            sousSection: override.sousSection || base.sousSection || '',
+            telephones: override.telephones || base.telephones || base.telephone || '—',
+            personneAPrevenir: override.personneAPrevenir || base.personneAPrevenir || '—',
+            telPersonneAPrevenir: override.telPersonneAPrevenir || base.telPersonneAPrevenir || '—',
+            dateCreation: acc?.dateCreation || base.dateCreation || '—'
+        };
+    }
+
+    function getGestionnairesCama() {
+        return [...GESTIONNAIRES_CAMA];
+    }
+
+    function getGestionnaireCharge(dossiers) {
+        const list = dossiers || getDossiers();
+        const today = new Date();
+        const retardJours = 14;
+        return GESTIONNAIRES_CAMA.map(nom => {
+            const mine = list.filter(d => d.gestionnaire === nom && d.statut !== 'Brouillon');
+            const assignes = mine.length;
+            const nonTraites = mine.filter(d => DOSSIER_OPEN_STATUTS.includes(d.statut)).length;
+            const valides = mine.filter(d => d.statut === 'Validé').length;
+            const refuses = mine.filter(d => d.statut === 'Refusé').length;
+            const retard = mine.filter(d => {
+                if (!DOSSIER_OPEN_STATUTS.includes(d.statut)) return false;
+                const parts = (d.dateSoumission || '').split('-').map(Number);
+                if (parts.length < 3) return false;
+                const soumis = new Date(parts[0], parts[1] - 1, parts[2]);
+                return (today - soumis) / 86400000 > retardJours;
+            }).length;
+            return {
+                nom,
+                assignes,
+                nonTraites,
+                valides,
+                refuses,
+                ouverts: nonTraites,
+                traites: valides + refuses,
+                retard
+            };
+        });
+    }
+
+    function assignDossiersToGestionnaire(assureNom, gestionnaire) {
+        const dossiers = getDossiers();
+        const now = nowFr();
+        let count = 0;
+        dossiers.forEach(d => {
+            if (d.assureNom === assureNom) {
+                d.gestionnaire = gestionnaire;
+                d.journal = d.journal || [];
+                d.journal.push({ date: now, libelle: `Dossier familial affecté à ${gestionnaire}` });
+                count++;
+            }
+        });
+        if (count) saveDossiers(dossiers);
+        return count;
+    }
+
+    function updateAssureProfileAdmin(assureNom, patch) {
+        if (!assureNom || !patch) return { error: 'Données invalides.' };
+        const now = nowFr();
+        const nameParts = assureNom.trim().split(/\s+/);
+        const nom = patch.nom || nameParts[nameParts.length - 1] || '';
+        const prenom = patch.prenom || nameParts.slice(0, -1).join(' ') || '';
+        const fullName = patch.fullName || `${prenom} ${nom}`.trim() || assureNom;
+
+        const fields = {
+            nom, prenom, prenoms: prenom, fullName,
+            sexe: patch.sexe || '',
+            matricule: (patch.matricule || '').trim(),
+            numeroCama: (patch.numeroCama || '').trim(),
+            numeroInformatique: (patch.numeroInformatique || '').trim(),
+            grade: patch.grade || '',
+            categorie: patch.categorie || '',
+            numeroCim: (patch.numeroCim || '').trim(),
+            numeroIup: (patch.numeroIup || '').trim(),
+            armee: patch.armee || '',
+            region: patch.region || '',
+            corps: patch.corps || '',
+            service: patch.service || '',
+            section: patch.section || '',
+            sousSection: patch.sousSection || '',
+            email: normalizeEmail(patch.email || ''),
+            telephones: (patch.telephones || patch.telephone || '').trim(),
+            personneAPrevenir: (patch.personneAPrevenir || '').trim(),
+            telPersonneAPrevenir: (patch.telPersonneAPrevenir || '').trim()
+        };
+        fields.telephone = fields.telephones.split('|')[0] || fields.telephones;
+
+        const regs = getRegistrations();
+        const regIdx = regs.findIndex(r => r.fullName === assureNom);
+        if (regIdx >= 0) {
+            if (fields.email && regs.some((r, i) => i !== regIdx && normalizeEmail(r.email) === fields.email)) {
+                return { error: 'Cette adresse e-mail est déjà utilisée.' };
+            }
+            regs[regIdx] = { ...regs[regIdx], ...fields, fullName };
+            if (patch.statut) regs[regIdx].statut = patch.statut;
+            regs[regIdx].journal = regs[regIdx].journal || [];
+            regs[regIdx].journal.push({ date: now, libelle: 'Profil modifié par un agent CAMA' });
+            saveRegistrations(regs);
+        }
+
+        const prevOverride = getAssureComptesOverrides()[assureNom] || {};
+        const journal = [...(prevOverride.journal || []), { date: now, libelle: 'Profil assuré mis à jour par le back-office' }];
+        const profileOverride = {
+            ...prevOverride,
+            ...fields,
+            statut: patch.statut || prevOverride.statut,
+            journal
+        };
+
+        if (fullName !== assureNom) {
+            const dossiers = getDossiers();
+            let renamed = false;
+            dossiers.forEach(d => {
+                if (d.assureNom === assureNom) {
+                    d.assureNom = fullName;
+                    renamed = true;
+                }
+            });
+            if (renamed) saveDossiers(dossiers);
+
+            const overrides = getAssureComptesOverrides();
+            if (overrides[assureNom]) {
+                delete overrides[assureNom];
+                writeJson(ASSURES_COMPTES_KEY, overrides);
+            }
+            saveAssureCompteOverride(fullName, profileOverride);
+        } else {
+            saveAssureCompteOverride(assureNom, profileOverride);
+        }
+
+        const session = getAssureSession();
+        if (session && (session.fullName === assureNom || `${session.prenom} ${session.nom}`.trim() === assureNom)) {
+            setAssureSession({ ...session, ...fields, fullName, statut: patch.statut || session.statut });
+        }
+
+        return { ok: true, profile: getAssureDetailForAdmin(fullName) };
+    }
+
     function setAssureSession(profile) {
         const session = { ...ASSURE_PROFILE, ...profile, derniereConnexion: nowFr() };
         localStorage.setItem(ASSURE_SESSION_KEY, JSON.stringify(session));
@@ -861,17 +1257,174 @@
         return false;
     }
 
-    function loginAdmin(email, password) {
-        const accounts = {
-            'gestionnaire@cama.bf': { role: 'gestionnaire', nom: 'Lt. Aminata KABORÉ', password: 'Demo2026!' },
-            'superviseur@cama.bf': { role: 'superviseur', nom: 'Cdt. Paul SAWADOGO', password: 'Demo2026!' },
-            'admin@cama.bf': { role: 'administrateur', nom: 'Ing. Awa OUÉDRAOGO', password: 'Demo2026!' }
+    function getAdminEffectiveRole() {
+        return localStorage.getItem('cama_admin_role') || getAdminSession()?.role || 'gestionnaire';
+    }
+
+    function isAdminGestionnaireView() {
+        return getAdminEffectiveRole() === 'gestionnaire';
+    }
+
+    function getAdminGestionnaireNom() {
+        if (!isAdminGestionnaireView()) return null;
+        const session = getAdminSession();
+        if (session?.email) {
+            const acc = ADMIN_ACCOUNTS[session.email.trim().toLowerCase()];
+            if (acc?.role === 'gestionnaire' && acc.nom) return acc.nom;
+        }
+        if (session?.role === 'gestionnaire' && session.nom) return session.nom;
+        return localStorage.getItem('cama_demo_gestionnaire_nom') || GESTIONNAIRES_CAMA[0] || null;
+    }
+
+    function getAdminIdentity() {
+        const session = getAdminSession();
+        const effectiveRole = getAdminEffectiveRole();
+        const ROLE_LABELS = {
+            gestionnaire: 'Gestionnaire CAMA',
+            superviseur: 'Superviseur / Responsable',
+            administrateur: 'Administrateur technique',
+            direction: 'Direction Générale'
         };
-        const acc = accounts[(email || '').trim().toLowerCase()];
+        const DEMO_IDS = {
+            gestionnaire: 'INT-0231',
+            superviseur: 'INT-0102',
+            administrateur: 'INT-0050',
+            direction: 'INT-0001'
+        };
+        const DEMO_NOMS = {
+            gestionnaire: getAdminGestionnaireNom() || GESTIONNAIRES_CAMA[0],
+            superviseur: 'Cdt. Paul SAWADOGO',
+            administrateur: 'Ing. Awa OUÉDRAOGO',
+            direction: 'Col-Maj. Issa COMPAORÉ'
+        };
+
+        if (session?.email) {
+            const acc = ADMIN_ACCOUNTS[session.email.trim().toLowerCase()];
+            if (acc) {
+                return {
+                    nom: acc.nom,
+                    email: session.email,
+                    role: acc.role,
+                    roleLabel: acc.roleLabel,
+                    id: acc.id,
+                    lastLogin: session.at ? new Date(session.at).toLocaleString('fr-FR') : '—'
+                };
+            }
+        }
+
+        return {
+            nom: DEMO_NOMS[effectiveRole] || DEMO_NOMS.gestionnaire,
+            email: session?.email || '—',
+            role: effectiveRole,
+            roleLabel: ROLE_LABELS[effectiveRole] || effectiveRole,
+            id: DEMO_IDS[effectiveRole] || '—',
+            lastLogin: session?.at ? new Date(session.at).toLocaleString('fr-FR') : '—'
+        };
+    }
+
+    function getGestionnaireWorkload(nom) {
+        const charge = getGestionnaireCharge().find(g => g.nom === nom);
+        return charge || { nom, assignes: 0, nonTraites: 0, valides: 0, refuses: 0, retard: 0, traites: 0 };
+    }
+
+    function computeDelaiMoyenJours(dossiers) {
+        const traites = (dossiers || []).filter(d => ['Validé', 'Refusé'].includes(d.statut) && d.dateSoumission);
+        if (!traites.length) return 0;
+        const today = new Date();
+        let total = 0;
+        let n = 0;
+        traites.forEach(d => {
+            const parts = d.dateSoumission.split('-').map(Number);
+            if (parts.length < 3) return;
+            const soumis = new Date(parts[0], parts[1] - 1, parts[2]);
+            const lastEntry = [...(d.journal || [])].reverse().find(j => /validé|refusé/i.test(j.libelle || ''));
+            let fin = today;
+            if (lastEntry?.date) {
+                const m = String(lastEntry.date).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+                if (m) fin = new Date(+m[3], +m[2] - 1, +m[1]);
+            }
+            total += Math.max(0, (fin - soumis) / 86400000);
+            n++;
+        });
+        return n ? Math.round((total / n) * 10) / 10 : 0;
+    }
+
+    function getDashboardStats() {
+        const allDossiers = getDossiers();
+        const dossiers = allDossiers.filter(d => d.statut !== 'Brouillon');
+        const assures = getAdminAssures();
+        const byStatut = {};
+        dossiers.forEach(d => { byStatut[d.statut] = (byStatut[d.statut] || 0) + 1; });
+
+        const enAttente = dossiers.filter(d => DOSSIER_OPEN_STATUTS.includes(d.statut)).length;
+        const valides = byStatut['Validé'] || 0;
+        const refuses = byStatut['Refusé'] || 0;
+        const total = dossiers.length;
+        const tauxValidation = total ? Math.round((valides / total) * 1000) / 10 : 0;
+        const nonAffectes = dossiers.filter(d => !d.gestionnaire || d.gestionnaire === 'Non affecté').length;
+        const familles = groupDossiersByAssure(allDossiers).length;
+        const famillesATraiter = groupDossiersByAssure(allDossiers).filter(g => g.queue === 'a_traiter').length;
+        const charges = getGestionnaireCharge(allDossiers);
+        const totalRetard = charges.reduce((s, g) => s + g.retard, 0);
+        const totalAssignes = charges.reduce((s, g) => s + g.assignes, 0);
+
+        const priority = dossiers
+            .filter(d => DOSSIER_OPEN_STATUTS.includes(d.statut))
+            .sort((a, b) => a.dateSoumission.localeCompare(b.dateSoumission))
+            .slice(0, 6)
+            .map(d => ({ ref: d.ref, nom: d.beneficiaire, statut: d.statut, id: d.id }));
+
+        const recentActivity = dossiers
+            .flatMap(d => (d.journal || []).map(j => ({
+                ref: d.ref,
+                beneficiaire: d.beneficiaire,
+                libelle: j.libelle,
+                date: j.date,
+                statut: d.statut
+            })))
+            .sort((a, b) => String(b.date).localeCompare(String(a.date)))
+            .slice(0, 8);
+
+        return {
+            assuresTotal: assures.length,
+            assuresActifs: assures.filter(a => a.statut === 'Actif').length,
+            inscriptionsEnAttente: getPendingRegistrationsCount(),
+            dossiersEnAttente: enAttente,
+            dossiersValides: valides,
+            dossiersRefuses: refuses,
+            dossiersTotal: total,
+            tauxValidation,
+            nonAffectes,
+            famillesDossiers: familles,
+            famillesATraiter,
+            delaiMoyenJours: computeDelaiMoyenJours(dossiers),
+            totalRetard,
+            totalAssignes,
+            byStatut,
+            charges,
+            priority,
+            recentActivity
+        };
+    }
+
+    function getDossiersForAdminView() {
+        const all = getDossiers();
+        if (!isAdminGestionnaireView()) return all;
+        const nom = getAdminGestionnaireNom();
+        if (!nom) return [];
+        return all.filter(d => d.gestionnaire === nom);
+    }
+
+    function loginAdmin(email, password) {
+        const acc = ADMIN_ACCOUNTS[(email || '').trim().toLowerCase()];
         if (!acc || acc.password !== password) return null;
-        const session = { email, role: acc.role, nom: acc.nom, at: Date.now() };
+        const session = { email: (email || '').trim(), role: acc.role, nom: acc.nom, at: Date.now() };
         localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(session));
         localStorage.setItem('cama_admin_role', acc.role);
+        if (acc.role === 'gestionnaire') {
+            localStorage.setItem('cama_demo_gestionnaire_nom', acc.nom);
+            localStorage.setItem('cama_admin_affect_tab', 'tous');
+        }
         return session;
     }
 
@@ -892,7 +1445,7 @@
         const path = window.location.pathname.replace(/\\/g, '/');
         if (path.includes('login.html')) return true;
         if (getAdminSession()) return true;
-        window.location.href = path.includes('/admin/cms/') ? '../login.html' : path.includes('/admin/') ? 'login.html' : 'admin/login.html';
+        window.location.replace(path.includes('/admin/cms/') ? '../login.html' : path.includes('/admin/') ? 'login.html' : 'admin/login.html');
         return false;
     }
 
@@ -912,6 +1465,12 @@
         submitComplement,
         getAdminAssures,
         groupDossiersByAssure,
+        getAssureDetailForAdmin,
+        getGestionnairesCama,
+        getGestionnaireCharge,
+        assignDossiersToGestionnaire,
+        updateAssureContact,
+        updateAssureProfileAdmin,
         updateAssureCompteStatut,
         getRegistrations,
         getPendingRegistrationsCount,
@@ -926,6 +1485,13 @@
         saveSettings,
         getAgeMaxEnfant,
         AGE_MAX_ENFANT_PLAFOND,
+        getOrgStructure,
+        saveOrgStructure,
+        getArmees,
+        getCategories,
+        getGroupesSanguins,
+        canSubmitDossiers,
+        registrationToProfile,
         getAssureNotifications,
         saveAssureNotifications,
         addAssureNotification,
@@ -939,6 +1505,13 @@
         requireAssureSession,
         loginAdmin,
         getAdminSession,
+        getAdminIdentity,
+        getGestionnaireWorkload,
+        getDashboardStats,
+        getAdminEffectiveRole,
+        isAdminGestionnaireView,
+        getAdminGestionnaireNom,
+        getDossiersForAdminView,
         logoutAdmin,
         requireAdminSession
     };

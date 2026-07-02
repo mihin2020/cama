@@ -6,6 +6,11 @@
 
 @import url('../anchor-top.css');
 
+/* Masque le contenu pendant la vérification auth (évite flash login + dashboard) */
+html.cama-auth-pending body {
+    visibility: hidden;
+}
+
 /* ── Sidebar (navigation latérale) ── */
 #sidebar {
     background: linear-gradient(180deg, #1b1c1c 0%, #2a2222 100%);

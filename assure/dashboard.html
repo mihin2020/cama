@@ -159,7 +159,7 @@
 </a>
 </nav>
 <a class="flex items-center justify-center gap-2 bg-primary text-on-primary px-4 py-2.5 rounded-lg font-bold font-label-md text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm mb-2 mx-1" href="ajouter-membre.html">
-<span class="material-symbols-outlined text-[20px]">add_circle</span> Ajouter un membre
+<span class="material-symbols-outlined text-[20px]">group_add</span> Mon dossier familial
 </a>
 <a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
 <span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
@@ -201,6 +201,11 @@
 </header>
 <!-- Main content -->
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
+<!-- Bandeau compte en attente de validation -->
+<div class="hidden items-start gap-2 bg-tertiary/15 border border-tertiary/40 rounded-lg p-4 mb-5 text-sm" id="pending-banner" role="status">
+<span class="material-symbols-outlined text-tertiary text-[20px] shrink-0">hourglass_top</span>
+<span>Votre compte est <strong>en attente de validation</strong> par la CAMA. Vous pouvez consulter votre espace et préparer votre dossier familial en brouillon. La <strong>soumission des dossiers</strong> et l'attribution de votre <strong>N° Carte CAMA</strong> seront disponibles dès l'activation de votre compte.</span>
+</div>
 <!-- Welcome banner -->
 <section class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary-container text-on-primary p-5 md:p-6 mb-6">
 <div class="shield-pattern absolute inset-0"></div>
@@ -285,8 +290,8 @@
 <span class="material-symbols-outlined text-[20px]">person_add</span>
 </div>
 <div class="min-w-0">
-<p class="text-sm font-semibold text-on-surface">Ajouter un membre</p>
-<p class="text-xs text-on-surface-variant mt-0.5">Enrôler un nouvel ayant droit</p>
+<p class="text-sm font-semibold text-on-surface">Mon dossier familial</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Enrôler conjoint(e)s et enfants</p>
 </div>
 <span class="material-symbols-outlined ml-auto text-on-surface-variant text-[20px] group-hover:translate-x-1 transition-transform shrink-0">arrow_forward</span>
 </a>
@@ -379,9 +384,15 @@
 
         // ---- Dashboard-specific rendering ----
         (function () {
+            const estActif = (MOCK_ASSURE.statut || 'Actif') === 'Actif';
             document.getElementById('welcome-name').textContent = `Bonjour, ${MOCK_ASSURE.prenom} ${MOCK_ASSURE.nom}`;
-            document.getElementById('welcome-sub').textContent = `Matricule ${MOCK_ASSURE.matricule} · ${MOCK_ASSURE.numeroCama}`;
+            document.getElementById('welcome-sub').textContent = `Matricule ${MOCK_ASSURE.matricule} · ${MOCK_ASSURE.numeroCama || 'N° Carte CAMA en attente'}`;
             document.getElementById('welcome-status').textContent = `Compte ${MOCK_ASSURE.statut}`;
+            if (!estActif) {
+                const banner = document.getElementById('pending-banner');
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+            }
 
             const membres = getMembres();
             const enAttente = membres.filter(m => m.statut === 'Soumis' || m.statut === 'En instruction').length;

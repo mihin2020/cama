@@ -150,7 +150,7 @@
 </a>
 </nav>
 <a class="flex items-center justify-center gap-2 bg-primary text-on-primary px-4 py-2.5 rounded-lg font-bold font-label-md text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm mb-2 mx-1" href="ajouter-membre.html">
-<span class="material-symbols-outlined text-[20px]">add_circle</span> Ajouter un membre
+<span class="material-symbols-outlined text-[20px]">group_add</span> Mon dossier familial
 </a>
 <a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../index.html">
 <span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion
@@ -168,11 +168,14 @@
 </div>
 </div>
 <div class="flex items-center gap-2 md:gap-4">
+<button class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all" id="btn-export-formulaire" type="button">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Formulaire (PDF)
+</button>
 <button class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all" id="btn-export-all" type="button">
 <span class="material-symbols-outlined text-[18px]">folder_zip</span> Tout télécharger (ZIP)
 </button>
 <a class="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm" href="ajouter-membre.html">
-<span class="material-symbols-outlined text-[18px]">add_circle</span> Ajouter
+<span class="material-symbols-outlined text-[18px]">group_add</span> Dossier familial
 </a>
 <a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="profil.html">
 <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
@@ -186,13 +189,13 @@
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
 <!-- Filter pills -->
 <div class="flex flex-wrap gap-2 mb-6" id="filter-pills">
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-primary text-on-primary" data-filter="Tous">Tous</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Brouillon">Brouillon</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Soumis">Soumis</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="En instruction">En instruction</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Pièce manquante demandée">Pièce manquante</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Validé">Validé</button>
-<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Refusé">Refusé</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-primary text-on-primary" data-filter="Tous" data-label="Tous">Tous</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Brouillon" data-label="Brouillon">Brouillon</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Soumis" data-label="Soumis">Soumis</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="En instruction" data-label="En instruction">En instruction</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Pièce manquante demandée" data-label="Pièce manquante">Pièce manquante</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Validé" data-label="Validé">Validé</button>
+<button class="filter-pill px-4 py-2 rounded-full font-label-md text-label-md bg-surface-container-high text-on-surface-variant hover:bg-outline-variant transition-colors" data-filter="Refusé" data-label="Refusé">Refusé</button>
 </div>
 <!-- Members accordion list -->
 <div class="space-y-4" id="membres-list"></div>
@@ -298,6 +301,34 @@
             return btns.join('');
         }
 
+        const PARENT_LABEL = MOCK_ASSURE.sexe === 'Féminin' ? 'Nom et prénoms du père' : 'Nom et prénoms de la mère';
+
+        function memberInfoHtml(m) {
+            const info = [
+                ['Date de naissance', m.dateNaissance],
+                ['Lieu de naissance', m.lieuNaissance],
+                ['Sexe', m.sexe],
+                ['Groupe sanguin', m.groupeSanguin],
+                ['Téléphone', m.telephone],
+                ['Numéro CAMA', m.numeroCama],
+                ['Date de soumission', m.dateSoumission]
+            ];
+            if ((m.lien || '').startsWith('Enfant')) {
+                info.push(["Réf. d'identité", m.refIdentite]);
+                info.push(["Réf. acte scolarité / état civil", m.refActeScolariteEtatCivil]);
+                info.push([PARENT_LABEL, m.nomPrenomsParent]);
+            } else if (m.lien === 'Conjoint(e)') {
+                info.push(["Réf. document d'identité", m.refIdentite]);
+                info.push(['Réf. acte de mariage', m.refActeMariage]);
+                info.push(['Profession', m.profession]);
+                info.push(['Lieu de résidence', m.lieuResidence]);
+            }
+            return info
+                .filter(([, v]) => v && String(v).trim() && v !== '—')
+                .map(([l, v]) => `<div><p class="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">${l}</p><p class="font-bold text-xs">${v}</p></div>`)
+                .join('');
+        }
+
         function renderMembre(m) {
             const piecesHtml = m.pieces.length
                 ? m.pieces.map(p => `<div class="flex items-center justify-between py-2 border-b border-outline-variant last:border-0"><span class="text-xs flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">description</span>${p.type}</span>${pieceBadge(p.statut)}</div>`).join('')
@@ -342,20 +373,7 @@
                     <span class="material-symbols-outlined text-on-surface-variant group-open:rotate-180 transition-transform">expand_more</span>
                 </summary>
                 <div class="px-6 pb-6 pt-2 border-t border-outline-variant">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                        <div>
-                            <p class="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Date de naissance</p>
-                            <p class="font-bold text-xs">${m.dateNaissance}</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Numéro CAMA</p>
-                            <p class="font-bold text-xs">${m.numeroCama || '—'}</p>
-                        </div>
-                        <div>
-                            <p class="text-[11px] text-on-surface-variant uppercase tracking-wide mb-1">Date de soumission</p>
-                            <p class="font-bold text-xs">${m.dateSoumission || '—'}</p>
-                        </div>
-                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">${memberInfoHtml(m)}</div>
                     ${motif}
                     ${complementHtml}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
@@ -373,8 +391,24 @@
             </details>`;
         }
 
+        function filterCount(statut) {
+            if (statut === 'Tous') return MOCK_MEMBRES.length;
+            return MOCK_MEMBRES.filter(m => m.statut === statut).length;
+        }
+
+        function updateFilterBadges() {
+            document.querySelectorAll('.filter-pill').forEach(pill => {
+                const f = pill.dataset.filter;
+                const label = pill.dataset.label || f;
+                const n = filterCount(f);
+                const active = pill.classList.contains('bg-primary');
+                pill.innerHTML = `${label} <span class="ml-1.5 inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-[10px] font-bold ${active ? 'bg-white/25 text-white' : 'bg-on-surface/10 text-on-surface'}">${n}</span>`;
+            });
+        }
+
         function renderList(filter) {
             refreshMembres();
+            updateFilterBadges();
             const container = document.getElementById('membres-list');
             const filtered = filter === 'Tous' ? MOCK_MEMBRES : MOCK_MEMBRES.filter(m => m.statut === filter);
             container.innerHTML = filtered.map(renderMembre).join('');
@@ -443,6 +477,17 @@
         }
         document.getElementById('btn-export-all')?.addEventListener('click', exportAllZip);
 
+        function exportFormulaire() {
+            refreshMembres();
+            try {
+                CamaDossierExport.exportDossierFamilial(MOCK_ASSURE, MOCK_MEMBRES);
+                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Formulaire familial généré.');
+            } catch (e) {
+                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+            }
+        }
+        document.getElementById('btn-export-formulaire')?.addEventListener('click', exportFormulaire);
+
         function getActiveFilter() {
             const active = document.querySelector('.filter-pill.bg-primary');
             return active ? active.dataset.filter : 'Tous';
@@ -458,6 +503,7 @@
                 pill.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
                 pill.classList.add('bg-primary', 'text-on-primary');
                 renderList(pill.dataset.filter);
+                updateFilterBadges();
             });
         });
         document.getElementById('empty-reset').addEventListener('click', () => {
