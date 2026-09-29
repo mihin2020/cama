@@ -14,6 +14,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Railway (et autres PaaS) placent l'app derrière un reverse proxy qui
+        // termine le TLS. On fait confiance au proxy pour lire X-Forwarded-Proto
+        // afin que Laravel génère des URLs en https et évite le contenu mixte.
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
