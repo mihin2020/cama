@@ -13,16 +13,20 @@ const props = defineProps({
 });
 
 // État global du dossier familial (workflow), à partir des membres soumis.
+const OPEN_STATUTS = ['Soumis', 'En instruction', 'En attente supervision', 'Pièce manquante demandée'];
 const familyStatus = computed(() => {
-    const submitted = (props.membres ?? []).filter((m) => m.statut !== 'Brouillon');
+    const submitted = (props.membres ?? []).filter((m) => m.statut !== 'Brouillon' && m.statut !== 'Retiré');
     const total = submitted.length;
     const validated = submitted.filter((m) => m.statut === 'Validé').length;
     const complement = submitted.filter((m) => m.statut === 'Pièce manquante demandée').length;
+    const pendingNew = submitted.filter((m) => OPEN_STATUTS.includes(m.statut)).length;
+    const hasAcquired = validated > 0;
     const allValidated = total > 0 && validated === total;
 
     let key = 'aucun';
     if (total === 0) key = 'aucun';
     else if (allValidated) key = 'valide';
+    else if (hasAcquired && pendingNew > 0) key = 'assure_ajout';
     else if (complement > 0) key = 'complement';
     else key = 'instruction';
 
@@ -32,6 +36,8 @@ const familyStatus = computed(() => {
         total,
         validated,
         complement,
+        pendingNew,
+        hasAcquired,
         allValidated,
         pct: total ? Math.round((validated / total) * 100) : 0,
     };
@@ -148,7 +154,7 @@ onMounted(() => {
                 class="rounded-lg p-3.5 flex items-start gap-3 mb-4"
                 :class="{
                     'bg-secondary/10 border border-secondary/30': familyStatus.key === 'valide',
-                    'bg-tertiary/5 border border-tertiary/30': familyStatus.key === 'complement',
+                    'bg-tertiary/5 border border-tertiary/30': familyStatus.key === 'complement' || familyStatus.key === 'assure_ajout',
                     'bg-primary/5 border border-primary/20': familyStatus.key === 'instruction',
                 }"
             >
@@ -156,17 +162,21 @@ onMounted(() => {
                     class="material-symbols-outlined text-[28px] shrink-0"
                     :class="{
                         'text-secondary': familyStatus.key === 'valide',
-                        'text-tertiary': familyStatus.key === 'complement',
+                        'text-tertiary': familyStatus.key === 'complement' || familyStatus.key === 'assure_ajout',
                         'text-primary': familyStatus.key === 'instruction',
                     }"
-                >{{ familyStatus.key === 'valide' ? 'task_alt' : (familyStatus.key === 'complement' ? 'assignment_late' : 'hourglass_top') }}</span>
+                >{{ familyStatus.key === 'valide' ? 'task_alt' : (familyStatus.key === 'assure_ajout' ? 'group_add' : (familyStatus.key === 'complement' ? 'assignment_late' : 'hourglass_top')) }}</span>
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-sm text-on-surface">
-                        <template v-if="familyStatus.key === 'valide'">Dossier familial validé — tous vos membres sont pris en charge ✅</template>
+                        <template v-if="familyStatus.key === 'valide'">Dossier familial validé — tous vos membres sont pris en charge</template>
+                        <template v-else-if="familyStatus.key === 'assure_ajout'">Ajout en cours — {{ familyStatus.pendingNew }} nouveau(x) membre(s) en instruction</template>
                         <template v-else-if="familyStatus.key === 'complement'">Une pièce complémentaire est demandée</template>
                         <template v-else>Dossier en cours d'instruction par la CAMA</template>
                     </p>
-                    <p class="text-xs text-on-surface-variant mt-1"><strong class="text-on-surface">{{ familyStatus.validated }}/{{ familyStatus.total }}</strong> membre(s) validé(s)</p>
+                    <p class="text-xs text-on-surface-variant mt-1">
+                        <template v-if="familyStatus.key === 'assure_ajout'">Vous êtes déjà assuré ({{ familyStatus.validated }} membre(s) pris en charge). Votre nouvel ajout est en cours d'examen.</template>
+                        <template v-else><strong class="text-on-surface">{{ familyStatus.validated }}/{{ familyStatus.total }}</strong> membre(s) validé(s)</template>
+                    </p>
                 </div>
                 <Link :href="route('assure.membres')" class="text-xs font-bold shrink-0 hover:underline" :class="familyStatus.key === 'valide' ? 'text-secondary' : 'text-primary'">Détails →</Link>
             </div>

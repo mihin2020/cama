@@ -38,6 +38,9 @@ const messageText = ref('');
 const actionModal = ref(null);
 const rejectMotif = ref('');
 const rejectMotifPreset = ref('');
+const retraitType = ref('devenu_militaire');
+const retraitMatricule = ref('');
+const retraitAutre = ref('');
 const complementPieces = ref([]);
 const complementMessage = ref('');
 const batchGestionnaire = ref('');
@@ -49,7 +52,8 @@ const filterStatut = ref('Tous');
 const filterGestionnaire = ref('Tous');
 const filterLien = ref('Tous');
 const filterLot = ref('Tous');
-const filterPeriode = ref('');
+const filterDateFrom = ref('');
+const filterDateTo = ref('');
 const filterSearch = ref('');
 
 function applyRejectPreset() {
@@ -138,7 +142,15 @@ function matchesFilters(family) {
     if (filterLien.value !== 'Tous' && !dossiers.some((d) => d.lien === filterLien.value)) return false;
     if (filterLot.value === 'complementaire' && !dossiers.some((d) => d.isComplementFamilial || d.lotType === 'complementaire')) return false;
     if (filterLot.value === 'initial' && !dossiers.some((d) => !d.isComplementFamilial && (d.lotType || 'initial') === 'initial')) return false;
-    if (filterPeriode.value && !dossiers.some((d) => d.dateSoumission === filterPeriode.value)) return false;
+    if (filterDateFrom.value || filterDateTo.value) {
+        const inRange = dossiers.some((d) => {
+            if (!d.dateSoumission) return false;
+            if (filterDateFrom.value && d.dateSoumission < filterDateFrom.value) return false;
+            if (filterDateTo.value && d.dateSoumission > filterDateTo.value) return false;
+            return true;
+        });
+        if (!inRange) return false;
+    }
 
     const q = filterSearch.value.trim().toLowerCase();
     if (q) {
@@ -190,7 +202,7 @@ const pageFamilies = computed(() => {
     return filteredFamilies.value.slice(start, start + GROUP_PAGE_SIZE);
 });
 
-watch([queueTab, affectTab, filterStatut, filterGestionnaire, filterLien, filterLot, filterPeriode, filterSearch], () => {
+watch([queueTab, affectTab, filterStatut, filterGestionnaire, filterLien, filterLot, filterDateFrom, filterDateTo, filterSearch], () => {
     currentPage.value = 1;
 });
 
@@ -199,7 +211,8 @@ function resetFilters() {
     filterGestionnaire.value = 'Tous';
     filterLien.value = 'Tous';
     filterLot.value = 'Tous';
-    filterPeriode.value = '';
+    filterDateFrom.value = '';
+    filterDateTo.value = '';
     filterSearch.value = '';
     affectTab.value = 'tous';
 }
@@ -268,7 +281,7 @@ function submittedDossiers(family) {
 }
 
 const familyProgress = computed(() => {
-    const list = submittedDossiers(detailFamily.value);
+    const list = submittedDossiers(detailFamily.value).filter((d) => d.statut !== 'Retiré');
     const total = list.length;
     const validated = list.filter((d) => d.statut === 'Validé').length;
     const refused = list.filter((d) => d.statut === 'Refusé').length;
@@ -323,6 +336,10 @@ function pieceViewUrl(dossierId, type) {
 
 function pieceDownloadUrl(dossierId, type) {
     return `${route('admin.dossiers.piece.download', { dossier: dossierId })}?type=${encodeURIComponent(type)}`;
+}
+
+function isImagePiece(p) {
+    return /\.(jpe?g|png|webp|gif|bmp|heic)$/i.test(p?.filename || '');
 }
 
 function identityDocumentUrl(assureId, key) {
@@ -459,6 +476,9 @@ function openAction(type) {
     rejectMotifPreset.value = '';
     complementPieces.value = [];
     complementMessage.value = '';
+    retraitType.value = 'devenu_militaire';
+    retraitMatricule.value = '';
+    retraitAutre.value = '';
 }
 
 function confirmAction() {
@@ -479,6 +499,16 @@ function confirmAction() {
         );
     } else if (actionModal.value === 'attente') {
         router.post(route('admin.dossiers.en-attente', id), {}, { preserveScroll: true, onSuccess: () => { actionModal.value = null; closeDetail(); } });
+    } else if (actionModal.value === 'retrait') {
+        let motif;
+        if (retraitType.value === 'devenu_militaire') {
+            motif = 'Devenu militaire — assuré à part entière';
+            if (retraitMatricule.value.trim()) motif += ` (nouveau matricule : ${retraitMatricule.value.trim()})`;
+        } else {
+            motif = retraitAutre.value.trim();
+            if (!motif) return;
+        }
+        router.post(route('admin.dossiers.retrait', id), { motif }, { preserveScroll: true, onSuccess: () => { actionModal.value = null; closeDetail(); } });
     }
 }
 
@@ -703,7 +733,15 @@ const detailLotFifPiece = computed(() => {
                 <option value="initial">Lot initial</option>
                 <option value="complementaire">Complément familial</option>
             </select>
-            <input v-model="filterPeriode" class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" type="date" />
+            <div class="filter-field flex items-center gap-1.5 px-2 py-1.5 sm:py-1 border border-outline-variant rounded-lg bg-white sm:col-span-2 lg:col-span-1">
+                <span class="material-symbols-outlined text-on-surface-variant text-[16px] shrink-0" title="Filtrer par date de soumission">calendar_month</span>
+                <input v-model="filterDateFrom" class="min-w-0 flex-1 text-sm sm:text-xs bg-transparent outline-none" type="date" :max="filterDateTo || undefined" title="Du" />
+                <span class="text-[11px] text-on-surface-variant shrink-0">→</span>
+                <input v-model="filterDateTo" class="min-w-0 flex-1 text-sm sm:text-xs bg-transparent outline-none" type="date" :min="filterDateFrom || undefined" title="Au" />
+                <button v-if="filterDateFrom || filterDateTo" type="button" class="text-on-surface-variant hover:text-error shrink-0" title="Effacer les dates" @click="filterDateFrom = ''; filterDateTo = ''">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
+            </div>
             <div class="relative filter-field lg:flex-1 lg:min-w-[180px] sm:col-span-2">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
                 <input v-model="filterSearch" class="w-full pl-10 pr-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white" placeholder="Réf., membre ou assuré…" type="search" />
@@ -740,6 +778,14 @@ const detailLotFifPiece = computed(() => {
                         <span class="material-symbols-outlined text-on-surface-variant accordion-chevron sm:hidden shrink-0">expand_more</span>
                     </div>
                     <div class="flex flex-wrap gap-2 items-center w-full sm:w-auto">
+                        <span
+                            v-if="family.ajoutEnCours"
+                            class="px-3 py-1.5 rounded-full text-xs font-bold bg-tertiary/15 text-tertiary inline-flex items-center gap-1"
+                            title="Assuré déjà validé qui ajoute de nouveaux membres (complément familial)"
+                        >
+                            <span class="material-symbols-outlined text-[15px]">group_add</span>
+                            Ajout de membre{{ family.ajoutEnCoursCount > 1 ? 's' : '' }}
+                        </span>
                         <span class="px-3 py-1.5 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant">{{ family.total }} demande{{ family.total > 1 ? 's' : '' }}</span>
                         <span v-if="family.pending > 0" class="px-3 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary">{{ family.pending }} à traiter</span>
                         <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary/10 text-secondary">À jour</span>
@@ -905,6 +951,15 @@ const detailLotFifPiece = computed(() => {
                             <span v-if="detailFamily.lastTraitementLibelle"> — {{ detailFamily.lastTraitementLibelle }}</span>
                         </div>
                         <div>
+                            <div v-if="detailFamily.ajoutEnCours" class="mb-3 rounded-lg border border-tertiary/30 bg-tertiary/5 p-3 flex items-start gap-2">
+                                <span class="material-symbols-outlined text-tertiary text-[18px] shrink-0">group_add</span>
+                                <p class="text-xs text-on-surface-variant">
+                                    <strong class="text-on-surface">Ajout de membre(s) sur un dossier déjà validé.</strong>
+                                    Cet assuré est déjà pris en charge ({{ detailFamily.validesCount }} membre(s) validé(s)) et ajoute
+                                    <strong class="text-on-surface">{{ detailFamily.ajoutEnCoursCount }} nouveau(x) membre(s)</strong> à instruire. Les membres déjà validés restent acquis.
+                                </p>
+                            </div>
+
                             <h3 class="text-xs font-bold uppercase text-on-surface-variant mb-2">Membres du dossier</h3>
 
                             <div
@@ -937,7 +992,10 @@ const detailLotFifPiece = computed(() => {
                                     @click="openMember(d, detailFamily)"
                                 >
                                     <div class="min-w-0">
-                                        <p class="text-xs font-bold text-on-surface">{{ d.beneficiaire }}</p>
+                                        <p class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                                            {{ d.beneficiaire }}
+                                            <span v-if="d.isComplementFamilial && d.statut !== 'Validé'" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-tertiary/15 text-tertiary uppercase tracking-wide">Nouveau</span>
+                                        </p>
                                         <p class="text-[10px] text-on-surface-variant">{{ d.ref }} · {{ d.lien }} · soumis {{ formatDateIso(d.dateSoumission) }}</p>
                                     </div>
                                     <div class="flex items-center gap-2 shrink-0">
@@ -1063,7 +1121,17 @@ const detailLotFifPiece = computed(() => {
                             <div class="bg-surface-container-low rounded-lg px-3 divide-y divide-outline-variant">
                                 <div v-for="p in detailDossier.pieces" :key="p.type + (p.key || '')" class="flex items-center justify-between py-2.5 gap-2">
                                     <span class="text-xs flex items-center gap-2 min-w-0">
-                                        <span class="material-symbols-outlined text-[16px] shrink-0" :class="p.lot ? 'text-primary' : 'text-on-surface-variant'">description</span>
+                                        <a
+                                            v-if="p.hasFile && isImagePiece(p)"
+                                            :href="pieceViewUrl(detailDossier.id, p.type)"
+                                            target="_blank"
+                                            rel="noopener"
+                                            class="shrink-0"
+                                            title="Agrandir l'image"
+                                        >
+                                            <img :src="pieceViewUrl(detailDossier.id, p.type)" alt="" loading="lazy" class="w-14 h-14 object-cover rounded-lg border border-outline-variant bg-white" />
+                                        </a>
+                                        <span v-else class="material-symbols-outlined text-[16px] shrink-0" :class="p.lot ? 'text-primary' : 'text-on-surface-variant'">description</span>
                                         <span class="break-words">
                                             {{ p.type }}
                                             <span v-if="p.lot" class="text-[10px] text-primary font-semibold ml-1">(lot familial)</span>
@@ -1074,6 +1142,7 @@ const detailLotFifPiece = computed(() => {
                                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" :class="PIECE_STYLES[p.statut] || ''">{{ p.statut }}</span>
                                         <template v-if="p.hasFile">
                                             <a
+                                                v-if="!isImagePiece(p)"
                                                 class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-primary"
                                                 :href="pieceViewUrl(detailDossier.id, p.type)"
                                                 target="_blank"
@@ -1131,6 +1200,14 @@ const detailLotFifPiece = computed(() => {
                         <span v-else-if="detailDossier.statut === 'En attente supervision'" class="detail-action-btn detail-action-btn--wide px-4 py-3 rounded-lg bg-primary-fixed/30 text-on-surface-variant text-sm font-bold flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined text-[18px]">hourglass_top</span> En attente supervision
                         </span>
+                        <button
+                            v-if="detailDossier.statut === 'Validé'"
+                            type="button"
+                            class="detail-action-btn px-4 py-3 rounded-lg bg-on-background text-white text-sm font-bold flex items-center gap-2"
+                            @click="openAction('retrait')"
+                        >
+                            <span class="material-symbols-outlined text-[18px]">person_remove</span> Retirer le membre
+                        </button>
                         <button type="button" class="detail-action-btn px-4 py-3 rounded-lg bg-error text-on-error text-sm font-bold flex items-center gap-2" @click="openAction('refuser')">
                             <span class="material-symbols-outlined text-[18px]">cancel</span> Refuser
                         </button>
@@ -1226,6 +1303,34 @@ const detailLotFifPiece = computed(() => {
                     <div class="flex justify-end gap-2 mt-4">
                         <button type="button" class="px-4 py-2 rounded-lg border border-outline text-xs" @click="actionModal = null">Annuler</button>
                         <button type="button" class="px-4 py-2 rounded-lg bg-error text-on-error text-xs font-bold" :disabled="!rejectMotif.trim()" @click="confirmAction">Confirmer le refus</button>
+                    </div>
+                </template>
+
+                <template v-else-if="actionModal === 'retrait'">
+                    <h3 class="font-title-lg text-title-lg mb-2">Retirer le membre</h3>
+                    <p class="text-xs text-on-surface-variant mb-3">Ce membre passera en « Retiré » et ne sera plus couvert comme ayant droit. L'assuré sera notifié.</p>
+                    <div class="space-y-2">
+                        <label class="flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer" :class="retraitType === 'devenu_militaire' ? 'border-primary bg-primary/5' : 'border-outline-variant'">
+                            <input v-model="retraitType" type="radio" value="devenu_militaire" class="mt-0.5" />
+                            <span>
+                                <span class="block text-xs font-bold text-on-surface">Devenu militaire</span>
+                                <span class="block text-[11px] text-on-surface-variant">S'est engagé dans l'armée : devient assuré à part entière, ne peut plus être ayant droit.</span>
+                            </span>
+                        </label>
+                        <div v-if="retraitType === 'devenu_militaire'" class="pl-8">
+                            <input v-model="retraitMatricule" type="text" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" placeholder="Nouveau matricule (facultatif)" />
+                        </div>
+                        <label class="flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer" :class="retraitType === 'autre' ? 'border-primary bg-primary/5' : 'border-outline-variant'">
+                            <input v-model="retraitType" type="radio" value="autre" class="mt-0.5" />
+                            <span class="block text-xs font-bold text-on-surface">Autre motif</span>
+                        </label>
+                        <div v-if="retraitType === 'autre'" class="pl-8">
+                            <input v-model="retraitAutre" type="text" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" placeholder="Précisez le motif" />
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button type="button" class="px-4 py-2 rounded-lg border border-outline text-xs" @click="actionModal = null">Annuler</button>
+                        <button type="button" class="px-4 py-2 rounded-lg bg-on-background text-white text-xs font-bold" :disabled="retraitType === 'autre' && !retraitAutre.trim()" @click="confirmAction">Confirmer le retrait</button>
                     </div>
                 </template>
 

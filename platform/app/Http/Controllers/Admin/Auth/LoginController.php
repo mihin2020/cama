@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Services\AdminAuditService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +19,7 @@ class LoginController extends Controller
         ]);
     }
 
-    public function store(Request $request, AdminAuditService $audit): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
@@ -47,20 +46,11 @@ class LoginController extends Controller
 
         $admin->update(['last_login_at' => now()]);
 
-        $audit->logConnexion($admin, $request);
-
         return redirect()->intended(route('admin.dashboard'));
     }
 
-    public function destroy(Request $request, AdminAuditService $audit): RedirectResponse
+    public function destroy(Request $request): RedirectResponse
     {
-        /** @var \App\Models\AdminUser|null $admin */
-        $admin = Auth::guard('admin')->user();
-
-        if ($admin) {
-            $audit->logDeconnexion($admin, $request);
-        }
-
         Auth::guard('admin')->logout();
 
         $request->session()->invalidate();

@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\AdminRole;
 use App\Support\AdminPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,11 +41,6 @@ class AdminUser extends Authenticatable
             'invited_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];
-    }
-
-    public function auditLogs(): HasMany
-    {
-        return $this->hasMany(AdminAuditLog::class);
     }
 
     public function getFullNameAttribute(): string

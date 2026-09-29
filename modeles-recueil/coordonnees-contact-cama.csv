@@ -1,0 +1,16 @@
+element;valeur;obligatoire;commentaire
+Nom institution;Caisse d'Assurance Maladie des Armées (CAMA);Oui;
+Adresse postale siège;;Oui;
+Ville / pays;;Oui;
+Téléphone principal;;Oui;Format +226 …
+Téléphone secondaire;;Non;
+WhatsApp;;Non;
+E-mail contact public;;Oui;
+E-mail réclamations;;Non;
+Horaires d'ouverture;;Oui;
+Lien Facebook;;Non;
+Lien LinkedIn;;Non;
+Lien YouTube;;Non;
+Latitude siège;;Non;
+Longitude siège;;Non;
+Lien Google Maps;;Non;

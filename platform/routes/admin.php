@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminUserController;
-use App\Http\Controllers\Admin\AuditController;
 use App\Http\Controllers\Admin\Auth\InvitationController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
 use App\Http\Controllers\Admin\AssureController;
@@ -31,6 +30,7 @@ Route::middleware(['auth:admin', 'admin.permission'])->group(function () {
     Route::post('/dossiers/affecter-lot', [DossierController::class, 'batchAssign'])->name('dossiers.batch-assign');
     Route::post('/dossiers/{dossier}/valider', [DossierController::class, 'validate'])->name('dossiers.validate');
     Route::post('/dossiers/{dossier}/refuser', [DossierController::class, 'reject'])->name('dossiers.reject');
+    Route::post('/dossiers/{dossier}/retrait', [DossierController::class, 'confirmWithdrawal'])->name('dossiers.retrait');
     Route::post('/dossiers/{dossier}/complement', [DossierController::class, 'complement'])->name('dossiers.complement');
     Route::post('/dossiers/{dossier}/en-attente', [DossierController::class, 'enAttente'])->name('dossiers.en-attente');
     Route::post('/dossiers/{dossier}/message', [DossierController::class, 'message'])->name('dossiers.message');
@@ -56,7 +56,6 @@ Route::middleware(['auth:admin', 'admin.permission'])->group(function () {
         Route::delete('/utilisateurs-internes/{adminUser}', [AdminUserController::class, 'destroy'])->name('utilisateurs.destroy');
     });
 
-    Route::get('/audit', [AuditController::class, 'index'])->name('audit');
     require base_path('routes/cms.php');
 
     Route::get('/exports', [ExportController::class, 'index'])->name('exports');

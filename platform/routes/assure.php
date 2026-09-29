@@ -42,7 +42,6 @@ Route::middleware(['auth:assure', 'assure.verified'])->group(function () {
     Route::get('/ma-famille', [MembreController::class, 'index'])->name('membres');
     Route::delete('/dossiers/{dossier}', [MembreController::class, 'destroy'])->name('dossiers.destroy');
     Route::post('/dossiers/{dossier}/complement', [MembreController::class, 'submitComplement'])->name('dossiers.complement');
-    Route::post('/dossiers/{dossier}/retrait', [MembreController::class, 'requestWithdrawal'])->name('dossiers.retrait');
     Route::get('/ajouter-membre', [DossierWizardController::class, 'create'])->name('ajouter-membre');
     Route::post('/dossiers/brouillon', [DossierWizardController::class, 'storeDraft'])->name('dossiers.draft');
     Route::post('/dossiers/soumettre', [DossierWizardController::class, 'submit'])->name('dossiers.submit');
@@ -55,6 +54,7 @@ Route::middleware(['auth:assure', 'assure.verified'])->group(function () {
 
     Route::get('/profil', [ProfilController::class, 'show'])->name('profil');
     Route::patch('/profil', [ProfilController::class, 'update'])->name('profil.update');
+    Route::patch('/profil/rattachement', [ProfilController::class, 'updateRattachement'])->name('profil.rattachement');
     Route::patch('/profil/mot-de-passe', [ProfilController::class, 'updatePassword'])->name('profil.password');
     Route::patch('/profil/2fa', [ProfilController::class, 'toggle2fa'])->name('profil.2fa');
 });

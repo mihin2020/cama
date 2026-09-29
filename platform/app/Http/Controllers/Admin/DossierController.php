@@ -88,6 +88,14 @@ class DossierController extends Controller
         return back()->with('success', 'Dossier refusé.');
     }
 
+    public function confirmWithdrawal(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
+    {
+        $data = $request->validate(['motif' => ['required', 'string', 'max:200']]);
+        $service->withdraw($dossier, $data['motif'], auth('admin')->user());
+
+        return back()->with('success', 'Membre retiré — il n\'est plus couvert comme ayant droit.');
+    }
+
     public function complement(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
         $data = $request->validate([

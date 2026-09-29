@@ -28,21 +28,29 @@ class AdminDossierService
 
     public function gestionnaires(): array
     {
-        $all = Dossier::query()->where('statut', '!=', 'Brouillon')->get();
+        $base = fn () => Dossier::query()->where('statut', '!=', 'Brouillon');
 
-        return collect($this->affectation->pool())->map(function ($nom) use ($all) {
-            $mine = $all->where('gestionnaire', $nom);
-            $open = $mine->whereIn('statut', self::OPEN_STATUTS);
+        // Comptages par gestionnaire en agrégations SQL (au lieu de charger tous les dossiers).
+        $assignes = $base()->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $open = $base()->whereIn('statut', self::OPEN_STATUTS)->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $supervision = $base()->where('statut', 'En attente supervision')->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $valides = $base()->where('statut', 'Validé')->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
 
-            return [
-                'nom' => $nom,
-                'assignes' => $mine->count(),
-                'nonTraites' => $open->count(),
-                'enSupervision' => $mine->where('statut', 'En attente supervision')->count(),
-                'valides' => $mine->where('statut', 'Validé')->count(),
-                'derniereAffectation' => $this->derniereAffectation($mine),
-            ];
-        })->all();
+        // Dernière affectation : bornée aux 150 dossiers récemment mis à jour.
+        $recentByGest = $base()
+            ->orderByDesc('updated_at')
+            ->limit(150)
+            ->get(['gestionnaire', 'journal', 'date_soumission'])
+            ->groupBy('gestionnaire');
+
+        return collect($this->affectation->pool())->map(fn ($nom) => [
+            'nom' => $nom,
+            'assignes' => (int) ($assignes[$nom] ?? 0),
+            'nonTraites' => (int) ($open[$nom] ?? 0),
+            'enSupervision' => (int) ($supervision[$nom] ?? 0),
+            'valides' => (int) ($valides[$nom] ?? 0),
+            'derniereAffectation' => $this->derniereAffectation($recentByGest->get($nom, collect())),
+        ])->all();
     }
 
     public function nonAffectesCount(): int
@@ -56,19 +64,26 @@ class AdminDossierService
     /** Statistiques personnelles du gestionnaire connecté sur ses dossiers affectés. */
     public function statsPourGestionnaire(AdminUser $admin): array
     {
-        $mine = Dossier::query()
+        $base = fn () => Dossier::query()
             ->where('statut', '!=', 'Brouillon')
-            ->where('gestionnaire', $admin->display_name)
-            ->get();
+            ->where('gestionnaire', $admin->display_name);
+
+        $byStatut = $base()
+            ->selectRaw('statut, count(*) c')
+            ->groupBy('statut')
+            ->pluck('c', 'statut')
+            ->map(fn ($c) => (int) $c);
+
+        $recent = $base()->orderByDesc('updated_at')->limit(150)->get(['gestionnaire', 'journal', 'date_soumission']);
 
         return [
-            'total' => $mine->count(),
-            'aTraiter' => $mine->whereIn('statut', ['Soumis', 'En instruction'])->count(),
-            'complement' => $mine->where('statut', 'Pièce manquante demandée')->count(),
-            'enSupervision' => $mine->where('statut', 'En attente supervision')->count(),
-            'valides' => $mine->where('statut', 'Validé')->count(),
-            'refuses' => $mine->where('statut', 'Refusé')->count(),
-            'derniereAffectation' => $this->derniereAffectation($mine),
+            'total' => (int) $byStatut->sum(),
+            'aTraiter' => (int) (($byStatut['Soumis'] ?? 0) + ($byStatut['En instruction'] ?? 0)),
+            'complement' => (int) ($byStatut['Pièce manquante demandée'] ?? 0),
+            'enSupervision' => (int) ($byStatut['En attente supervision'] ?? 0),
+            'valides' => (int) ($byStatut['Validé'] ?? 0),
+            'refuses' => (int) ($byStatut['Refusé'] ?? 0),
+            'derniereAffectation' => $this->derniereAffectation($recent),
         ];
     }
 
@@ -159,7 +174,9 @@ class AdminDossierService
                 ->sortByDesc('date')
                 ->first();
 
-            $allValidated = $submitted->isNotEmpty() && $submitted->every(fn ($d) => $d->statut === 'Validé');
+            // Les membres retirés ne comptent plus dans l'état global de la famille.
+            $effective = $submitted->where('statut', '!=', 'Retiré');
+            $allValidated = $effective->isNotEmpty() && $effective->every(fn ($d) => $d->statut === 'Validé');
             $hasRefus = $submitted->contains(fn ($d) => $d->statut === 'Refusé');
             $hasComplement = $submitted->contains(fn ($d) => $d->statut === 'Pièce manquante demandée');
             $hasOpen = $submitted->contains(fn ($d) => in_array($d->statut, self::OPEN_STATUTS, true));
@@ -313,6 +330,33 @@ class AdminDossierService
                 'ref' => $dossier->ref ?? (string) $dossier->id,
                 'beneficiaire' => $dossier->beneficiaire,
             ]) ?: "Le dossier de {$dossier->beneficiaire} a été validé.",
+        );
+
+        return $dossier->fresh();
+    }
+
+    /**
+     * Retrait d'un membre par le gestionnaire / superviseur
+     * (ex. devenu militaire → assuré à part entière).
+     * Le membre passe en « Retiré » : il n'est plus couvert comme ayant droit.
+     */
+    public function withdraw(Dossier $dossier, string $motif, ?AdminUser $admin = null): Dossier
+    {
+        $motif = trim($motif) ?: 'Retrait';
+
+        $dossier->update([
+            'statut' => 'Retiré',
+            'date_decision' => now()->toDateString(),
+        ]);
+
+        $auteur = $admin?->display_name ?? 'le gestionnaire';
+        $this->dossiers->appendJournal($dossier, "Membre retiré par {$auteur} — {$motif}");
+
+        $this->notifyAssure(
+            $dossier,
+            'validation',
+            'Membre retiré',
+            "{$dossier->beneficiaire} a été retiré de votre dossier familial ({$motif}). Ce membre n'est plus couvert comme ayant droit.",
         );
 
         return $dossier->fresh();

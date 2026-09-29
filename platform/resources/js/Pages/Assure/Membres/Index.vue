@@ -40,22 +40,27 @@ const hasValidatedMembers = computed(() => props.membres.some((m) => m.statut ==
 const ajouterLabel = computed(() => (hasValidatedMembers.value ? 'Ajouter de nouveaux membres' : 'Dossier familial'));
 
 // État global du dossier familial (workflow) à partir des membres soumis.
+const OPEN_STATUTS = ['Soumis', 'En instruction', 'En attente supervision', 'Pièce manquante demandée'];
 const familyStatus = computed(() => {
-    const submitted = props.membres.filter((m) => m.statut !== 'Brouillon');
+    const submitted = props.membres.filter((m) => m.statut !== 'Brouillon' && m.statut !== 'Retiré');
     const total = submitted.length;
     const validated = submitted.filter((m) => m.statut === 'Validé').length;
     const refused = submitted.filter((m) => m.statut === 'Refusé').length;
     const complement = submitted.filter((m) => m.statut === 'Pièce manquante demandée').length;
-    const enInstruction = submitted.filter((m) => ['Soumis', 'En instruction', 'En attente supervision'].includes(m.statut)).length;
+    const pendingNew = submitted.filter((m) => OPEN_STATUTS.includes(m.statut)).length;
+    const hasAcquired = validated > 0;
     const allValidated = total > 0 && validated === total;
 
+    // État dérivé (aucun statut stocké) :
+    // - assuré déjà pris en charge (≥1 validé) + ajout en cours → « assure_ajout »
     let key = 'aucun';
     if (total === 0) key = 'aucun';
     else if (allValidated) key = 'valide';
+    else if (hasAcquired && pendingNew > 0) key = 'assure_ajout';
     else if (complement > 0) key = 'complement';
     else key = 'instruction';
 
-    // Étape courante du workflow : 1 = soumission, 2 = instruction, 3 = validation.
+    // Étape du workflow (1 soumission, 2 instruction, 3 validation).
     const step = total === 0 ? 0 : (allValidated ? 3 : 2);
 
     return {
@@ -65,7 +70,8 @@ const familyStatus = computed(() => {
         validated,
         refused,
         complement,
-        enInstruction,
+        pendingNew,
+        hasAcquired,
         allValidated,
         pct: total ? Math.round((validated / total) * 100) : 0,
     };
@@ -193,13 +199,6 @@ function deleteMembre(id) {
     });
 }
 
-function requestWithdrawal(id) {
-    router.post(route('assure.dossiers.retrait', id), {}, {
-        preserveScroll: true,
-        onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Demande de retrait envoyée au gestionnaire.'),
-    });
-}
-
 function complementFileName(dossierId, key) {
     return complementFiles.value[dossierId]?.[key]?.name || null;
 }
@@ -297,36 +296,42 @@ function submitComplement(m) {
         <template #header-actions>
             <button
                 type="button"
-                class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all"
+                class="hidden sm:flex items-center gap-1.5 border border-outline text-on-surface px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-surface-container-low transition-all"
                 @click="exportFormulaire"
             >
-                <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> FIF familial (PDF)
+                <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> FIF familial
             </button>
             <button
                 type="button"
-                class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all disabled:opacity-60"
+                class="hidden sm:flex items-center gap-1.5 border border-outline text-on-surface px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-surface-container-low transition-all disabled:opacity-60"
                 :disabled="exportingZip"
                 @click="exportAllZip"
             >
-                <span class="material-symbols-outlined text-[18px]" :class="exportingZip ? 'animate-spin' : ''">{{ exportingZip ? 'sync' : 'folder_zip' }}</span>
-                {{ exportingZip ? 'Préparation…' : 'Tout télécharger (ZIP)' }}
+                <span class="material-symbols-outlined text-[16px]" :class="exportingZip ? 'animate-spin' : ''">{{ exportingZip ? 'sync' : 'folder_zip' }}</span>
+                {{ exportingZip ? 'Préparation…' : 'ZIP' }}
             </button>
             <Link
-                class="hidden sm:flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm"
+                class="hidden sm:flex items-center gap-1.5 bg-primary text-on-primary px-3 py-1.5 rounded-lg font-semibold text-xs hover:opacity-90 active:scale-95 transition-all shadow-sm"
                 :href="route('assure.ajouter-membre')"
             >
-                <span class="material-symbols-outlined text-[18px]">group_add</span> {{ ajouterLabel }}
+                <span class="material-symbols-outlined text-[16px]">group_add</span> {{ ajouterLabel }}
             </Link>
         </template>
 
         <!-- Suivi du dossier familial (workflow) -->
         <div v-if="familyStatus.total" class="mb-6 bg-white border border-outline-variant rounded-xl p-4 md:p-5">
+            <!-- Pastille « assuré » stable quand des membres sont déjà pris en charge -->
+            <div v-if="familyStatus.hasAcquired && familyStatus.key !== 'valide'" class="mb-3 inline-flex items-center gap-1.5 bg-secondary/10 text-secondary px-3 py-1.5 rounded-full text-xs font-bold">
+                <span class="material-symbols-outlined text-[16px]">verified_user</span>
+                Vous êtes assuré — {{ familyStatus.validated }} membre(s) pris en charge
+            </div>
+
             <!-- Bandeau d'état global -->
             <div
                 class="rounded-lg p-3.5 flex items-start gap-3 mb-4"
                 :class="{
                     'bg-secondary/10 border border-secondary/30': familyStatus.key === 'valide',
-                    'bg-tertiary/5 border border-tertiary/30': familyStatus.key === 'complement',
+                    'bg-tertiary/5 border border-tertiary/30': familyStatus.key === 'complement' || familyStatus.key === 'assure_ajout',
                     'bg-primary/5 border border-primary/20': familyStatus.key === 'instruction',
                 }"
             >
@@ -334,24 +339,27 @@ function submitComplement(m) {
                     class="material-symbols-outlined text-[28px] shrink-0"
                     :class="{
                         'text-secondary': familyStatus.key === 'valide',
-                        'text-tertiary': familyStatus.key === 'complement',
+                        'text-tertiary': familyStatus.key === 'complement' || familyStatus.key === 'assure_ajout',
                         'text-primary': familyStatus.key === 'instruction',
                     }"
-                >{{ familyStatus.key === 'valide' ? 'task_alt' : (familyStatus.key === 'complement' ? 'assignment_late' : 'hourglass_top') }}</span>
+                >{{ familyStatus.key === 'valide' ? 'task_alt' : (familyStatus.key === 'assure_ajout' ? 'group_add' : (familyStatus.key === 'complement' ? 'assignment_late' : 'hourglass_top')) }}</span>
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-sm text-on-surface">
-                        <template v-if="familyStatus.key === 'valide'">Dossier familial validé — tous vos membres sont pris en charge ✅</template>
+                        <template v-if="familyStatus.key === 'valide'">Dossier familial validé — tous vos membres sont pris en charge</template>
+                        <template v-else-if="familyStatus.key === 'assure_ajout'">Ajout en cours — {{ familyStatus.pendingNew }} nouveau(x) membre(s) en instruction</template>
                         <template v-else-if="familyStatus.key === 'complement'">Une pièce complémentaire est demandée</template>
                         <template v-else>Dossier en cours d'instruction par la CAMA</template>
                     </p>
                     <p class="text-xs text-on-surface-variant mt-1">
-                        <strong class="text-on-surface">{{ familyStatus.validated }}/{{ familyStatus.total }}</strong> membre(s) validé(s)
-                        <span v-if="familyStatus.complement"> · {{ familyStatus.complement }} en attente de pièce</span>
-                        <span v-if="familyStatus.enInstruction"> · {{ familyStatus.enInstruction }} en examen</span>
-                        <span v-if="familyStatus.refused"> · {{ familyStatus.refused }} refusé(s)</span>
+                        <template v-if="familyStatus.key === 'assure_ajout'">Vos membres déjà validés restent couverts. Votre nouvel ajout est en cours d'examen par la CAMA.</template>
+                        <template v-else>
+                            <strong class="text-on-surface">{{ familyStatus.validated }}/{{ familyStatus.total }}</strong> membre(s) validé(s)
+                            <span v-if="familyStatus.complement"> · {{ familyStatus.complement }} en attente de pièce</span>
+                            <span v-if="familyStatus.refused"> · {{ familyStatus.refused }} refusé(s)</span>
+                        </template>
                     </p>
                 </div>
-                <span class="text-sm font-extrabold tabular-nums shrink-0" :class="familyStatus.key === 'valide' ? 'text-secondary' : 'text-primary'">{{ familyStatus.pct }}%</span>
+                <span v-if="familyStatus.key !== 'assure_ajout'" class="text-sm font-extrabold tabular-nums shrink-0" :class="familyStatus.key === 'valide' ? 'text-secondary' : 'text-primary'">{{ familyStatus.pct }}%</span>
             </div>
 
             <!-- Étapes du workflow -->
@@ -559,7 +567,7 @@ function submitComplement(m) {
                             <h4 class="font-bold text-xs uppercase tracking-wide mb-2 flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[16px] text-primary">history</span> Historique du dossier
                             </h4>
-                            <div class="bg-surface-container-low rounded-lg px-4 py-3">
+                            <div class="bg-surface-container-low rounded-lg px-4 py-3 max-h-64 overflow-y-auto">
                                 <div v-for="(h, i) in m.historique || m.journal" :key="i" class="flex gap-3 relative">
                                     <div class="relative flex flex-col items-center">
                                         <div class="w-2 h-2 rounded-full bg-primary z-10 mt-1" />
@@ -584,15 +592,7 @@ function submitComplement(m) {
                             <span class="material-symbols-outlined text-[16px]">edit</span> Modifier
                         </Link>
                         <button
-                            v-if="m.statut === 'Validé'"
-                            type="button"
-                            class="px-3 py-1.5 rounded-lg border border-error text-error text-xs font-bold hover:bg-error/5 transition-colors flex items-center gap-1.5"
-                            @click="requestWithdrawal(m.id)"
-                        >
-                            <span class="material-symbols-outlined text-[16px]">person_remove</span> Demander un retrait
-                        </button>
-                        <button
-                            v-else-if="m.statut === 'Brouillon'"
+                            v-if="m.statut === 'Brouillon'"
                             type="button"
                             class="px-3 py-1.5 rounded-lg border border-error text-error text-xs font-bold hover:bg-error/5 transition-colors flex items-center gap-1.5"
                             @click="deleteMembre(m.id)"

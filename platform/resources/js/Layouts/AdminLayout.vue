@@ -91,13 +91,6 @@ const logout = () => router.post(route('admin.logout'));
                 <span class="material-symbols-outlined text-[20px]">file_download</span> Exports
             </Link>
             <Link
-                v-show="can('audit.view')"
-                :class="navClass('audit')"
-                :href="route('admin.audit')"
-            >
-                <span class="material-symbols-outlined text-[20px]">login</span> Connexions
-            </Link>
-            <Link
                 v-show="can('settings.manage')"
                 :class="navClass('parametres')"
                 :href="route('admin.parametres')"

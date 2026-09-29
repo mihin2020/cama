@@ -27,7 +27,15 @@ class DossierWizardController extends Controller
             ->orderBy('id')
             ->get();
 
-        $hasValidatedMembers = $assure->dossiers()->where('statut', 'Validé')->exists();
+        $validatedMembers = $assure->dossiers()
+            ->where('statut', 'Validé')
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($d) => $dossiers->formatMembre($d))
+            ->values()
+            ->all();
+
+        $hasValidatedMembers = count($validatedMembers) > 0;
         $lotType = $hasValidatedMembers ? 'complementaire' : 'initial';
 
         foreach ($brouillons as $dossier) {
@@ -58,6 +66,7 @@ class DossierWizardController extends Controller
             'membrePhoto' => $settings->membrePhoto(),
             'fifSigneeRequise' => $settings->fifSigneeRequise(),
             'hasValidatedMembers' => $hasValidatedMembers,
+            'validatedMembers' => $validatedMembers,
             'lotType' => $lotType,
             'parentLabel' => 'Nom et prénoms de la mère (du père si personnel féminin)',
             'unreadCount' => $dashboard->stats($assure)['unreadCount'],

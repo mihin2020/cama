@@ -22,6 +22,7 @@ import {
     validateFamille,
 } from '@/Utils/familleWizard';
 import { exportFamilleFif } from '@/Composables/useCamaExport';
+import { statusBadgeClass } from '@/Utils/camaStatus';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
@@ -34,6 +35,7 @@ const props = defineProps({
     membrePhoto: { type: Object, default: () => ({ conjoint: { actif: true, required: false }, enfant: { actif: true, required: false } }) },
     fifSigneeRequise: { type: Boolean, default: false },
     hasValidatedMembers: { type: Boolean, default: false },
+    validatedMembers: { type: Array, default: () => [] },
     lotType: { type: String, default: 'initial' },
     parentLabel: String,
     unreadCount: Number,
@@ -48,6 +50,9 @@ const page = usePage();
 const inputCls = 'w-full px-3 py-2 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none';
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
+
+// Membres réellement couverts (exclut tout membre retiré / refusé).
+const coveredMembers = computed(() => (props.validatedMembers || []).filter((m) => m.statut === 'Validé'));
 
 const state = reactive({ conjoints: [], enfants: [] });
 const chkHonneur = ref(false);
@@ -464,6 +469,40 @@ watch(() => props.initialRows, () => {
                 </p>
             </div>
         </div>
+
+        <!-- Membres déjà pris en charge (lecture seule) -->
+        <section v-if="coveredMembers.length" class="bg-surface-container-low rounded-xl border border-outline-variant p-4 md:p-5 mb-6">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-secondary text-[20px]">verified_user</span>
+                <h2 class="text-base font-semibold text-on-surface">Membres déjà pris en charge</h2>
+            </div>
+            <p class="text-xs text-on-surface-variant mb-3">
+                Ces membres sont déjà validés par la CAMA — leurs informations ne sont plus modifiables ici. Ajoutez de nouveaux membres ci-dessous.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div
+                    v-for="vm in coveredMembers"
+                    :key="vm.id"
+                    class="rounded-lg border border-outline-variant bg-white/60 p-3 opacity-90"
+                >
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold text-on-surface-variant shrink-0">{{ vm.initiales }}</div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-on-surface truncate">{{ vm.prenom }} {{ vm.nom }}</p>
+                                <p class="text-[11px] text-on-surface-variant">{{ vm.lien }}</p>
+                            </div>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0" :class="statusBadgeClass(vm.statut)">{{ vm.statut }}</span>
+                    </div>
+                    <dl class="mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                        <div v-if="vm.dateNaissance"><dt class="text-on-surface-variant">Naissance</dt><dd class="font-semibold text-on-surface">{{ vm.dateNaissance }}</dd></div>
+                        <div v-if="vm.numeroCama"><dt class="text-on-surface-variant">N° CAMA</dt><dd class="font-semibold text-on-surface">{{ vm.numeroCama }}</dd></div>
+                        <div v-if="vm.refIdentite" class="col-span-2"><dt class="text-on-surface-variant">Réf. pièce d'identité</dt><dd class="font-semibold text-on-surface break-words">{{ vm.refIdentite }}</dd></div>
+                    </dl>
+                </div>
+            </div>
+        </section>
 
         <template v-if="showForm">
             <section class="bg-white rounded-xl border border-outline-variant p-4 md:p-6 mb-6">

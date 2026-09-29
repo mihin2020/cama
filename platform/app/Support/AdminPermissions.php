@@ -61,12 +61,6 @@ class AdminPermissions
                 ],
             ],
             [
-                'group' => 'Connexions',
-                'items' => [
-                    ['key' => 'audit.view', 'label' => 'Consulter les connexions et déconnexions'],
-                ],
-            ],
-            [
                 'group' => 'Paramètres',
                 'items' => [
                     ['key' => 'settings.manage', 'label' => 'Gérer les paramètres de la plateforme'],
@@ -164,7 +158,6 @@ class AdminPermissions
                 'inscriptions.view',
                 'inscriptions.validate',
                 'exports.export',
-                'audit.view',
                 'cms.manage',
                 'users.manage',
                 'notifications.receive',
@@ -174,7 +167,6 @@ class AdminPermissions
                 'dossiers.view',
                 'assures.view',
                 'exports.export',
-                'audit.view',
                 'notifications.receive',
             ],
         };
@@ -203,6 +195,7 @@ class AdminPermissions
             'admin.dossiers.batch-assign' => 'dossiers.assign',
             'admin.dossiers.validate' => 'dossiers.process',
             'admin.dossiers.reject' => 'dossiers.process',
+            'admin.dossiers.retrait' => 'dossiers.process',
             'admin.dossiers.complement' => 'dossiers.process',
             'admin.dossiers.en-attente' => 'dossiers.process',
             'admin.dossiers.message' => 'dossiers.process',
@@ -220,8 +213,6 @@ class AdminPermissions
             'admin.exports.membres' => 'exports.export',
             'admin.exports.dossiers' => 'exports.export',
             'admin.exports.dossier-pdf' => 'exports.export',
-
-            'admin.audit' => 'audit.view',
 
             'admin.parametres' => 'settings.manage',
             'admin.parametres.membres' => 'settings.manage',

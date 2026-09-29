@@ -642,7 +642,7 @@ export const WIDGETS = {
                 eyebrow: 'Notre Histoire',
                 title: 'Notre Évolution',
                 text: "De la mutuelle traditionnelle à une caisse d'assurance moderne et performante.",
-                items: [{ icon: 'history', date: 'Avant 2020', title: "L'ère MUFAN", text: "Originairement gérée sous forme de mutuelle, l'institution a posé les bases de la solidarité.", tone: 'primary' }, { icon: 'gavel', date: '16 Avril 2020', title: 'Création de la CAMA', text: 'Fondée par décret pour répondre aux exigences de la protection sociale moderne.', tone: 'secondary' }, { icon: 'rocket_launch', date: '13 Février 2025', title: 'Lancement Officiel', text: 'Lancement officiel de la CAMA à Ouagadougou.', tone: 'tertiary' }],
+                items: [{ icon: 'gavel', date: '16 Avril 2020', title: 'Création de la CAMA', text: 'Fondée par décret pour répondre aux exigences de la protection sociale moderne.', tone: 'secondary' }, { icon: 'rocket_launch', date: '13 Février 2025', title: 'Lancement Officiel', text: 'Lancement officiel de la CAMA à Ouagadougou.', tone: 'tertiary' }],
                 todayBadge: "Aujourd'hui",
                 todayTitle: 'La CAMA, une institution pivot',
                 todayText: "Rattachée au Ministère de la Guerre et de la Défense patriotique, elle garantit l'accès fiable et équitable aux soins.",

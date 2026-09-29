@@ -2,11 +2,12 @@
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     profil: Object,
     securityLog: Array,
+    orgStructure: { type: Object, default: () => ({}) },
     unreadCount: Number,
 });
 
@@ -30,22 +31,69 @@ const deuxFa = ref(props.profil.deuxFa);
 const pwdError = ref('');
 const toast = ref({ show: false, html: '' });
 
+// Champs gérés par la CAMA (lecture seule).
 const militaireRows = [
     ['Sexe', props.profil.sexe],
-    ['Grade', props.profil.grade],
-    ['Catégorie', props.profil.categorie],
+    ['Matricule', props.profil.matricule],
     ['N° informatique', props.profil.numeroInformatique],
     ['N° CIM', props.profil.numeroCim],
     ['N° IUP', props.profil.numeroIup],
-    ['Armée', props.profil.armee],
-    ['Région', props.profil.region],
-    ['Corps', props.profil.corps],
-    ['Service', props.profil.service],
-    ['Section', props.profil.section],
-    ['Sous-section', props.profil.sousSection],
-    ['Personne à prévenir', props.profil.personneAPrevenir],
-    ['Tél. personne à prévenir', props.profil.telPersonneAPrevenir],
 ];
+
+// Situation militaire / rattachement — modifiable (mutation, promotion…).
+const rattachementForm = useForm({
+    grade: props.profil.grade ?? '',
+    categorie: props.profil.categorie ?? '',
+    armee: props.profil.armee ?? '',
+    region: props.profil.region ?? '',
+    corps: props.profil.corps ?? '',
+    service: props.profil.service ?? '',
+    section: props.profil.section ?? '',
+    sous_section: props.profil.sousSection ?? '',
+});
+
+// Options avec repli : on garde toujours la valeur actuelle même si elle n'existe
+// plus dans la structure (ancien libellé), pour ne pas la perdre.
+function withCurrent(list, current) {
+    const arr = [...list];
+    if (current && !arr.includes(current)) arr.unshift(current);
+    return arr;
+}
+
+const gradeOptions = computed(() => withCurrent(props.orgStructure.grades ?? [], rattachementForm.grade));
+const categorieOptions = computed(() => withCurrent(props.orgStructure.categories ?? [], rattachementForm.categorie));
+const armeeOptions = computed(() => withCurrent(props.orgStructure.armees ?? [], rattachementForm.armee));
+const regionOptions = computed(() => withCurrent((props.orgStructure.regions ?? []).map((r) => r.libelle), rattachementForm.region));
+const corpsOptions = computed(() => {
+    const r = (props.orgStructure.regions ?? []).find((x) => x.libelle === rattachementForm.region);
+    return withCurrent((r?.corps ?? []).map((c) => c.libelle), rattachementForm.corps);
+});
+const serviceOptions = computed(() => {
+    const r = (props.orgStructure.regions ?? []).find((x) => x.libelle === rattachementForm.region);
+    const c = (r?.corps ?? []).find((x) => x.libelle === rattachementForm.corps);
+    return withCurrent((c?.services ?? []).map((s) => s.libelle), rattachementForm.service);
+});
+const sectionOptions = computed(() => {
+    const r = (props.orgStructure.regions ?? []).find((x) => x.libelle === rattachementForm.region);
+    const c = (r?.corps ?? []).find((x) => x.libelle === rattachementForm.corps);
+    const s = (c?.services ?? []).find((x) => x.libelle === rattachementForm.service);
+    return withCurrent((s?.sections ?? []).map((x) => x.libelle), rattachementForm.section);
+});
+const sousSectionOptions = computed(() => {
+    const r = (props.orgStructure.regions ?? []).find((x) => x.libelle === rattachementForm.region);
+    const c = (r?.corps ?? []).find((x) => x.libelle === rattachementForm.corps);
+    const s = (c?.services ?? []).find((x) => x.libelle === rattachementForm.service);
+    const sec = (s?.sections ?? []).find((x) => x.libelle === rattachementForm.section);
+    return withCurrent((sec?.sous_sections ?? []).map((x) => x.libelle), rattachementForm.sous_section);
+});
+
+let rattachReady = false;
+watch(() => rattachementForm.region, () => { if (rattachReady) { rattachementForm.corps = ''; rattachementForm.service = ''; rattachementForm.section = ''; rattachementForm.sous_section = ''; } });
+watch(() => rattachementForm.corps, () => { if (rattachReady) { rattachementForm.service = ''; rattachementForm.section = ''; rattachementForm.sous_section = ''; } });
+watch(() => rattachementForm.service, () => { if (rattachReady) { rattachementForm.section = ''; rattachementForm.sous_section = ''; } });
+watch(() => rattachementForm.section, () => { if (rattachReady) { rattachementForm.sous_section = ''; } });
+// active la réinitialisation en cascade seulement après le montage initial
+setTimeout(() => { rattachReady = true; }, 0);
 
 function showToast(html) {
     toast.value = { show: true, html };
@@ -56,6 +104,13 @@ function saveContact() {
     contactForm.patch(route('assure.profil.update'), {
         preserveScroll: true,
         onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Coordonnées mises à jour.'),
+    });
+}
+
+function saveRattachement() {
+    rattachementForm.patch(route('assure.profil.rattachement'), {
+        preserveScroll: true,
+        onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Situation militaire mise à jour.'),
     });
 }
 
@@ -133,13 +188,59 @@ function displayValue(value) {
 
             <section class="assure-card p-5 md:p-6">
                 <h2 class="text-base font-semibold text-on-surface mb-1">Informations administratives du militaire</h2>
-                <p class="text-on-surface-variant text-xs mb-5">Données déclarées à l'inscription. Contactez la CAMA pour toute correction.</p>
+                <p class="text-on-surface-variant text-xs mb-5">Identifiants gérés par la CAMA. Contactez la CAMA pour toute correction.</p>
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div v-for="([label, value], i) in militaireRows" :key="i" class="bg-surface-container-low rounded-lg p-3.5">
                         <p class="text-xs text-on-surface-variant uppercase tracking-wide mb-1">{{ label }}</p>
                         <p class="text-sm font-semibold text-on-surface break-words">{{ displayValue(value) }}</p>
                     </div>
                 </div>
+            </section>
+
+            <section class="assure-card p-5 md:p-6">
+                <h2 class="text-base font-semibold text-on-surface mb-1">Situation militaire & rattachement</h2>
+                <p class="text-on-surface-variant text-xs mb-5">
+                    Mettez à jour votre grade, catégorie et rattachement en cas de <strong>promotion</strong> ou de <strong>mutation</strong>. La chaîne Région → Corps → Service → Section → Sous-section se met à jour en cascade.
+                </p>
+                <form class="grid grid-cols-1 md:grid-cols-2 gap-4" @submit.prevent="saveRattachement">
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Grade</label>
+                        <select v-model="rattachementForm.grade" :class="inputCls"><option value="">—</option><option v-for="g in gradeOptions" :key="g">{{ g }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Catégorie</label>
+                        <select v-model="rattachementForm.categorie" :class="inputCls"><option value="">—</option><option v-for="c in categorieOptions" :key="c">{{ c }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Armée</label>
+                        <select v-model="rattachementForm.armee" :class="inputCls"><option value="">—</option><option v-for="a in armeeOptions" :key="a">{{ a }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Région militaire</label>
+                        <select v-model="rattachementForm.region" :class="inputCls"><option value="">—</option><option v-for="r in regionOptions" :key="r">{{ r }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Corps</label>
+                        <select v-model="rattachementForm.corps" :class="inputCls" :disabled="corpsOptions.length === 0"><option value="">—</option><option v-for="c in corpsOptions" :key="c">{{ c }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Service</label>
+                        <select v-model="rattachementForm.service" :class="inputCls" :disabled="serviceOptions.length === 0"><option value="">—</option><option v-for="s in serviceOptions" :key="s">{{ s }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Section</label>
+                        <select v-model="rattachementForm.section" :class="inputCls" :disabled="sectionOptions.length === 0"><option value="">—</option><option v-for="s in sectionOptions" :key="s">{{ s }}</option></select>
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Sous-section</label>
+                        <select v-model="rattachementForm.sous_section" :class="inputCls" :disabled="sousSectionOptions.length === 0"><option value="">—</option><option v-for="s in sousSectionOptions" :key="s">{{ s }}</option></select>
+                    </div>
+                    <div class="md:col-span-2">
+                        <CamaLoadingButton type="submit" button-class="px-5 py-2.5 text-sm" :loading="rattachementForm.processing">
+                            Enregistrer la situation militaire
+                        </CamaLoadingButton>
+                    </div>
+                </form>
             </section>
 
             <section class="assure-card p-5 md:p-6">

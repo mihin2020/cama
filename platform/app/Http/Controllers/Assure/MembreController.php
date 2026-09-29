@@ -90,12 +90,6 @@ class MembreController extends Controller
         return back()->with('success', 'Pièces complémentaires envoyées.');
     }
 
-    public function requestWithdrawal(Dossier $dossier, DossierService $dossiers): RedirectResponse
-    {
-        $dossiers->requestWithdrawal(auth('assure')->user(), $dossier);
-
-        return back()->with('success', 'Demande de retrait envoyée au gestionnaire.');
-    }
 
     private function complementFileForType(Request $request, string $type): ?UploadedFile
     {

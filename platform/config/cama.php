@@ -287,6 +287,7 @@ return [
         'En attente supervision',
         'Validé',
         'Refusé',
+        'Retiré',
     ],
 
     'groupes_sanguins' => ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],

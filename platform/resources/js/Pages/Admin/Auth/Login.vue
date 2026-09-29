@@ -38,14 +38,6 @@ const submit = () => {
                 <div class="p-6 md:p-8">
                     <h1 class="font-headline text-xl font-bold text-on-surface mb-4">Connexion</h1>
 
-                    <div class="mb-4 rounded-lg border border-outline-variant bg-surface-container-low px-4 py-3 text-xs text-on-surface-variant">
-                        <p class="font-bold text-on-surface mb-1">Comptes démo back-office</p>
-                        <p><span class="font-semibold">Administrateur :</span> admin@cama.bf</p>
-                        <p><span class="font-semibold">Gestionnaire :</span> gestionnaire@cama.bf</p>
-                        <p class="mt-1"><span class="font-semibold">Mot de passe :</span> Demo2026!</p>
-                        <p class="mt-2 text-[11px] text-primary">URL : <span class="font-mono">/admin/connexion</span> (pas l'espace assuré)</p>
-                    </div>
-
                     <FlashMessage />
 
                     <form class="space-y-4" @submit.prevent="submit">

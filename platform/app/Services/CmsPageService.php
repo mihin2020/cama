@@ -330,8 +330,7 @@ class CmsPageService
                 'title' => 'Notre Évolution',
                 'text' => "De la mutuelle traditionnelle à une caisse d'assurance moderne et performante.",
                 'items' => [
-                    ['icon' => 'history', 'date' => 'Avant 2020', 'title' => "L'ère MUFAN", 'text' => "Originairement gérée sous forme de mutuelle, l'institution a posé les bases de la solidarité au sein des forces armées burkinabè.", 'tone' => 'primary'],
-                    ['icon' => 'gavel', 'date' => '16 Avril 2020', 'title' => 'Création de la CAMA', 'text' => 'Fondée par décret pour répondre aux exigences de la protection sociale moderne des armées et succéder à la MUFAN.', 'tone' => 'secondary'],
+                    ['icon' => 'gavel', 'date' => '16 Avril 2020', 'title' => 'Création de la CAMA', 'text' => 'Fondée par décret pour répondre aux exigences de la protection sociale moderne des armées.', 'tone' => 'secondary'],
                     ['icon' => 'rocket_launch', 'date' => '13 Février 2025', 'title' => 'Lancement Officiel', 'text' => 'Lancement officiel de la CAMA à Ouagadougou, au siège de l’ex-État-Major Général des Armées.', 'tone' => 'tertiary'],
                 ],
                 'todayBadge' => "Aujourd'hui",

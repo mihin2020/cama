@@ -1,0 +1,17 @@
+export;colonne_actuelle;conserver;renommer_en;commentaire;colonnes_supplementaires_demandees
+Membres enrôlés;Référence;Oui;;;
+Membres enrôlés;Assuré;Oui;;;
+Membres enrôlés;Matricule;Oui;;;
+Membres enrôlés;Bénéficiaire;Oui;;;
+Membres enrôlés;Lien;Oui;;;
+Membres enrôlés;Statut;Oui;;;
+Membres enrôlés;Soumis le;Oui;;;
+Membres enrôlés;Gestionnaire;Oui;;;
+Dossiers d'enrôlement;Référence;Oui;;;
+Dossiers d'enrôlement;Assuré principal;Oui;;;
+Dossiers d'enrôlement;Membre;Oui;;;
+Dossiers d'enrôlement;Statut;Oui;;;
+Dossiers d'enrôlement;Date soumission;Oui;;;
+Dossiers d'enrôlement;Date décision;Oui;;;
+Dossiers d'enrôlement;Motif refus;Oui;;;
+Dossiers d'enrôlement;Gestionnaire;Oui;;;

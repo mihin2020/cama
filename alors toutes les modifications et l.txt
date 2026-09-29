@@ -1,0 +1,11 @@
+alors toutes les modifications et les logiques de modifications apporterje veux que tu les apportes dans l'application laravel qui se situe dans@platform 
+
+Il faut respecter les normes de bon codage en le fait en tant que developpeur specialiste en laravel , vue js et qui maitise le proessus de developpement
+
+aussi il faut que toute ce qui est implementer soit focntionnelle et surtout que cela soit correcte avec les page html correspondantes et surtout logique
+
+
+de plus il ya un probleme que j'aimera que l'on solutionne 
+
+il sagit de la partie de la consitution du dossier de l'assuré , qu'en ait til si un assurer a un dossier deja correcte  avec une femme et aussi des enfant ou un enfant mais quelques temps plutard  , il a une autre femme ou il a d'autre enfant qui ont les document necessaire mais le workflow sera comment pour ajouter ces autres personne vu qu'il ya un autre dossier doit til resoumettre ou juste faire un complement sous forme d'un dossier complemntaire avec les nouveau inscrit et comment faire de sorte a ce que l'on puisse s'avoir que ce sont des personne issus d'un complement
+est ce que tu comprends?

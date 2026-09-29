@@ -1,0 +1,11 @@
+libelle_ecran;cle_technique;obligatoire;exemple_actuel;format_officiel_attendu;longueur_min;longueur_max;prefixe_impose;caracteres_autorises;unicite;sensible_casse;normaliser_majuscules;message_erreur;commentaire_source
+Matricule militaire;matricule;Oui;12345-X;;;;;chiffres, lettres, tiret ?;Oui;;;;;
+N° informatique;numero_informatique;Oui;INF-4521;;;;;Oui / Non ?;;;;;
+N° CIM;numero_cim;Oui;CIM-104521;;;;;Oui / Non ?;;;;;
+N° Carte CAMA;numero_cama;Oui;CAMA-104521;;;;;Oui / Non ?;;;;;
+N° IUP;numero_iup;Non (optionnel);Identifiant Unique de la Personne;;;;;Oui / Non ?;;;;;Doit-il devenir obligatoire ?
+Nom;nom;Oui;;;;;;accents OK ?;Non;;;;;
+Prénom(s);prenom;Oui;;;;;;;Non;;;;;
+Sexe;sexe;Oui;Masculin / Féminin;liste;;;;Masculin|Féminin;Non;;;;;Autres valeurs ?
+Téléphone;telephone;Oui;+226…;international ?; ;255;;;;Non;;;;;Plusieurs numéros ?
+E-mail;email;Oui;vous@exemple.bf;email; ;255;;;;Oui;;;;;

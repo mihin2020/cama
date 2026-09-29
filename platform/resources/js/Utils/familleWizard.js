@@ -196,7 +196,12 @@ export function validateFamille(state, {
     const problems = [];
     const options = { ageMax, certificatScolarite };
 
+    // Une ligne sans nom ni prénoms est considérée comme « non ajoutée » (ignorée),
+    // pour permettre d'ajouter seulement un conjoint OU seulement un enfant.
+    const isEmptyRow = (r) => !r.nom?.trim() && !r.prenoms?.trim();
+
     const check = (row, list, i) => {
+        if (isEmptyRow(row)) return;
         const label = `${list === 'conjoints' ? 'Conjoint' : 'Enfant'} ${i + 1}`;
         if (!row.nom?.trim() || !row.prenoms?.trim() || !row.dateNaissance || !row.sexe) {
             problems.push(`${label} : nom, prénoms, date de naissance et sexe sont obligatoires.`);
@@ -224,6 +229,12 @@ export function validateFamille(state, {
 
     state.conjoints.forEach((r, i) => check(r, 'conjoints', i));
     state.enfants.forEach((r, i) => check(r, 'enfants', i));
+
+    const nonEmptyCount = state.conjoints.filter((r) => !isEmptyRow(r)).length
+        + state.enfants.filter((r) => !isEmptyRow(r)).length;
+    if (nonEmptyCount === 0) {
+        problems.push('Ajoutez au moins un membre (conjoint(e) ou enfant) avant de soumettre.');
+    }
 
     if (requireFif && !fifSignee) {
         problems.push('La FIF signée (scan) est obligatoire pour soumettre le lot familial.');

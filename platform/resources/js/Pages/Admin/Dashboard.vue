@@ -3,15 +3,27 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import { activityColor, STATUT_BAR_COLORS, statusBadgeClass } from '@/Utils/camaStatus';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { Head, Link, usePage } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     stats: Object,
+    vuePersonnelle: { type: Boolean, default: false },
 });
 
 const page = usePage();
 const { can, canSee } = useAdminPermissions();
 const role = computed(() => page.props.auth.admin?.role ?? 'gestionnaire');
+
+// Pagination des tableaux du dashboard.
+const PRIORITY_PER_PAGE = 6;
+const priorityPage = ref(1);
+const priorityTotalPages = computed(() => Math.max(1, Math.ceil((props.stats?.priority?.length ?? 0) / PRIORITY_PER_PAGE)));
+const pagedPriority = computed(() => (props.stats?.priority ?? []).slice((priorityPage.value - 1) * PRIORITY_PER_PAGE, priorityPage.value * PRIORITY_PER_PAGE));
+
+const CHARGES_PER_PAGE = 6;
+const chargesPage = ref(1);
+const chargesTotalPages = computed(() => Math.max(1, Math.ceil((props.stats?.charges?.length ?? 0) / CHARGES_PER_PAGE)));
+const pagedCharges = computed(() => (props.stats?.charges ?? []).slice((chargesPage.value - 1) * CHARGES_PER_PAGE, chargesPage.value * CHARGES_PER_PAGE));
 
 const statutOrder = ['Soumis', 'En instruction', 'Pièce manquante demandée', 'En attente supervision', 'Validé', 'Refusé'];
 
@@ -77,8 +89,11 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                     </span>
                 </div>
                 <p class="text-headline-md font-headline-lg">{{ formatNumber(stats.assuresTotal) }}</p>
-                <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">Assurés inscrits</p>
-                <p class="text-[10px] text-on-surface-variant mt-1">{{ stats.assuresActifs }} actif{{ stats.assuresActifs > 1 ? 's' : '' }}</p>
+                <p class="text-[11px] text-on-surface-variant uppercase tracking-wide">{{ vuePersonnelle ? 'Familles suivies' : 'Assurés inscrits' }}</p>
+                <p class="text-[10px] text-on-surface-variant mt-1">
+                    <template v-if="vuePersonnelle">{{ stats.assuresActifs }} validée{{ stats.assuresActifs > 1 ? 's' : '' }}</template>
+                    <template v-else>{{ stats.assuresActifs }} actif{{ stats.assuresActifs > 1 ? 's' : '' }}</template>
+                </p>
             </div>
             <div class="assure-card p-5 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <div class="flex items-center justify-between mb-3">
@@ -120,7 +135,7 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
             </div>
         </section>
 
-        <section v-if="can('dossiers.assign') || can('audit.view') || canSee('direction')" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="stats-extended">
+        <section v-if="can('dossiers.assign') || canSee('direction')" class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="stats-extended">
             <div class="assure-card p-4">
                 <div class="flex items-center gap-2 mb-2">
                     <span class="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
@@ -171,7 +186,7 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
-                            <tr v-for="d in stats.priority" :key="d.ref" class="hover:bg-surface-container-low transition-colors">
+                            <tr v-for="d in pagedPriority" :key="d.ref" class="hover:bg-surface-container-low transition-colors">
                                 <td class="px-5 py-3 font-bold text-xs">{{ d.ref }}</td>
                                 <td class="px-5 py-3 text-xs hidden sm:table-cell">{{ d.nom }}</td>
                                 <td class="px-5 py-3">
@@ -185,6 +200,13 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                         </tbody>
                     </table>
                 </div>
+                <div v-if="priorityTotalPages > 1" class="flex items-center justify-between gap-2 px-5 py-3 border-t border-outline-variant">
+                    <span class="text-[11px] text-on-surface-variant">Page {{ priorityPage }} / {{ priorityTotalPages }} · {{ stats.priority.length }} dossier(s)</span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="w-8 h-8 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none" :disabled="priorityPage <= 1" @click="priorityPage--"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                        <button type="button" class="w-8 h-8 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none" :disabled="priorityPage >= priorityTotalPages" @click="priorityPage++"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                    </div>
+                </div>
             </div>
 
             <div class="assure-card overflow-hidden flex flex-col">
@@ -192,7 +214,7 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                     <span class="material-symbols-outlined text-primary text-[20px]">history</span>
                     <h3 class="font-title-lg text-title-lg">Activité récente</h3>
                 </div>
-                <div class="p-5 space-y-4 flex-1">
+                <div class="p-5 space-y-4 flex-1 max-h-[360px] overflow-y-auto">
                     <div v-for="(a, i) in stats.recentActivity" :key="`${a.ref}-${i}`" class="flex gap-3">
                         <div class="relative flex flex-col items-center">
                             <div class="w-2.5 h-2.5 rounded-full z-10 mt-1" :class="activityDotClass(a.libelle)" />
@@ -225,7 +247,7 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-outline-variant">
-                            <tr v-for="g in stats.charges" :key="g.nom" class="hover:bg-surface-container-low transition-colors">
+                            <tr v-for="g in pagedCharges" :key="g.nom" class="hover:bg-surface-container-low transition-colors">
                                 <td class="px-5 py-3 text-xs font-bold">{{ g.nom }}</td>
                                 <td class="px-5 py-3 text-xs text-center">{{ g.assignes }}</td>
                                 <td class="px-5 py-3 text-xs text-center font-bold" :class="g.nonTraites > 0 ? 'text-primary' : 'text-on-surface-variant'">{{ g.nonTraites }}</td>
@@ -243,6 +265,13 @@ const formatNumber = (n) => (n ?? 0).toLocaleString('fr-FR');
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+                <div v-if="chargesTotalPages > 1" class="flex items-center justify-between gap-2 px-5 py-3 border-t border-outline-variant">
+                    <span class="text-[11px] text-on-surface-variant">Page {{ chargesPage }} / {{ chargesTotalPages }} · {{ stats.charges.length }} gestionnaire(s)</span>
+                    <div class="flex items-center gap-1">
+                        <button type="button" class="w-8 h-8 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none" :disabled="chargesPage <= 1" @click="chargesPage--"><span class="material-symbols-outlined text-[18px]">chevron_left</span></button>
+                        <button type="button" class="w-8 h-8 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none" :disabled="chargesPage >= chargesTotalPages" @click="chargesPage++"><span class="material-symbols-outlined text-[18px]">chevron_right</span></button>
+                    </div>
                 </div>
             </div>
 

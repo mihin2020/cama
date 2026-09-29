@@ -379,28 +379,4 @@ class DossierService
             'lu' => false,
         ]);
     }
-
-    public function requestWithdrawal(Assure $assure, Dossier $dossier): void
-    {
-        if ($dossier->assure_id !== $assure->id) {
-            abort(403);
-        }
-
-        if ($dossier->statut !== 'Validé') {
-            throw ValidationException::withMessages([
-                'statut' => 'Seuls les dossiers validés peuvent faire l\'objet d\'une demande de retrait.',
-            ]);
-        }
-
-        $this->appendJournal($dossier, 'Demande de retrait transmise au gestionnaire');
-
-        AssureNotification::query()->create([
-            'assure_id' => $assure->id,
-            'type' => 'soumission_dossier',
-            'titre' => 'Demande de retrait',
-            'contenu' => "Votre demande de retrait pour {$dossier->beneficiaire} a été transmise au gestionnaire.",
-            'lien' => route('assure.membres'),
-            'lu' => false,
-        ]);
-    }
 }

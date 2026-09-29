@@ -472,6 +472,20 @@ function systemWidget(section) {
     return types.includes(widgets[0].type) ? widgets[0] : null;
 }
 
+// Frise « Notre Évolution » : autant de colonnes que de jalons (3 max), trait de
+// liaison d'un centre de jalon à l'autre. Classes écrites en entier pour Tailwind.
+const TIMELINE_GRID = { 1: 'md:grid-cols-1', 2: 'md:grid-cols-2', 3: 'md:grid-cols-3' };
+
+function timelineColumns(section) {
+    const count = systemWidget(section)?.content?.items?.length ?? 0;
+    return Math.min(Math.max(count, 1), 3);
+}
+
+function timelineLineStyle(section) {
+    const inset = `${(100 / (2 * timelineColumns(section))).toFixed(2)}%`;
+    return { left: inset, right: inset };
+}
+
 function homePillars(widget) {
     return widget?.content?.items?.length ? widget.content.items : (props.systemData.pillars ?? []);
 }
@@ -935,8 +949,8 @@ function faqMeta(category) {
                     <p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mx-auto mt-3">{{ systemWidget(section).content?.text }}</p>
                 </div>
                 <div class="relative mb-4">
-                    <div class="hidden md:block absolute top-7 left-[16.66%] right-[16.66%] h-0.5 bg-outline-variant" />
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+                    <div v-if="timelineColumns(section) > 1" class="hidden md:block absolute top-7 h-0.5 bg-outline-variant" :style="timelineLineStyle(section)" />
+                    <div class="grid grid-cols-1 gap-gutter" :class="TIMELINE_GRID[timelineColumns(section)]">
                         <div v-for="(item, itemIndex) in systemWidget(section).content?.items || []" :key="itemIndex" class="group relative bg-white p-8 rounded-xl border border-outline-variant shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300" :class="item.tone === 'secondary' ? 'hover:bg-secondary hover:border-secondary' : item.tone === 'tertiary' ? 'hover:bg-tertiary hover:border-tertiary' : 'hover:bg-primary hover:border-primary'">
                             <div class="w-14 h-14 rounded-full group-hover:bg-white flex items-center justify-center mb-6 transition-colors duration-300" :class="serviceTone(item.tone)">
                                 <span class="material-symbols-outlined">{{ item.icon }}</span>

@@ -6,6 +6,7 @@ export const STATUS_STYLES = {
     'En attente supervision': 'bg-primary-fixed text-on-primary-fixed-variant',
     Validé: 'bg-secondary text-on-secondary',
     Refusé: 'bg-error text-on-error',
+    Retiré: 'bg-surface-container-high text-on-surface-variant',
 };
 
 export const STATUT_BAR_COLORS = {

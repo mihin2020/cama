@@ -383,7 +383,7 @@
             function refreshEnfantsHint() {
                 const sc = getScolarite();
                 document.getElementById('enfants-hint').textContent = sc.actif
-                    ? `Du plus âgé au plus jeune. À partir de ${sc.ageSeuil} ans : « ${sc.label} » obligatoire (si activé dans Paramètres).`
+                    ? `Du plus âgé au plus jeune. À partir de ${sc.ageSeuil} ans : « ${sc.label} » obligatoire.`
                     : 'Du plus âgé au plus jeune. (Certificat de scolarité désactivé dans Paramètres.)';
             }
             refreshEnfantsHint();

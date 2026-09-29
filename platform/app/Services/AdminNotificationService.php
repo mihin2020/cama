@@ -81,7 +81,7 @@ class AdminNotificationService
             [
                 'type' => 'export',
                 'titre' => 'Export terminé',
-                'contenu' => 'Export CSV du journal d\'audit (01/05 → 31/05) prêt.',
+                'contenu' => 'Export CSV des dossiers (01/05 → 31/05) prêt.',
                 'lien' => route('admin.exports'),
                 'lu' => true,
             ],

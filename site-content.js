@@ -33,14 +33,14 @@
     const DEFAULT_SLIDES = [
         { id: 1, titre: 'La santé de nos héros, notre priorité', sousTitre: 'Lancée officiellement le 13 février 2025, la CAMA assure une couverture santé robuste aux militaires et à leurs familles.', image: 'images/CAMA_8.jfif', ordre: 1, actif: true, lien: 'espace-assure.html', lienLabel: 'Espace Assuré' },
         { id: 2, titre: 'Une solidarité au service des forces armées', sousTitre: 'Une cotisation de 5,5 % pour une prise en charge à 80 % des soins, dans la dignité et la transparence.', image: 'images/CAMA_6.jfif', ordre: 2, actif: true, lien: 'services.html', lienLabel: 'Nos prestations' },
-        { id: 3, titre: 'Une institution moderne et accessible', sousTitre: 'Successeur de la MUFAN, la CAMA poursuit la digitalisation de ses services pour mieux servir ses assurés.', image: 'images/CAMA_1.jfif', ordre: 3, actif: true, lien: 'actualite.html', lienLabel: 'Voir les actualités' }
+        { id: 3, titre: 'Une institution moderne et accessible', sousTitre: 'La CAMA poursuit la digitalisation de ses services pour mieux servir ses assurés.', image: 'images/CAMA_1.jfif', ordre: 3, actif: true, lien: 'actualite.html', lienLabel: 'Voir les actualités' }
     ];
 
     const DEFAULT_CHIFFRES = [
         { id: 1, valeur: 5.5, suffixe: '%', libelle: 'Taux de cotisation mensuelle', icone: 'percent', ordre: 1 },
         { id: 2, valeur: 150, suffixe: '+', libelle: 'Structures de soins partenaires', icone: 'local_hospital', ordre: 2 },
-        { id: 3, valeur: 13, suffixe: '', libelle: 'Régions couvertes au Burkina Faso', icone: 'map', ordre: 3 },
-        { id: 4, valeur: 2020, suffixe: '', libelle: 'Année de fondation (MUFAN)', icone: 'history', ordre: 4 }
+        { id: 3, valeur: 17, suffixe: '', libelle: 'Régions couvertes au Burkina Faso', icone: 'map', ordre: 3 },
+        { id: 4, valeur: 2020, suffixe: '', libelle: 'Année de création', icone: 'history', ordre: 4 }
     ];
 
     const DEFAULT_ARTICLES = [
@@ -54,7 +54,7 @@
             date: '13/02/2025',
             image: 'images/CAMA_8.jfif',
             resume: "Au siège de l'ex-État-Major Général des Armées à Bilbalogho, la CAMA a été officiellement lancée en présence du Ministre d'État chargé de la Défense.",
-            contenu: "<p>Au siège de l'ex-État-Major Général des Armées à Bilbalogho, la CAMA a été officiellement lancée en présence du Général de Brigade Céléstin Simporé, Ministre d'État chargé de la Défense.</p><p>L'institution succède à la MUFAN et élargit la couverture santé aux conjoints et enfants des militaires, conformément au décret n°2020-0272.</p>",
+            contenu: "<p>Au siège de l'ex-État-Major Général des Armées à Bilbalogho, la CAMA a été officiellement lancée en présence du Général de Brigade Céléstin Simporé, Ministre d'État chargé de la Défense.</p><p>L'institution élargit la couverture santé aux conjoints et enfants des militaires, conformément au décret n°2020-0272.</p>",
             featured: true
         },
         {
@@ -150,24 +150,53 @@
         localStorage.setItem(key, JSON.stringify(data));
     }
 
+    // Anciennes formulations retirées du contenu (déjà enregistrées dans certains navigateurs).
+    const OBSOLETE_PHRASES = [
+        ['Successeur de la MUFAN, la CAMA', 'La CAMA'],
+        ['la CAMA succède à la MUFAN et élargit', 'la CAMA élargit'],
+        ['succède à la MUFAN et élargit', 'élargit'],
+        ['Année de fondation (MUFAN)', 'Année de création'],
+    ];
+
+    function withoutObsoletePhrases(items, key) {
+        let changed = false;
+        const cleaned = items.map((item) => {
+            const copy = { ...item };
+            for (const [field, value] of Object.entries(copy)) {
+                if (typeof value !== 'string') continue;
+                const next = OBSOLETE_PHRASES.reduce((text, [from, to]) => text.split(from).join(to), value);
+                if (next !== value) {
+                    copy[field] = next;
+                    changed = true;
+                }
+            }
+            return copy;
+        });
+        if (changed) writeJson(key, cleaned);
+        return cleaned;
+    }
+
     function getSlides() {
-        return readJson(SLIDES_KEY, DEFAULT_SLIDES)
+        return withoutObsoletePhrases(readJson(SLIDES_KEY, DEFAULT_SLIDES), SLIDES_KEY)
             .filter(s => s.actif !== false)
             .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
     }
 
     function getChiffres() {
-        let chiffres = readJson(CHIFFRES_KEY, DEFAULT_CHIFFRES);
+        let chiffres = withoutObsoletePhrases(readJson(CHIFFRES_KEY, DEFAULT_CHIFFRES), CHIFFRES_KEY);
         let migrated = false;
 
         chiffres = chiffres.map((c) => {
             const isLegacyBeneficiaires = c.libelle === 'Bénéficiaires couverts'
                 || (Number(c.valeur) === 250 && c.suffixe === 'k');
-            if (!isLegacyBeneficiaires) return c;
+            // Le Burkina Faso compte 17 régions (et non plus 13).
+            const isLegacyRegions = String(c.libelle || '').startsWith('Régions couvertes')
+                && Number(c.valeur) === 13;
+            if (!isLegacyBeneficiaires && !isLegacyRegions) return c;
             migrated = true;
             return {
                 ...c,
-                valeur: 13,
+                valeur: 17,
                 suffixe: '',
                 libelle: 'Régions couvertes au Burkina Faso',
                 icone: 'map',
@@ -180,7 +209,7 @@
     }
 
     function getArticles() {
-        const stored = readJson(ARTICLES_KEY, DEFAULT_ARTICLES);
+        const stored = withoutObsoletePhrases(readJson(ARTICLES_KEY, DEFAULT_ARTICLES), ARTICLES_KEY);
         return stored.length ? stored : DEFAULT_ARTICLES.slice();
     }
 

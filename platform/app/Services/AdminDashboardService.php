@@ -15,41 +15,53 @@ class AdminDashboardService
         'En attente supervision',
     ];
 
-    private const GESTIONNAIRES = [
-        'Lt. Aminata KABORÉ',
-        'Sgt. Daniel ZONGO',
-        'Adj. Rasmané BANCÉ',
-    ];
+    public function __construct(private DossierAffectationService $affectation) {}
 
+    /**
+     * @param  string|null  $gestionnaireFilter  Nom du gestionnaire connecté : restreint
+     *                                            le tableau de bord à ses propres dossiers
+     *                                            (vue personnelle). null = vue globale (encadrement).
+     */
     public function stats(?string $gestionnaireFilter = null): array
     {
-        $allDossiers = Dossier::query()
-            ->with('assure')
+        $personnel = $gestionnaireFilter !== null;
+
+        // Base commune (dossiers soumis, hors brouillon) — une nouvelle requête à chaque appel.
+        $base = fn () => Dossier::query()
             ->when($gestionnaireFilter, fn ($q) => $q->where('gestionnaire', $gestionnaireFilter))
-            ->get();
+            ->where('statut', '!=', 'Brouillon');
 
-        $dossiers = $allDossiers->where('statut', '!=', 'Brouillon');
-        $byStatut = $dossiers->groupBy('statut')->map->count()->all();
+        // Comptages par statut en une seule agrégation SQL (au lieu de tout charger en mémoire).
+        $byStatut = $base()
+            ->selectRaw('statut, count(*) as c')
+            ->groupBy('statut')
+            ->pluck('c', 'statut')
+            ->map(fn ($c) => (int) $c)
+            ->all();
 
-        $enAttente = $dossiers->whereIn('statut', self::OPEN_STATUTS)->count();
+        $enAttente = collect(self::OPEN_STATUTS)->sum(fn ($s) => $byStatut[$s] ?? 0);
         $valides = $byStatut['Validé'] ?? 0;
         $refuses = $byStatut['Refusé'] ?? 0;
-        $total = $dossiers->count();
+        $total = array_sum($byStatut);
         $tauxValidation = $total ? round(($valides / $total) * 1000) / 10 : 0;
-        $nonAffectes = $dossiers->filter(fn ($d) => ! $d->gestionnaire || $d->gestionnaire === 'Non affecté')->count();
 
-        $familles = $allDossiers->groupBy('assure_id');
-        $famillesATraiter = $familles->filter(function ($group) {
-            return $group->contains(fn ($d) => in_array($d->statut, self::OPEN_STATUTS, true));
-        })->count();
+        $nonAffectes = $base()
+            ->where(fn ($q) => $q->whereNull('gestionnaire')->orWhereIn('gestionnaire', ['', 'Non affecté']))
+            ->count();
 
-        $charges = $this->gestionnaireCharge($allDossiers);
+        // Familles distinctes (count(distinct assure_id)).
+        $famillesDossiers = $base()->distinct()->count('assure_id');
+        $famillesATraiter = $base()->whereIn('statut', self::OPEN_STATUTS)->distinct()->count('assure_id');
+
+        $charges = $this->gestionnaireCharge($gestionnaireFilter);
         $totalRetard = collect($charges)->sum('retard');
 
-        $priority = $dossiers
+        // Dossiers prioritaires — requête bornée (30 lignes max).
+        $priority = $base()
             ->whereIn('statut', self::OPEN_STATUTS)
-            ->sortBy('date_soumission')
-            ->take(6)
+            ->orderBy('date_soumission')
+            ->limit(30)
+            ->get(['id', 'ref', 'nom', 'prenom', 'statut'])
             ->map(fn ($d) => [
                 'ref' => $d->ref,
                 'nom' => $d->beneficiaire,
@@ -59,7 +71,11 @@ class AdminDashboardService
             ->values()
             ->all();
 
-        $recentActivity = $dossiers
+        // Activité récente : bornée aux 40 dossiers récemment mis à jour, puis 10 évènements.
+        $recentActivity = $base()
+            ->orderByDesc('updated_at')
+            ->limit(40)
+            ->get(['ref', 'nom', 'prenom', 'statut', 'journal'])
             ->flatMap(function ($d) {
                 return collect($d->journal ?? [])->map(fn ($j) => [
                     'ref' => $d->ref,
@@ -69,73 +85,116 @@ class AdminDashboardService
                     'statut' => $d->statut,
                 ]);
             })
-            ->sortByDesc('date')
-            ->take(8)
+            ->sortByDesc(fn ($a) => $this->parseFrDate($a['date']))
+            ->take(10)
             ->values()
             ->all();
 
-        $assures = Assure::query()->get();
+        if ($personnel) {
+            // Vue personnelle : les « assurés » du gestionnaire sont les familles
+            // qu'il suit réellement (dossiers qui lui sont affectés). La file
+            // d'inscriptions est un flux global qui ne le concerne pas.
+            $assuresTotal = $famillesDossiers;
+            $assuresActifs = $base()->where('statut', 'Validé')->distinct()->count('assure_id');
+            $inscriptionsEnAttente = 0;
+        } else {
+            // Vue globale (encadrement) : comptage des assurés par statut en une agrégation SQL.
+            $assureCounts = Assure::query()
+                ->selectRaw('statut, count(*) as c')
+                ->groupBy('statut')
+                ->pluck('c', 'statut')
+                ->map(fn ($c) => (int) $c);
+            $assuresTotal = (int) $assureCounts->sum();
+            $assuresActifs = (int) ($assureCounts[AssureStatut::Actif->value] ?? 0);
+            $inscriptionsEnAttente = (int) ($assureCounts[AssureStatut::EnAttenteValidation->value] ?? 0);
+        }
 
         return [
-            'assuresTotal' => $assures->count(),
-            'assuresActifs' => $assures->where('statut', AssureStatut::Actif)->count(),
-            'inscriptionsEnAttente' => $assures->where('statut', AssureStatut::EnAttenteValidation)->count(),
+            'assuresTotal' => $assuresTotal,
+            'assuresActifs' => $assuresActifs,
+            'inscriptionsEnAttente' => $inscriptionsEnAttente,
             'dossiersEnAttente' => $enAttente,
             'dossiersValides' => $valides,
             'dossiersRefuses' => $refuses,
             'dossiersTotal' => $total,
             'tauxValidation' => $tauxValidation,
             'nonAffectes' => $nonAffectes,
-            'famillesDossiers' => $familles->count(),
+            'famillesDossiers' => $famillesDossiers,
             'famillesATraiter' => $famillesATraiter,
-            'delaiMoyenJours' => $this->computeDelaiMoyenJours($dossiers),
+            'delaiMoyenJours' => $this->computeDelaiMoyenJours($gestionnaireFilter),
             'totalRetard' => $totalRetard,
             'byStatut' => $byStatut,
             'charges' => $charges,
             'priority' => $priority,
             'recentActivity' => $recentActivity,
-            'stockageGo' => max(12, (int) round($total * 0.8 + $assures->count() * 2)),
+            'stockageGo' => max(12, (int) round($total * 0.8 + $assuresTotal * 2)),
             'projectionGo' => max(1, (int) round($enAttente * 0.15)),
         ];
     }
 
-    private function gestionnaireCharge($dossiers): array
+    private function gestionnaireCharge(?string $gestionnaireFilter): array
     {
-        return collect(self::GESTIONNAIRES)->map(function ($nom) use ($dossiers) {
-            $mine = $dossiers->where('gestionnaire', $nom)->where('statut', '!=', 'Brouillon');
-            $nonTraites = $mine->whereIn('statut', self::OPEN_STATUTS)->count();
-            $retard = $mine->filter(function ($d) {
-                if (! in_array($d->statut, self::OPEN_STATUTS, true) || ! $d->date_soumission) {
-                    return false;
-                }
+        $base = fn () => Dossier::query()
+            ->when($gestionnaireFilter, fn ($q) => $q->where('gestionnaire', $gestionnaireFilter))
+            ->where('statut', '!=', 'Brouillon');
 
-                return $d->date_soumission->diffInDays(now()) > 7;
-            })->count();
+        // 4 agrégations SQL (par gestionnaire) au lieu de parcourir toute la collection.
+        $assignes = $base()->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $nonTraites = $base()->whereIn('statut', self::OPEN_STATUTS)->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $valides = $base()->where('statut', 'Validé')->selectRaw('gestionnaire, count(*) c')->groupBy('gestionnaire')->pluck('c', 'gestionnaire');
+        $retard = $base()
+            ->whereIn('statut', self::OPEN_STATUTS)
+            ->whereNotNull('date_soumission')
+            ->whereDate('date_soumission', '<', now()->subDays(7)->toDateString())
+            ->selectRaw('gestionnaire, count(*) c')
+            ->groupBy('gestionnaire')
+            ->pluck('c', 'gestionnaire');
 
-            return [
-                'nom' => $nom,
-                'assignes' => $mine->count(),
-                'nonTraites' => $nonTraites,
-                'valides' => $mine->where('statut', 'Validé')->count(),
-                'retard' => $retard,
-            ];
-        })->all();
+        // Pool réel de gestionnaires (comptes internes actifs + noms déjà présents
+        // sur des dossiers). En vue personnelle, on ne garde que le gestionnaire connecté.
+        $pool = $gestionnaireFilter !== null
+            ? [$gestionnaireFilter]
+            : $this->affectation->pool();
+
+        return collect($pool)->map(fn ($nom) => [
+            'nom' => $nom,
+            'assignes' => (int) ($assignes[$nom] ?? 0),
+            'nonTraites' => (int) ($nonTraites[$nom] ?? 0),
+            'valides' => (int) ($valides[$nom] ?? 0),
+            'retard' => (int) ($retard[$nom] ?? 0),
+        ])->all();
     }
 
-    private function computeDelaiMoyenJours($dossiers): float
+    private function computeDelaiMoyenJours(?string $gestionnaireFilter): float
     {
-        $traites = $dossiers->filter(fn ($d) => in_array($d->statut, ['Validé', 'Refusé'], true) && $d->date_soumission);
+        // Échantillon borné aux 200 derniers dossiers traités (suffisant pour une moyenne).
+        $traites = Dossier::query()
+            ->when($gestionnaireFilter, fn ($q) => $q->where('gestionnaire', $gestionnaireFilter))
+            ->whereIn('statut', ['Validé', 'Refusé'])
+            ->whereNotNull('date_soumission')
+            ->orderByDesc('date_decision')
+            ->limit(200)
+            ->get(['date_soumission', 'date_decision']);
 
         if ($traites->isEmpty()) {
             return 3.2;
         }
 
-        $total = $traites->sum(function ($d) {
-            $end = $d->date_decision ?? now();
-
-            return $d->date_soumission->diffInDays($end);
-        });
+        $total = $traites->sum(fn ($d) => $d->date_soumission->diffInDays($d->date_decision ?? now()));
 
         return round($total / $traites->count(), 1);
+    }
+
+    /**
+     * Convertit une date de journal « jj/mm/aaaa HH:MM » en clé triable « aaaammjjHHMM ».
+     */
+    private function parseFrDate(?string $dateStr): string
+    {
+        $dateStr = trim((string) $dateStr);
+        if (! preg_match('#^(\d{2})/(\d{2})/(\d{4})(?:\s+(\d{2}):(\d{2}))?#', $dateStr, $m)) {
+            return '000000000000';
+        }
+
+        return $m[3].$m[2].$m[1].($m[4] ?? '00').($m[5] ?? '00');
     }
 }

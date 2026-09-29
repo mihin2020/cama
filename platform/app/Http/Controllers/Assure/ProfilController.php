@@ -9,6 +9,7 @@ namespace App\Http\Controllers\Assure;
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
 use App\Services\AssureDashboardService;
+use App\Services\PlatformSettingsService;
 
 use Illuminate\Http\RedirectResponse;
 
@@ -44,10 +45,50 @@ class ProfilController extends Controller
 
             'securityLog' => $this->securityLog(),
 
+            'orgStructure' => app(PlatformSettingsService::class)->orgStructure(),
+
             'unreadCount' => $dashboard->stats($assure)['unreadCount'],
 
         ]);
 
+    }
+
+    public function updateRattachement(Request $request): RedirectResponse
+    {
+        $assure = auth('assure')->user();
+
+        $data = $request->validate([
+            'grade' => ['nullable', 'string', 'max:100'],
+            'categorie' => ['nullable', 'string', 'max:100'],
+            'armee' => ['nullable', 'string', 'max:150'],
+            'region' => ['nullable', 'string', 'max:200'],
+            'corps' => ['nullable', 'string', 'max:200'],
+            'service' => ['nullable', 'string', 'max:200'],
+            'section' => ['nullable', 'string', 'max:200'],
+            'sous_section' => ['nullable', 'string', 'max:200'],
+        ]);
+
+        // Trace la mutation dans le journal de l'assuré (visible dans l'historique).
+        $journal = $assure->journal ?? [];
+        $journal[] = [
+            'date' => now()->format('d/m/Y H:i'),
+            'libelle' => 'Situation militaire / rattachement mis à jour'
+                .($data['region'] && $data['region'] !== $assure->region ? " (mutation vers {$data['region']})" : ''),
+        ];
+
+        $assure->update([
+            'grade' => $data['grade'],
+            'categorie' => $data['categorie'],
+            'armee' => $data['armee'],
+            'region' => $data['region'],
+            'corps' => $data['corps'] ?: null,
+            'service' => $data['service'] ?: null,
+            'section' => $data['section'] ?: null,
+            'sous_section' => $data['sous_section'] ?: null,
+            'journal' => $journal,
+        ]);
+
+        return back()->with('success', 'Situation militaire mise à jour.');
     }
 
 

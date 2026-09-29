@@ -27,6 +27,7 @@ class AdminAssureService
     {
         $query = Assure::query()
             ->withCount(['dossiers' => fn ($q) => $q->where('statut', '!=', 'Brouillon')])
+            ->with(['dossiers' => fn ($q) => $q->where('statut', '!=', 'Brouillon')->orderByDesc('date_soumission')])
             ->orderByDesc('created_at');
 
         $statut = $filters['statut'] ?? 'tous';
@@ -116,10 +117,8 @@ class AdminAssureService
 
     private function formatListRow(Assure $assure): array
     {
-        $membres = $assure->dossiers()
-            ->where('statut', '!=', 'Brouillon')
-            ->orderByDesc('date_soumission')
-            ->get()
+        // Utilise la relation déjà eager-loadée (évite une requête par ligne — N+1).
+        $membres = $assure->dossiers
             ->map(fn (Dossier $d) => [
                 'id' => $d->id,
                 'nom' => $d->beneficiaire,
