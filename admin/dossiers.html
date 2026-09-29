@@ -191,7 +191,7 @@
 </summary>
 <div class="px-4 pb-4 pt-0 text-xs text-on-surface-variant leading-relaxed border-t border-primary/10">
 <p class="md:hidden mb-2"><strong class="text-on-surface">Assuré</strong> = le militaire. <strong class="text-on-surface">Dossier familial</strong> = l'ensemble des membres déclarés (conjoints, enfants…).</p>
-<p class="hidden md:block"><strong class="text-on-surface">Assuré principal</strong> = le militaire (ex. Issouf TRAORÉ). Le <strong class="text-on-surface">dossier familial</strong> regroupe toutes les demandes d'enrôlement de ses ayants droit. L'<strong class="text-on-surface">affectation</strong> et le <strong class="text-on-surface">traitement</strong> se font au niveau du dossier assuré.</p>
+<p class="hidden md:block"><strong class="text-on-surface">Assuré principal</strong> = le militaire. Le <strong class="text-on-surface">dossier familial</strong> regroupe toutes les demandes d'enrôlement de ses ayants droit. L'<strong class="text-on-surface">affectation</strong> et le <strong class="text-on-surface">traitement</strong> se font au niveau du dossier assuré.</p>
 <p class="mt-2">Utilisez les onglets pour séparer les dossiers <strong>à traiter</strong>, <strong>validés</strong>, <strong>refusés</strong> et <strong>à compléter</strong>.</p>
 </div>
 </details>
@@ -199,6 +199,7 @@
 <div class="mb-4">
 <p class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant mb-2">File de traitement</p>
 <div class="flex flex-wrap gap-2" id="queue-tabs">
+<button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="tous" type="button">Tous <span class="queue-badge ml-1">0</span></button>
 <button class="queue-tab is-active px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-primary text-on-primary" data-queue="a_traiter" type="button">À traiter <span class="queue-badge ml-1">0</span></button>
 <button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="valides" type="button">Validés <span class="queue-badge ml-1">0</span></button>
 <button class="queue-tab px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-queue="refuses" type="button">Refusés <span class="queue-badge ml-1">0</span></button>
@@ -218,10 +219,14 @@
 <div class="assure-card p-4 mb-4 border border-secondary/25 bg-secondary/5" data-roles="gestionnaire" id="gestionnaire-scope-banner">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-secondary text-[22px] shrink-0">assignment_ind</span>
-<div class="text-xs text-on-surface-variant leading-relaxed">
+<div class="text-xs text-on-surface-variant leading-relaxed flex-1">
+<div class="flex flex-wrap items-baseline justify-between gap-2">
 <p class="font-bold text-on-surface text-sm mb-0.5">Mes dossiers affectés</p>
-<p>Vous ne voyez que les dossiers familiaux qui vous ont été <strong class="text-on-surface">affectés par le superviseur</strong>. Les dossiers non affectés ou assignés à un autre gestionnaire n'apparaissent pas ici.</p>
-<p class="mt-1.5 text-[11px]" id="gestionnaire-scope-label">—</p>
+<p class="text-[11px]" id="gestionnaire-derniere-affectation"></p>
+</div>
+<p>Vous ne voyez que les dossiers familiaux qui vous ont été <strong class="text-on-surface">affectés</strong> (par le superviseur ou automatiquement). Les dossiers non affectés ou assignés à un autre gestionnaire n'apparaissent pas ici.</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-3" id="gestionnaire-stats-grid"></div>
+<p class="mt-2 text-[11px]" id="gestionnaire-scope-label">—</p>
 </div>
 </div>
 </div>
@@ -234,6 +239,11 @@
 <button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shrink-0" id="batch-assign-btn" type="button">Affecter la sélection</button>
 </div>
 </div>
+</div>
+<!-- Affectation automatique active (superviseur / admin) -->
+<div class="assure-card p-3 mb-4 border border-secondary/25 bg-secondary/5 hidden items-center gap-2 text-xs text-on-surface-variant" data-roles="superviseur,administrateur" id="affectation-auto-banner">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">smart_toy</span>
+<p>Affectation automatique active — <strong class="text-on-surface" id="affectation-auto-mode-label"></strong> : les nouveaux dossiers soumis sont attribués automatiquement aux gestionnaires actifs. Vous pouvez toujours réaffecter manuellement.</p>
 </div>
 <!-- Filters -->
 <div class="assure-card p-4 mb-4 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap gap-3 items-stretch lg:items-center">
@@ -255,6 +265,7 @@
 <option>Conjoint(e)</option>
 <option>Enfant biologique</option>
 <option>Enfant du conjoint</option>
+<option>Enfant adopté</option>
 <option>Parent</option>
 <option>Autre</option>
 </select>
@@ -319,7 +330,7 @@
             direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
         };
 
-        const PIECES_REQUETABLES = ["Acte de naissance", "Copie CNIB", "Acte de mariage", "Pièce justifiant la garde", "Acte de divorce"];
+        const PIECES_REQUETABLES = ["FIF signée", "Acte de naissance", "Copie CNIB", "Acte de mariage", "Pièce justifiant la garde", "Acte de divorce"];
 
         let DOSSIERS = CamaAssureData.getDossiers();
         let queueTab = localStorage.getItem('cama_admin_queue_tab') || 'a_traiter';
@@ -410,11 +421,34 @@
             el.textContent = nom
                 ? `Connecté en tant que ${nom} · ${n} demande(s) membre(s) dans votre périmètre.`
                 : 'Aucun gestionnaire identifié.';
+
+            const derniereEl = document.getElementById('gestionnaire-derniere-affectation');
+            const gridEl = document.getElementById('gestionnaire-stats-grid');
+            if (!nom || !gridEl) return;
+            const stats = CamaAssureData.getMesDossiersStats(nom);
+            if (derniereEl) {
+                derniereEl.textContent = stats.derniereAffectation
+                    ? `Dernière affectation reçue le ${stats.derniereAffectation}`
+                    : '';
+            }
+            const tiles = [
+                ['Affectés au total', stats.total, 'text-on-surface'],
+                ['À traiter', stats.aTraiter, 'text-primary'],
+                ['Complément demandé', stats.complement, 'text-on-surface'],
+                ['En supervision', stats.enSupervision, 'text-on-surface'],
+                ['Validés', stats.valides, 'text-on-surface'],
+                ['Refusés', stats.refuses, 'text-on-surface']
+            ];
+            gridEl.innerHTML = tiles.map(([label, val, cls]) => `
+                <div class="bg-white rounded-lg border border-outline-variant px-3 py-2">
+                    <p class="text-lg font-bold leading-tight ${cls}">${val}</p>
+                    <p class="text-[10px] uppercase tracking-wide">${label}</p>
+                </div>`).join('');
         }
 
         // ---- Filtering, sorting, pagination ----
         const PAGE_SIZE = 5;
-        const GROUP_PAGE_SIZE = 4;
+        const GROUP_PAGE_SIZE = 10;
         let currentPage = 1;
 
         function canBatchAssign() {
@@ -472,12 +506,12 @@
             }
             const filterGest = document.getElementById('filter-gestionnaire');
             if (filterGest) {
-                filterGest.classList.toggle('hidden', affectationTab !== 'affecte');
+                filterGest.classList.toggle('hidden', !canBatchAssign());
             }
         }
 
         function updateAffectationBadges(groups) {
-            const list = groups || CamaAssureData.groupDossiersByAssure(getFiltered()).filter(g => g.queue === queueTab);
+            const list = groups || CamaAssureData.groupDossiersByAssure(getFiltered()).filter(g => queueTab === 'tous' || g.queue === queueTab);
             const non = list.filter(g => !isDossierAffecte(g.gestionnaire)).length;
             const oui = list.filter(g => isDossierAffecte(g.gestionnaire)).length;
             const elTous = document.getElementById('affect-badge-tous');
@@ -510,7 +544,7 @@
             return groups.filter(g => {
                 if (affectationTab === 'non_affecte' && isDossierAffecte(g.gestionnaire)) return false;
                 if (affectationTab === 'affecte' && !isDossierAffecte(g.gestionnaire)) return false;
-                if (affectationTab === 'affecte' && gestFilt !== 'Tous' && g.gestionnaire !== gestFilt) return false;
+                if (gestFilt !== 'Tous' && g.gestionnaire !== gestFilt) return false;
                 return true;
             });
         }
@@ -519,7 +553,7 @@
             if (!scopedGroupsCache) {
                 scopedGroupsCache = CamaAssureData.groupDossiersByAssure(getScopedDossiers());
             }
-            const counts = { a_traiter: 0, valides: 0, refuses: 0, complement: 0 };
+            const counts = { tous: scopedGroupsCache.length, a_traiter: 0, valides: 0, refuses: 0, complement: 0 };
             scopedGroupsCache.forEach(g => { if (counts[g.queue] !== undefined) counts[g.queue]++; });
             document.querySelectorAll('.queue-tab').forEach(btn => {
                 const q = btn.dataset.queue;
@@ -550,6 +584,19 @@
             if (bar && canBatchAssign()) bar.classList.toggle('hidden', selectedAssures.size === 0);
         }
 
+        function updateAffectationAutoBanner() {
+            const banner = document.getElementById('affectation-auto-banner');
+            if (!banner) return;
+            const settings = CamaAssureData.getAffectationSettings();
+            const show = canBatchAssign() && settings.mode !== 'manuelle';
+            banner.classList.toggle('hidden', !show);
+            banner.classList.toggle('flex', show);
+            if (show) {
+                const labels = { round_robin: 'répartition équilibrée (round-robin)', charge_min: 'charge la plus faible' };
+                document.getElementById('affectation-auto-mode-label').textContent = labels[settings.mode] || settings.mode;
+            }
+        }
+
         function renderView(page) {
             reloadDossiersFromStore();
             scopedGroupsCache = CamaAssureData.groupDossiersByAssure(getScopedDossiers());
@@ -558,6 +605,7 @@
             const filteredGroups = CamaAssureData.groupDossiersByAssure(getFiltered());
             updateAffectationBadges(filteredGroups);
             updateGestionnaireScopeBanner();
+            updateAffectationAutoBanner();
             renderGrouped(page, filteredGroups);
         }
 
@@ -669,7 +717,7 @@
         function renderGrouped(page, precomputedGroups) {
             currentPage = page || 1;
             let groups = precomputedGroups || CamaAssureData.groupDossiersByAssure(getFiltered());
-            groups = groups.filter(g => g.queue === queueTab);
+            if (queueTab !== 'tous') groups = groups.filter(g => g.queue === queueTab);
             groups = filterGroupsByAffectation(groups);
             const totalPages = Math.max(1, Math.ceil(groups.length / GROUP_PAGE_SIZE));
             currentPage = Math.min(currentPage, totalPages);
@@ -677,7 +725,7 @@
             const pageGroups = groups.slice(start, start + GROUP_PAGE_SIZE);
             groupedPageCache = pageGroups;
             const container = document.getElementById('view-assure');
-            const queueLabels = { a_traiter: 'à traiter', valides: 'validés', refuses: 'refusés', complement: 'à compléter' };
+            const queueLabels = { tous: '', a_traiter: 'à traiter', valides: 'validés', refuses: 'refusés', complement: 'à compléter' };
 
             if (!pageGroups.length) {
                 container.innerHTML = `<div class="assure-card p-10 text-center text-on-surface-variant text-sm">Aucun dossier familial ${queueLabels[queueTab] || ''} ne correspond à ces filtres.</div>`;
@@ -787,11 +835,18 @@
             if (d.statut === 'En attente supervision' && role === 'gestionnaire') {
                 return { label: 'Valider', sub: '', show: false };
             }
-            if (isValidation2N() && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
+            if (d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
                 return { label: 'Valider (niveau 2)', sub: 'Validation finale — le dossier quittera la file active.', show: true };
             }
             if (role === 'superviseur' && d.statut === 'En attente supervision') {
                 return { label: 'Valider (supervision)', sub: 'Validation finale par le superviseur.', show: true };
+            }
+            if (isValidation2N() && role === 'gestionnaire') {
+                return {
+                    label: 'Valider (niveau 1)',
+                    sub: 'Validation à deux niveaux activée : le dossier passera « En attente supervision » et sera validé définitivement par le superviseur.',
+                    show: true
+                };
             }
             return { label: 'Valider', sub: role === 'superviseur' ? 'Le superviseur peut traiter et valider ce dossier.' : 'Le gestionnaire peut valider directement. L\'assuré sera notifié.', show: true };
         }
@@ -1055,15 +1110,13 @@
                         <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Assuré principal</p><p class="text-xs font-bold">${d.assureNom}</p></div>
                         <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Lien de parenté</p><p class="text-xs font-bold">${d.lien}</p></div>
                         <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Soumis le</p><p class="text-xs font-bold">${formatDate(d.dateSoumission)}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Gestionnaire affecté</p><p class="text-xs font-bold">${d.gestionnaire || 'Non affecté'}</p></div>
+                        <div class="bg-white rounded-lg p-3 border border-outline-variant"><p class="text-[10px] text-on-surface-variant uppercase">Affecté le</p><p class="text-xs font-bold">${CamaAssureData.getAffectationDate(d) || '—'}</p></div>
                         <div class="bg-white rounded-lg p-3 border border-outline-variant sm:col-span-2"><p class="text-[10px] text-on-surface-variant uppercase">Statut de cette demande</p><div class="mt-1">${statusBadge(d.statut)}</div></div>
                     </div>
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> État civil du bénéficiaire</h3>
                         <div class="grid grid-cols-2 gap-2">${beneficiaireInfoHtml(d)}</div>
-                    </div>
-                    <div>
-                        <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation (dossier familial)</label>
-                        <p class="text-xs text-on-surface-variant mb-1">${affectationLabel(d.gestionnaire)} — modifiable depuis la vue dossier familial.</p>
                     </div>
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">folder</span> Pièces justificatives</h3>
@@ -1082,7 +1135,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="sticky bottom-0 bg-white border-t border-outline-variant p-3 sm:p-4 flex flex-wrap gap-2 sm:gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]" data-roles="gestionnaire,superviseur" id="detail-actions">
+                <div class="sticky bottom-0 bg-white border-t border-outline-variant p-3 sm:p-4 flex flex-wrap gap-2 sm:gap-2 shadow-[0_-4px_12px_rgba(0,0,0,0.06)]" data-roles="gestionnaire,superviseur,administrateur" id="detail-actions">
                     ${validerBtn}
                     <button class="detail-action-btn px-4 py-3 rounded-lg bg-error text-on-error text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'refuser')" type="button"><span class="material-symbols-outlined text-[18px]">cancel</span> Refuser</button>
                     <button class="detail-action-btn px-4 py-3 rounded-lg bg-tertiary text-on-tertiary text-sm font-bold flex items-center gap-2" onclick="openActionModal(${d.id}, 'complement')" type="button"><span class="material-symbols-outlined text-[18px]">description</span> Complément</button>
@@ -1131,9 +1184,18 @@
                     <p class="text-xs text-on-surface-variant mb-4">${d.beneficiaire}${d.ref}. ${valUi.sub}</p>
                     <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-secondary text-on-secondary font-bold" onclick="confirmAction(${id}, 'valider')">Confirmer</button></div>`;
             } else if (action === 'refuser') {
+                const motifs = CamaAssureData.getMotifsRefus();
+                const presetOptions = motifs.map(m => `<option value="${escHtml(m)}">${m}</option>`).join('');
                 html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-error">cancel</span> Refuser le dossier</h3>
                     <p class="text-xs text-on-surface-variant mb-3">${d.beneficiaire}${d.ref}. Le motif est obligatoire et sera communiqué à l'assuré.</p>
-                    <textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg mb-1" id="motif-refus" placeholder="Motif du refus…" rows="3"></textarea>
+                    <label class="text-[10px] font-bold uppercase text-on-surface-variant">Motif pré-défini</label>
+                    <select class="w-full mt-1 mb-3 px-3 py-2 text-xs border border-outline-variant rounded-lg" id="motif-refus-preset">
+                        <option value="">— Choisir un motif —</option>
+                        ${presetOptions}
+                        <option value="__custom__">Autre (saisie libre)</option>
+                    </select>
+                    <label class="text-[10px] font-bold uppercase text-on-surface-variant">Motif du refus</label>
+                    <textarea class="w-full mt-1 px-3 py-2 text-xs border border-outline-variant rounded-lg mb-1" id="motif-refus" placeholder="Motif du refus…" rows="3"></textarea>
                     <p class="text-error text-[11px] hidden mb-2" id="motif-refus-error">Le motif est obligatoire.</p>
                     <div class="flex justify-end gap-2 mt-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-error text-on-error font-bold" onclick="confirmAction(${id}, 'refuser')">Confirmer le refus</button></div>`;
             } else if (action === 'complement') {
@@ -1141,14 +1203,23 @@
                 html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">description</span> Demander un complément</h3>
                     <p class="text-xs text-on-surface-variant mb-3">${d.beneficiaire}${d.ref}. Sélectionnez la/les pièce(s) à redemander.</p>
                     <div class="max-h-40 overflow-y-auto border border-outline-variant rounded-lg p-2 mb-3">${checks}</div>
-                    <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-tertiary text-on-tertiary font-bold" onclick="confirmAction(${id}, 'complement')">Envoyer la demande</button></div>`;
+                    <label class="text-[10px] font-bold uppercase text-on-surface-variant">Message (optionnel)</label>
+                    <textarea class="w-full mt-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" id="comp-message" rows="3" placeholder="Précisions à l'attention de l'assuré…"></textarea>
+                    <div class="flex justify-end gap-2 mt-3"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-tertiary text-on-tertiary font-bold" onclick="confirmAction(${id}, 'complement')">Envoyer la demande</button></div>`;
             } else if (action === 'attente') {
                 html = `<h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2"><span class="material-symbols-outlined">pause_circle</span> Mettre en attente</h3>
-                    <p class="text-xs text-on-surface-variant mb-4">${d.beneficiaire}${d.ref}. Le dossier sera marqué « en instruction ».</p>
+                    <p class="text-xs text-on-surface-variant mb-4">${d.beneficiaire}${d.ref}. Le dossier passera en attente de supervision.</p>
                     <div class="flex justify-end gap-2"><button class="px-4 py-2 text-xs rounded-lg border border-outline" onclick="closeActionModal()">Annuler</button><button class="px-4 py-2 text-xs rounded-lg bg-on-background text-white font-bold" onclick="confirmAction(${id}, 'attente')">Confirmer</button></div>`;
             }
             document.getElementById('action-modal-content').innerHTML = html;
             document.getElementById('action-overlay').classList.add('is-open');
+            if (action === 'refuser') {
+                document.getElementById('motif-refus-preset').addEventListener('change', function () {
+                    if (this.value && this.value !== '__custom__') {
+                        document.getElementById('motif-refus').value = this.value;
+                    }
+                });
+            }
         }
         function closeActionModal() { document.getElementById('action-overlay').classList.remove('is-open'); }
 
@@ -1165,14 +1236,23 @@
             if (action === 'valider') {
                 const role = getCurrentRole();
                 const twoLevel = isValidation2N();
-                if (twoLevel && d.statut === 'En attente supervision' && (role === 'superviseur' || role === 'administrateur')) {
+                const admin = getAdminIdentity();
+                const nomActeur = admin?.nom || (role === 'gestionnaire' ? 'le gestionnaire' : role);
+                if (d.statut === 'En attente supervision' && role === 'gestionnaire') {
+                    // Bloqué : un gestionnaire ne peut pas valider un dossier en attente de supervision.
+                    showToast('<span class="material-symbols-outlined">error</span> Ce dossier attend la validation finale du superviseur.');
+                } else if (twoLevel && role === 'gestionnaire' && d.statut !== 'En attente supervision') {
+                    d.statut = 'En attente supervision';
+                    d.journal.push({ date: now, libelle: `Validation niveau 1 par ${nomActeur} — transmis à la supervision` });
+                    showToast('<span class="material-symbols-outlined">check_circle</span> Validation niveau 1 enregistrée — dossier transmis à la supervision.');
+                } else if (d.statut === 'En attente supervision') {
                     d.statut = 'Validé';
-                    d.journal.push({ date: now, libelle: 'Validation finale superviseur (niveau 2)' });
+                    d.journal.push({ date: now, libelle: `Validation finale (niveau 2) par ${nomActeur}` });
                     notifyAction = 'valider';
                     showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé (niveau 2).');
                 } else {
                     d.statut = 'Validé';
-                    d.journal.push({ date: now, libelle: role === 'gestionnaire' ? 'Dossier validé par le gestionnaire' : 'Dossier validé' });
+                    d.journal.push({ date: now, libelle: `Dossier validé par ${nomActeur}` });
                     notifyAction = 'valider';
                     showToast('<span class="material-symbols-outlined">check_circle</span> Dossier validé. L\'assuré a été notifié.');
                 }
@@ -1188,17 +1268,17 @@
             } else if (action === 'complement') {
                 const checked = Array.from(document.querySelectorAll('.comp-piece:checked')).map(c => c.value);
                 if (!checked.length) { showToast('<span class="material-symbols-outlined">error</span> Sélectionnez au moins une pièce.'); return; }
+                const message = document.getElementById('comp-message')?.value.trim() || '';
                 d.statut = 'Pièce manquante demandée';
                 checked.forEach(p => d.pieces.push({ type: p, statut: 'Manquante' }));
                 d.journal.push({ date: now, libelle: `Pièce(s) complémentaire(s) demandée(s) : ${checked.join(', ')}` });
                 notifyAction = 'complement';
-                notifyExtra = { pieces: checked };
+                notifyExtra = { pieces: checked, message: message || undefined };
                 showToast('<span class="material-symbols-outlined">check_circle</span> Demande de complément envoyée à l\'assuré.');
             } else if (action === 'attente') {
-                d.statut = 'En instruction';
-                d.journal.push({ date: now, libelle: 'Dossier mis en attente / instruction' });
-                notifyAction = 'attente';
-                showToast('<span class="material-symbols-outlined">check_circle</span> Dossier mis en attente.');
+                d.statut = 'En attente supervision';
+                d.journal.push({ date: now, libelle: 'Passage en attente de supervision' });
+                showToast('<span class="material-symbols-outlined">check_circle</span> Dossier mis en attente de supervision.');
             }
             if (notifyAction) CamaAssureData.notifyAssureFromAdminAction(d, notifyAction, notifyExtra);
             persistDossiers();

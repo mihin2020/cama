@@ -1,0 +1,27 @@
+---
+description: Parité obligatoire entre maquette HTML CAMA et vues Laravel/Inertia
+globs: platform/resources/js/**/*,platform/app/**/*
+alwaysApply: true
+---
+
+# Parité maquette HTML → Laravel + Inertia
+
+Lors de la migration d'une page HTML du prototype (`/admin`, `/assure`, racine) vers `platform/` :
+
+## Obligations
+
+1. **UI identique** : reproduire la même structure (sidebar, header, footer, cartes, tableaux, bandeaux, mobile nav), les mêmes classes Tailwind, icônes Material Symbols, couleurs CAMA (`admin-shell.css` / `assure-shell.css`).
+2. **Fonctionnalités identiques** : chaque action cliquable, filtre, badge, compteur et état vide de la maquette doit exister côté Laravel avec les mêmes règles métier.
+3. **Référence source** : toujours lire le fichier HTML correspondant avant d'implémenter (ex. `admin/dashboard.html` → `Pages/Admin/Dashboard.vue`).
+4. **Layouts partagés** : utiliser `AdminLayout.vue` ou `AssureLayout.vue` — ne pas réinventer la sidebar à chaque page.
+5. **Données réelles** : brancher sur Eloquent/services, pas de placeholder « bientôt » si la maquette affiche déjà des données fonctionnelles.
+6. **Navigation** : tous les liens sidebar/mobile de la maquette doivent pointer vers des routes Laravel (même si la page cible est encore en cours, utiliser un composant « en migration » cohérent, pas des `<span>` morts).
+
+## Checklist avant de valider une page migrée
+
+- [ ] Sidebar complète avec icônes et badges
+- [ ] Header avec titre, sous-titre, avatar
+- [ ] Responsive mobile (overlay sidebar + bottom nav assuré)
+- [ ] Logo `/images/logo_cama.png`
+- [ ] Comportement rôles admin (`data-roles` → props `canSee`)
+- [ ] Test visuel côte à côte avec la maquette HTML

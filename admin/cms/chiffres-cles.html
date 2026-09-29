@@ -67,10 +67,20 @@ let CHIFFRES = [];
 const DEFAULT = [
     { id: 1, valeur: 5.5, suffixe: '%', libelle: 'Taux de cotisation mensuelle', icone: 'percent', ordre: 1 },
     { id: 2, valeur: 150, suffixe: '+', libelle: 'Structures de soins partenaires', icone: 'local_hospital', ordre: 2 },
-    { id: 3, valeur: 250, suffixe: 'k', libelle: 'Bénéficiaires couverts', icone: 'groups', ordre: 3 },
+    { id: 3, valeur: 13, suffixe: '', libelle: 'Régions couvertes au Burkina Faso', icone: 'map', ordre: 3 },
     { id: 4, valeur: 2020, suffixe: '', libelle: 'Année de fondation (MUFAN)', icone: 'history', ordre: 4 }
 ];
-function load() { try { CHIFFRES = JSON.parse(localStorage.getItem(CHIFFRES_KEY) || 'null') || DEFAULT.slice(); } catch { CHIFFRES = DEFAULT.slice(); } render(); }
+function load() {
+    try { CHIFFRES = JSON.parse(localStorage.getItem(CHIFFRES_KEY) || 'null') || DEFAULT.slice(); } catch { CHIFFRES = DEFAULT.slice(); }
+    let migrated = false;
+    CHIFFRES = CHIFFRES.map(c => {
+        if (c.libelle !== 'Bénéficiaires couverts' && !(Number(c.valeur) === 250 && c.suffixe === 'k')) return c;
+        migrated = true;
+        return { ...c, valeur: 13, suffixe: '', libelle: 'Régions couvertes au Burkina Faso', icone: 'map' };
+    });
+    if (migrated) localStorage.setItem(CHIFFRES_KEY, JSON.stringify(CHIFFRES));
+    render();
+}
 function save() { localStorage.setItem(CHIFFRES_KEY, JSON.stringify(CHIFFRES)); render(); }
 function render() {
     CHIFFRES.sort((a,b) => a.ordre - b.ordre);

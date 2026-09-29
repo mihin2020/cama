@@ -11,7 +11,7 @@
     const PARTENAIRES_KEY = 'cama_site_partenaires';
 
     const DEFAULT_RESSOURCE_CATS = [
-        'Formulaires', 'Guides', 'Attestations', 'Guide du prescripteur', 'Textes législatifs'
+        'Formulaires', 'Guides', 'Attestations', 'Guide du prescripteur', 'Textes réglementaires et législatifs'
     ];
 
     const DEFAULT_RESSOURCES = [
@@ -20,7 +20,7 @@
         { id: 3, titre: 'Guide de l\'assuré CAMA', categorie: 'Guides', description: 'Tout savoir sur vos droits, le parcours de soins et l\'utilisation de votre espace.', format: 'PDF', taille: '1,4 Mo', url: '#', ordre: 3, publie: true },
         { id: 4, titre: 'Attestation de prise en charge (modèle)', categorie: 'Attestations', description: 'Modèle d\'attestation délivrée pour les soins programmés.', format: 'PDF', taille: '95 Ko', url: '#', ordre: 4, publie: true },
         { id: 5, titre: 'Guide du prescripteur', categorie: 'Guide du prescripteur', description: 'Référentiel destiné aux médecins et structures de soins partenaires.', format: 'PDF', taille: '2,1 Mo', url: '#', ordre: 5, publie: true },
-        { id: 6, titre: 'Décret portant création de la CAMA', categorie: 'Textes législatifs', description: 'Texte de référence encadrant la Caisse d\'Assurance Maladie des Armées.', format: 'PDF', taille: '320 Ko', url: '#', ordre: 6, publie: true }
+        { id: 6, titre: 'Décret portant création de la CAMA', categorie: 'Textes réglementaires et législatifs', description: 'Texte de référence encadrant la Caisse d\'Assurance Maladie des Armées.', format: 'PDF', taille: '320 Ko', url: '#', ordre: 6, publie: true }
     ];
 
     const DEFAULT_PARTENAIRES = [
@@ -39,7 +39,7 @@
     const DEFAULT_CHIFFRES = [
         { id: 1, valeur: 5.5, suffixe: '%', libelle: 'Taux de cotisation mensuelle', icone: 'percent', ordre: 1 },
         { id: 2, valeur: 150, suffixe: '+', libelle: 'Structures de soins partenaires', icone: 'local_hospital', ordre: 2 },
-        { id: 3, valeur: 250, suffixe: 'k', libelle: 'Bénéficiaires couverts', icone: 'groups', ordre: 3 },
+        { id: 3, valeur: 13, suffixe: '', libelle: 'Régions couvertes au Burkina Faso', icone: 'map', ordre: 3 },
         { id: 4, valeur: 2020, suffixe: '', libelle: 'Année de fondation (MUFAN)', icone: 'history', ordre: 4 }
     ];
 
@@ -157,8 +157,26 @@
     }
 
     function getChiffres() {
-        return readJson(CHIFFRES_KEY, DEFAULT_CHIFFRES)
-            .sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
+        let chiffres = readJson(CHIFFRES_KEY, DEFAULT_CHIFFRES);
+        let migrated = false;
+
+        chiffres = chiffres.map((c) => {
+            const isLegacyBeneficiaires = c.libelle === 'Bénéficiaires couverts'
+                || (Number(c.valeur) === 250 && c.suffixe === 'k');
+            if (!isLegacyBeneficiaires) return c;
+            migrated = true;
+            return {
+                ...c,
+                valeur: 13,
+                suffixe: '',
+                libelle: 'Régions couvertes au Burkina Faso',
+                icone: 'map',
+            };
+        });
+
+        if (migrated) writeJson(CHIFFRES_KEY, chiffres);
+
+        return chiffres.sort((a, b) => (a.ordre || 0) - (b.ordre || 0));
     }
 
     function getArticles() {
@@ -190,16 +208,32 @@
     }
 
     /* ---- Ressources (documents téléchargeables par catégorie) ---- */
+    const LEGACY_RESSOURCE_CAT = 'Textes législatifs';
+    const NEW_RESSOURCE_CAT = 'Textes réglementaires et législatifs';
+
     function getRessourceCategories() {
-        const stored = readJson(RESSOURCE_CATS_KEY, DEFAULT_RESSOURCE_CATS);
-        return stored.length ? stored : DEFAULT_RESSOURCE_CATS.slice();
+        let cats = readJson(RESSOURCE_CATS_KEY, DEFAULT_RESSOURCE_CATS);
+        if (!cats.length) cats = DEFAULT_RESSOURCE_CATS.slice();
+        if (cats.includes(LEGACY_RESSOURCE_CAT)) {
+            cats = cats.map((c) => (c === LEGACY_RESSOURCE_CAT ? NEW_RESSOURCE_CAT : c));
+            writeJson(RESSOURCE_CATS_KEY, cats);
+        }
+        return cats;
     }
     function saveRessourceCategories(cats) {
         writeJson(RESSOURCE_CATS_KEY, cats);
     }
     function getRessources() {
-        const stored = readJson(RESSOURCES_KEY, DEFAULT_RESSOURCES);
-        return stored.length ? stored : DEFAULT_RESSOURCES.slice();
+        let stored = readJson(RESSOURCES_KEY, DEFAULT_RESSOURCES);
+        if (!stored.length) stored = DEFAULT_RESSOURCES.slice();
+        let migrated = false;
+        stored = stored.map((r) => {
+            if (r.categorie !== LEGACY_RESSOURCE_CAT) return r;
+            migrated = true;
+            return { ...r, categorie: NEW_RESSOURCE_CAT };
+        });
+        if (migrated) writeJson(RESSOURCES_KEY, stored);
+        return stored;
     }
     function saveRessources(items) {
         writeJson(RESSOURCES_KEY, items);

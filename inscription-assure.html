@@ -65,19 +65,15 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
 <!-- Étape 2 : Grade -->
 <div class="wizard-step space-y-4" data-step="2">
 <h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">military_tech</span> Situation administrative</h2>
-<p class="text-sm text-on-surface-variant -mt-2">Grade, catégorie et numéros administratifs (optionnels sauf grade et catégorie).</p>
+<p class="text-sm text-on-surface-variant -mt-2">Grade, catégorie et numéros administratifs CAMA (N° CIM et N° Carte CAMA obligatoires).</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 <div class="space-y-1.5"><label class="reg-label" for="r-grade">Grade <span class="text-error">*</span></label>
-<select class="reg-input" id="r-grade" required><option disabled selected value="">— Grade —</option>
-<option>Soldat de 2e classe</option><option>Soldat de 1re classe</option><option>Caporal</option><option>Caporal-chef</option>
-<option>Sergent</option><option>Sergent-chef</option><option>Adjudant</option><option>Adjudant-chef</option>
-<option>Aspirant</option><option>Sous-lieutenant</option><option>Lieutenant</option><option>Capitaine</option>
-<option>Commandant</option><option>Lieutenant-colonel</option><option>Colonel</option><option>Colonel-major</option><option>Général</option></select></div>
+<select class="reg-input" id="r-grade" required><option disabled selected value="">— Grade —</option></select></div>
 <div class="space-y-1.5"><label class="reg-label" for="r-categorie">Catégorie <span class="text-error">*</span></label><select class="reg-input" id="r-categorie" required><option disabled selected value="">— Catégorie —</option></select></div>
-<div class="space-y-1.5"><label class="reg-label" for="r-num-informatique">N° informatique</label><input class="reg-input" id="r-num-informatique" type="text"/></div>
-<div class="space-y-1.5"><label class="reg-label" for="r-num-cim">N° CIM</label><input class="reg-input" id="r-num-cim" type="text"/></div>
-<div class="space-y-1.5"><label class="reg-label" for="r-carte-cama">N° Carte CAMA</label><input class="reg-input" id="r-carte-cama" type="text" placeholder="Si déjà attribué"/></div>
-<div class="space-y-1.5"><label class="reg-label" for="r-num-iup">N° IUP</label><input class="reg-input" id="r-num-iup" type="text"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-informatique">N° informatique <span class="text-error">*</span></label><input class="reg-input" id="r-num-informatique" required type="text" placeholder="Ex. INF-4521"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-cim">N° CIM <span class="text-error">*</span></label><input class="reg-input" id="r-num-cim" required type="text" placeholder="Ex. CIM-104521"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-carte-cama">N° Carte CAMA <span class="text-error">*</span></label><input class="reg-input" id="r-carte-cama" required type="text" placeholder="Ex. CAMA-104521"/></div>
+<div class="space-y-1.5"><label class="reg-label" for="r-num-iup">N° IUP</label><input class="reg-input" id="r-num-iup" type="text" placeholder="Identifiant Unique de la Personne"/></div>
 </div>
 </div>
 
@@ -118,8 +114,13 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
 </div>
 </div>
 
-<!-- Étape 6 : Sécurité -->
+<!-- Étape 6 : Pièces justificatives + Sécurité -->
 <div class="wizard-step space-y-4" data-step="6">
+<div class="hidden space-y-3 pb-4 border-b border-outline-variant" id="doc-section">
+<h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">badge</span> Pièces justificatives</h2>
+<p class="text-sm text-on-surface-variant -mt-1">Téléversez les documents demandés (PDF, JPEG ou PNG — 5 Mo max) pour permettre la vérification de votre identité.</p>
+<div class="grid grid-cols-1 gap-3" id="doc-list"></div>
+</div>
 <h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">lock</span> Sécurité du compte</h2>
 <p class="text-sm text-on-surface-variant -mt-2">Choisissez un mot de passe robuste pour protéger votre espace.</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -195,6 +196,7 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
         document.getElementById('wizard-next').classList.toggle('hidden', n === STEPS.length);
         document.getElementById('register-submit').classList.toggle('hidden', n !== STEPS.length);
         if (n === 5) renderRecap();
+        if (n === 6) refreshActiveDocs();
         renderDots();
         regBanner.classList.add('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -298,6 +300,8 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
 
     // Org structure
     const org = CamaAssureData.getOrgStructure();
+    const selGrade = document.getElementById('r-grade');
+    (org.grades || []).forEach(g => selGrade.insertAdjacentHTML('beforeend', `<option>${g}</option>`));
     const selArmee = document.getElementById('r-armee');
     const selCategorie = document.getElementById('r-categorie');
     const selRegion = document.getElementById('r-region');
@@ -351,9 +355,101 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
     const phoneAssure = CamaPhoneInput.mount(document.getElementById('phone-assure-wrap'), { required: true, max: 2, inputClass: 'reg-input flex-1' });
     const phonePersonne = CamaPhoneInput.mount(document.getElementById('phone-personne-wrap'), { required: false, max: 2, inputClass: 'reg-input flex-1' });
 
+    // --- Pièces justificatives (étape 6, avant la sécurité) ---
+    const ACCEPTED_DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+    const MAX_DOC_SIZE = 5 * 1024 * 1024;
+    let activeDocs = CamaAssureData.getActiveInscriptionDocuments();
+    const docFiles = {};
+    const docSection = document.getElementById('doc-section');
+    const docList = document.getElementById('doc-list');
+
+    function renderDocSlot(doc) {
+        const file = docFiles[doc.key];
+        return `
+        <div class="border border-outline-variant rounded-lg p-3" data-doc="${doc.key}">
+            <p class="text-xs font-semibold mb-2">${doc.titre} <span class="text-error">*</span></p>
+            ${file ? `<div class="text-[11px] flex items-center gap-2 bg-surface-container-low rounded px-2 py-1.5 mb-2">
+                <span class="material-symbols-outlined text-secondary text-[16px]">task</span>
+                <span class="truncate flex-1">${file.name}</span>
+                <button type="button" class="text-error shrink-0" data-doc-remove="${doc.key}"><span class="material-symbols-outlined text-[16px]">close</span></button>
+            </div>` : ''}
+            <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">upload_file</span> Téléverser ${doc.titre}
+                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" data-doc-input="${doc.key}"/>
+            </label>
+            <p class="text-error text-[11px] mt-1.5 hidden" data-doc-error="${doc.key}"></p>
+        </div>`;
+    }
+
+    function renderDocSection() {
+        if (!activeDocs.length) {
+            docSection.classList.add('hidden');
+            return;
+        }
+        docSection.classList.remove('hidden');
+        docList.innerHTML = activeDocs.map(renderDocSlot).join('');
+        docList.querySelectorAll('[data-doc-input]').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const key = input.dataset.docInput;
+                const errEl = docList.querySelector(`[data-doc-error="${key}"]`);
+                errEl.classList.add('hidden');
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (!ACCEPTED_DOC_TYPES.includes(file.type)) {
+                    errEl.textContent = 'Format non accepté (PDF, JPEG, PNG).';
+                    errEl.classList.remove('hidden');
+                    e.target.value = '';
+                    return;
+                }
+                if (file.size > MAX_DOC_SIZE) {
+                    errEl.textContent = 'Fichier trop volumineux (5 Mo max).';
+                    errEl.classList.remove('hidden');
+                    e.target.value = '';
+                    return;
+                }
+                docFiles[key] = file;
+                renderDocSection();
+            });
+        });
+        docList.querySelectorAll('[data-doc-remove]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                delete docFiles[btn.dataset.docRemove];
+                renderDocSection();
+            });
+        });
+    }
+    renderDocSection();
+
+    // Relit la config (Paramètres > Pièces d'inscription) : utile si l'admin
+    // modifie les pièces pendant que ce formulaire est déjà ouvert.
+    function refreshActiveDocs() {
+        const next = CamaAssureData.getActiveInscriptionDocuments();
+        const changed = JSON.stringify(next) !== JSON.stringify(activeDocs);
+        activeDocs = next;
+        Object.keys(docFiles).forEach(key => {
+            if (!activeDocs.some(d => d.key === key)) delete docFiles[key];
+        });
+        if (changed) renderDocSection();
+    }
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'cama_inscription_documents') refreshActiveDocs();
+    });
+
+    function missingDocuments() {
+        return activeDocs.filter(d => !docFiles[d.key]);
+    }
+
     regForm.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!validateStep(6)) return;
+        if (activeDocs.length) {
+            const missing = missingDocuments();
+            if (missing.length) {
+                banner(regBanner, 'error', `Pièce obligatoire manquante : ${missing[0].titre}.`);
+                return;
+            }
+        }
         if (!Object.values(rules).every(fn => fn(pw.value))) {
             banner(regBanner, 'error', 'Le mot de passe ne respecte pas les critères.');
             return;
@@ -372,13 +468,14 @@ tailwind.config={darkMode:"class",theme:{extend:{colors:{primary:"#9e001f","on-p
             section: val('r-section'), sousSection: val('r-sous-section'),
             telephones: phoneAssure.getValues(), email: val('r-email'),
             personneAPrevenir: val('r-personne'), telPersonneAPrevenir: phonePersonne.getValues(),
-            password: pw.value
+            password: pw.value,
+            documentsIdentite: activeDocs.map(d => ({ key: d.key, titre: d.titre, filename: docFiles[d.key]?.name || null }))
         };
         let res;
         try { res = CamaAssureData.registerAssure(data); } catch { res = { error: 'Erreur inattendue.' }; }
         btn.disabled = false;
         if (res.error) {
-            if (res.field) markInvalid(document.getElementById('r-' + (res.field === 'email' ? 'email' : 'matricule')), true);
+            if (res.field) markInvalid(document.getElementById('r-' + (res.field === 'email' ? 'email' : res.field === 'numeroCim' ? 'num-cim' : res.field === 'numeroCama' ? 'carte-cama' : 'matricule')), true);
             banner(regBanner, 'error', res.error);
             return;
         }

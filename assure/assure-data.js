@@ -10,10 +10,14 @@
     const REGISTRATIONS_KEY = 'cama_assure_registrations';
     const ADMIN_NOTIFS_KEY = 'cama_admin_notifs';
     const SETTINGS_KEY = 'cama_settings';
+    const INSCRIPTION_DOCUMENTS_KEY = 'cama_inscription_documents';
+    const AFFECTATION_KEY = 'cama_affectation_settings';
+    const ENFANT_FILIATIONS_KEY = 'cama_enfant_filiations';
+    const MEMBRE_PHOTO_KEY = 'cama_membre_photo_settings';
 
     const ORG_STRUCTURE_KEY = 'cama_org_structure';
 
-    const AGE_MAX_ENFANT_PLAFOND = 26;
+    const AGE_MAX_ENFANT_PLAFOND = 35; // borne technique haute pour le seuil de scolarité
     const GESTIONNAIRES_CAMA = [
         'Lt. Aminata KABORÉ',
         'Sgt. Daniel ZONGO',
@@ -29,12 +33,77 @@
     };
     const DOSSIER_OPEN_STATUTS = ['Soumis', 'En instruction', 'Pièce manquante demandée', 'En attente supervision'];
     const DEFAULT_SETTINGS = {
-        ageMaxEnfant: 21 // plafond paramétrable, borné à AGE_MAX_ENFANT_PLAFOND
+        ageMaxEnfant: 26, // seuil : à partir de cet âge, certificat de scolarité requis
+        fifSigneeRequise: false,
+        certificatScolariteActif: true,
+        certificatScolariteLabel: 'Certificat de scolarité'
+    };
+
+    // Jusqu'à 3 pièces justificatives activables à l'inscription (désactivées par défaut).
+    const DEFAULT_INSCRIPTION_DOCUMENTS = [
+        { key: 'doc1', actif: false, titre: 'Carte militaire' },
+        { key: 'doc2', actif: false, titre: 'Carte CAMA' },
+        { key: 'doc3', actif: false, titre: 'CNIB' }
+    ];
+
+    // Types de filiation enfant + pièces associées (configurables dans Paramètres).
+    const DEFAULT_ENFANT_FILIATIONS = [
+        {
+            key: 'enfant_biologique',
+            label: 'Enfant biologique',
+            actif: true,
+            pieces: [
+                { key: 'acte_naissance', label: 'Acte de naissance', required: true },
+                { key: 'cnib_parent', label: 'Copie CNIB du parent', required: true }
+            ]
+        },
+        {
+            key: 'enfant_conjoint',
+            label: 'Enfant du conjoint',
+            actif: true,
+            pieces: [
+                { key: 'acte_naissance_enfant', label: 'Acte de naissance', required: true },
+                { key: 'acte_mariage_parent', label: 'Acte de mariage avec le parent', required: true },
+                { key: 'piece_garde', label: 'Pièce justifiant la garde', required: false }
+            ]
+        },
+        {
+            key: 'enfant_adopte',
+            label: 'Enfant adopté',
+            actif: true,
+            pieces: [
+                { key: 'acte_naissance', label: 'Acte de naissance', required: true },
+                { key: 'certificat_tutelle', label: 'Certificat de tutelle', required: true }
+            ]
+        }
+    ];
+
+    const DEFAULT_CONJOINT_PIECES = [
+        { key: 'acte_mariage', label: 'Acte de mariage', required: true },
+        { key: 'cnib_conjoint', label: 'Copie CNIB du conjoint', required: true },
+        { key: 'acte_divorce', label: 'Acte de divorce du précédent conjoint', required: false }
+    ];
+
+    // Photo des membres (conjoint / enfant) — activable et obligatoire ou non.
+    const DEFAULT_MEMBRE_PHOTO = {
+        conjoint: { actif: true, required: false },
+        enfant: { actif: true, required: false }
+    };
+
+    const DEFAULT_AFFECTATION_SETTINGS = {
+        mode: 'manuelle', // 'manuelle' | 'round_robin' | 'charge_min'
+        validation2Niveaux: true
     };
 
     // Structure militaire de rattachement, configurable côté back-office.
     // Hiérarchie : Région > Corps > Service > Section > Sous-section.
     const DEFAULT_ORG_STRUCTURE = {
+        grades: [
+            'Soldat de 2e classe', 'Soldat de 1re classe', 'Caporal', 'Caporal-chef',
+            'Sergent', 'Sergent-chef', 'Adjudant', 'Adjudant-chef',
+            'Aspirant', 'Sous-lieutenant', 'Lieutenant', 'Capitaine',
+            'Commandant', 'Lieutenant-colonel', 'Colonel', 'Colonel-major', 'Général'
+        ],
         armees: ['Armée de Terre', 'Armée de l\'Air', 'Gendarmerie Nationale', 'Sapeurs-Pompiers Militaires'],
         categories: ['Officier', 'Sous-officier', 'Militaire du rang', 'Personnel civil'],
         groupesSanguins: ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
@@ -124,10 +193,12 @@
         acte_divorce: 'Acte de divorce du précédent conjoint',
         acte_naissance: 'Acte de naissance',
         cnib_parent: 'Copie CNIB du parent',
-        certificat_scolarite: 'Certificat médical de scolarité',
+        certificat_scolarite: 'Certificat de scolarité',
         acte_naissance_enfant: 'Acte de naissance',
         acte_mariage_parent: 'Acte de mariage avec le parent',
         piece_garde: 'Pièce justifiant la garde',
+        certificat_tutelle: 'Certificat de tutelle',
+        photo_membre: 'Photo du membre',
         acte_naissance_assure: 'Acte de naissance de l\'assuré',
         cnib_parent_p: 'Copie CNIB du parent',
         piece_autre: 'Pièces justificatives'
@@ -193,7 +264,7 @@
             armee: 'Armée de Terre', region: '1re Région Militaire (Ouagadougou)', corps: '11e Régiment d\'Infanterie Commando',
             service: 'Service Opérations', section: 'Section Instruction', sousSection: '',
             personneAPrevenir: 'Mariam NIKIÉMA', telPersonneAPrevenir: '+226 78 33 44 55',
-            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '26/06/2026 09:12',
+            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: 'CAMA-206118', dateCreation: '26/06/2026 09:12',
             journal: [{ date: '26/06/2026 09:12', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
         },
         {
@@ -204,7 +275,7 @@
             armee: 'Armée de l\'Air', region: '2e Région Militaire (Bobo-Dioulasso)', corps: '21e Régiment d\'Infanterie Commando',
             service: 'Service Administratif', section: 'Section Personnel', sousSection: '',
             personneAPrevenir: 'Paul COMPAORÉ', telPersonneAPrevenir: '+226 70 99 88 77',
-            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: '', dateCreation: '28/06/2026 16:40',
+            password: 'Demo2026!', statut: 'En attente de validation', numeroCama: 'CAMA-207322', dateCreation: '28/06/2026 16:40',
             journal: [{ date: '28/06/2026 16:40', libelle: 'Demande d\'inscription soumise par l\'assuré' }]
         }
     ];
@@ -702,7 +773,7 @@
             addAssureNotification({
                 type: 'piece_complementaire',
                 titre: 'Pièce complémentaire demandée',
-                contenu: `Pièce(s) demandée(s) pour ${name} : ${(extra?.pieces || []).join(', ')}.`,
+                contenu: extra?.message || `Pièce(s) demandée(s) pour ${name} : ${(extra?.pieces || []).join(', ')}.`,
                 lien: membreLien,
                 dossierRef: ref
             });
@@ -785,10 +856,6 @@
         return getRegistrations().some(r => (r.matricule || '').toLowerCase() === m);
     }
 
-    function generateCamaNumber() {
-        return `CAMA-1${Math.floor(10000 + Math.random() * 90000)}`;
-    }
-
     // Convertit un enregistrement d'inscription en profil de session complet
     // (tous les champs présents pour éviter d'hériter des valeurs du compte démo).
     function registrationToProfile(reg) {
@@ -823,9 +890,9 @@
     }
 
     function registerAssure(data) {
-        const required = ['matricule', 'nom', 'prenom', 'email', 'password'];
+        const required = ['matricule', 'nom', 'prenom', 'email', 'password', 'numeroCim', 'numeroCama'];
         const missing = required.filter(k => !String(data[k] || '').trim());
-        if (missing.length) return { error: 'Veuillez renseigner tous les champs obligatoires.' };
+        if (missing.length) return { error: 'Veuillez renseigner tous les champs obligatoires, dont le N° CIM et le N° Carte CAMA.' };
         if (emailExists(data.email)) return { error: 'Un compte existe déjà avec cette adresse e-mail.', field: 'email' };
         if (matriculeExists(data.matricule)) return { error: 'Ce matricule militaire est déjà enregistré.', field: 'matricule' };
 
@@ -945,23 +1012,41 @@
         return { ok: true };
     }
 
+    function updateRegistrationIdentifiers(id, patch) {
+        const regs = getRegistrations();
+        const reg = regs.find(r => r.id === id);
+        if (!reg) return { error: 'Inscription introuvable.' };
+        if (patch.numeroCim !== undefined) reg.numeroCim = String(patch.numeroCim || '').trim();
+        if (patch.numeroCama !== undefined) reg.numeroCama = String(patch.numeroCama || '').trim();
+        saveRegistrations(regs);
+        return { ok: true, registration: reg };
+    }
+
     function validateRegistration(id) {
         const regs = getRegistrations();
         const reg = regs.find(r => r.id === id);
-        if (!reg) return null;
+        if (!reg) return { error: 'Inscription introuvable.' };
+        const numeroCim = (reg.numeroCim || '').trim();
+        const numeroCama = (reg.numeroCama || '').trim();
+        if (!numeroCim || !numeroCama) {
+            return {
+                error: 'Le N° CIM et le N° Carte CAMA doivent être renseignés par l\'assuré avant validation.'
+            };
+        }
         const now = nowFr();
-        if (!reg.numeroCama) reg.numeroCama = generateCamaNumber();
         reg.statut = 'Actif';
         delete reg.motifRefus;
-        reg.journal.push({ date: now, libelle: `Inscription validée — N° Carte CAMA ${reg.numeroCama} attribué, compte activé` });
+        reg.journal.push({
+            date: now,
+            libelle: `Inscription validée — compte activé (CIM : ${numeroCim}, Carte CAMA : ${numeroCama})`
+        });
         saveRegistrations(regs);
 
-        // Si l'assuré est connecté (accès limité), on met sa session à jour.
         const session = getAssureSession();
         if (session && normalizeEmail(session.email) === normalizeEmail(reg.email)) {
             setAssureSession(registrationToProfile(reg));
         }
-        return reg;
+        return { ok: true, registration: reg };
     }
 
     function rejectRegistration(id, motif) {
@@ -981,7 +1066,14 @@
      * ------------------------------------------------------------------ */
 
     function getSettings() {
-        return { ...DEFAULT_SETTINGS, ...readJson(SETTINGS_KEY, {}) };
+        const stored = readJson(SETTINGS_KEY, {});
+        const merged = { ...DEFAULT_SETTINGS, ...stored };
+        // Migration : ancien défaut 21 sans règle scolarité → seuil 26
+        if (!Object.prototype.hasOwnProperty.call(stored, 'certificatScolariteActif')
+            && Number(stored.ageMaxEnfant) === 21) {
+            merged.ageMaxEnfant = DEFAULT_SETTINGS.ageMaxEnfant;
+        }
+        return merged;
     }
 
     function saveSettings(patch) {
@@ -990,12 +1082,200 @@
         if (typeof next.ageMaxEnfant === 'number') {
             next.ageMaxEnfant = Math.max(1, Math.min(AGE_MAX_ENFANT_PLAFOND, Math.round(next.ageMaxEnfant)));
         }
+        if (typeof next.certificatScolariteActif === 'boolean') {
+            next.certificatScolariteActif = !!next.certificatScolariteActif;
+        }
+        if (next.certificatScolariteLabel !== undefined) {
+            next.certificatScolariteLabel = String(next.certificatScolariteLabel || '').trim() || 'Certificat de scolarité';
+        }
         writeJson(SETTINGS_KEY, next);
         return next;
     }
 
     function getAgeMaxEnfant() {
         return getSettings().ageMaxEnfant;
+    }
+
+    function getCertificatScolariteSettings() {
+        const s = getSettings();
+        return {
+            actif: s.certificatScolariteActif !== false,
+            ageSeuil: s.ageMaxEnfant,
+            label: (s.certificatScolariteLabel || 'Certificat de scolarité').trim() || 'Certificat de scolarité'
+        };
+    }
+
+    function saveCertificatScolariteSettings(patch) {
+        const data = {};
+        if (patch && patch.actif !== undefined) data.certificatScolariteActif = !!patch.actif;
+        if (patch && patch.ageSeuil !== undefined) data.ageMaxEnfant = Number(patch.ageSeuil);
+        if (patch && patch.label !== undefined) data.certificatScolariteLabel = patch.label;
+        saveSettings(data);
+        return getCertificatScolariteSettings();
+    }
+
+    function isFifSigneeRequired() {
+        return !!getSettings().fifSigneeRequise;
+    }
+
+    function saveFifSigneeRequired(actif) {
+        return saveSettings({ fifSigneeRequise: !!actif });
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Pièces justificatives demandées à l'inscription (jusqu'à 3
+     * emplacements activables/renommables depuis Paramètres > Pièces
+     * d'inscription). Fusion défauts + valeurs enregistrées, par clé.
+     * ------------------------------------------------------------------ */
+
+    function getInscriptionDocuments() {
+        const stored = readJson(INSCRIPTION_DOCUMENTS_KEY, null);
+        const byKey = {};
+        (Array.isArray(stored) ? stored : []).forEach(slot => {
+            if (slot && slot.key) byKey[slot.key] = slot;
+        });
+        return DEFAULT_INSCRIPTION_DOCUMENTS.map(def => ({
+            key: def.key,
+            actif: byKey[def.key] ? !!byKey[def.key].actif : def.actif,
+            titre: (byKey[def.key]?.titre ?? def.titre).trim()
+        }));
+    }
+
+    function getActiveInscriptionDocuments() {
+        return getInscriptionDocuments()
+            .filter(d => d.actif && d.titre !== '')
+            .map(d => ({ key: d.key, titre: d.titre }));
+    }
+
+    function saveInscriptionDocuments(documents) {
+        const normalized = (documents || []).map(d => ({
+            key: d.key,
+            actif: !!d.actif,
+            titre: String(d.titre || '').trim()
+        }));
+        writeJson(INSCRIPTION_DOCUMENTS_KEY, normalized);
+        return getInscriptionDocuments();
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Filiations enfant + pièces justificatives (Paramètres > Membres).
+     * ------------------------------------------------------------------ */
+
+    function normalizeFiliationPieces(pieces) {
+        return (pieces || []).map((p, i) => ({
+            key: String(p.key || `piece_${i + 1}`).trim() || `piece_${i + 1}`,
+            label: String(p.label || '').trim() || `Pièce ${i + 1}`,
+            required: p.required !== false
+        })).filter(p => p.label);
+    }
+
+    function getEnfantFiliations() {
+        const stored = readJson(ENFANT_FILIATIONS_KEY, null);
+        const byKey = {};
+        (Array.isArray(stored) ? stored : []).forEach(slot => {
+            if (slot && slot.key) byKey[slot.key] = slot;
+        });
+        return DEFAULT_ENFANT_FILIATIONS.map(def => {
+            const slot = byKey[def.key];
+            return {
+                key: def.key,
+                label: (slot?.label ?? def.label).trim() || def.label,
+                actif: slot ? !!slot.actif : def.actif,
+                pieces: normalizeFiliationPieces(slot?.pieces?.length ? slot.pieces : def.pieces)
+            };
+        });
+    }
+
+    function getActiveEnfantFiliations() {
+        return getEnfantFiliations().filter(f => f.actif && f.label);
+    }
+
+    function saveEnfantFiliations(filiations) {
+        const byKey = {};
+        (filiations || []).forEach(f => {
+            if (f && f.key) byKey[f.key] = f;
+        });
+        const normalized = DEFAULT_ENFANT_FILIATIONS.map(def => {
+            const slot = byKey[def.key] || def;
+            return {
+                key: def.key,
+                label: String(slot.label || def.label).trim() || def.label,
+                actif: !!slot.actif,
+                pieces: normalizeFiliationPieces(slot.pieces?.length ? slot.pieces : def.pieces)
+            };
+        });
+        writeJson(ENFANT_FILIATIONS_KEY, normalized);
+        return getEnfantFiliations();
+    }
+
+    /** Matrice des pièces pour le formulaire d'ajout de membre (conjoint + filiations actives). */
+    function getPiecesMatrix() {
+        const matrix = { 'Conjoint(e)': DEFAULT_CONJOINT_PIECES.map(p => ({ ...p })) };
+        getActiveEnfantFiliations().forEach(f => {
+            matrix[f.label] = f.pieces.map(p => ({ ...p }));
+        });
+        return matrix;
+    }
+
+    function getEnfantFiliationLabels() {
+        return getActiveEnfantFiliations().map(f => f.label);
+    }
+
+    function getMembrePhotoSettings() {
+        const stored = readJson(MEMBRE_PHOTO_KEY, null) || {};
+        const merge = (key) => {
+            const def = DEFAULT_MEMBRE_PHOTO[key];
+            const slot = stored[key] || {};
+            return {
+                actif: slot.actif !== undefined ? !!slot.actif : def.actif,
+                required: slot.required !== undefined ? !!slot.required : def.required
+            };
+        };
+        return {
+            conjoint: merge('conjoint'),
+            enfant: merge('enfant')
+        };
+    }
+
+    function saveMembrePhotoSettings(patch) {
+        const current = getMembrePhotoSettings();
+        const next = {
+            conjoint: { ...current.conjoint, ...(patch?.conjoint || {}) },
+            enfant: { ...current.enfant, ...(patch?.enfant || {}) }
+        };
+        next.conjoint.actif = !!next.conjoint.actif;
+        next.conjoint.required = !!next.conjoint.required;
+        next.enfant.actif = !!next.enfant.actif;
+        next.enfant.required = !!next.enfant.required;
+        // Si désactivé, l'obligation n'a plus de sens.
+        if (!next.conjoint.actif) next.conjoint.required = false;
+        if (!next.enfant.actif) next.enfant.required = false;
+        writeJson(MEMBRE_PHOTO_KEY, next);
+        return getMembrePhotoSettings();
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Règles d'affectation automatique des dossiers + validation à deux
+     * niveaux (Paramètres > Règles d'affectation).
+     * ------------------------------------------------------------------ */
+
+    function getAffectationSettings() {
+        const stored = readJson(AFFECTATION_KEY, null) || {};
+        // Compat : ancienne clé isolée utilisée avant la centralisation ici.
+        const legacy2n = localStorage.getItem('cama_validation_2niveaux');
+        return {
+            mode: stored.mode || DEFAULT_AFFECTATION_SETTINGS.mode,
+            validation2Niveaux: stored.validation2Niveaux !== undefined
+                ? !!stored.validation2Niveaux
+                : (legacy2n !== null ? legacy2n !== 'false' : DEFAULT_AFFECTATION_SETTINGS.validation2Niveaux)
+        };
+    }
+
+    function saveAffectationSettings(patch) {
+        const next = { ...getAffectationSettings(), ...patch };
+        writeJson(AFFECTATION_KEY, next);
+        localStorage.setItem('cama_validation_2niveaux', next.validation2Niveaux ? 'true' : 'false');
+        return next;
     }
 
     /* ------------------------------------------------------------------ *
@@ -1006,6 +1286,7 @@
     function getOrgStructure() {
         const stored = readJson(ORG_STRUCTURE_KEY, DEFAULT_ORG_STRUCTURE);
         return {
+            grades: stored.grades || DEFAULT_ORG_STRUCTURE.grades,
             armees: stored.armees || DEFAULT_ORG_STRUCTURE.armees,
             categories: stored.categories || DEFAULT_ORG_STRUCTURE.categories,
             groupesSanguins: stored.groupesSanguins || DEFAULT_ORG_STRUCTURE.groupesSanguins,
@@ -1016,6 +1297,10 @@
     function saveOrgStructure(structure) {
         writeJson(ORG_STRUCTURE_KEY, structure);
         return getOrgStructure();
+    }
+
+    function getGrades() {
+        return getOrgStructure().grades.slice();
     }
 
     function getArmees() {
@@ -1139,17 +1424,105 @@
     function assignDossiersToGestionnaire(assureNom, gestionnaire) {
         const dossiers = getDossiers();
         const now = nowFr();
+        const admin = getAdminIdentity();
+        const par = admin?.nom ? ` par ${admin.nom}` : '';
+        const libelle = (!gestionnaire || gestionnaire === 'Non affecté')
+            ? `Affectation retirée${par}`
+            : `Affecté à ${gestionnaire}${par}`;
         let count = 0;
         dossiers.forEach(d => {
             if (d.assureNom === assureNom) {
                 d.gestionnaire = gestionnaire;
                 d.journal = d.journal || [];
-                d.journal.push({ date: now, libelle: `Dossier familial affecté à ${gestionnaire}` });
+                d.journal.push({ date: now, libelle });
                 count++;
             }
         });
         if (count) saveDossiers(dossiers);
         return count;
+    }
+
+    /**
+     * Date (chaîne déjà au format d/m/Y H:i) de la dernière affectation
+     * tracée dans le journal du dossier, ou repli sur la date de soumission.
+     */
+    function getAffectationDate(dossier) {
+        const journal = dossier?.journal || [];
+        for (let i = journal.length - 1; i >= 0; i--) {
+            const libelle = journal[i]?.libelle || '';
+            if (libelle.startsWith('Affecté à') || libelle.startsWith('Affectation automatique à') || libelle.startsWith('Dossier familial affecté à')) {
+                return journal[i].date;
+            }
+        }
+        if (dossier?.gestionnaire && dossier.gestionnaire !== 'Non affecté') {
+            return formatDateFr(dossier.dateSoumission) || dossier.dateSoumission || null;
+        }
+        return null;
+    }
+
+    /** Statistiques personnelles du gestionnaire connecté sur ses dossiers affectés. */
+    function getMesDossiersStats(gestionnaireNom) {
+        const mine = getDossiers().filter(d => d.statut !== 'Brouillon' && d.gestionnaire === gestionnaireNom);
+        const dates = mine.map(getAffectationDate).filter(Boolean).sort((a, b) => {
+            const pa = parseFrDateTime(a), pb = parseFrDateTime(b);
+            return (pb || 0) - (pa || 0);
+        });
+        return {
+            total: mine.length,
+            aTraiter: mine.filter(d => ['Soumis', 'En instruction'].includes(d.statut)).length,
+            complement: mine.filter(d => d.statut === 'Pièce manquante demandée').length,
+            enSupervision: mine.filter(d => d.statut === 'En attente supervision').length,
+            valides: mine.filter(d => d.statut === 'Validé').length,
+            refuses: mine.filter(d => d.statut === 'Refusé').length,
+            derniereAffectation: dates[0] || null
+        };
+    }
+
+    function parseFrDateTime(s) {
+        const m = String(s || '').match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2}))?/);
+        if (!m) return null;
+        return new Date(+m[3], +m[2] - 1, +m[1], +(m[4] || 0), +(m[5] || 0)).getTime();
+    }
+
+    const MOTIFS_REFUS_KEY = 'cama_motifs_refus';
+    const DEFAULT_MOTIFS_REFUS = [
+        'Pièce justificative non conforme',
+        'Lien de parenté non justifié',
+        'Informations incohérentes avec le dossier militaire'
+    ];
+
+    function getMotifsRefus() {
+        const stored = readJson(MOTIFS_REFUS_KEY, null);
+        return Array.isArray(stored) && stored.length ? stored : [...DEFAULT_MOTIFS_REFUS];
+    }
+
+    function saveMotifsRefus(motifs) {
+        const clean = (motifs || []).map(m => String(m || '').trim()).filter(Boolean);
+        writeJson(MOTIFS_REFUS_KEY, clean.length ? clean : DEFAULT_MOTIFS_REFUS);
+        return getMotifsRefus();
+    }
+
+    const EMAIL_TEMPLATES_KEY = 'cama_email_templates';
+    const DEFAULT_EMAIL_TEMPLATES = {
+        validation: 'Bonjour, votre dossier {ref} ({beneficiaire}) a été validé.',
+        complement: 'Bonjour, une pièce complémentaire est requise pour le dossier {ref} ({beneficiaire}) : {piece}.'
+    };
+
+    function getEmailTemplates() {
+        const stored = readJson(EMAIL_TEMPLATES_KEY, null) || {};
+        return {
+            validation: stored.validation || DEFAULT_EMAIL_TEMPLATES.validation,
+            complement: stored.complement || DEFAULT_EMAIL_TEMPLATES.complement
+        };
+    }
+
+    function saveEmailTemplates(templates) {
+        const next = {
+            validation: String(templates?.validation || '').trim() || DEFAULT_EMAIL_TEMPLATES.validation,
+            complement: String(templates?.complement || '').trim() || DEFAULT_EMAIL_TEMPLATES.complement
+        };
+        writeJson(EMAIL_TEMPLATES_KEY, next);
+        return next;
     }
 
     function updateAssureProfileAdmin(assureNom, patch) {
@@ -1469,6 +1842,12 @@
         getGestionnairesCama,
         getGestionnaireCharge,
         assignDossiersToGestionnaire,
+        getAffectationDate,
+        getMesDossiersStats,
+        getMotifsRefus,
+        saveMotifsRefus,
+        getEmailTemplates,
+        saveEmailTemplates,
         updateAssureContact,
         updateAssureProfileAdmin,
         updateAssureCompteStatut,
@@ -1480,16 +1859,34 @@
         assureAccountExists,
         resetAssurePassword,
         validateRegistration,
+        updateRegistrationIdentifiers,
         rejectRegistration,
         getSettings,
         saveSettings,
         getAgeMaxEnfant,
+        getCertificatScolariteSettings,
+        saveCertificatScolariteSettings,
+        isFifSigneeRequired,
+        saveFifSigneeRequired,
         AGE_MAX_ENFANT_PLAFOND,
         getOrgStructure,
         saveOrgStructure,
+        getGrades,
         getArmees,
         getCategories,
         getGroupesSanguins,
+        getInscriptionDocuments,
+        getActiveInscriptionDocuments,
+        saveInscriptionDocuments,
+        getEnfantFiliations,
+        getActiveEnfantFiliations,
+        saveEnfantFiliations,
+        getPiecesMatrix,
+        getEnfantFiliationLabels,
+        getMembrePhotoSettings,
+        saveMembrePhotoSettings,
+        getAffectationSettings,
+        saveAffectationSettings,
         canSubmitDossiers,
         registrationToProfile,
         getAssureNotifications,

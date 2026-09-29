@@ -315,12 +315,22 @@
                 <div class="sticky top-0 bg-white border-b border-outline-variant px-5 py-4 flex items-center justify-between z-10">
                     <div class="flex items-center gap-3">
                         <div class="w-11 h-11 rounded-full bg-surface-container overflow-hidden flex items-center justify-center font-bold text-primary shrink-0">${r.photo ? `<img src="${r.photo}" class="w-full h-full object-cover" alt=""/>` : esc(initials(r.fullName))}</div>
-                        <div><h2 class="font-title-lg text-title-lg leading-tight">${esc(r.fullName)}</h2><p class="text-[11px] text-on-surface-variant">${r.numeroCama ? esc(r.numeroCama) : 'Numéro CAMA non attribué'}</p></div>
+                        <div><h2 class="font-title-lg text-title-lg leading-tight">${esc(r.fullName)}</h2><p class="text-[11px] text-on-surface-variant">${r.numeroCama ? esc(r.numeroCama) : 'N° Carte CAMA non renseigné'}${r.numeroCim ? ' · CIM ' + esc(r.numeroCim) : ''}</p></div>
                     </div>
                     <button class="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center" onclick="closeDetail()"><span class="material-symbols-outlined">close</span></button>
                 </div>
                 <div class="p-5 space-y-5">
                     <div>${statusBadge(r.statut)}${r.motifRefus ? `<p class="text-[11px] text-error mt-2">Motif : ${esc(r.motifRefus)}</p>` : ''}</div>
+                    ${isPending ? `
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-on-surface">
+                        <p class="font-bold mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">info</span> Identifiants CAMA</p>
+                        <p class="text-on-surface-variant mb-2">L'assuré renseigne son N° CIM et son N° Carte CAMA à l'inscription. Corrigez-les ici si besoin avant validation.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div><label class="text-[10px] uppercase text-on-surface-variant">N° CIM</label><input class="w-full mt-1 px-2 py-1.5 text-xs border border-outline-variant rounded" id="edit-cim-${r.id}" value="${esc(r.numeroCim || '')}"/></div>
+                            <div><label class="text-[10px] uppercase text-on-surface-variant">N° Carte CAMA</label><input class="w-full mt-1 px-2 py-1.5 text-xs border border-outline-variant rounded" id="edit-cama-${r.id}" value="${esc(r.numeroCama || '')}"/></div>
+                        </div>
+                        <button type="button" class="mt-2 text-primary text-[11px] font-bold hover:underline" onclick="saveIds(${r.id})">Enregistrer les identifiants</button>
+                    </div>` : ''}
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">badge</span> Informations administratives</h3>
                         <div class="grid grid-cols-2 gap-2">
@@ -329,9 +339,9 @@
                             ${infoRow('Grade', r.grade)}
                             ${infoRow('Catégorie', r.categorie)}
                             ${infoRow('N° informatique', r.numeroInformatique)}
-                            ${infoRow('N° CIM', r.numeroCim)}
+                            ${infoRow('N° CIM', r.numeroCim || 'Non renseigné')}
                             ${infoRow('N° IUP', r.numeroIup)}
-                            ${infoRow('N° Carte CAMA', r.numeroCama || 'Non attribué')}
+                            ${infoRow('N° Carte CAMA', r.numeroCama || 'Non renseigné')}
                             ${infoRow('Téléphones', r.telephones || r.telephone)}
                             ${infoRow('E-mail', r.email)}
                         </div>
@@ -367,13 +377,28 @@
         }
         function closeDetail() { document.getElementById('detail-overlay').classList.remove('is-open'); }
 
+        function saveIds(id) {
+            const cim = document.getElementById(`edit-cim-${id}`)?.value || '';
+            const cama = document.getElementById(`edit-cama-${id}`)?.value || '';
+            const res = CamaAssureData.updateRegistrationIdentifiers(id, { numeroCim: cim, numeroCama: cama });
+            if (res.error) { showToast(`<span class="material-symbols-outlined">error</span> ${res.error}`); return; }
+            refresh();
+            openDetail(id);
+            showToast('<span class="material-symbols-outlined">check_circle</span> Identifiants enregistrés.');
+        }
+
         function validerReg(id) {
-            const reg = CamaAssureData.validateRegistration(id);
+            const res = CamaAssureData.validateRegistration(id);
+            if (res.error) {
+                showToast(`<span class="material-symbols-outlined">error</span> ${res.error}`);
+                return;
+            }
+            const reg = res.registration;
             refresh(); updateStats(); renderTable(); closeDetail();
             if (window.CamaAdminShell?.addNotif) {
-                CamaAdminShell.addNotif({ type: 'compte', icon: 'how_to_reg', color: 'secondary', titre: 'Compte assuré validé', contenu: `${reg.fullName} — ${reg.numeroCama} attribué.`, date: new Date().toLocaleString('fr-FR'), lien: 'assures.html' });
+                CamaAdminShell.addNotif({ type: 'compte', icon: 'how_to_reg', color: 'secondary', titre: 'Compte assuré validé', contenu: `${reg.fullName} — CIM ${reg.numeroCim}, Carte ${reg.numeroCama}.`, date: new Date().toLocaleString('fr-FR'), lien: 'assures.html' });
             }
-            showToast(`<span class="material-symbols-outlined">check_circle</span> Compte validé. Numéro attribué : ${reg.numeroCama}`);
+            showToast(`<span class="material-symbols-outlined">check_circle</span> Compte validé (CIM : ${reg.numeroCim}, Carte CAMA : ${reg.numeroCama}).`);
         }
 
         function refuserReg(id) {

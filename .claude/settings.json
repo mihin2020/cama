@@ -12,7 +12,8 @@
       "Bash(grep -iE 'cama|hero|banner|\\\\.\\(jpg|jpeg|png|jfif|webp\\)$')",
       "Bash(node --check countries.js)",
       "Bash(node --check flag-select.js)",
-      "PowerShell(git config --global --add safe.directory C:/Users/HP/Desktop/CAMA)"
+      "PowerShell(git config --global --add safe.directory C:/Users/HP/Desktop/CAMA)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }

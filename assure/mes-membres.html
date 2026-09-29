@@ -169,7 +169,7 @@
 </div>
 <div class="flex items-center gap-2 md:gap-4">
 <button class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all" id="btn-export-formulaire" type="button">
-<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> Formulaire (PDF)
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span> FIF familial (PDF)
 </button>
 <button class="hidden sm:flex items-center gap-2 border border-outline text-on-surface px-4 py-2 rounded-lg font-bold font-label-md text-label-md hover:bg-surface-container-low transition-all" id="btn-export-all" type="button">
 <span class="material-symbols-outlined text-[18px]">folder_zip</span> Tout télécharger (ZIP)
@@ -296,7 +296,7 @@
                 btns.push(`<button class="px-3 py-1.5 rounded-lg border border-error text-error text-xs font-bold hover:bg-error/5 transition-colors flex items-center gap-1.5" onclick="deleteMembre(${m.id})"><span class="material-symbols-outlined text-[16px]">delete</span> Supprimer</button>`);
             }
             if (m.dossierId) {
-                btns.push(`<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold hover:bg-outline-variant transition-colors flex items-center gap-1.5" onclick="exportDossier(${m.id})"><span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> Télécharger le dossier</button>`);
+                btns.push(`<button class="px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface text-xs font-bold hover:bg-outline-variant transition-colors flex items-center gap-1.5" onclick="exportDossier(${m.id})"><span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> Télécharger FIF</button>`);
             }
             return btns.join('');
         }
@@ -452,12 +452,9 @@
             const idx = MOCK_MEMBRES.findIndex(m => m.id === id);
             const membre = MOCK_MEMBRES[idx];
             if (!membre) return;
-            try {
-                CamaDossierExport.exportMembre(membre, MOCK_ASSURE, idx + 1);
-                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Dossier PDF généré.');
-            } catch (e) {
-                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
-            }
+            CamaDossierExport.exportMembre(membre, MOCK_ASSURE, idx + 1)
+                .then(() => showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF généré.'))
+                .catch(() => showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).'));
         }
 
         async function exportAllZip() {
@@ -479,12 +476,9 @@
 
         function exportFormulaire() {
             refreshMembres();
-            try {
-                CamaDossierExport.exportDossierFamilial(MOCK_ASSURE, MOCK_MEMBRES);
-                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Formulaire familial généré.');
-            } catch (e) {
-                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
-            }
+            CamaDossierExport.exportDossierFamilial(MOCK_ASSURE, MOCK_MEMBRES)
+                .then(() => showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF familial généré.'))
+                .catch(() => showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).'));
         }
         document.getElementById('btn-export-formulaire')?.addEventListener('click', exportFormulaire);
 

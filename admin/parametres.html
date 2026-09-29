@@ -147,78 +147,115 @@
 </header>
 <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1100px] w-full mx-auto">
 <div class="flex flex-wrap gap-2 mb-5" id="tab-pills">
-<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary" data-tab="liens">Liens de parenté & pièces</button>
-<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="membres">Membres rattachés</button>
-<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="retention">Rétention</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-primary text-on-primary" data-tab="membres">Membres rattachés</button>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="fif">FIF signée</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="libelles">Libellés & modèles</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="affectation">Règles d'affectation</button>
 <button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="structure">Structure militaire</button>
-</div>
-
-<!-- Liens de parenté -->
-<div class="tab-panel is-active" data-tab="liens">
-<div class="assure-card overflow-hidden">
-<div class="px-5 py-4 border-b border-outline-variant bg-surface-container-low"><h3 class="font-title-lg text-title-lg">Liens de parenté et pièces requises</h3></div>
-<div class="overflow-x-auto"><table class="w-full text-left">
-<thead><tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide"><th class="px-5 py-3 font-medium">Lien</th><th class="px-5 py-3 font-medium">Pièces obligatoires</th><th class="px-5 py-3 font-medium">Pièces optionnelles</th></tr></thead>
-<tbody class="divide-y divide-outline-variant">
-<tr><td class="px-5 py-3 text-xs font-bold">Conjoint(e)</td><td class="px-5 py-3 text-xs">Acte de mariage, copie CNIB du conjoint</td><td class="px-5 py-3 text-xs text-on-surface-variant">Acte de divorce du précédent conjoint</td></tr>
-<tr><td class="px-5 py-3 text-xs font-bold">Enfant biologique</td><td class="px-5 py-3 text-xs">Acte de naissance, copie CNIB du parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Certificat médical de scolarité</td></tr>
-<tr><td class="px-5 py-3 text-xs font-bold">Enfant du conjoint</td><td class="px-5 py-3 text-xs">Acte de naissance, acte de mariage avec le parent</td><td class="px-5 py-3 text-xs text-on-surface-variant">Pièce justifiant la garde</td></tr>
-</tbody>
-</table></div>
-<div class="p-4 bg-surface-container-low text-[11px] text-on-surface-variant italic">La CAMA prend en charge uniquement le(s) conjoint(s) et les enfants. Cette matrice impacte le formulaire d'enrôlement de l'espace assuré.</div>
-</div>
+<button class="tab-pill px-4 py-2 rounded-full text-xs font-bold bg-surface-container-high text-on-surface-variant" data-tab="documents">Pièces d'inscription</button>
 </div>
 
 <!-- Membres rattachés -->
-<div class="tab-panel" data-tab="membres">
-<div class="assure-card p-6 max-w-xl">
-<h3 class="font-title-lg text-title-lg mb-1">Éligibilité des membres rattachés</h3>
-<p class="text-xs text-on-surface-variant mb-5">La CAMA prend en charge uniquement le ou les <strong>conjoints</strong> ainsi que les <strong>enfants</strong> d'un assuré.</p>
-<div class="border border-outline-variant rounded-lg p-4 mb-4">
-<label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-2" for="age-max-enfant">Âge maximal d'éligibilité des enfants</label>
+<div class="tab-panel is-active" data-tab="membres">
+<div class="assure-card p-6 max-w-xl mb-4">
+<h3 class="font-title-lg text-title-lg mb-1">Éligibilité des enfants &amp; scolarité</h3>
+<p class="text-xs text-on-surface-variant mb-5">À partir de l'âge seuil configuré (défaut <strong>26 ans</strong>), l'assuré devra téléverser un <strong>certificat de scolarité</strong> si l'exigence est activée. Plus de blocage d'enrôlement purement lié à l'âge.</p>
+<div class="border border-outline-variant rounded-lg p-4 mb-4 space-y-4">
+<div>
+<label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-2" for="age-max-enfant">Âge seuil (certificat de scolarité)</label>
 <div class="flex items-center gap-3">
-<input class="w-24 px-3 py-2 text-sm border border-outline-variant rounded-lg text-center" id="age-max-enfant" max="26" min="1" type="number"/>
+<input class="w-24 px-3 py-2 text-sm border border-outline-variant rounded-lg text-center" id="age-max-enfant" max="35" min="1" type="number"/>
 <span class="text-sm text-on-surface-variant">ans</span>
 </div>
-<p class="text-[11px] text-on-surface-variant mt-2">Plafond autorisé : <strong>26 ans</strong>. Un enfant dont l'âge dépasse cette limite ne pourra plus être enrôlé.</p>
+<p class="text-[11px] text-on-surface-variant mt-2">Exemple : si le seuil est <strong>26</strong>, un enfant de 26 ans ou plus devra fournir le certificat (si l'exigence est activée).</p>
+</div>
+<div class="border-t border-outline-variant pt-4">
+<label class="flex items-start gap-3 cursor-pointer mb-3" id="scolarite-row">
+<button type="button" class="toggle-switch shrink-0" id="scolarite-actif"><span class="knob"></span></button>
+<span>
+<span class="block text-sm font-semibold text-on-surface">Exiger le certificat au-delà du seuil</span>
+<span class="block text-[11px] text-on-surface-variant">Si désactivé, aucun certificat n'est demandé quel que soit l'âge.</span>
+</span>
+</label>
+<label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-2" for="scolarite-label">Libellé de la pièce</label>
+<input class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg" id="scolarite-label" type="text" placeholder="Certificat de scolarité"/>
+</div>
 </div>
 <button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" id="btn-save-membres" type="button">Enregistrer</button>
 </div>
+
+<div class="assure-card p-6 max-w-3xl mb-4">
+<h3 class="font-title-lg text-title-lg mb-1">Photo des membres</h3>
+<p class="text-xs text-on-surface-variant mb-4">Activez la demande de photo d'identité pour les conjoints et/ou les enfants, et choisissez si elle est obligatoire à la soumission du dossier.</p>
+<div class="space-y-3" id="photo-settings-list">
+<div class="border border-outline-variant rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3" id="photo-row-conjoint">
+<button type="button" class="toggle-switch shrink-0" id="photo-conjoint-actif"><span class="knob"></span></button>
+<div class="flex-1">
+<p class="text-sm font-semibold text-on-surface">Photo du conjoint</p>
+<p class="text-[11px] text-on-surface-variant">Affichée sur la fiche d'ajout d'un conjoint</p>
+</div>
+<label class="flex items-center gap-2 text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+<input type="checkbox" id="photo-conjoint-required"/> Obligatoire
+</label>
+</div>
+<div class="border border-outline-variant rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3" id="photo-row-enfant">
+<button type="button" class="toggle-switch shrink-0" id="photo-enfant-actif"><span class="knob"></span></button>
+<div class="flex-1">
+<p class="text-sm font-semibold text-on-surface">Photo de l'enfant</p>
+<p class="text-[11px] text-on-surface-variant">Affichée sur la fiche d'ajout d'un enfant</p>
+</div>
+<label class="flex items-center gap-2 text-xs font-semibold text-on-surface-variant whitespace-nowrap">
+<input type="checkbox" id="photo-enfant-required"/> Obligatoire
+</label>
+</div>
+</div>
+<button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-photos">Enregistrer les photos</button>
 </div>
 
-<!-- Rétention -->
-<div class="tab-panel" data-tab="retention">
-<div class="assure-card p-6 max-w-md">
-<h3 class="font-title-lg text-title-lg mb-1">Durée de rétention des pièces</h3>
-<p class="text-xs text-on-surface-variant mb-4">Durée de conservation des pièces justificatives après clôture du dossier.</p>
-<div class="flex items-center gap-3 mb-4">
-<input class="w-24 px-3 py-2 text-sm border border-outline-variant rounded-lg text-center" id="retention-years" type="number" value="5"/>
-<span class="text-sm text-on-surface-variant">ans (par défaut : 5 ans)</span>
+<div class="assure-card p-6 max-w-3xl">
+<h3 class="font-title-lg text-title-lg mb-1">Filiations enfants &amp; pièces justificatives</h3>
+<p class="text-xs text-on-surface-variant mb-4">Activez les types de filiation proposés à l'assuré lors de l'ajout d'un enfant, et définissez les pièces obligatoires ou optionnelles pour chacun.</p>
+<div class="space-y-4" id="filiations-list"></div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex items-center gap-3 flex-wrap">
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-filiations">Enregistrer les filiations</button>
+<span class="text-[11px] text-on-surface-variant">Appliqué au formulaire « Ajouter un membre »</span>
 </div>
-<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Durée de rétention')">Enregistrer</button>
+</div>
+</div>
+
+<!-- FIF signée -->
+<div class="tab-panel" data-tab="fif">
+<div class="assure-card p-6 max-w-3xl">
+<h3 class="font-title-lg text-title-lg mb-1">FIF signée</h3>
+<p class="text-xs text-on-surface-variant mb-4">Activez l'exigence de la <strong>FIF signée</strong> (génération PDF + téléversement du scan) avant la soumission du dossier familial. Désactivée par défaut.</p>
+<div class="border border-outline-variant rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3" id="fif-row">
+<button type="button" class="toggle-switch shrink-0 off" id="fif-signee-actif"><span class="knob"></span></button>
+<div class="flex-1">
+<p class="text-sm font-semibold text-on-surface">Exiger la FIF signée à la soumission</p>
+<p class="text-[11px] text-on-surface-variant">Si activé, l'assuré doit générer la FIF, la faire signer et téléverser le scan avant de pouvoir soumettre. Si désactivé, la section 4 n'apparaît pas et n'est pas bloquante.</p>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0 bg-surface-container-high text-on-surface-variant" id="fif-status-badge">Désactivée</span>
+</div>
+<button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-fif">Enregistrer</button>
 </div>
 </div>
 
 <!-- Libellés -->
 <div class="tab-panel" data-tab="libelles">
 <div class="assure-card p-6 mb-4">
-<h3 class="font-title-lg text-title-lg mb-3">Motifs de refus pré-définis</h3>
-<div class="space-y-2 mb-3" id="motifs-list">
-<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Pièce justificative non conforme"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
-<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Lien de parenté non justifié"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
-<div class="flex items-center gap-2"><input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" value="Informations incohérentes avec le dossier militaire"/><button class="text-error"><span class="material-symbols-outlined text-[18px]">delete</span></button></div>
-</div>
-<button class="text-primary text-xs font-bold flex items-center gap-1" onclick="addMotif()"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter un motif</button>
+<h3 class="font-title-lg text-title-lg mb-1">Motifs de refus pré-définis</h3>
+<p class="text-xs text-on-surface-variant mb-3">Proposés au gestionnaire lors du refus d'un dossier (sélection rapide + personnalisation).</p>
+<div class="space-y-2 mb-3" id="motifs-list"></div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" type="button" id="btn-add-motif"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter un motif</button>
 </div>
 <div class="assure-card p-6">
-<h3 class="font-title-lg text-title-lg mb-3">Modèles de message e-mail</h3>
+<h3 class="font-title-lg text-title-lg mb-1">Modèles de notification assuré</h3>
+<p class="text-xs text-on-surface-variant mb-3">Utilisés dans les notifications envoyées à l'assuré lors de la validation ou d'une demande de complément. Variables : <code class="text-[10px] bg-surface-container-high px-1 rounded">{ref}</code>, <code class="text-[10px] bg-surface-container-high px-1 rounded">{piece}</code>, <code class="text-[10px] bg-surface-container-high px-1 rounded">{beneficiaire}</code>.</p>
 <div class="space-y-3">
-<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Validation de dossier</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" rows="2">Bonjour, votre dossier {ref} a été validé. Votre carte d'assuré sera produite sous peu.</textarea></div>
-<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Demande de complément</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" rows="2">Bonjour, une pièce complémentaire est requise pour le dossier {ref} : {piece}.</textarea></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Validation de dossier</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="email-validation" rows="2"></textarea></div>
+<div><label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Demande de complément</label><textarea class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" id="email-complement" rows="2"></textarea></div>
 </div>
-<button class="mt-3 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Modèles de message')">Enregistrer</button>
+<button class="mt-3 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-libelles">Enregistrer</button>
 </div>
 </div>
 
@@ -226,26 +263,50 @@
 <div class="tab-panel" data-tab="affectation">
 <div class="assure-card p-6 max-w-lg">
 <h3 class="font-title-lg text-title-lg mb-1">Règles d'affectation automatique</h3>
-<p class="text-xs text-on-surface-variant mb-4">Mode d'affectation des nouveaux dossiers aux gestionnaires.</p>
-<div class="space-y-2 mb-4">
-<label class="flex items-center gap-2 text-xs"><input checked="" name="affectation" type="radio"/> Manuelle (le superviseur affecte chaque dossier)</label>
-<label class="flex items-center gap-2 text-xs"><input name="affectation" type="radio"/> Automatiquerépartition équilibrée (round-robin)</label>
-<label class="flex items-center gap-2 text-xs"><input name="affectation" type="radio"/> Automatiquepar charge la plus faible</label>
+<p class="text-xs text-on-surface-variant mb-4">Mode d'affectation des nouveaux dossiers aux gestionnaires. Ces règles s'appliquent à chaque nouveau dossier soumis par un assuré ; les dossiers déjà affectés ne sont pas redistribués.</p>
+<div class="space-y-3 mb-4">
+<label class="flex items-start gap-2 text-xs cursor-pointer" title="Aucune distribution automatique : chaque dossier soumis reste « Non affecté » jusqu'à ce que le superviseur l'attribue depuis la page Dossiers.">
+<input name="affectation" type="radio" value="manuelle" class="mt-0.5"/>
+<span><span class="font-bold block">Manuelle (le superviseur affecte chaque dossier)</span><span class="text-[11px] text-on-surface-variant">Les nouveaux dossiers restent « Non affecté ». Le superviseur les attribue un à un (ou par lot) depuis la page Dossiers.</span></span>
+</label>
+<label class="flex items-start gap-2 text-xs cursor-pointer" title="Chaque nouveau dossier est attribué au gestionnaire suivant dans la liste, à tour de rôle, indépendamment de leur charge de travail.">
+<input name="affectation" type="radio" value="round_robin" class="mt-0.5"/>
+<span><span class="font-bold block">Automatique — répartition équilibrée (round-robin)</span><span class="text-[11px] text-on-surface-variant">Dès sa soumission, chaque dossier est attribué au gestionnaire actif suivant, à tour de rôle. Tous reçoivent le même nombre de dossiers au fil du temps.</span></span>
+</label>
+<label class="flex items-start gap-2 text-xs cursor-pointer" title="Chaque nouveau dossier est attribué au gestionnaire qui a le moins de dossiers ouverts (soumis, en instruction, pièce manquante, en attente supervision) au moment de la soumission.">
+<input name="affectation" type="radio" value="charge_min" class="mt-0.5"/>
+<span><span class="font-bold block">Automatique — par charge la plus faible</span><span class="text-[11px] text-on-surface-variant">Dès sa soumission, chaque dossier va au gestionnaire ayant le moins de dossiers en cours de traitement. Équilibre la charge réelle, pas seulement le nombre.</span></span>
+</label>
+<p class="text-[11px] text-on-surface-variant bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2"><span class="font-bold">Note :</span> en mode automatique, les dossiers d'un même assuré (même famille) sont toujours confiés au même gestionnaire. Le superviseur peut toujours réaffecter manuellement un dossier après coup.</p>
 </div>
-<div class="flex items-center justify-between pt-4 border-t border-outline-variant">
-<div><p class="text-xs font-bold">Validation à deux niveaux</p><p class="text-[11px] text-on-surface-variant">Gestionnaire puis Superviseur avant décision finale</p></div>
-<div class="toggle-switch on shrink-0" id="validation-2niveaux"><div class="knob"></div></div>
+<div class="flex items-center justify-between gap-3 pt-4 border-t border-outline-variant">
+<div>
+<p class="text-xs font-bold">Validation à deux niveaux</p>
+<p class="text-[11px] text-on-surface-variant">Gestionnaire puis Superviseur avant décision finale</p>
+<p class="text-[11px] text-on-surface-variant mt-1"><span class="font-bold">Activé :</span> quand un gestionnaire valide un dossier, celui-ci passe « En attente supervision » — seul un superviseur ou administrateur prononce la validation définitive (et la notification à l'assuré). <span class="font-bold">Désactivé :</span> le gestionnaire valide seul et l'assuré est notifié immédiatement. Les refus et demandes de complément restent au niveau du gestionnaire dans les deux cas.</p>
 </div>
-<button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" onclick="saveSetting('Règles d\'affectation')">Enregistrer</button>
+<button type="button" class="toggle-switch shrink-0" id="validation-2niveaux" title="Activé : la validation d'un gestionnaire transmet le dossier à la supervision au lieu de le valider définitivement."><div class="knob"></div></button>
+</div>
+<button class="mt-4 px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-affectation">Enregistrer</button>
 </div>
 </div>
 
 <!-- Structure militaire -->
 <div class="tab-panel" data-tab="structure">
+<div class="assure-card p-4 mb-4 border border-primary/25 bg-primary/5 flex items-start gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">info</span>
+<p>Les catégories, grades, armées et groupes sanguins affichés sur la <strong class="text-on-surface">page d'inscription assuré</strong> ne sont mis à jour qu'après clic sur <strong class="text-on-surface">Enregistrer la structure</strong>.</p>
+</div>
 <div class="assure-card p-6 mb-4">
 <h3 class="font-title-lg text-title-lg mb-1">Listes simples</h3>
 <p class="text-xs text-on-surface-variant mb-4">Valeurs proposées en liste déroulante à l'inscription (indépendantes de la hiérarchie ci-dessous).</p>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+<div class="border border-outline-variant rounded-lg p-4">
+<h4 class="text-[11px] font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">military_tech</span> Grades</h4>
+<p class="text-[10px] text-on-surface-variant mb-2">Ex. Lieutenant, Capitaine…</p>
+<div class="space-y-2 mb-2" id="list-grades"></div>
+<button class="text-primary text-xs font-bold flex items-center gap-1" type="button" data-add-simple="grades"><span class="material-symbols-outlined text-[16px]">add</span> Ajouter un grade</button>
+</div>
 <div class="border border-outline-variant rounded-lg p-4">
 <h4 class="text-[11px] font-bold uppercase text-on-surface-variant mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-primary">military_tech</span> Armées</h4>
 <p class="text-[10px] text-on-surface-variant mb-2">Ex. Armée de Terre, Gendarmerie…</p>
@@ -299,9 +360,27 @@
 <div class="space-y-4" id="org-tree"></div>
 </div>
 
-<div class="mt-4 flex items-center gap-3">
+<div class="mt-4 flex items-center gap-3 flex-wrap">
 <button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-structure">Enregistrer la structure</button>
 <button class="px-4 py-2 rounded-lg bg-surface-container-high text-on-surface-variant text-xs font-bold" type="button" id="btn-reset-structure">Réinitialiser</button>
+<span class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-tertiary bg-tertiary/10 border border-tertiary/30 rounded-full px-2.5 py-1" id="structure-dirty-badge"><span class="material-symbols-outlined text-[14px]">warning</span> Modifications non enregistrées</span>
+</div>
+</div>
+
+<!-- Pièces d'inscription -->
+<div class="tab-panel" data-tab="documents">
+<div class="assure-card p-4 mb-4 border border-primary/25 bg-primary/5 flex items-start gap-3 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0">info</span>
+<p>Activez jusqu'à 3 pièces justificatives à téléverser lors de l'inscription (ex. carte militaire, carte CAMA, CNIB). Seules les pièces <strong class="text-on-surface">activées avec un titre</strong> apparaissent sur le formulaire d'inscription. Si aucune n'est activée, la section n'est pas affichée.</p>
+</div>
+<div class="assure-card p-6 max-w-2xl">
+<h3 class="font-title-lg text-title-lg mb-1">Pièces demandées à l'inscription</h3>
+<p class="text-xs text-on-surface-variant mb-4">Les gestionnaires, superviseurs et administrateurs pourront consulter ces documents depuis la fiche d'inscription.</p>
+<div class="space-y-3" id="documents-list"></div>
+<div class="mt-4 pt-4 border-t border-outline-variant flex items-center gap-3 flex-wrap">
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" type="button" id="btn-save-documents">Enregistrer les pièces</button>
+<span class="text-[11px] text-on-surface-variant">Applique la section « Pièces justificatives » à l'inscription</span>
+</div>
 </div>
 </div>
 </main>
@@ -343,26 +422,228 @@
         }
         function saveSetting(label) { showToast(`<span class="material-symbols-outlined">check_circle</span> ${label} mis(e) à jour.`); }
 
-        // --- Membres rattachés : âge maximal d'éligibilité des enfants ---
+        // --- Membres rattachés : seuil d'âge + certificat de scolarité ---
         (function initMembresSettings() {
             const input = document.getElementById('age-max-enfant');
+            const labelInput = document.getElementById('scolarite-label');
+            const toggle = document.getElementById('scolarite-actif');
             if (!input || !window.CamaAssureData) return;
-            const plafond = CamaAssureData.AGE_MAX_ENFANT_PLAFOND || 26;
+            const plafond = CamaAssureData.AGE_MAX_ENFANT_PLAFOND || 35;
             input.max = plafond;
-            input.value = CamaAssureData.getAgeMaxEnfant();
+            let scolarite = CamaAssureData.getCertificatScolariteSettings
+                ? CamaAssureData.getCertificatScolariteSettings()
+                : { actif: true, ageSeuil: CamaAssureData.getAgeMaxEnfant(), label: 'Certificat de scolarité' };
+            let actif = !!scolarite.actif;
+
+            function syncToggle() {
+                toggle.classList.toggle('on', actif);
+                toggle.classList.toggle('off', !actif);
+                labelInput.disabled = !actif;
+            }
+
+            input.value = scolarite.ageSeuil;
+            labelInput.value = scolarite.label;
+            syncToggle();
+            toggle.addEventListener('click', () => { actif = !actif; syncToggle(); });
+
             document.getElementById('btn-save-membres').addEventListener('click', () => {
                 let val = parseInt(input.value, 10);
-                if (isNaN(val) || val < 1) { showToast('<span class="material-symbols-outlined">error</span> Saisissez un âge valide.'); return; }
-                const saved = CamaAssureData.saveSettings({ ageMaxEnfant: val });
-                input.value = saved.ageMaxEnfant;
-                showToast(`<span class="material-symbols-outlined">check_circle</span> Âge maximal des enfants fixé à ${saved.ageMaxEnfant} ans.`);
+                if (isNaN(val) || val < 1) { showToast('<span class="material-symbols-outlined">error</span> Saisissez un âge seuil valide.'); return; }
+                const label = (labelInput.value || '').trim();
+                if (actif && !label) { showToast('<span class="material-symbols-outlined">error</span> Indiquez le libellé du certificat.'); return; }
+                if (CamaAssureData.saveCertificatScolariteSettings) {
+                    scolarite = CamaAssureData.saveCertificatScolariteSettings({ actif, ageSeuil: val, label: label || 'Certificat de scolarité' });
+                } else {
+                    CamaAssureData.saveSettings({ ageMaxEnfant: val });
+                    scolarite = { actif, ageSeuil: val, label };
+                }
+                input.value = scolarite.ageSeuil;
+                labelInput.value = scolarite.label;
+                actif = !!scolarite.actif;
+                syncToggle();
+                showToast(`<span class="material-symbols-outlined">check_circle</span> Règle scolarité enregistrée (seuil ${scolarite.ageSeuil} ans).`);
             });
         })();
+
+        // --- FIF signée (exigence à la soumission) ---
+        (function initFifSettings() {
+            if (!window.CamaAssureData?.isFifSigneeRequired) return;
+            const btn = document.getElementById('fif-signee-actif');
+            const badge = document.getElementById('fif-status-badge');
+            const row = document.getElementById('fif-row');
+            let actif = CamaAssureData.isFifSigneeRequired();
+
+            function syncUi() {
+                btn.classList.toggle('on', actif);
+                btn.classList.toggle('off', !actif);
+                badge.textContent = actif ? 'Activée' : 'Désactivée';
+                badge.className = `text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0 ${actif ? 'bg-secondary/15 text-secondary' : 'bg-surface-container-high text-on-surface-variant'}`;
+                row.classList.toggle('border-primary/40', actif);
+                row.classList.toggle('bg-primary/5', actif);
+                row.classList.toggle('border-outline-variant', !actif);
+            }
+
+            syncUi();
+            btn.addEventListener('click', () => { actif = !actif; syncUi(); });
+            document.getElementById('btn-save-fif').addEventListener('click', () => {
+                CamaAssureData.saveFifSigneeRequired(actif);
+                actif = CamaAssureData.isFifSigneeRequired();
+                syncUi();
+                showToast(`<span class="material-symbols-outlined">check_circle</span> FIF signée ${actif ? 'activée' : 'désactivée'}.`);
+            });
+        })();
+
+        // --- Photo des membres (conjoint / enfant) ---
+        (function initMembrePhotos() {
+            if (!window.CamaAssureData?.getMembrePhotoSettings) return;
+            let settings = CamaAssureData.getMembrePhotoSettings();
+            const btnConjoint = document.getElementById('photo-conjoint-actif');
+            const btnEnfant = document.getElementById('photo-enfant-actif');
+            const chkConjoint = document.getElementById('photo-conjoint-required');
+            const chkEnfant = document.getElementById('photo-enfant-required');
+            const rowConjoint = document.getElementById('photo-row-conjoint');
+            const rowEnfant = document.getElementById('photo-row-enfant');
+
+            function syncUi() {
+                btnConjoint.classList.toggle('on', settings.conjoint.actif);
+                btnConjoint.classList.toggle('off', !settings.conjoint.actif);
+                btnEnfant.classList.toggle('on', settings.enfant.actif);
+                btnEnfant.classList.toggle('off', !settings.enfant.actif);
+                chkConjoint.checked = settings.conjoint.required;
+                chkEnfant.checked = settings.enfant.required;
+                chkConjoint.disabled = !settings.conjoint.actif;
+                chkEnfant.disabled = !settings.enfant.actif;
+                rowConjoint.classList.toggle('border-primary/40', settings.conjoint.actif);
+                rowConjoint.classList.toggle('bg-primary/5', settings.conjoint.actif);
+                rowEnfant.classList.toggle('border-primary/40', settings.enfant.actif);
+                rowEnfant.classList.toggle('bg-primary/5', settings.enfant.actif);
+            }
+
+            syncUi();
+            btnConjoint.addEventListener('click', () => {
+                settings.conjoint.actif = !settings.conjoint.actif;
+                if (!settings.conjoint.actif) settings.conjoint.required = false;
+                syncUi();
+            });
+            btnEnfant.addEventListener('click', () => {
+                settings.enfant.actif = !settings.enfant.actif;
+                if (!settings.enfant.actif) settings.enfant.required = false;
+                syncUi();
+            });
+            chkConjoint.addEventListener('change', () => { settings.conjoint.required = chkConjoint.checked; });
+            chkEnfant.addEventListener('change', () => { settings.enfant.required = chkEnfant.checked; });
+            document.getElementById('btn-save-photos').addEventListener('click', () => {
+                settings = CamaAssureData.saveMembrePhotoSettings(settings);
+                syncUi();
+                showToast('<span class="material-symbols-outlined">check_circle</span> Paramètres photo des membres enregistrés.');
+            });
+        })();
+
+        // --- Filiations enfants & pièces ---
+        (function initFiliations() {
+            const list = document.getElementById('filiations-list');
+            if (!list || !window.CamaAssureData?.getEnfantFiliations) return;
+            let filiations = CamaAssureData.getEnfantFiliations();
+
+            function esc(s) {
+                return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+            }
+
+            function render() {
+                list.innerHTML = filiations.map((f, fi) => `
+                    <div class="border rounded-lg p-4 ${f.actif ? 'border-primary/40 bg-primary/5' : 'border-outline-variant'}" data-filiation="${fi}">
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+                            <button type="button" class="toggle-switch shrink-0 ${f.actif ? 'on' : 'off'}" data-filiation-toggle="${fi}"><span class="knob"></span></button>
+                            <div class="flex-1">
+                                <label class="text-[10px] uppercase text-on-surface-variant font-bold block mb-1">Libellé affiché à l'assuré</label>
+                                <input type="text" class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg" data-filiation-label="${fi}" value="${esc(f.label)}" ${f.actif ? '' : 'disabled'}/>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0 ${f.actif ? 'bg-secondary/15 text-secondary' : 'bg-surface-container-high text-on-surface-variant'}">${f.actif ? 'Proposée' : 'Masquée'}</span>
+                        </div>
+                        <div class="space-y-2 ${f.actif ? '' : 'opacity-50 pointer-events-none'}">
+                            <p class="text-[10px] font-bold uppercase text-on-surface-variant">Pièces justificatives</p>
+                            ${f.pieces.map((p, pi) => `
+                                <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center bg-white border border-outline-variant rounded-lg p-2.5">
+                                    <input type="text" class="flex-1 px-2.5 py-1.5 text-xs border border-outline-variant rounded-lg" data-piece-label="${fi}-${pi}" value="${esc(p.label)}" placeholder="Libellé de la pièce"/>
+                                    <label class="flex items-center gap-1.5 text-[11px] font-semibold text-on-surface-variant whitespace-nowrap shrink-0">
+                                        <input type="checkbox" data-piece-required="${fi}-${pi}" ${p.required ? 'checked' : ''}/> Obligatoire
+                                    </label>
+                                    <button type="button" class="text-error shrink-0 p-1" data-piece-remove="${fi}-${pi}" title="Retirer"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                                </div>
+                            `).join('') || '<p class="text-[11px] text-on-surface-variant italic">Aucune pièce définie.</p>'}
+                            <button type="button" class="text-primary text-xs font-bold inline-flex items-center gap-1 mt-1" data-piece-add="${fi}">
+                                <span class="material-symbols-outlined text-[16px]">add</span> Ajouter une pièce
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            render();
+
+            list.addEventListener('click', (e) => {
+                const toggle = e.target.closest('[data-filiation-toggle]');
+                if (toggle) {
+                    const i = parseInt(toggle.dataset.filiationToggle, 10);
+                    filiations[i].actif = !filiations[i].actif;
+                    render();
+                    return;
+                }
+                const addBtn = e.target.closest('[data-piece-add]');
+                if (addBtn) {
+                    const i = parseInt(addBtn.dataset.pieceAdd, 10);
+                    const n = filiations[i].pieces.length + 1;
+                    filiations[i].pieces.push({ key: `piece_${Date.now()}`, label: `Nouvelle pièce ${n}`, required: true });
+                    render();
+                    return;
+                }
+                const removeBtn = e.target.closest('[data-piece-remove]');
+                if (removeBtn) {
+                    const [fi, pi] = removeBtn.dataset.pieceRemove.split('-').map(Number);
+                    filiations[fi].pieces.splice(pi, 1);
+                    render();
+                }
+            });
+
+            list.addEventListener('input', (e) => {
+                if (e.target.dataset.filiationLabel !== undefined) {
+                    filiations[parseInt(e.target.dataset.filiationLabel, 10)].label = e.target.value;
+                }
+                if (e.target.dataset.pieceLabel !== undefined) {
+                    const [fi, pi] = e.target.dataset.pieceLabel.split('-').map(Number);
+                    filiations[fi].pieces[pi].label = e.target.value;
+                }
+            });
+
+            list.addEventListener('change', (e) => {
+                if (e.target.dataset.pieceRequired !== undefined) {
+                    const [fi, pi] = e.target.dataset.pieceRequired.split('-').map(Number);
+                    filiations[fi].pieces[pi].required = e.target.checked;
+                }
+            });
+
+            document.getElementById('btn-save-filiations').addEventListener('click', () => {
+                const emptyLabel = filiations.find(f => f.actif && !String(f.label || '').trim());
+                if (emptyLabel) {
+                    showToast('<span class="material-symbols-outlined">error</span> Chaque filiation activée doit avoir un libellé.');
+                    return;
+                }
+                const emptyPiece = filiations.find(f => f.actif && f.pieces.some(p => !String(p.label || '').trim()));
+                if (emptyPiece) {
+                    showToast('<span class="material-symbols-outlined">error</span> Chaque pièce doit avoir un libellé.');
+                    return;
+                }
+                filiations = CamaAssureData.saveEnfantFiliations(filiations);
+                render();
+                showToast('<span class="material-symbols-outlined">check_circle</span> Filiations et pièces enregistrées.');
+            });
+        })();
+
         // --- Structure militaire de rattachement ---
         (function initStructure() {
             if (!window.CamaAssureData) return;
             let structure = CamaAssureData.getOrgStructure();
-            const SIMPLE_KEYS = ['armees', 'categories', 'groupesSanguins'];
+            const SIMPLE_KEYS = ['grades', 'armees', 'categories', 'groupesSanguins'];
             const CHILD_KEYS = ['corps', 'services', 'sections', 'sousSections'];
             const LEVEL_LABELS = ['Région', 'Corps', 'Service', 'Section', 'Sous-section'];
             const LEVEL_ICONS = ['map', 'shield', 'apartment', 'groups', 'folder_open'];
@@ -582,11 +863,24 @@
                 }
             });
 
+            function markDirty() {
+                document.getElementById('structure-dirty-badge').classList.remove('hidden');
+            }
+            function clearDirty() {
+                document.getElementById('structure-dirty-badge').classList.add('hidden');
+            }
+            panel.addEventListener('input', markDirty);
+            panel.addEventListener('click', (e) => {
+                if (e.target.closest('[data-add-simple], [data-simple-del], [data-add-child], [data-del]')) markDirty();
+            });
+            document.getElementById('btn-add-region').addEventListener('click', markDirty);
+
             document.getElementById('btn-save-structure').addEventListener('click', () => {
                 SIMPLE_KEYS.forEach(k => { structure[k] = (structure[k] || []).map(v => v.trim()).filter(Boolean); });
                 CamaAssureData.saveOrgStructure(structure);
                 structure = CamaAssureData.getOrgStructure();
                 renderAll();
+                clearDirty();
                 showToast('<span class="material-symbols-outlined">check_circle</span> Structure militaire enregistrée.');
             });
 
@@ -594,22 +888,107 @@
                 localStorage.removeItem('cama_org_structure');
                 structure = CamaAssureData.getOrgStructure();
                 renderAll();
+                clearDirty();
                 showToast('<span class="material-symbols-outlined">restart_alt</span> Structure réinitialisée.');
             });
 
             renderAll();
         })();
 
-        function addMotif() {
-            const div = document.createElement('div');
-            div.className = 'flex items-center gap-2';
-            div.innerHTML = `<input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" placeholder="Nouveau motif…"/><button class="text-error" onclick="this.parentElement.remove()"><span class="material-symbols-outlined text-[18px]">delete</span></button>`;
-            document.getElementById('motifs-list').appendChild(div);
-        }
-        document.getElementById('validation-2niveaux').addEventListener('click', function () {
-            const isOn = this.classList.toggle('on'); this.classList.toggle('off', !isOn);
-            localStorage.setItem('cama_validation_2niveaux', isOn ? 'true' : 'false');
-        });
+        // --- Motifs de refus + modèles de notification (onglet Libellés) ---
+        (function initLibelles() {
+            const list = document.getElementById('motifs-list');
+            function renderMotifs(motifs) {
+                list.innerHTML = motifs.map((m, i) => `
+                    <div class="flex items-center gap-2">
+                        <input class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg" type="text" data-motif-i="${i}" value="${m.replace(/"/g, '&quot;')}"/>
+                        <button type="button" class="text-error" data-motif-del="${i}"><span class="material-symbols-outlined text-[18px]">delete</span></button>
+                    </div>`).join('');
+            }
+            let motifs = CamaAssureData.getMotifsRefus();
+            renderMotifs(motifs);
+            document.getElementById('btn-add-motif').addEventListener('click', () => {
+                motifs.push('');
+                renderMotifs(motifs);
+            });
+            list.addEventListener('input', (e) => {
+                if (e.target.dataset.motifI !== undefined) motifs[parseInt(e.target.dataset.motifI, 10)] = e.target.value;
+            });
+            list.addEventListener('click', (e) => {
+                const del = e.target.closest('[data-motif-del]');
+                if (del) { motifs.splice(parseInt(del.dataset.motifDel, 10), 1); renderMotifs(motifs); }
+            });
+            const templates = CamaAssureData.getEmailTemplates();
+            document.getElementById('email-validation').value = templates.validation;
+            document.getElementById('email-complement').value = templates.complement;
+            document.getElementById('btn-save-libelles').addEventListener('click', () => {
+                motifs = CamaAssureData.saveMotifsRefus(motifs);
+                renderMotifs(motifs);
+                CamaAssureData.saveEmailTemplates({
+                    validation: document.getElementById('email-validation').value,
+                    complement: document.getElementById('email-complement').value
+                });
+                showToast('<span class="material-symbols-outlined">check_circle</span> Libellés et modèles enregistrés.');
+            });
+        })();
+
+        // --- Règles d'affectation + validation à deux niveaux ---
+        (function initAffectation() {
+            const settings = CamaAssureData.getAffectationSettings();
+            const radios = document.querySelectorAll('input[name="affectation"]');
+            radios.forEach(r => { r.checked = r.value === settings.mode; });
+            const toggle = document.getElementById('validation-2niveaux');
+            let pending2N = settings.validation2Niveaux;
+            toggle.classList.toggle('on', pending2N);
+            toggle.classList.toggle('off', !pending2N);
+            toggle.addEventListener('click', () => {
+                pending2N = !pending2N;
+                toggle.classList.toggle('on', pending2N);
+                toggle.classList.toggle('off', !pending2N);
+            });
+            document.getElementById('btn-save-affectation').addEventListener('click', () => {
+                const mode = document.querySelector('input[name="affectation"]:checked')?.value || 'manuelle';
+                CamaAssureData.saveAffectationSettings({ mode, validation2Niveaux: pending2N });
+                showToast('<span class="material-symbols-outlined">check_circle</span> Règles d\'affectation enregistrées.');
+            });
+        })();
+
+        // --- Pièces d'inscription ---
+        (function initDocuments() {
+            const list = document.getElementById('documents-list');
+            let documents = CamaAssureData.getInscriptionDocuments();
+            function render() {
+                list.innerHTML = documents.map((doc, i) => `
+                    <div class="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center gap-3 ${doc.actif ? 'border-primary/40 bg-primary/5' : 'border-outline-variant'}" data-doc-row="${i}">
+                        <button type="button" class="toggle-switch shrink-0 ${doc.actif ? 'on' : 'off'}" data-doc-toggle="${i}"><span class="knob"></span></button>
+                        <div class="flex-1">
+                            <label class="text-[10px] uppercase text-on-surface-variant font-bold block mb-1">Pièce ${i + 1} — titre affiché</label>
+                            <input type="text" class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg" placeholder="Ex. Carte CAMA" data-doc-titre="${i}" value="${doc.titre.replace(/"/g, '&quot;')}" ${doc.actif ? '' : 'disabled'}/>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0 ${doc.actif ? 'bg-secondary/15 text-secondary' : 'bg-surface-container-high text-on-surface-variant'}">${doc.actif ? 'Affichée' : 'Masquée'}</span>
+                    </div>`).join('');
+            }
+            render();
+            list.addEventListener('click', (e) => {
+                const toggleBtn = e.target.closest('[data-doc-toggle]');
+                if (toggleBtn) {
+                    const i = parseInt(toggleBtn.dataset.docToggle, 10);
+                    documents[i].actif = !documents[i].actif;
+                    render();
+                }
+            });
+            list.addEventListener('input', (e) => {
+                if (e.target.dataset.docTitre !== undefined) {
+                    documents[parseInt(e.target.dataset.docTitre, 10)].titre = e.target.value;
+                }
+            });
+            document.getElementById('btn-save-documents').addEventListener('click', () => {
+                documents = CamaAssureData.saveInscriptionDocuments(documents);
+                render();
+                showToast('<span class="material-symbols-outlined">check_circle</span> Pièces d\'inscription enregistrées.');
+            });
+        })();
+
         document.querySelectorAll('.tab-pill').forEach(pill => {
             pill.addEventListener('click', () => {
                 document.querySelectorAll('.tab-pill').forEach(p => { p.classList.remove('bg-primary', 'text-on-primary'); p.classList.add('bg-surface-container-high', 'text-on-surface-variant'); });
@@ -624,11 +1003,6 @@
             if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
             applyRole(localStorage.getItem('cama_admin_role') || 'administrateur');
             document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
-            const v2 = document.getElementById('validation-2niveaux');
-            const saved2n = localStorage.getItem('cama_validation_2niveaux') !== 'false';
-            v2.classList.toggle('on', saved2n);
-            v2.classList.toggle('off', !saved2n);
-            if (!localStorage.getItem('cama_validation_2niveaux')) localStorage.setItem('cama_validation_2niveaux', 'true');
         })();
     </script>
 <script src="admin-shell.js"></script>

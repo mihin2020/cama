@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="fr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <script src="../auth-guard.js"></script>
+<title>Messages contact | Studio de contenu CAMA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Montserrat:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = { darkMode: "class", theme: { extend: {
+            "colors": {
+                    "primary-container": "#c8102e", "on-background": "#1b1c1c", "primary-fixed": "#ffdad8",
+                    "error": "#ba1a1a", "inverse-primary": "#ffb3b1", "surface-container-low": "#f6f3f2",
+                    "primary": "#9e001f", "on-primary-fixed-variant": "#92001c", "on-secondary-fixed": "#002107",
+                    "surface-container": "#f0eded", "secondary-container": "#7ff98d", "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6", "secondary-fixed-dim": "#65df76", "tertiary-fixed-dim": "#f1c100",
+                    "secondary-fixed": "#81fc90", "on-tertiary-fixed": "#241a00", "tertiary": "#745b00",
+                    "inverse-surface": "#303030", "surface-bright": "#fbf9f8", "surface": "#fbf9f8",
+                    "secondary": "#006e27", "on-tertiary-container": "#4f3d00", "on-error": "#ffffff",
+                    "tertiary-fixed": "#ffe08a", "on-error-container": "#93000a", "on-primary-fixed": "#410007",
+                    "on-secondary-container": "#007329", "surface-dim": "#dcd9d9", "on-primary-container": "#ffdad8",
+                    "on-surface-variant": "#5c403f", "outline": "#906f6e", "primary-fixed-dim": "#ffb3b1",
+                    "outline-variant": "#e5bdbb", "background": "#fbf9f8", "on-surface": "#1b1c1c",
+                    "surface-variant": "#e4e2e1", "surface-container-highest": "#e4e2e1", "on-tertiary-fixed-variant": "#574400",
+                    "tertiary-container": "#d0a600", "on-primary": "#ffffff", "surface-tint": "#bf0229",
+                    "on-secondary": "#ffffff", "surface-container-high": "#eae7e7", "on-secondary-fixed-variant": "#00531c",
+                    "inverse-on-surface": "#f3f0f0", "surface-container-lowest": "#ffffff"
+            },
+            "borderRadius": { "DEFAULT": "0.125rem", "lg": "0.25rem", "xl": "0.5rem", "full": "0.75rem" },
+            "fontFamily": { "title-lg": ["Inter"], "headline-lg": ["Montserrat"], "body-md": ["Inter"], "caption": ["Inter"], "label-md": ["Inter"], "headline-md": ["Montserrat"] },
+            "fontSize": {
+                    "title-lg": ["18px", {"lineHeight": "26px", "fontWeight": "600"}], "headline-lg": ["28px", {"lineHeight": "36px", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "22px", "fontWeight": "400"}], "caption": ["11px", {"lineHeight": "15px", "fontWeight": "400"}],
+                    "label-md": ["13px", {"lineHeight": "18px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["22px", {"lineHeight": "30px", "fontWeight": "600"}]
+            }
+      } } }
+    </script>
+<link href="../admin-shell.css" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        #sidebar { transition: transform 0.25s ease; }
+        @media (max-width: 767px) {
+            #sidebar { position: fixed; transform: translateX(-100%); }
+            body.sidebar-open #sidebar { transform: translateX(0); }
+            body.sidebar-open #sidebar-overlay { opacity: 1; pointer-events: auto; }
+            #content-shell { margin-left: 0 !important; }
+        }
+        #sidebar-overlay { opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-background font-body-md">
+<div class="fixed inset-0 bg-black/40 z-30 md:hidden" id="sidebar-overlay"></div>
+<aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
+<a class="flex items-center gap-3 px-2 mb-4" href="../../index.html">
+<img alt="Logo CAMA" class="h-10 w-10 object-contain" src="../../images/logo_cama.png"/>
+<span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">CAMA<span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span></span>
+</a>
+<div class="role-switcher flex items-center gap-2 px-3 py-2 mb-3 mx-1">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">badge</span>
+<select class="w-full text-[12px] font-bold py-0.5" id="role-select">
+<option value="gestionnaire">Gestionnaire CAMA</option>
+<option value="superviseur">Superviseur / Responsable</option>
+<option value="administrateur">Administrateur technique</option>
+<option value="direction">Direction Générale</option>
+</select>
+</div>
+<nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" href="../dashboard.html"><span class="material-symbols-outlined text-[20px]">arrow_back</span> Retour au back-office</a>
+<div class="h-px bg-white/10 my-2 mx-1"></div>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="dashboard.html"><span class="material-symbols-outlined text-[20px]">dashboard</span> Vue d'ensemble CMS</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="media.html"><span class="material-symbols-outlined text-[20px]">perm_media</span> Médiathèque</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="ressources.html"><span class="material-symbols-outlined text-[20px]">folder_open</span> Ressources</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="partenaires.html"><span class="material-symbols-outlined text-[20px]">handshake</span> Partenaires & centres</a>
+<a class="sidebar-nav-link is-active flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="contacts.html"><span class="material-symbols-outlined text-[20px]">contact_mail</span> Messages contact<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center" id="cms-contacts-badge">0</span></a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="newsletter.html"><span class="material-symbols-outlined text-[20px]">mark_email_read</span> Newsletter<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center" id="cms-newsletter-badge">0</span></a>
+</nav>
+<a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
+</aside>
+<div class="ml-0 md:ml-64 min-h-screen flex flex-col" id="content-shell">
+<header class="sticky top-0 z-20 flex justify-between items-center px-4 md:px-8 h-16 w-full" id="app-header">
+<div class="flex items-center gap-3">
+<button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button>
+<div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Messages contact</h1><p class="text-caption text-on-surface-variant hidden sm:block">Messages soumis via le formulaire de contact du site public</p></div>
+</div>
+<div class="flex items-center gap-3">
+<a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html">
+<div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
+<div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p><p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p></div>
+</a>
+</div>
+</header>
+<main class="flex-1 p-4 md:p-8 space-y-6">
+<div class="flex flex-wrap gap-2" id="status-tabs">
+<button class="px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-primary text-on-primary" data-status="tous" type="button">Tous <span class="queue-badge ml-1">0</span></button>
+<button class="px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-status="new" type="button">Nouveaux <span class="queue-badge ml-1">0</span></button>
+<button class="px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-status="in_progress" type="button">En cours <span class="queue-badge ml-1">0</span></button>
+<button class="px-3 py-2 rounded-full text-xs font-bold border border-outline-variant bg-white text-on-surface-variant" data-status="traite" type="button">Traités <span class="queue-badge ml-1">0</span></button>
+</div>
+<div class="assure-card overflow-hidden">
+<div class="overflow-x-auto"><table class="w-full text-left">
+<thead><tr class="bg-surface-container-low text-on-surface-variant text-[11px] uppercase tracking-wide">
+<th class="px-5 py-3 font-medium">Expéditeur</th><th class="px-5 py-3 font-medium">Sujet</th><th class="px-5 py-3 font-medium">Reçu le</th><th class="px-5 py-3 font-medium">Statut</th><th class="px-5 py-3"></th>
+</tr></thead>
+<tbody class="divide-y divide-outline-variant" id="contacts-tbody"></tbody>
+</table></div>
+</div>
+</main>
+<footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">© 2026 CAMA — Studio de contenu, module indépendant du back-office.</footer>
+</div>
+<div class="fixed bottom-6 right-6 z-[70] hidden" id="toast"><div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" id="toast-content"></div></div>
+<script>
+        const ROLE_IDENTITIES = {
+            gestionnaire: { nom: "Lt. Aminata KABORÉ", role: "Gestionnaire CAMA" },
+            superviseur: { nom: "Cdt. Paul SAWADOGO", role: "Superviseur / Responsable" },
+            administrateur: { nom: "Ing. Awa OUÉDRAOGO", role: "Administrateur technique" },
+            direction: { nom: "Col-Maj. Issa COMPAORÉ", role: "Direction Générale" }
+        };
+        const STATUT_STYLES = {
+            new: 'bg-primary/10 text-primary', in_progress: 'bg-tertiary/10 text-tertiary', traite: 'bg-secondary/10 text-secondary'
+        };
+        const STATUT_LABELS = { new: 'Nouveau', in_progress: 'En cours', traite: 'Traité' };
+        const MESSAGES = [
+            { nom: 'Issouf TRAORÉ', email: 'issouf.traore@armee.bf', sujet: "Question sur le remboursement d'une consultation", date: '02/07/2026 09:14', statut: 'new' },
+            { nom: 'Salif NIKIÉMA', email: 'salif.nikiema@armee.bf', sujet: "Délai de traitement de mon dossier d'inscription", date: '30/06/2026 16:40', statut: 'in_progress' },
+            { nom: 'Edwige COMPAORÉ', email: 'edwige.compaore@armee.bf', sujet: 'Problème de connexion à mon espace assuré', date: '28/06/2026 11:02', statut: 'in_progress' },
+            { nom: 'Amidou KABORÉ', email: 'amidou.kabore@armee.bf', sujet: "Demande d'attestation de prise en charge", date: '24/06/2026 08:30', statut: 'traite' },
+            { nom: 'Rita OUEDRAOGO', email: 'rita.o@armee.bf', sujet: 'Mise à jour de mes coordonnées', date: '20/06/2026 14:55', statut: 'traite' }
+        ];
+        let statusTab = 'tous';
+        function initials(name) { const p = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' '); return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase(); }
+        function applyRole(role) {
+            localStorage.setItem('cama_admin_role', role);
+            document.querySelectorAll('[data-roles]').forEach(el => { el.classList.toggle('role-hidden', !el.dataset.roles.split(',').includes(role)); });
+            const identity = ROLE_IDENTITIES[role];
+            document.getElementById('topbar-name').textContent = identity.nom;
+            document.getElementById('topbar-role').textContent = identity.role;
+            document.getElementById('topbar-avatar').textContent = initials(identity.nom);
+            const select = document.getElementById('role-select'); if (select) select.value = role;
+        }
+        function updateBadges() {
+            const counts = { tous: MESSAGES.length, new: 0, in_progress: 0, traite: 0 };
+            MESSAGES.forEach(m => counts[m.statut]++);
+            document.querySelectorAll('#status-tabs button').forEach(btn => {
+                btn.querySelector('.queue-badge').textContent = counts[btn.dataset.status];
+            });
+            const newCount = counts.new;
+            ['cms-contacts-badge', 'header-contacts-badge'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = newCount;
+            });
+        }
+        function renderTable() {
+            const rows = statusTab === 'tous' ? MESSAGES : MESSAGES.filter(m => m.statut === statusTab);
+            document.getElementById('contacts-tbody').innerHTML = rows.map(m => `
+                <tr class="hover:bg-surface-container-low">
+                    <td class="px-5 py-3"><p class="text-xs font-bold">${m.nom}</p><p class="text-[11px] text-on-surface-variant">${m.email}</p></td>
+                    <td class="px-5 py-3 text-xs">${m.sujet}</td>
+                    <td class="px-5 py-3 text-xs text-on-surface-variant">${m.date}</td>
+                    <td class="px-5 py-3"><span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${STATUT_STYLES[m.statut]}">${STATUT_LABELS[m.statut]}</span></td>
+                    <td class="px-5 py-3 text-right"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">chevron_right</span></td>
+                </tr>`).join('') || `<tr><td colspan="5" class="px-5 py-8 text-center text-xs text-on-surface-variant italic">Aucun message dans cette file.</td></tr>`;
+        }
+        document.querySelectorAll('#status-tabs button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                statusTab = btn.dataset.status;
+                document.querySelectorAll('#status-tabs button').forEach(b => {
+                    const active = b === btn;
+                    b.classList.toggle('bg-primary', active);
+                    b.classList.toggle('text-on-primary', active);
+                    b.classList.toggle('bg-white', !active);
+                    b.classList.toggle('text-on-surface-variant', !active);
+                });
+                renderTable();
+            });
+        });
+        (function () {
+            const toggle = document.getElementById('sidebar-toggle');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (toggle) toggle.addEventListener('click', () => document.body.classList.toggle('sidebar-open'));
+            if (overlay) overlay.addEventListener('click', () => document.body.classList.remove('sidebar-open'));
+            applyRole(localStorage.getItem('cama_admin_role') || 'administrateur');
+            document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
+            updateBadges();
+            renderTable();
+        })();
+    </script>
+<script src="../admin-shell.js"></script>
+</body></html>

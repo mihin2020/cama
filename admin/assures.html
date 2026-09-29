@@ -273,7 +273,7 @@
                     <div>
                         <div class="flex items-center justify-between mb-2">
                             <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant flex items-center gap-2"><span class="material-symbols-outlined text-[16px] text-primary">family_restroom</span> Demandes d'enrôlement (${a.membres.length})</h3>
-                            ${a.membres.length ? `<div class="flex items-center gap-3"><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureFormulaire(${a.id})"><span class="material-symbols-outlined text-[14px]">picture_as_pdf</span> Formulaire (PDF)</button><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureZip(${a.id})"><span class="material-symbols-outlined text-[14px]">folder_zip</span> Dossiers (ZIP)</button></div>` : ''}
+                            ${a.membres.length ? `<div class="flex items-center gap-3"><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureFormulaire(${a.id})"><span class="material-symbols-outlined text-[14px]">picture_as_pdf</span> FIF (PDF)</button><button class="text-[11px] font-bold text-primary flex items-center gap-1 hover:underline" onclick="exportAssureZip(${a.id})"><span class="material-symbols-outlined text-[14px]">folder_zip</span> Dossiers (ZIP)</button></div>` : ''}
                         </div>
                         <div class="bg-surface-container-low rounded-lg px-3">${membresHtml}</div>
                     </div>
@@ -298,19 +298,23 @@
             if (reg) return CamaAssureData.registrationToProfile(reg);
             const demo = CamaAssureData.getAssureProfile();
             if (demo.fullName === a.nom) return demo;
-            return { fullName: a.nom, nom: a.nom, numeroCama: a.numeroCama, matricule: a.matricule };
+            const detail = CamaAssureData.getAssureDetailForAdmin(a.nom) || {};
+            const parts = a.nom.split(' ');
+            return {
+                ...detail,
+                fullName: a.nom,
+                nom: parts.slice(-1)[0] || '',
+                prenoms: parts.slice(0, -1).join(' ')
+            };
         }
 
         function exportAssureFormulaire(id) {
             const a = ASSURES.find(x => x.id === id);
             if (!a) return;
             const membres = CamaAssureData.getMembres(a.nom);
-            try {
-                CamaDossierExport.exportDossierFamilial(assureProfileFor(a), membres);
-                showToast('<span class="material-symbols-outlined">picture_as_pdf</span> Formulaire familial généré.');
-            } catch (e) {
-                showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
-            }
+            CamaDossierExport.exportDossierFamilial(assureProfileFor(a), membres)
+                .then(() => showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF familial généré.'))
+                .catch(() => showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).'));
         }
 
         async function exportAssureZip(id) {
@@ -318,10 +322,10 @@
             if (!a) return;
             const membres = CamaAssureData.getMembres(a.nom);
             if (!membres.length) { showToast('<span class="material-symbols-outlined">info</span> Aucun dossier pour cet assuré.'); return; }
-            const assure = { fullName: a.nom, nom: a.nom, numeroCama: a.numeroCama, matricule: a.matricule };
+            const assure = assureProfileFor(a);
             try {
                 await CamaDossierExport.exportZip(membres, assure);
-                showToast(`<span class="material-symbols-outlined">folder_zip</span> Archive de ${membres.length} dossier(s) générée.`);
+                showToast(`<span class="material-symbols-outlined">folder_zip</span> Archive FIF (${membres.length + 1} fichier(s)) générée.`);
             } catch (e) {
                 showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
             }

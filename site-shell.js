@@ -175,7 +175,7 @@
                             <ul class="space-y-3 text-sm">
                                 <li><a class="text-surface-variant hover:text-white transition-colors" href="apropos.html">À propos &amp; Missions</a></li>
                                 <li><a class="text-surface-variant hover:text-white transition-colors" href="actualite.html">Actualités</a></li>
-                                <li><a class="text-surface-variant hover:text-white transition-colors" href="https://www.defense.gov.bf" rel="noopener" target="_blank">Ministère de la Défense</a></li>
+                                <li><a class="text-surface-variant hover:text-white transition-colors" href="https://www.defense.gov.bf" rel="noopener" target="_blank">Ministère de la Guerre et de la Défense patriotique</a></li>
                                 <li><a class="text-surface-variant hover:text-white transition-colors" href="https://www.gouvernement.gov.bf" rel="noopener" target="_blank">Gouvernement</a></li>
                             </ul>
                         </div>

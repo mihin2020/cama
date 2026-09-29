@@ -76,12 +76,15 @@
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="actualites.html"><span class="material-symbols-outlined text-[20px]">newspaper</span> Actualités</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="pages.html"><span class="material-symbols-outlined text-[20px]">description</span> Pages</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="page-builder.html"><span class="material-symbols-outlined text-[20px]">dashboard_customize</span> Éditeur de pages</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="media.html"><span class="material-symbols-outlined text-[20px]">perm_media</span> Médiathèque</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="menus.html"><span class="material-symbols-outlined text-[20px]">menu</span> Menus du site</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="banniere.html"><span class="material-symbols-outlined text-[20px]">view_carousel</span> Bannière d'accueil</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="chiffres-cles.html"><span class="material-symbols-outlined text-[20px]">monitoring</span> Chiffres clés</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="faq.html"><span class="material-symbols-outlined text-[20px]">quiz</span> FAQ</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="ressources.html"><span class="material-symbols-outlined text-[20px]">folder_open</span> Ressources</a>
 <a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="partenaires.html"><span class="material-symbols-outlined text-[20px]">handshake</span> Partenaires & centres</a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="contacts.html"><span class="material-symbols-outlined text-[20px]">contact_mail</span> Messages contact<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center" id="cms-contacts-badge">0</span></a>
+<a class="sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px]" data-roles="superviseur,administrateur" href="newsletter.html"><span class="material-symbols-outlined text-[20px]">mark_email_read</span> Newsletter<span class="ml-auto bg-primary text-on-primary text-[10px] font-bold rounded-full min-w-[20px] h-5 px-1 flex items-center justify-center" id="cms-newsletter-badge">0</span></a>
 </nav>
 <a class="sidebar-logout sidebar-nav-link flex items-center gap-3 px-3 py-2.5 font-label-md text-[13px] mt-auto border-t pt-4 mx-1" href="../../index.html"><span class="material-symbols-outlined text-[20px]">logout</span> Déconnexion</a>
 </aside>
@@ -91,10 +94,22 @@
 <button class="header-menu-btn md:hidden w-9 h-9 flex items-center justify-center rounded-full" id="sidebar-toggle"><span class="material-symbols-outlined">menu</span></button>
 <div><h1 class="font-title-lg text-title-lg text-on-surface leading-tight">Studio de contenu</h1><p class="text-caption text-on-surface-variant hidden sm:block">Gestion indépendante du site institutionnel</p></div>
 </div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1">
+<a class="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 text-on-surface-variant hover:text-on-surface transition-colors" href="contacts.html" title="Messages contact">
+<span class="material-symbols-outlined text-[22px]">contact_mail</span>
+<span class="absolute top-0 right-0 bg-primary text-on-primary text-[9px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center ring-2 ring-white hidden" id="header-contacts-badge">0</span>
+</a>
+<a class="relative w-9 h-9 flex items-center justify-center rounded-full hover:bg-black/5 text-on-surface-variant hover:text-on-surface transition-colors" href="newsletter.html" title="Newsletter">
+<span class="material-symbols-outlined text-[22px]">mark_email_read</span>
+<span class="absolute top-0 right-0 bg-primary text-on-primary text-[9px] font-bold rounded-full min-w-[16px] h-4 px-1 flex items-center justify-center ring-2 ring-white hidden" id="header-newsletter-badge">0</span>
+</a>
+</div>
 <a class="flex items-center gap-3 pl-2 md:pl-4 md:border-l border-outline-variant" href="../profil.html">
 <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0" id="topbar-avatar">--</div>
 <div class="hidden md:block text-left"><p class="text-label-md font-label-md font-bold text-on-surface leading-tight" id="topbar-name">—</p><p class="text-caption text-on-surface-variant leading-tight" id="topbar-role">—</p></div>
 </a>
+</div>
 </header>
 <main class="flex-1 p-4 md:p-8 space-y-6">
 <div class="bg-gradient-to-br from-primary to-primary-container rounded-xl p-6 text-white flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -167,6 +182,20 @@
             { icon: "monitoring", text: "Chiffre clé « Assurés couverts » actualisé", date: "12/06/2026 09:15", auteur: "Ing. Awa OUÉDRAOGO" }
         ];
         function initials(name) { const p = name.replace(/^(Lt\.|Sgt\.|Adj\.|Cdt\.|Ing\.|Col-Maj\.)\s*/, '').split(' '); return ((p[0]?.[0]||'') + (p[1]?.[0]||'')).toUpperCase(); }
+        function renderCmsBadges() {
+            const contactsNew = 2;
+            const newsletterActive = 5;
+            [document.getElementById('cms-contacts-badge'), document.getElementById('header-contacts-badge')].forEach(el => {
+                if (!el) return;
+                el.textContent = contactsNew > 99 ? '99+' : contactsNew;
+                el.classList.toggle('hidden', contactsNew === 0);
+            });
+            [document.getElementById('cms-newsletter-badge'), document.getElementById('header-newsletter-badge')].forEach(el => {
+                if (!el) return;
+                el.textContent = newsletterActive > 99 ? '99+' : newsletterActive;
+                el.classList.toggle('hidden', newsletterActive === 0);
+            });
+        }
         function renderActivity() {
             document.getElementById('activity-list').innerHTML = ACTIVITY.map(a => `
                 <div class="flex items-start gap-3 pb-3 border-b border-outline-variant last:border-0 last:pb-0">
@@ -191,6 +220,7 @@
             applyRole(localStorage.getItem('cama_admin_role') || 'administrateur');
             document.getElementById('role-select').addEventListener('change', (e) => applyRole(e.target.value));
             renderActivity();
+            renderCmsBadges();
         })();
     </script>
 <script src="../admin-shell.js"></script>

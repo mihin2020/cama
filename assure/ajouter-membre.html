@@ -217,6 +217,60 @@
 <p class="text-xs text-on-surface-variant italic mt-3 hidden" id="enfants-empty">Aucun enfant ajouté. Utilisez « Ajouter un enfant » si nécessaire.</p>
 </section>
 
+<!-- Section 4 : FIF signée -->
+<section class="bg-white rounded-xl border border-outline-variant p-4 md:p-6 mb-6 hidden" id="fif-section">
+<div class="flex items-start justify-between gap-3 mb-3">
+<div>
+<h2 class="text-base font-semibold text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[20px]">description</span> 4. FIF signée</h2>
+<p class="text-on-surface-variant text-xs mt-1 max-w-2xl">Générez la FIF pré-remplie, faites-la signer par le chef de corps et le GRH, puis téléversez le scan avant la soumission finale du dossier familial.</p>
+</div>
+</div>
+
+<div class="rounded-lg border border-primary/20 bg-primary/5 p-4 mb-4">
+<p class="text-xs font-bold text-primary mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">route</span> Parcours</p>
+<ol class="text-xs text-on-surface-variant space-y-1.5 list-decimal list-inside">
+<li>Générer la FIF (PDF) depuis vos saisies</li>
+<li>Imprimer et faire signer (chef de corps + GRH)</li>
+<li>Téléverser le scan ci-dessous, puis cliquer « Soumettre »</li>
+</ol>
+</div>
+
+<div class="flex flex-col sm:flex-row gap-3 mb-4">
+<button class="px-4 py-2.5 rounded-lg border border-primary text-primary text-sm font-semibold hover:bg-primary/5 flex items-center justify-center gap-2 disabled:opacity-50" id="btn-generate-fif" type="button">
+<span class="material-symbols-outlined text-[18px]" id="btn-generate-fif-icon">picture_as_pdf</span>
+<span id="btn-generate-fif-label">Générer ma FIF (PDF)</span>
+</button>
+<p class="text-xs text-secondary flex items-center gap-1 self-center hidden" id="fif-generated-note">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> PDF téléchargé — procédez aux signatures papier
+</p>
+</div>
+
+<div class="border border-outline-variant rounded-lg p-4">
+<p class="text-xs font-semibold text-on-surface mb-2">FIF signée <span class="text-error">*</span></p>
+<p class="text-[11px] text-on-surface-variant mb-3">Scan ou photo du formulaire signé (PDF, JPEG ou PNG — 5 Mo max).</p>
+<div class="border-2 border-dashed rounded-lg p-3 border-outline-variant bg-surface-container-low" id="fif-dropzone">
+<div class="flex flex-col sm:flex-row sm:items-center gap-2">
+<div class="flex items-center gap-2 min-w-0 flex-1">
+<span class="material-symbols-outlined text-[20px] text-primary" id="fif-icon">upload_file</span>
+<div class="min-w-0">
+<p class="text-xs font-semibold text-on-surface truncate" id="fif-filename">Aucun fichier sélectionné</p>
+<p class="text-[11px] text-on-surface-variant" id="fif-status-text">Formats acceptés : PDF, JPEG, PNG — 5 Mo max.</p>
+</div>
+</div>
+<div class="flex items-center gap-2 shrink-0">
+<button class="px-3 py-2 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/5 flex items-center gap-1.5" id="btn-fif-choose" type="button">
+<span class="material-symbols-outlined text-[16px]">upload_file</span> <span id="btn-fif-choose-label">Choisir un fichier</span>
+</button>
+<button class="hidden px-3 py-2 rounded-lg border border-error text-error text-xs font-semibold hover:bg-error/5" id="btn-fif-remove" type="button">Retirer</button>
+</div>
+</div>
+<input accept=".pdf,.jpg,.jpeg,.png" class="hidden" id="fif-input" type="file"/>
+</div>
+<p class="text-error text-[11px] mt-2 hidden" id="fif-error"></p>
+<p class="text-[11px] text-on-surface-variant mt-2 italic" id="fif-required-hint">Obligatoire pour activer le bouton « Soumettre ».</p>
+</div>
+</section>
+
 <!-- Déclarations et actions -->
 <div class="bg-white rounded-xl border border-outline-variant p-4 md:p-6">
 <div class="space-y-2.5 bg-surface-container-low rounded-lg p-4 mb-5">
@@ -264,6 +318,10 @@
 <div class="bg-white rounded-xl w-full max-w-md p-5 sm:p-6">
 <h3 class="font-title-lg text-title-lg mb-2 flex items-center gap-2 text-tertiary"><span class="material-symbols-outlined">warning</span> Confirmer la soumission</h3>
 <p class="text-xs text-on-surface-variant mb-3 leading-relaxed">Une fois soumis, <strong class="text-on-surface">vous ne pourrez plus modifier ces dossiers</strong> depuis ce formulaire. Vérifiez que toutes les informations et pièces sont correctes.</p>
+<div class="hidden text-xs bg-secondary/10 border border-secondary/30 rounded-lg px-3 py-2 mb-3 items-center gap-2" id="submit-warning-fif">
+<span class="material-symbols-outlined text-secondary text-[18px]">task</span>
+<span>FIF signée jointe : <strong id="submit-warning-fif-name"></strong></span>
+</div>
 <p class="text-xs text-on-surface-variant mb-4">Le suivi et les éventuels compléments se feront depuis <strong>Ma famille</strong>.</p>
 <div class="flex justify-end gap-2">
 <button class="px-4 py-2 text-xs rounded-lg border border-outline" id="submit-warning-cancel" type="button">Revoir le formulaire</button>
@@ -298,36 +356,68 @@
 <script src="../dial-codes.js"></script>
 <script src="../flag-select.js"></script>
 <script src="../phone-input.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../dossier-export.js"></script>
 <script src="assure-data.js"></script>
 <script src="assure-shell.js"></script>
 <script>
         (function () {
             const assure = CamaAssureData.getAssureProfile();
             const canSubmit = CamaAssureData.canSubmitDossiers ? CamaAssureData.canSubmitDossiers(assure) : true;
-            const ageMax = CamaAssureData.getAgeMaxEnfant ? CamaAssureData.getAgeMaxEnfant() : 21;
+            const FIF_REQUIRED = CamaAssureData.isFifSigneeRequired ? CamaAssureData.isFifSigneeRequired() : false;
             const groupes = CamaAssureData.getGroupesSanguins ? CamaAssureData.getGroupesSanguins() : ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
             const parentLabel = 'Nom et prénoms de la mère (du père si personnel féminin)';
             const DRAFT_KEY = 'cama_famille_draft_' + (assure.numeroCama || assure.matricule || assure.fullName || 'assure');
             const phoneWidgets = new Map();
 
-            document.getElementById('enfants-hint').textContent = `De 0 à ${ageMax} ans, du plus âgé au plus jeune.`;
+            /** Lit toujours la config admin à jour (seuil + toggle + libellé). */
+            function getScolarite() {
+                if (CamaAssureData.getCertificatScolariteSettings) {
+                    return CamaAssureData.getCertificatScolariteSettings();
+                }
+                const seuil = CamaAssureData.getAgeMaxEnfant ? CamaAssureData.getAgeMaxEnfant() : 26;
+                return { actif: true, ageSeuil: seuil, label: 'Certificat de scolarité' };
+            }
 
-            const PIECES_MATRIX = {
-                "Conjoint(e)": [
-                    { key: "acte_mariage", label: "Acte de mariage", required: true },
-                    { key: "cnib_conjoint", label: "Copie CNIB du conjoint", required: true },
-                    { key: "acte_divorce", label: "Acte de divorce du précédent conjoint", required: false }
-                ],
-                "Enfant biologique": [
-                    { key: "acte_naissance", label: "Acte de naissance", required: true },
-                    { key: "cnib_parent", label: "Copie CNIB du parent", required: true }
-                ],
-                "Enfant du conjoint": [
-                    { key: "acte_naissance_enfant", label: "Acte de naissance", required: true },
-                    { key: "acte_mariage_parent", label: "Acte de mariage avec le parent", required: true },
-                    { key: "piece_garde", label: "Pièce justifiant la garde", required: false }
-                ]
-            };
+            function refreshEnfantsHint() {
+                const sc = getScolarite();
+                document.getElementById('enfants-hint').textContent = sc.actif
+                    ? `Du plus âgé au plus jeune. À partir de ${sc.ageSeuil} ans : « ${sc.label} » obligatoire (si activé dans Paramètres).`
+                    : 'Du plus âgé au plus jeune. (Certificat de scolarité désactivé dans Paramètres.)';
+            }
+            refreshEnfantsHint();
+
+            const PIECES_MATRIX = CamaAssureData.getPiecesMatrix
+                ? CamaAssureData.getPiecesMatrix()
+                : {
+                    "Conjoint(e)": [
+                        { key: "acte_mariage", label: "Acte de mariage", required: true },
+                        { key: "cnib_conjoint", label: "Copie CNIB du conjoint", required: true },
+                        { key: "acte_divorce", label: "Acte de divorce du précédent conjoint", required: false }
+                    ],
+                    "Enfant biologique": [
+                        { key: "acte_naissance", label: "Acte de naissance", required: true },
+                        { key: "cnib_parent", label: "Copie CNIB du parent", required: true }
+                    ],
+                    "Enfant du conjoint": [
+                        { key: "acte_naissance_enfant", label: "Acte de naissance", required: true },
+                        { key: "acte_mariage_parent", label: "Acte de mariage avec le parent", required: true },
+                        { key: "piece_garde", label: "Pièce justifiant la garde", required: false }
+                    ],
+                    "Enfant adopté": [
+                        { key: "acte_naissance", label: "Acte de naissance", required: true },
+                        { key: "certificat_tutelle", label: "Certificat de tutelle", required: true }
+                    ]
+                };
+            const FILIATION_OPTIONS = CamaAssureData.getEnfantFiliationLabels
+                ? CamaAssureData.getEnfantFiliationLabels()
+                : Object.keys(PIECES_MATRIX).filter(k => k !== 'Conjoint(e)');
+            const DEFAULT_FILIATION = FILIATION_OPTIONS[0] || 'Enfant biologique';
+            const PHOTO_SETTINGS = CamaAssureData.getMembrePhotoSettings
+                ? CamaAssureData.getMembrePhotoSettings()
+                : { conjoint: { actif: true, required: false }, enfant: { actif: true, required: false } };
+            const PHOTO_ACCEPTED = ['image/jpeg', 'image/png', 'image/webp'];
 
             const MAX_FILE_SIZE = 5 * 1024 * 1024;
             const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
@@ -339,26 +429,56 @@
 
             function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
             function fmtDateFr(iso) { const p = String(iso || '').split('-'); return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : (iso || '—'); }
+            /** Âge en années révolues, en date locale (évite le décalage UTC de Date('YYYY-MM-DD')). */
             function computeAge(iso) {
-                if (!iso) return null;
-                const dob = new Date(iso); const today = new Date();
+                if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+                const [y, m, d] = iso.split('-').map(Number);
+                const dob = new Date(y, m - 1, d);
+                if (Number.isNaN(dob.getTime())) return null;
+                const today = new Date();
                 let age = today.getFullYear() - dob.getFullYear();
-                const m = today.getMonth() - dob.getMonth();
-                if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-                return age;
+                const monthDiff = today.getMonth() - dob.getMonth();
+                if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+                return age < 0 ? null : age;
             }
-            function pieceMatrixKey(row, list) { return list === 'conjoints' ? 'Conjoint(e)' : (row.filiation || 'Enfant biologique'); }
+            /** true si le toggle admin est ON et âge ≥ seuil configuré. */
+            function needsCertificatScolarite(row) {
+                const sc = getScolarite();
+                if (!sc.actif) return false;
+                const age = computeAge(row.dateNaissance);
+                return age !== null && age >= Number(sc.ageSeuil);
+            }
+
+            function piecesForRow(row, list) {
+                const matrix = (PIECES_MATRIX[pieceMatrixKey(row, list)] || []).map(p => ({ ...p }));
+                if (list === 'enfants' && needsCertificatScolarite(row)) {
+                    const sc = getScolarite();
+                    if (!matrix.some(p => p.key === 'certificat_scolarite')) {
+                        matrix.push({ key: 'certificat_scolarite', label: sc.label, required: true });
+                    } else {
+                        matrix.forEach(p => {
+                            if (p.key === 'certificat_scolarite') {
+                                p.label = sc.label;
+                                p.required = true;
+                            }
+                        });
+                    }
+                }
+                return matrix;
+            }
+
+            function pieceMatrixKey(row, list) { return list === 'conjoints' ? 'Conjoint(e)' : (row.filiation || DEFAULT_FILIATION); }
             function findRow(list, id) { return state[list].find(r => r.uid === id); }
 
-            function newConjoint() { return { uid: uid(), nom: '', prenoms: '', dateNaissance: '', lieuNaissance: '', sexe: '', groupeSanguin: '', refIdentite: '', refActeMariage: '', profession: '', lieuResidence: '', telephone: '', pieces: {} }; }
-            function newEnfant() { return { uid: uid(), nom: '', prenoms: '', dateNaissance: '', lieuNaissance: '', sexe: '', groupeSanguin: '', refIdentite: '', refActeScolariteEtatCivil: '', nomPrenomsParent: '', telephone: '', filiation: 'Enfant biologique', pieces: {} }; }
+            function newConjoint() { return { uid: uid(), nom: '', prenoms: '', dateNaissance: '', lieuNaissance: '', sexe: '', groupeSanguin: '', refIdentite: '', refActeMariage: '', profession: '', lieuResidence: '', telephone: '', photo: null, pieces: {} }; }
+            function newEnfant() { return { uid: uid(), nom: '', prenoms: '', dateNaissance: '', lieuNaissance: '', sexe: '', groupeSanguin: '', refIdentite: '', refActeScolariteEtatCivil: '', nomPrenomsParent: '', telephone: '', filiation: DEFAULT_FILIATION, photo: null, pieces: {} }; }
 
             function phoneField(list, id) {
                 return `<div class="space-y-1 md:col-span-2"><label class="text-xs font-medium text-on-surface-variant">Téléphone(s)</label><div class="phone-mount" data-phone-list="${list}" data-phone-uid="${id}"></div></div>`;
             }
-            function tf(list, id, field, label, value, type) {
+            function tf(list, id, field, label, value, type, watchAge) {
                 return `<div class="space-y-1"><label class="text-xs font-medium text-on-surface-variant">${label}</label>
-                    <input class="${inputCls}" type="${type || 'text'}" value="${esc(value)}" data-list="${list}" data-uid="${id}" data-field="${field}"/></div>`;
+                    <input class="${inputCls}" type="${type || 'text'}" value="${esc(value)}" data-list="${list}" data-uid="${id}" data-field="${field}"${watchAge ? ' data-watch-age="1"' : ''}/></div>`;
             }
             function sf(list, id, field, label, value, options, rerender) {
                 return `<div class="space-y-1"><label class="text-xs font-medium text-on-surface-variant">${label}</label>
@@ -368,14 +488,60 @@
             function pieceChip(id, key, file) {
                 return `<span class="text-[11px] flex items-center gap-1 bg-surface-container-low rounded px-2 py-1"><span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span> <span class="truncate">${esc(file.name)}</span> <button type="button" class="text-error ml-auto" data-remove-piece data-list="${key.list}" data-uid="${id}" data-piecekey="${key.k}"><span class="material-symbols-outlined text-[14px]">close</span></button></span>`;
             }
+            function getPhotoPreviewUrl(row) {
+                if (row.photoPreview) return row.photoPreview;
+                if (row.photo && (row.photo instanceof File || row.photo instanceof Blob)) {
+                    row.photoPreview = URL.createObjectURL(row.photo);
+                    return row.photoPreview;
+                }
+                return '';
+            }
+
+            function clearPhoto(row) {
+                if (row.photoPreview) {
+                    try { URL.revokeObjectURL(row.photoPreview); } catch (_) { /* ignore */ }
+                }
+                row.photo = null;
+                row.photoPreview = '';
+            }
+
+            function photoHtml(list, row) {
+                const cfg = list === 'conjoints' ? PHOTO_SETTINGS.conjoint : PHOTO_SETTINGS.enfant;
+                if (!cfg?.actif) return '';
+                const required = !!cfg.required;
+                const previewUrl = getPhotoPreviewUrl(row);
+                const body = row.photo
+                    ? `<img src="${esc(previewUrl)}" alt="Photo" class="w-full h-full object-cover"/>`
+                    : `<span class="material-symbols-outlined text-[28px] text-primary/70">add_a_photo</span>
+                       <span class="text-[10px] font-semibold text-primary leading-tight px-1">Ajouter</span>`;
+                return `<div class="mb-4">
+                    <p class="text-xs font-semibold text-on-surface-variant mb-1.5 flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+                        Photo d'identité ${required ? '<span class="text-error">*</span>' : '<span class="text-[10px] font-normal text-on-surface-variant">(optionnel)</span>'}
+                    </p>
+                    <div class="relative w-[88px] h-[110px]">
+                        <label class="absolute inset-0 rounded-xl border-2 border-dashed border-outline-variant bg-surface-container-low overflow-hidden cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center justify-center gap-1 text-center">
+                            ${body}
+                            <input type="file" class="hidden" accept=".jpg,.jpeg,.png,.webp,image/*" data-list="${list}" data-uid="${row.uid}" data-photo="1"/>
+                        </label>
+                        ${row.photo ? `<button type="button" class="absolute -top-2 -right-2 z-10 w-6 h-6 rounded-full bg-white border border-outline-variant text-error shadow flex items-center justify-center" data-remove-photo data-list="${list}" data-uid="${row.uid}" title="Retirer"><span class="material-symbols-outlined text-[14px]">close</span></button>` : ''}
+                    </div>
+                    ${row.photo ? `<p class="text-[10px] text-on-surface-variant mt-1 truncate max-w-[88px]" title="${esc(row.photo.name)}">${esc(row.photo.name)}</p>` : ''}
+                    <p class="text-error text-[10px] mt-1 hidden max-w-[88px]" id="photo-err-${row.uid}"></p>
+                </div>`;
+            }
+
             function piecesHtml(list, row) {
-                const matrix = PIECES_MATRIX[pieceMatrixKey(row, list)];
+                const matrix = piecesForRow(row, list);
+                if (!matrix.length) {
+                    return `<div class="mt-3 pt-3 border-t border-outline-variant"><p class="text-xs text-on-surface-variant italic">Aucune pièce configurée pour cette filiation.</p></div>`;
+                }
                 return `<div class="mt-3 pt-3 border-t border-outline-variant">
                     <p class="text-xs font-semibold text-on-surface-variant mb-2">Pièces justificatives</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                     ${matrix.map(p => `
-                        <div class="border border-outline-variant rounded-lg p-2.5">
-                            <p class="text-xs mb-1.5">${p.label} ${p.required ? '<span class="text-error">*</span>' : '<span class="text-[10px] text-on-surface-variant">(optionnel)</span>'}</p>
+                        <div class="border border-outline-variant rounded-lg p-2.5 ${p.key === 'certificat_scolarite' ? 'border-tertiary/40 bg-tertiary/5' : ''}">
+                            <p class="text-xs mb-1.5">${esc(p.label)} ${p.required ? '<span class="text-error">*</span>' : '<span class="text-[10px] text-on-surface-variant">(optionnel)</span>'}</p>
                             <div class="mb-1" id="pv-${row.uid}-${p.key}">${row.pieces[p.key] ? pieceChip(row.uid, { list, k: p.key }, row.pieces[p.key]) : ''}</div>
                             <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">upload_file</span> Choisir un fichier
                                 <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" data-list="${list}" data-uid="${row.uid}" data-piece="${p.key}"/></label>
@@ -390,6 +556,7 @@
                         <p class="text-sm font-semibold">Conjoint ${i + 1}</p>
                         <button type="button" class="text-error text-xs font-semibold flex items-center gap-1" data-remove-row data-list="conjoints" data-uid="${row.uid}"><span class="material-symbols-outlined text-[16px]">delete</span> Retirer</button>
                     </div>
+                    ${photoHtml('conjoints', row)}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         ${tf('conjoints', row.uid, 'nom', 'Nom *', row.nom)}
                         ${tf('conjoints', row.uid, 'prenoms', 'Prénoms *', row.prenoms)}
@@ -409,17 +576,19 @@
 
             function renderEnfantCard(row, i) {
                 const age = computeAge(row.dateNaissance);
-                const over = age !== null && age > ageMax;
-                return `<div class="border ${over ? 'border-error' : 'border-outline-variant'} rounded-lg p-4" data-card="${row.uid}">
+                const sc = getScolarite();
+                const needsScolarite = needsCertificatScolarite(row);
+                return `<div class="border ${needsScolarite ? 'border-tertiary/50' : 'border-outline-variant'} rounded-lg p-4" data-card="${row.uid}">
                     <div class="flex items-center justify-between mb-3">
                         <p class="text-sm font-semibold">Enfant ${i + 1}${age !== null ? ` <span class="text-xs font-normal text-on-surface-variant">(${age} ans)</span>` : ''}</p>
                         <button type="button" class="text-error text-xs font-semibold flex items-center gap-1" data-remove-row data-list="enfants" data-uid="${row.uid}"><span class="material-symbols-outlined text-[16px]">delete</span> Retirer</button>
                     </div>
-                    ${over ? `<div class="text-error text-xs mb-2 flex items-center gap-1"><span class="material-symbols-outlined text-[15px]">error</span> Dépasse l'âge maximal d'éligibilité (${ageMax} ans) : ne peut pas être enrôlé.</div>` : ''}
+                    ${needsScolarite ? `<div class="text-on-surface text-xs mb-3 flex items-start gap-1.5 bg-tertiary/10 border border-tertiary/40 rounded-lg px-3 py-2"><span class="material-symbols-outlined text-tertiary text-[18px] shrink-0">school</span><span><strong>Certificat requis</strong> — âge ${age} ans ≥ seuil ${sc.ageSeuil} ans (Paramètres). Téléversez « ${esc(sc.label)} » ci-dessous.</span></div>` : ''}
+                    ${photoHtml('enfants', row)}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         ${tf('enfants', row.uid, 'nom', 'Nom *', row.nom)}
                         ${tf('enfants', row.uid, 'prenoms', 'Prénoms *', row.prenoms)}
-                        ${tf('enfants', row.uid, 'dateNaissance', 'Date de naissance *', row.dateNaissance, 'date')}
+                        ${tf('enfants', row.uid, 'dateNaissance', 'Date de naissance *', row.dateNaissance, 'date', true)}
                         ${tf('enfants', row.uid, 'lieuNaissance', 'Lieu de naissance', row.lieuNaissance)}
                         ${sf('enfants', row.uid, 'sexe', 'Sexe *', row.sexe, ['Masculin', 'Féminin'])}
                         ${sf('enfants', row.uid, 'groupeSanguin', 'G.S.', row.groupeSanguin, groupes)}
@@ -427,18 +596,18 @@
                         ${tf('enfants', row.uid, 'refActeScolariteEtatCivil', "Réf. Acte de scolarité / d'état civil", row.refActeScolariteEtatCivil)}
                         ${tf('enfants', row.uid, 'nomPrenomsParent', parentLabel, row.nomPrenomsParent)}
                         ${phoneField('enfants', row.uid)}
-                        ${sf('enfants', row.uid, 'filiation', 'Filiation', row.filiation, ['Enfant biologique', 'Enfant du conjoint'], true)}
+                        ${sf('enfants', row.uid, 'filiation', 'Filiation', row.filiation, FILIATION_OPTIONS, true)}
                     </div>
                     ${piecesHtml('enfants', row)}
                 </div>`;
             }
 
             function render() {
+                refreshEnfantsHint();
                 const cl = document.getElementById('conjoints-list');
                 cl.innerHTML = state.conjoints.map(renderConjointCard).join('');
                 document.getElementById('conjoints-empty').classList.toggle('hidden', state.conjoints.length > 0);
 
-                state.enfants.sort((a, b) => (a.dateNaissance || '9999').localeCompare(b.dateNaissance || '9999'));
                 const el = document.getElementById('enfants-list');
                 el.innerHTML = state.enfants.map(renderEnfantCard).join('');
                 document.getElementById('enfants-empty').classList.toggle('hidden', state.enfants.length > 0);
@@ -469,6 +638,13 @@
             document.getElementById('btn-add-conjoint').addEventListener('click', () => { state.conjoints.push(newConjoint()); render(); });
             document.getElementById('btn-add-enfant').addEventListener('click', () => { state.enfants.push(newEnfant()); render(); });
 
+            function applyEnfantDateChange(row) {
+                if (!needsCertificatScolarite(row) && row.pieces && row.pieces.certificat_scolarite) {
+                    delete row.pieces.certificat_scolarite;
+                }
+                render();
+            }
+
             const main = document.getElementById('famille-main');
             main.addEventListener('input', (e) => {
                 const t = e.target;
@@ -481,8 +657,22 @@
                 const t = e.target;
                 if (t.dataset.field !== undefined && t.dataset.uid) {
                     const row = findRow(t.dataset.list, t.dataset.uid);
-                    if (row) row[t.dataset.field] = t.value;
+                    if (row) {
+                        const prevFiliation = row.filiation;
+                        row[t.dataset.field] = t.value;
+                        if (t.dataset.field === 'filiation' && t.value !== prevFiliation) {
+                            row.pieces = {};
+                            render();
+                            return;
+                        }
+                        if (t.dataset.watchAge === '1' && t.dataset.list === 'enfants' && t.dataset.field === 'dateNaissance') {
+                            applyEnfantDateChange(row);
+                            return;
+                        }
+                    }
                     if (t.dataset.rerender) render();
+                } else if (t.dataset.photo !== undefined) {
+                    handlePhotoUpload(t);
                 } else if (t.dataset.piece !== undefined) {
                     handlePieceUpload(t);
                 }
@@ -490,15 +680,45 @@
             main.addEventListener('click', (e) => {
                 const rm = e.target.closest('[data-remove-row]');
                 const rp = e.target.closest('[data-remove-piece]');
+                const rph = e.target.closest('[data-remove-photo]');
                 if (rm) {
                     const list = rm.dataset.list;
+                    const row = findRow(list, rm.dataset.uid);
+                    if (row) clearPhoto(row);
                     state[list] = state[list].filter(r => r.uid !== rm.dataset.uid);
                     render();
                 } else if (rp) {
                     const row = findRow(rp.dataset.list, rp.dataset.uid);
                     if (row) { delete row.pieces[rp.dataset.piecekey]; render(); }
+                } else if (rph) {
+                    const row = findRow(rph.dataset.list, rph.dataset.uid);
+                    if (row) { clearPhoto(row); render(); }
                 }
             });
+
+            function handlePhotoUpload(input) {
+                const row = findRow(input.dataset.list, input.dataset.uid);
+                if (!row) return;
+                const errEl = document.getElementById(`photo-err-${row.uid}`);
+                if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+                const file = input.files?.[0];
+                if (!file) return;
+                const typeOk = PHOTO_ACCEPTED.includes(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+                if (!typeOk) {
+                    if (errEl) { errEl.textContent = 'Format non accepté (JPEG, PNG, WebP).'; errEl.classList.remove('hidden'); }
+                    input.value = '';
+                    return;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    if (errEl) { errEl.textContent = 'Fichier trop volumineux (5 Mo max).'; errEl.classList.remove('hidden'); }
+                    input.value = '';
+                    return;
+                }
+                clearPhoto(row);
+                row.photo = file;
+                row.photoPreview = URL.createObjectURL(file);
+                render();
+            }
 
             function handlePieceUpload(input) {
                 const key = input.dataset.piece;
@@ -521,13 +741,122 @@
                 if (pv) pv.innerHTML = pieceChip(row.uid, { list: input.dataset.list, k: key }, file);
             }
 
+            // --- FIF signée (génération PDF + upload du scan signé) ---
+            const FIF_ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+            const FIF_MAX_SIZE = 5 * 1024 * 1024;
+            let fifSignee = null;
+
+            const fifSection = document.getElementById('fif-section');
+            if (FIF_REQUIRED) {
+                fifSection.classList.remove('hidden');
+            } else {
+                fifSection.classList.add('hidden');
+            }
+
+            function buildExportMembres() {
+                return [
+                    ...state.conjoints.map(r => ({ ...rowToWizard(r, 'conjoints'), prenom: r.prenoms })),
+                    ...state.enfants.map(r => ({ ...rowToWizard(r, 'enfants'), lien: r.filiation || DEFAULT_FILIATION, prenom: r.prenoms }))
+                ];
+            }
+
+            function renderFifState() {
+                const icon = document.getElementById('fif-icon');
+                const filename = document.getElementById('fif-filename');
+                const statusText = document.getElementById('fif-status-text');
+                const dropzone = document.getElementById('fif-dropzone');
+                const chooseLabel = document.getElementById('btn-fif-choose-label');
+                const removeBtn = document.getElementById('btn-fif-remove');
+                const requiredHint = document.getElementById('fif-required-hint');
+                if (fifSignee) {
+                    icon.textContent = 'task';
+                    icon.classList.remove('text-primary'); icon.classList.add('text-secondary');
+                    filename.textContent = fifSignee.name;
+                    statusText.textContent = 'FIF prête pour la soumission.';
+                    dropzone.classList.remove('border-outline-variant', 'bg-surface-container-low');
+                    dropzone.classList.add('border-secondary/40', 'bg-secondary/5');
+                    chooseLabel.textContent = 'Remplacer';
+                    removeBtn.classList.remove('hidden');
+                    requiredHint.classList.add('hidden');
+                } else {
+                    icon.textContent = 'upload_file';
+                    icon.classList.add('text-primary'); icon.classList.remove('text-secondary');
+                    filename.textContent = 'Aucun fichier sélectionné';
+                    statusText.textContent = 'Formats acceptés : PDF, JPEG, PNG — 5 Mo max.';
+                    dropzone.classList.add('border-outline-variant', 'bg-surface-container-low');
+                    dropzone.classList.remove('border-secondary/40', 'bg-secondary/5');
+                    chooseLabel.textContent = 'Choisir un fichier';
+                    removeBtn.classList.add('hidden');
+                    requiredHint.classList.remove('hidden');
+                }
+                updateSubmitState();
+            }
+
+            document.getElementById('btn-fif-choose').addEventListener('click', () => document.getElementById('fif-input').click());
+            document.getElementById('btn-fif-remove').addEventListener('click', () => {
+                fifSignee = null;
+                document.getElementById('fif-input').value = '';
+                renderFifState();
+            });
+            document.getElementById('fif-input').addEventListener('change', (e) => {
+                const errEl = document.getElementById('fif-error');
+                errEl.classList.add('hidden');
+                const file = e.target.files?.[0];
+                if (!file) return;
+                if (!FIF_ACCEPTED_TYPES.includes(file.type)) {
+                    errEl.textContent = 'Format non accepté (PDF, JPEG, PNG).';
+                    errEl.classList.remove('hidden');
+                    e.target.value = '';
+                    return;
+                }
+                if (file.size > FIF_MAX_SIZE) {
+                    errEl.textContent = 'Fichier trop volumineux (5 Mo max).';
+                    errEl.classList.remove('hidden');
+                    e.target.value = '';
+                    return;
+                }
+                fifSignee = file;
+                renderFifState();
+            });
+
+            document.getElementById('btn-generate-fif').addEventListener('click', async () => {
+                syncPhonesFromWidgets();
+                const problems = validateAll();
+                if (problems.length) {
+                    showToast(`<span class="material-symbols-outlined">error</span> Complétez d'abord les informations des membres : ${problems[0]}`);
+                    return;
+                }
+                const btn = document.getElementById('btn-generate-fif');
+                const icon = document.getElementById('btn-generate-fif-icon');
+                const label = document.getElementById('btn-generate-fif-label');
+                btn.disabled = true;
+                icon.textContent = 'sync';
+                icon.classList.add('animate-spin');
+                label.textContent = 'Génération…';
+                try {
+                    const membres = buildExportMembres();
+                    await CamaDossierExport.exportDossierFamilial(CamaAssureData.getAssureProfile(), membres);
+                    document.getElementById('fif-generated-note').classList.remove('hidden');
+                    showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF générée — imprimez-la et faites-la signer par le chef de corps et le GRH.');
+                } catch {
+                    showToast('<span class="material-symbols-outlined">error</span> Impossible de générer la FIF.');
+                } finally {
+                    btn.disabled = false;
+                    icon.textContent = 'picture_as_pdf';
+                    icon.classList.remove('animate-spin');
+                    label.textContent = 'Générer ma FIF (PDF)';
+                }
+            });
+
             // --- Déclarations + état du bouton de soumission ---
             function updateSubmitState() {
                 const both = document.getElementById('chk-honneur').checked && document.getElementById('chk-consentement').checked;
                 const hasRows = state.conjoints.length + state.enfants.length > 0;
-                document.getElementById('btn-submit').disabled = !(both && hasRows && canSubmit);
+                const fifOk = !FIF_REQUIRED || !!fifSignee;
+                document.getElementById('btn-submit').disabled = !(both && hasRows && canSubmit && fifOk);
             }
             ['chk-honneur', 'chk-consentement'].forEach(id => document.getElementById(id).addEventListener('change', updateSubmitState));
+            renderFifState();
 
             if (!canSubmit) {
                 document.getElementById('pending-banner').classList.remove('hidden');
@@ -535,11 +864,13 @@
             }
 
             function rowToWizard(row, list) {
+                const pieces = { ...(row.pieces || {}) };
+                if (row.photo) pieces.photo_membre = row.photo;
                 const base = {
                     nom: row.nom, prenom: row.prenoms, sexe: row.sexe,
                     dateNaissance: row.dateNaissance, lieuNaissance: row.lieuNaissance,
                     groupeSanguin: row.groupeSanguin, refIdentite: row.refIdentite,
-                    telephone: row.telephone, pieces: row.pieces
+                    telephone: row.telephone, pieces
                 };
                 if (list === 'conjoints') {
                     return { ...base, lien: 'Conjoint(e)', refActeMariage: row.refActeMariage, profession: row.profession, lieuResidence: row.lieuResidence };
@@ -555,10 +886,13 @@
                         problems.push(`${label} : nom, prénoms, date de naissance et sexe sont obligatoires.`);
                     }
                     if (list === 'enfants') {
-                        const age = computeAge(row.dateNaissance);
-                        if (age !== null && age > ageMax) problems.push(`${label} : ${age} ans, dépasse l'âge maximal (${ageMax} ans).`);
+                        // Plus de blocage par âge : au-delà du seuil, le certificat de scolarité est exigé via piecesForRow.
                     }
-                    PIECES_MATRIX[pieceMatrixKey(row, list)].filter(p => p.required).forEach(p => {
+                    const photoCfg = list === 'conjoints' ? PHOTO_SETTINGS.conjoint : PHOTO_SETTINGS.enfant;
+                    if (photoCfg?.actif && photoCfg.required && !row.photo) {
+                        problems.push(`${label} : la photo d'identité est obligatoire.`);
+                    }
+                    piecesForRow(row, list).filter(p => p.required).forEach(p => {
                         if (!row.pieces[p.key]) problems.push(`${label} : pièce obligatoire manquante (${p.label}).`);
                     });
                 };
@@ -574,6 +908,16 @@
                 syncPhonesFromWidgets();
                 const problems = validateAll();
                 if (problems.length) { showToast(`<span class="material-symbols-outlined">error</span> ${problems[0]}`); return; }
+                if (FIF_REQUIRED && !fifSignee) { showToast('<span class="material-symbols-outlined">error</span> La FIF signée (scan) est obligatoire pour soumettre le lot familial.'); return; }
+                const fifBanner = document.getElementById('submit-warning-fif');
+                if (FIF_REQUIRED && fifSignee) {
+                    document.getElementById('submit-warning-fif-name').textContent = fifSignee.name;
+                    fifBanner.classList.remove('hidden');
+                    fifBanner.classList.add('flex');
+                } else {
+                    fifBanner.classList.add('hidden');
+                    fifBanner.classList.remove('flex');
+                }
                 document.getElementById('submit-warning-overlay').classList.remove('hidden');
                 document.getElementById('submit-warning-overlay').classList.add('flex');
             });
@@ -592,9 +936,20 @@
                 btn.innerHTML = '<svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Envoi en cours…';
 
                 setTimeout(() => {
+                    const submittedIds = [];
                     let count = 0;
-                    state.conjoints.forEach(r => { CamaAssureData.submitDossier(rowToWizard(r, 'conjoints')); count++; });
-                    state.enfants.forEach(r => { CamaAssureData.submitDossier(rowToWizard(r, 'enfants')); count++; });
+                    state.conjoints.forEach(r => { submittedIds.push(CamaAssureData.submitDossier(rowToWizard(r, 'conjoints')).id); count++; });
+                    state.enfants.forEach(r => { submittedIds.push(CamaAssureData.submitDossier(rowToWizard(r, 'enfants')).id); count++; });
+                    // Joint la FIF signée (scan) uniquement si l'exigence est active et le fichier fourni.
+                    if (FIF_REQUIRED && fifSignee) {
+                        const allDossiers = CamaAssureData.getDossiers();
+                        allDossiers.forEach(d => {
+                            if (submittedIds.includes(d.id)) {
+                                d.pieces = [...(d.pieces || []).filter(p => p.type !== 'FIF signée'), { type: 'FIF signée', statut: 'Soumise' }];
+                            }
+                        });
+                        CamaAssureData.saveDossiers(allDossiers);
+                    }
                     localStorage.removeItem(DRAFT_KEY);
                     document.getElementById('success-summary').textContent = `${count} dossier(s) transmis à la CAMA pour instruction.`;
                     document.querySelectorAll('#famille-main > section, #famille-main > div:not(#success-panel):not(#pending-banner)').forEach(el => el.classList.add('hidden'));
@@ -612,7 +967,7 @@
             // --- Brouillon local (valeurs de champs, hors fichiers) ---
             document.getElementById('btn-draft').addEventListener('click', () => {
                 syncPhonesFromWidgets();
-                const strip = r => { const { pieces, ...rest } = r; return rest; };
+                const strip = r => { const { pieces, photo, photoPreview, ...rest } = r; return rest; };
                 const payload = { conjoints: state.conjoints.map(strip), enfants: state.enfants.map(strip) };
                 localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
                 showToast('<span class="material-symbols-outlined">save</span> Brouillon enregistré sur cet appareil.');
@@ -637,7 +992,7 @@
                 if (!d) return false;
                 const meta = d.wizardMeta || {};
                 if ((d.lien || '').startsWith('Enfant')) {
-                    state.enfants.push({ ...newEnfant(), nom: d.nom || '', prenoms: d.prenom || '', sexe: d.sexe || '', dateNaissance: meta.dateNaissance || '', lieuNaissance: d.lieuNaissance || '', groupeSanguin: d.groupeSanguin || '', refIdentite: d.refIdentite || '', refActeScolariteEtatCivil: d.refActeScolariteEtatCivil || '', nomPrenomsParent: d.nomPrenomsParent || '', telephone: d.telephone || '', filiation: d.lien === 'Enfant du conjoint' ? 'Enfant du conjoint' : 'Enfant biologique' });
+                    state.enfants.push({ ...newEnfant(), nom: d.nom || '', prenoms: d.prenom || '', sexe: d.sexe || '', dateNaissance: meta.dateNaissance || '', lieuNaissance: d.lieuNaissance || '', groupeSanguin: d.groupeSanguin || '', refIdentite: d.refIdentite || '', refActeScolariteEtatCivil: d.refActeScolariteEtatCivil || '', nomPrenomsParent: d.nomPrenomsParent || '', telephone: d.telephone || '', filiation: FILIATION_OPTIONS.includes(d.lien) ? d.lien : (d.lien === 'Enfant du conjoint' ? 'Enfant du conjoint' : DEFAULT_FILIATION) });
                 } else {
                     state.conjoints.push({ ...newConjoint(), nom: d.nom || '', prenoms: d.prenom || '', sexe: d.sexe || '', dateNaissance: meta.dateNaissance || '', lieuNaissance: d.lieuNaissance || '', groupeSanguin: d.groupeSanguin || '', refIdentite: d.refIdentite || '', refActeMariage: d.refActeMariage || '', profession: d.profession || '', lieuResidence: d.lieuResidence || '', telephone: d.telephone || '' });
                 }

@@ -1,0 +1,440 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@700&display=swap');
+
+/* Site vitrine CAMA — header, menu mobile, bandeau, footer */
+#site-info-banner {
+    background: linear-gradient(90deg, #9e001f 0%, #c8102e 100%);
+    color: #ffffff;
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+}
+
+#site-info-banner.is-warning {
+    background: linear-gradient(90deg, #745b00 0%, #d0a600 100%);
+    color: #241a00;
+}
+
+#site-info-banner .banner-close {
+    opacity: 0.75;
+    transition: opacity 0.15s;
+}
+
+#site-info-banner .banner-close:hover {
+    opacity: 1;
+}
+
+#site-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5bdbb;
+    box-shadow: 0 2px 12px rgba(27, 28, 28, 0.06);
+}
+
+#site-header .site-header-accent {
+    height: 3px;
+    background: linear-gradient(90deg, #9e001f 0%, #c8102e 50%, #9e001f 100%);
+}
+
+#site-header .site-nav-link {
+    color: #5c403f;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+#site-header .site-nav-link:hover,
+#site-header .site-nav-link.is-active {
+    color: #9e001f;
+}
+
+#site-header .site-nav-link.is-active {
+    border-bottom-color: #9e001f;
+    font-weight: 700;
+}
+
+#site-header .site-menu-btn,
+#site-header .site-search-btn {
+    color: #1b1c1c;
+    transition: background-color 0.15s;
+}
+
+#site-header .site-menu-btn:hover,
+#site-header .site-search-btn:hover {
+    background-color: #f0eded;
+}
+
+#site-header .espace-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+}
+
+#site-header .espace-dropdown.is-open,
+#site-header .espace-assure-wrap:hover .espace-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+#site-header .espace-assure-btn {
+    background-color: #9e001f;
+    color: #ffffff;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+#site-header .espace-assure-btn:hover {
+    opacity: 0.92;
+}
+
+#site-header .espace-assure-btn:active {
+    transform: scale(0.98);
+}
+
+#site-search-bar {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+    background-color: #f6f3f2;
+    border-bottom: 1px solid #e5bdbb;
+}
+
+#site-search-bar.is-open {
+    max-height: 80px;
+    opacity: 1;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+#site-mobile-nav {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.25s ease;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5bdbb;
+}
+
+#site-mobile-nav.is-open {
+    max-height: 720px;
+    opacity: 1;
+}
+
+#site-mobile-nav .mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    color: #1b1c1c;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-left: 3px solid transparent;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+#site-mobile-nav .mobile-nav-link:hover,
+#site-mobile-nav .mobile-nav-link.is-active {
+    background-color: #f6f3f2;
+    border-left-color: #c8102e;
+    color: #9e001f;
+}
+
+#site-footer {
+    background-color: #1b1c1c;
+    color: #e4e2e1;
+}
+
+/* ── Bannière cookies (sous le footer) ── */
+#site-cookie-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 60;
+    background-color: #ffffff;
+    border-top: 1px solid #e5bdbb;
+    box-shadow: 0 -4px 24px rgba(27, 28, 28, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.35s ease;
+}
+
+#site-cookie-bar.is-visible {
+    transform: translateY(0);
+}
+
+#site-cookie-bar.is-hidden {
+    display: none;
+}
+
+/* ── Bouton retour en haut ── */
+.cama-top-anchor {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.cama-anchor-top-btn {
+    position: fixed;
+    right: max(1rem, env(safe-area-inset-right, 0px));
+    bottom: var(--cama-anchor-bottom, 1.5rem);
+    z-index: 55;
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #9e001f;
+    color: #ffffff;
+    box-shadow: 0 4px 20px rgba(27, 28, 28, 0.22);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(1rem);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s ease;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.cama-anchor-top-btn.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.cama-anchor-top-btn:hover {
+    background-color: #c8102e;
+}
+
+.cama-anchor-top-btn:active {
+    transform: scale(0.94);
+}
+
+.cama-anchor-top-btn.is-visible:active {
+    transform: scale(0.94);
+}
+
+.cama-anchor-top-btn .material-symbols-outlined {
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+@media (min-width: 768px) {
+    .cama-anchor-top-btn {
+        width: 3.25rem;
+        height: 3.25rem;
+        right: 2rem;
+    }
+}
+
+.hero-slide {
+    transition: opacity 1.2s ease-in-out;
+}
+
+.hero-slide-bg {
+    transform: scale(1.08);
+    transition: transform 7s ease-out, opacity 1.2s ease-in-out;
+}
+
+.hero-slide.is-active .hero-slide-bg {
+    transform: scale(1);
+}
+
+.hero-progress-fill {
+    width: 0%;
+    transition: width 7s linear;
+}
+
+.hero-progress-fill.is-running {
+    width: 100%;
+}
+
+.shield-pattern {
+    background-color: transparent;
+    background-image: radial-gradient(#e5bdbb 0.5px, transparent 0.5px), radial-gradient(#e5bdbb 0.5px, #fbf9f8 0.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.1;
+}
+
+.bg-news-hero {
+    background-image: linear-gradient(rgba(27, 28, 28, 0.82), rgba(27, 28, 28, 0.7)), url('/images/CAMA_3.3.jfif');
+}
+
+.bg-resources-hero {
+    background-image: linear-gradient(rgba(27, 28, 28, 0.82), rgba(27, 28, 28, 0.7)), url('/images/CAMA_6.jfif');
+}
+
+.bg-contact-hero {
+    background-image: linear-gradient(rgba(27, 28, 28, 0.82), rgba(27, 28, 28, 0.7)), url('/images/CAMA_1.jfif');
+}
+
+.bg-about-hero {
+    background-image: linear-gradient(rgba(27, 28, 28, 0.72), rgba(27, 28, 28, 0.55)), url('/images/CAMA_3.3.jfif');
+}
+
+.bg-about-today {
+    background-image: linear-gradient(100deg, rgba(158, 0, 31, 0.92) 30%, rgba(65, 0, 7, 0.75) 70%, rgba(27, 28, 28, 0.55) 100%), url('/images/CAMA_4.jfif');
+}
+
+.bg-services-hero {
+    background-image: linear-gradient(rgba(27, 28, 28, 0.72), rgba(27, 28, 28, 0.5)), url('/images/CAMA_8.jfif');
+}
+
+.contact-section {
+    scroll-margin-top: calc(var(--site-header-height, 75px) + 16px);
+}
+
+.loc-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #e5bdbb transparent;
+}
+
+.loc-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.loc-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.loc-scroll::-webkit-scrollbar-thumb {
+    background: #e5bdbb;
+    border-radius: 9999px;
+}
+
+.location-card {
+    transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.location-card.is-active {
+    border-color: #9e001f;
+    background-color: #fff8f7;
+    box-shadow: 0 2px 12px rgba(158, 0, 31, 0.08);
+}
+
+.location-card.is-active .location-icon {
+    background-color: #9e001f;
+    color: #ffffff;
+}
+
+.prose-article p {
+    margin-bottom: 1rem;
+}
+
+.prose-article a {
+    color: #9e001f;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.cms-page-section {
+    padding: 3rem 0;
+}
+
+.cms-page-column {
+    flex: 0 0 var(--column-width);
+    max-width: var(--column-width);
+}
+
+.cms-page-widget + .cms-page-widget {
+    margin-top: 1.25rem;
+}
+
+.cms-rich-content p + p {
+    margin-top: 1rem;
+}
+
+.cms-rich-content a {
+    color: #9e001f;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.elementor-heading-title {
+    color: var(--eh-color, #0A083B);
+    font-family: var(--eh-font-family, 'Poppins', sans-serif);
+    font-size: var(--eh-font-size, 49px);
+    font-weight: var(--eh-font-weight, 700);
+    line-height: var(--eh-line-height, 1.1em);
+    letter-spacing: var(--eh-letter-spacing, -0.5px);
+    text-align: var(--eh-align, inherit);
+    margin: var(--eh-margin, 0);
+    padding: var(--eh-padding, 0);
+    text-transform: var(--eh-text-transform, none);
+    font-style: var(--eh-font-style, normal);
+    text-decoration: var(--eh-text-decoration, none);
+    mix-blend-mode: var(--eh-blend-mode, normal);
+    -webkit-text-stroke: var(--eh-text-stroke, 0 transparent);
+    text-shadow: var(--eh-text-shadow, none);
+}
+
+@media (max-width: 1024px) {
+    .elementor-heading-title {
+        font-size: var(--eh-font-size-tablet, var(--eh-font-size, 49px));
+        text-align: var(--eh-align-tablet, var(--eh-align, inherit));
+        margin: var(--eh-margin-tablet, var(--eh-margin, 0));
+        padding: var(--eh-padding-tablet, var(--eh-padding, 0));
+    }
+}
+
+@media (max-width: 767px) {
+    .elementor-heading-title {
+        font-size: var(--eh-font-size-mobile, 35px);
+        text-align: var(--eh-align-mobile, center);
+        margin: var(--eh-margin-mobile, var(--eh-margin-tablet, var(--eh-margin, 0)));
+        padding: var(--eh-padding-mobile, 10px 0 0 0);
+    }
+}
+
+.cms-anim-fade {
+    animation: camaFadeIn 0.55s ease both;
+}
+
+.cms-anim-slide-up {
+    animation: camaSlideUp 0.6s ease both;
+}
+
+.cms-anim-slide-left {
+    animation: camaSlideLeft 0.6s ease both;
+}
+
+.cms-anim-zoom {
+    animation: camaZoomIn 0.5s ease both;
+}
+
+@keyframes camaFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes camaSlideUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes camaSlideLeft {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes camaZoomIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 767px) {
+    .cms-page-column {
+        flex-basis: 100% !important;
+        max-width: 100% !important;
+    }
+}
