@@ -157,6 +157,33 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Compte de démonstration à connexion directe : actif, e-mail déjà
+        // vérifié et SANS 2FA -> aucune saisie de code requise (utile quand
+        // l'envoi d'e-mails n'est pas disponible, ex. plan gratuit Railway).
+        $demo = Assure::query()->updateOrCreate(
+            ['email' => 'demo@cama.bf'],
+            [
+                'nom' => 'SANKARA',
+                'prenom' => 'Boureima',
+                'sexe' => 'Masculin',
+                'matricule' => '0001-D',
+                'numero_informatique' => 'INF-0001',
+                'grade' => 'Capitaine',
+                'categorie' => 'Officier',
+                'numero_cim' => 'CIM-100001',
+                'numero_cama' => 'CAMA-100001',
+                'numero_iup' => 'IUP-100001',
+                'armee' => 'Armée de Terre',
+                'region' => '1re Région Militaire (Ouagadougou)',
+                'telephone' => '+226 70 00 00 00',
+                'password' => 'Demo2026!',
+                'statut' => AssureStatut::Actif,
+                'deux_fa_active' => false,
+            ]
+        );
+        // email_verified_at n'est pas mass-assignable : on le force ici.
+        $demo->forceFill(['email_verified_at' => now()])->save();
+
         $this->seedDossiers($issouf);
         $this->seedNotifications($issouf);
 
