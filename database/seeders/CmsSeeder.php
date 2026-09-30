@@ -97,18 +97,19 @@ class CmsSeeder extends Seeder
 
     private function seedSlides(): void
     {
-        if (CmsSlide::query()->exists()) {
-            return;
-        }
-
+        // updateOrCreate (clé : sort_order) pour que les mises à jour de contenu
+        // s'appliquent à chaque re-seed, y compris après un déploiement.
         $slides = [
-            ['title' => 'La santé de nos héros, notre priorité', 'subtitle' => 'Lancée officiellement le 13 février 2025, la CAMA assure une couverture santé robuste aux militaires et à leurs familles.', 'image_url' => 'images/CAMA_8.jfif', 'link_url' => 'espace-assure.html', 'link_label' => 'Espace Assuré', 'sort_order' => 1, 'active' => true],
-            ['title' => 'Une solidarité au service des forces armées', 'subtitle' => 'Une cotisation de 5,5 % pour une prise en charge à 80 % des soins, dans la dignité et la transparence.', 'image_url' => 'images/CAMA_6.jfif', 'link_url' => 'services.html', 'link_label' => 'Nos prestations', 'sort_order' => 2, 'active' => true],
-            ['title' => 'Une institution moderne et accessible', 'subtitle' => 'La CAMA poursuit la digitalisation de ses services pour mieux servir ses assurés.', 'image_url' => 'images/CAMA_1.jfif', 'link_url' => 'actualite.html', 'link_label' => 'Voir les actualités', 'sort_order' => 3, 'active' => true],
+            ['title' => 'La santé de nos héros, notre priorité', 'subtitle' => 'La CAMA assure une couverture santé robuste aux militaires et à leurs familles, dans la dignité et la transparence.', 'image_url' => 'images/visite-officielle-cama-1.jpg', 'link_url' => 'espace-assure.html', 'link_label' => 'Espace Assuré', 'sort_order' => 1, 'active' => true],
+            ['title' => 'Une gouvernance engagée et de proximité', 'subtitle' => "Le 18 août 2026, le Ministre d'État chargé de la Guerre et de la Défense patriotique a salué le bilan de la CAMA et encouragé ses équipes.", 'image_url' => 'images/visite-officielle-cama-3.jpg', 'link_url' => 'actualites', 'link_label' => 'Voir les actualités', 'sort_order' => 2, 'active' => true],
+            ['title' => 'Une institution moderne et accessible', 'subtitle' => 'La CAMA poursuit la digitalisation de ses services pour mieux servir ses assurés partout au Burkina Faso.', 'image_url' => 'images/visite-officielle-cama-2.jpg', 'link_url' => 'actualites', 'link_label' => 'Nos actualités', 'sort_order' => 3, 'active' => true],
         ];
 
         foreach ($slides as $slide) {
-            CmsSlide::query()->create($slide);
+            CmsSlide::query()->updateOrCreate(
+                ['sort_order' => $slide['sort_order']],
+                $slide
+            );
         }
     }
 
@@ -260,13 +261,12 @@ class CmsSeeder extends Seeder
 
     private function seedArticles(): void
     {
-        if (CmsArticle::query()->exists()) {
-            return;
-        }
-
         $categories = CmsArticleCategory::query()->pluck('id', 'name');
 
         $articles = [
+            ['slug' => 'visite-ministre-defense-cama-2026', 'title' => 'Visite du Ministre de la Guerre et de la Défense patriotique à la CAMA', 'category' => 'Événement', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2026-08-22', 'image_url' => 'images/visite-officielle-cama-1.jpg', 'excerpt' => "Le mardi 18 août 2026, la CAMA a reçu la visite du Général de Division Célestin SIMPORÉ, Ministre d'État, Ministre de la Guerre et de la Défense patriotique.", 'body_html' => "<p>Le mardi 18 août 2026, la Caisse d'Assurance Maladie des Armées (CAMA) a reçu la visite du Camarade Général de Division Célestin SIMPORÉ, Ministre d'État, Ministre de la Guerre et de la Défense patriotique.</p><p>Cette visite a permis au ministre de s'enquérir des conditions réelles de travail du personnel, depuis le lancement des activités de la CAMA en février 2025, et d'échanger sur les acquis, les défis et les perspectives de la structure.</p><p>Elle a également été l'occasion pour le Général Célestin SIMPORÉ de féliciter l'ensemble du personnel de la CAMA pour le bilan de gestion satisfaisant présenté lors de l'Assemblée générale tenue le mardi 4 août 2026, témoignant des efforts consentis et de l'engagement de tous dans la mise en œuvre de cette structure essentielle.</p><p>Au-delà des félicitations, le ministre a donné des directives visant à accélérer l'amélioration de la prise en charge globale des assurés, militaires comme civils, conformément aux ambitions de la CAMA en matière de protection sociale et sanitaire des militaires et de leurs familles.</p><p>Cette visite constitue ainsi un message d'encouragement et de confiance pour l'ensemble du personnel de la CAMA, appelé à poursuivre ses efforts avec engagement, rigueur et dévouement au service des assurés.</p>", 'featured' => true],
+            ['slug' => 'plan-strategique-2026-2030-atelier-koudougou', 'title' => 'Plan stratégique 2026-2030 : la CAMA renforce les capacités de ses acteurs', 'category' => 'Institution', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2026-08-10', 'image_url' => 'images/atelier-plan-strategique-2026.jpg', 'excerpt' => "Du 5 au 8 août 2026 à Koudougou, la CAMA a organisé un atelier de formation au profit des membres des comités de suivi et d'élaboration de son plan stratégique 2026-2030.", 'body_html' => "<p>Dans le cadre de l'élaboration de son Plan stratégique 2026-2030, la Caisse d'Assurance Maladie des Armées (CAMA) a organisé, du 5 au 8 août 2026 à Koudougou, un atelier de formation au profit des membres des comités de suivi et d'élaboration du plan stratégique.</p><p>Cette activité fait suite au lancement officiel des travaux d'élaboration, intervenu le 24 juillet 2026 sous la présidence de l'Intendant Colonel-Major Yamba Léonard OÛOBA, Secrétaire général du Ministère de la Guerre et de la Défense patriotique.</p><p>Avec l'appui d'experts du Ministère de l'Économie et des Finances, les participants ont approfondi les principaux outils de la planification stratégique et opérationnelle, du suivi-évaluation, ainsi que les méthodes d'élaboration et de validation des outils de collecte de données. L'approche participative — exposés, travaux pratiques et échanges en plénière — a permis d'harmoniser les méthodes et de consolider les bases d'un plan cohérent, réaliste et orienté vers les résultats.</p><p>Par cette initiative, la Direction générale de la CAMA réaffirme sa volonté de doter l'institution d'une vision stratégique ambitieuse, capable de renforcer durablement sa gouvernance, d'améliorer la qualité de ses prestations et de consolider la protection sociale offerte aux personnels des Forces armées nationales et à leurs ayants droit.</p>", 'featured' => false],
+            ['slug' => 'assemblee-generale-ordinaire-2026', 'title' => 'Assemblée générale ordinaire 2026 : un engagement renouvelé pour mieux protéger', 'category' => 'Événement', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2026-08-04', 'image_url' => 'images/assemblee-generale-2026.jpg', 'excerpt' => "Le 4 août 2026 à Ouagadougou, la CAMA a tenu sa session 2026 de l'Assemblée générale ordinaire, cadre d'évaluation de l'exercice 2025 et d'orientation stratégique.", 'body_html' => "<p>Le Directeur général de la Caisse d'Assurance Maladie des Armées (CAMA), le Pharmacien Lieutenant-colonel Ousmane SINARÉ, a pris part, le mardi 4 août 2026 à Ouagadougou, à la session 2026 de l'Assemblée générale ordinaire de la Caisse.</p><p>La cérémonie d'ouverture, présidée par le président de l'Assemblée générale, le Général de Division Célestin SIMPORÉ, Ministre d'État, Ministre de la Guerre et de la Défense patriotique, a connu la participation de plusieurs autorités militaires et administratives.</p><p>Cette rencontre statutaire a constitué un cadre d'évaluation des résultats de l'exercice 2025, d'appréciation des acquis et de définition des orientations stratégiques nécessaires au renforcement de la gouvernance, de la performance et de la pérennité de la CAMA.</p><p>Pour le Général de Division Célestin SIMPORÉ, la CAMA est bien plus qu'une structure de prévoyance sociale : elle constitue un outil stratégique au service de la disponibilité opérationnelle des Forces armées nationales. Il a rappelé que chaque décision et chaque investissement doivent concourir à des prestations de qualité, à l'équilibre financier du régime et à la confiance des bénéficiaires.</p><p>À l'issue des travaux, les participants ont salué les avancées de la Caisse et réaffirmé leur engagement à améliorer continuellement les prestations offertes aux Forces armées nationales et à leurs familles.</p>", 'featured' => false],
             ['slug' => 'lancement-officiel-cama', 'title' => "Lancement officiel de la Caisse d'Assurance Maladie des Armées", 'category' => 'Institution', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2025-02-13', 'image_url' => 'images/CAMA_8.jfif', 'excerpt' => "Au siège de l'ex-État-Major Général des Armées à Bilbalogho, la CAMA a été officiellement lancée en présence du Ministre d'État chargé de la Défense.", 'body_html' => "<p>Au siège de l'ex-État-Major Général des Armées à Bilbalogho, la CAMA a été officiellement lancée en présence du Général de Brigade Céléstin Simporé, Ministre d'État chargé de la Défense.</p><p>L'institution élargit la couverture santé aux conjoints et enfants des militaires, conformément au décret n°2020-0272.</p>", 'featured' => true],
             ['slug' => 'inauguration-siege-bilbalogho', 'title' => 'Inauguration du siège de la CAMA à Bilbalogho', 'category' => 'Institution', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2025-02-13', 'image_url' => 'images/CAMA_1.jfif', 'excerpt' => "Les locaux de l'ex-État-Major Général des Armées accueillent désormais la direction générale de la CAMA.", 'body_html' => "<p>Les locaux de l'ex-État-Major Général des Armées accueillent désormais la direction générale de la CAMA, au cœur de Ouagadougou.</p><p>Ce site centralise l'accueil des assurés, le traitement des dossiers et la coordination avec les antennes régionales.</p>", 'featured' => false],
             ['slug' => 'coupure-ruban-cama', 'title' => 'Coupure du ruban : la CAMA ouvre officiellement ses portes', 'category' => 'Événement', 'status' => 'published', 'author_name' => 'CAMA', 'published_at' => '2025-02-13', 'image_url' => 'images/CAMA_6.jfif', 'excerpt' => 'Une cérémonie solennelle a marqué le démarrage des activités de la caisse au bénéfice des militaires et de leurs familles.', 'body_html' => '<p>Une cérémonie solennelle a marqué le démarrage des activités de la caisse au bénéfice des militaires et de leurs familles.</p><p>Les autorités ont salué une étape majeure dans la modernisation de la protection sociale des Forces Armées Nationales.</p>', 'featured' => false],
@@ -276,18 +276,20 @@ class CmsSeeder extends Seeder
         ];
 
         foreach ($articles as $article) {
-            CmsArticle::query()->create([
-                'slug' => $article['slug'],
-                'title' => $article['title'],
-                'category_id' => $categories[$article['category']],
-                'status' => $article['status'],
-                'author_name' => $article['author_name'],
-                'published_at' => $article['published_at'],
-                'image_url' => $article['image_url'],
-                'excerpt' => $article['excerpt'],
-                'body_html' => $article['body_html'],
-                'featured' => $article['featured'],
-            ]);
+            CmsArticle::query()->updateOrCreate(
+                ['slug' => $article['slug']],
+                [
+                    'title' => $article['title'],
+                    'category_id' => $categories[$article['category']],
+                    'status' => $article['status'],
+                    'author_name' => $article['author_name'],
+                    'published_at' => $article['published_at'],
+                    'image_url' => $article['image_url'],
+                    'excerpt' => $article['excerpt'],
+                    'body_html' => $article['body_html'],
+                    'featured' => $article['featured'],
+                ]
+            );
         }
     }
 
