@@ -1,6 +1,9 @@
 <script setup>
 import CamaSimpleRichText from '@/Components/CamaSimpleRichText.vue';
 import { computed, ref, watch } from 'vue';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
+
+const siteLogo = useSiteLogo();
 
 const props = defineProps({
     modelValue: { type: Array, default: () => [] },
@@ -47,7 +50,7 @@ function defaultContent(type) {
     return {
         heading: { text: 'Titre', level: 2 },
         text: { html: '<p>Bonjour {{prenom}},</p><p>Votre message ici.</p>' },
-        image: { url: '/images/logo_cama.png', alt: 'CAMA', width: 200 },
+        image: { url: siteLogo.value, alt: 'CAMA', width: 200 },
         button: { label: 'En savoir plus', url: 'https://cama.bf' },
         divider: {},
         spacer: { height: 24 },

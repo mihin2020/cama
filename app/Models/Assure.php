@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\AssureStatut;
+use App\Services\FifProfileService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -58,6 +59,16 @@ class Assure extends Authenticatable
             'journal' => 'array',
             'documents_identite' => 'array',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Numéro de Fiche d'Identification Famille (ex. 26AT1R001) attribué une fois pour toutes à l'inscription.
+        static::created(function (Assure $assure) {
+            if (! $assure->numero_fif) {
+                app(FifProfileService::class)->assign($assure);
+            }
+        });
     }
 
     public function getFullNameAttribute(): string

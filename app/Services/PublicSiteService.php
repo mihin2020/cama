@@ -82,6 +82,23 @@ class PublicSiteService
     }
 
     /**
+     * Page « Mentions légales » : contenu du module dédié (une seule lecture en base, pas de cache
+     * à invalider : une modification est visible immédiatement).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function legalSections(): array
+    {
+        $notice = app(PlatformSettingsService::class)->legalNotice();
+
+        return app(CmsPageService::class)->legalSystemSections([
+            'title' => $notice['title'],
+            'intro' => $notice['intro'],
+            'articles' => $notice['articles'],
+        ]);
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     public function servicesSections(): array
@@ -128,6 +145,7 @@ class PublicSiteService
             if ($item['depth'] === 0 || empty($groups)) {
                 $item['children'] = [];
                 $groups[] = $item;
+
                 continue;
             }
 

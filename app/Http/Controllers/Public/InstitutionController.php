@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Public;
 use App\Http\Controllers\Controller;
 use App\Models\CmsFaq;
 use App\Models\CmsPartner;
+use App\Services\CmsPartnerService;
 use App\Services\PublicSiteService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +20,7 @@ class InstitutionController extends Controller
         ]);
     }
 
-    public function services(PublicSiteService $site): Response
+    public function services(PublicSiteService $site, CmsPartnerService $partnerService): Response
     {
         $faqs = CmsFaq::query()
             ->with('category')
@@ -35,23 +36,24 @@ class InstitutionController extends Controller
             ])
             ->all();
 
+        // Prestataires de soins uniquement : le siège et les antennes CAMA sont des bureaux, présentés sur la page Contact.
         $partners = CmsPartner::query()
             ->where('published', true)
-            ->orderBy('sort_order')
-            ->orderBy('id')
-            ->get()
+            ->whereIn('type', CmsPartnerService::PROVIDER_TYPES)
+            ->orderBy('city')
+            ->orderBy('name')
+            ->get(['id', 'name', 'type', 'city', 'address', 'image_url', 'latitude', 'longitude', 'maps_url'])
             ->map(fn (CmsPartner $partner) => [
                 'id' => $partner->id,
                 'name' => $partner->name,
                 'type' => $partner->type,
                 'city' => $partner->city,
-                'description' => $partner->description ?? '',
+                'address' => $partner->address !== $partner->city ? $partner->address : null,
                 'imageSrc' => $partner->image_url
                     ? (str_starts_with($partner->image_url, 'http') ? $partner->image_url : '/'.ltrim($partner->image_url, '/'))
-                    : '/images/CAMA_1.jfif',
-                'mapsUrl' => $partner->maps_url ?: ($partner->latitude && $partner->longitude
-                    ? 'https://www.google.com/maps/search/?api=1&query='.$partner->latitude.','.$partner->longitude
-                    : null),
+                    : null,
+                // Itinéraire pour toutes les fiches, localisées ou non.
+                'mapsUrl' => $partnerService->publicMapsUrl($partner),
             ])
             ->all();
 

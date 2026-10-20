@@ -10,6 +10,11 @@ use Illuminate\Validation\ValidationException;
 
 class AdminAssureService
 {
+    public function __construct(
+        private FifProfileService $fif,
+        private DossierService $dossierService,
+    ) {}
+
     public function list(array $filters = []): array
     {
         return $this->buildListQuery($filters)->get()->map(fn (Assure $a) => $this->formatListRow($a))->all();
@@ -80,7 +85,7 @@ class AdminAssureService
             'initiales' => $assure->initiales,
             'journal' => $assure->journal ?? [],
             'membres' => $membres,
-            'exportProfile' => $this->exportProfile($assure),
+            'exportProfile' => $this->fif->profile($assure),
         ];
     }
 
@@ -139,41 +144,11 @@ class AdminAssureService
             'membres' => $membres->values()->all(),
             'journal' => $assure->journal ?? [],
             'initiales' => $assure->initiales,
-            'exportProfile' => $this->exportProfile($assure),
-            'membresExport' => $assure->dossiers()
-                ->where('statut', '!=', 'Brouillon')
-                ->get()
-                ->map(fn (Dossier $d) => app(DossierService::class)->formatMembre($d))
+            'exportProfile' => $this->fif->profile($assure),
+            'membresExport' => $assure->dossiers
+                ->map(fn (Dossier $d) => $this->dossierService->formatMembre($d))
                 ->values()
                 ->all(),
-        ];
-    }
-
-    private function exportProfile(Assure $assure): array
-    {
-        return [
-            'nom' => $assure->nom,
-            'prenom' => $assure->prenom,
-            'prenoms' => $assure->prenom,
-            'fullName' => $assure->full_name,
-            'sexe' => $assure->sexe,
-            'matricule' => $assure->matricule,
-            'numeroInformatique' => $assure->numero_informatique,
-            'grade' => $assure->grade,
-            'categorie' => $assure->categorie,
-            'numeroCim' => $assure->numero_cim,
-            'numeroCama' => $assure->numero_cama,
-            'numeroIup' => $assure->numero_iup,
-            'armee' => $assure->armee,
-            'region' => $assure->region,
-            'corps' => $assure->corps,
-            'service' => $assure->service,
-            'section' => $assure->section,
-            'sousSection' => $assure->sous_section,
-            'telephone' => $assure->telephone,
-            'email' => $assure->email,
-            'personneAPrevenir' => $assure->personne_a_prevenir,
-            'telPersonneAPrevenir' => $assure->tel_personne_a_prevenir,
         ];
     }
 
@@ -182,7 +157,7 @@ class AdminAssureService
      */
     public function profileForAdmin(Assure $assure): array
     {
-        return array_merge($this->exportProfile($assure), [
+        return array_merge($this->fif->profile($assure), [
             'id' => $assure->id,
             'statut' => $assure->statut->label(),
             'dateCreation' => $assure->created_at?->format('d/m/Y') ?? '',

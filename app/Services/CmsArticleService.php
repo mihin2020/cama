@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\AdminUser;
 use App\Models\CmsArticle;
+use App\Support\CmsRichTextSanitizer;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class CmsArticleService
@@ -18,7 +20,7 @@ class CmsArticleService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForAdmin(?string $statusFilter = null, ?int $categoryId = null): array
+    public function paginateForAdmin(?string $statusFilter, ?int $categoryId, int $perPage): LengthAwarePaginator
     {
         $query = CmsArticle::query()
             ->with('category')
@@ -36,7 +38,9 @@ class CmsArticleService
             $query->where('category_id', $categoryId);
         }
 
-        return $query->get()->map(fn (CmsArticle $article) => $this->format($article))->all();
+        return $query->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsArticle $article) => $this->format($article));
     }
 
     public function format(CmsArticle $article): array
@@ -55,7 +59,7 @@ class CmsArticleService
             'image_url' => $article->image_url,
             'image_src' => self::resolveImageUrl($article->image_url),
             'excerpt' => $article->excerpt,
-            'body_html' => $article->body_html,
+            'body_html' => CmsRichTextSanitizer::sanitize($article->body_html, CmsRichTextSanitizer::ARTICLE_TAGS),
             'featured' => $article->featured,
         ];
     }

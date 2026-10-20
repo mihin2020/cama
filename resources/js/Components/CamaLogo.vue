@@ -1,4 +1,8 @@
 <script setup>
+import { useSiteLogo } from '@/Composables/useSiteLogo';
+
+const siteLogo = useSiteLogo();
+
 defineProps({
     size: {
         type: String,
@@ -21,7 +25,7 @@ const sizes = {
     <div class="flex items-center gap-3">
         <img
             :class="[sizes[size], 'object-contain']"
-            src="/images/logo_cama.png"
+            :src="siteLogo"
             alt="Logo CAMA"
         />
         <div v-if="showSubtitle" class="leading-tight">

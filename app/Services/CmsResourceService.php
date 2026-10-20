@@ -5,24 +5,23 @@ namespace App\Services;
 use App\Models\AdminUser;
 use App\Models\CmsResource;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CmsResourceService
 {
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForAdmin(?int $categoryId = null): array
+    public function paginateForAdmin(?int $categoryId, int $perPage): LengthAwarePaginator
     {
-        $query = CmsResource::query()
+        return CmsResource::query()
             ->with('category')
+            ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
             ->orderBy('sort_order')
-            ->orderBy('id');
-
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
-        }
-
-        return $query->get()->map(fn (CmsResource $resource) => $this->format($resource))->all();
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsResource $resource) => $this->format($resource));
     }
 
     public function format(CmsResource $resource): array

@@ -1,5 +1,6 @@
 // Moteur de rendu du Page Builder (génération HTML, styles, previews système).
 // Extrait de Index.vue. Fabrique recevant un accès aux données système (getSystemData).
+import { DEFAULT_TOKENS, hexToChannels } from '@/Utils/siteTheme';
 import { PALETTE, WIDGETS } from './builderConstants';
 
 export function createBuilderRender(getSystemData = () => ({})) {
@@ -209,7 +210,7 @@ function renderElementorWidgetHtml(widget) {
     if (widget.type === 'elementor_button') {
         const icon = content.icon ? `<span class="material-symbols-outlined text-[18px]">${escapeHtml(content.icon)}</span>` : '';
         const label = `<span>${escapeHtml(content.text || '')}</span>`;
-        return `<div class="${align}" style="${boxStyle}"><a class="inline-flex items-center gap-2" href="${escapeAttr(content.link?.url || '#')}" style="background:${style.bgColor || '#9e001f'};color:${style.textColor || '#fff'};border-radius:${style.borderRadius || 0}px;padding:${spacingCss(style.padding)};font-family:${style.fontFamily || 'Inter'};font-size:${cssLength(style.fontSize, 'px', '14px')};font-weight:${style.fontWeight || '700'}">${content.iconPosition === 'after' ? label + icon : icon + label}</a></div>`;
+        return `<div class="${align}" style="${boxStyle}"><a class="inline-flex items-center gap-2" href="${escapeAttr(content.link?.url || '#')}" style="background:${style.bgColor || 'rgb(var(--c-primary))'};color:${style.textColor || '#fff'};border-radius:${style.borderRadius || 0}px;padding:${spacingCss(style.padding)};font-family:${style.fontFamily || 'Inter'};font-size:${cssLength(style.fontSize, 'px', '14px')};font-weight:${style.fontWeight || '700'}">${content.iconPosition === 'after' ? label + icon : icon + label}</a></div>`;
     }
 
     if (widget.type === 'elementor_image') {
@@ -222,11 +223,11 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_icon') {
-        return `<div class="${align}" style="${boxStyle}"><span class="material-symbols-outlined" style="font-size:${style.size || 48}px;color:${style.textColor || '#9e001f'}">${escapeHtml(content.icon || 'star')}</span></div>`;
+        return `<div class="${align}" style="${boxStyle}"><span class="material-symbols-outlined" style="font-size:${style.size || 48}px;color:${style.textColor || 'rgb(var(--c-primary))'}">${escapeHtml(content.icon || 'star')}</span></div>`;
     }
 
     if (widget.type === 'elementor_icon_box') {
-        return `<div class="${align}" style="${boxStyle};color:${style.textColor || 'inherit'}"><span class="material-symbols-outlined block mb-3" style="font-size:42px;color:${style.iconColor || '#9e001f'}">${escapeHtml(content.icon || 'star')}</span><h3 class="font-bold text-xl mb-2">${escapeHtml(content.title || '')}</h3><p class="text-on-surface-variant">${escapeHtml(content.text || '')}</p></div>`;
+        return `<div class="${align}" style="${boxStyle};color:${style.textColor || 'inherit'}"><span class="material-symbols-outlined block mb-3" style="font-size:42px;color:${style.iconColor || 'rgb(var(--c-primary))'}">${escapeHtml(content.icon || 'star')}</span><h3 class="font-bold text-xl mb-2">${escapeHtml(content.title || '')}</h3><p class="text-on-surface-variant">${escapeHtml(content.text || '')}</p></div>`;
     }
 
     if (widget.type === 'elementor_image_box') {
@@ -234,12 +235,12 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_accordion') {
-        return `<div style="${boxStyle}">${(content.items || []).map((item, index) => `<details class="border border-outline-variant rounded-lg bg-white ${index ? 'mt-2' : ''}" ${index === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 font-bold" style="color:${style.titleColor || '#1b1c1c'}">${escapeHtml(item.title || '')}</summary><div class="px-4 pb-3 text-sm" style="color:${style.textColor || '#5c403f'}">${escapeHtml(item.content || '')}</div></details>`).join('')}</div>`;
+        return `<div style="${boxStyle}">${(content.items || []).map((item, index) => `<details class="border border-outline-variant rounded-lg bg-white ${index ? 'mt-2' : ''}" ${index === 0 ? 'open' : ''}><summary class="cursor-pointer px-4 py-3 font-bold" style="color:${style.titleColor || 'rgb(var(--c-on-surface))'}">${escapeHtml(item.title || '')}</summary><div class="px-4 pb-3 text-sm" style="color:${style.textColor || 'rgb(var(--c-on-surface-variant))'}">${escapeHtml(item.content || '')}</div></details>`).join('')}</div>`;
     }
 
     if (widget.type === 'elementor_tabs') {
         const items = content.items || [];
-        return `<div style="${boxStyle}"><div class="flex flex-wrap gap-2 border-b border-outline-variant">${items.map((item, index) => `<span class="px-4 py-2 font-bold ${index === 0 ? 'text-primary border-b-2 border-primary' : ''}" style="color:${index === 0 ? '' : (style.titleColor || '#1b1c1c')}">${escapeHtml(item.title || '')}</span>`).join('')}</div><div class="pt-4 text-on-surface-variant">${escapeHtml(items[0]?.content || '')}</div></div>`;
+        return `<div style="${boxStyle}"><div class="flex flex-wrap gap-2 border-b border-outline-variant">${items.map((item, index) => `<span class="px-4 py-2 font-bold ${index === 0 ? 'text-primary border-b-2 border-primary' : ''}" style="color:${index === 0 ? '' : (style.titleColor || 'rgb(var(--c-on-surface))')}">${escapeHtml(item.title || '')}</span>`).join('')}</div><div class="pt-4 text-on-surface-variant">${escapeHtml(items[0]?.content || '')}</div></div>`;
     }
 
     if (widget.type === 'elementor_carousel') {
@@ -247,7 +248,7 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_container') {
-        return `<div style="${boxStyle};display:flex;flex-direction:${content.direction || 'column'};gap:${content.gap || 16}px;border:1px dashed #e5bdbb;border-radius:${style.borderRadius || 0}px"><span class="text-xs text-on-surface-variant">Container Elementor (${escapeHtml(content.direction || 'column')})</span></div>`;
+        return `<div style="${boxStyle};display:flex;flex-direction:${content.direction || 'column'};gap:${content.gap || 16}px;border:1px dashed rgb(var(--c-outline-variant));border-radius:${style.borderRadius || 0}px"><span class="text-xs text-on-surface-variant">Container Elementor (${escapeHtml(content.direction || 'column')})</span></div>`;
     }
 
     if (widget.type === 'elementor_form') {
@@ -271,7 +272,7 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_menu') {
-        return `<nav class="flex ${content.layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-${style.align || 'center'}" style="${boxStyle};gap:${style.gap || 24}px;color:${style.textColor || '#1b1c1c'}"><span>Accueil</span><span>Services</span><span>Actualités</span><span>Contact</span></nav>`;
+        return `<nav class="flex ${content.layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'} justify-${style.align || 'center'}" style="${boxStyle};gap:${style.gap || 24}px;color:${style.textColor || 'rgb(var(--c-on-surface))'}"><span>Accueil</span><span>Services</span><span>Actualités</span><span>Contact</span></nav>`;
     }
 
     return `<div class="rounded-xl border border-outline-variant p-4 text-sm text-on-surface-variant">${escapeHtml(WIDGETS[widget.type]?.label || widget.type)}</div>`;
@@ -303,7 +304,7 @@ function renderAboutPreview(widget) {
     const content = widget.content ?? {};
 
     if (widget.type === 'about_hero') {
-        return `<section class="relative h-[420px] overflow-hidden flex items-center"><div class="absolute inset-0 bg-cover bg-center" style="background-image:linear-gradient(rgba(27,28,28,.62),rgba(27,28,28,.38)),url('/images/CAMA_3.3.jfif')"></div><div class="w-full px-6 md:px-16 relative z-10"><div class="text-white space-y-6 max-w-2xl mr-auto"><span class="inline-block bg-black/40 backdrop-blur-md border border-white/25 px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider">${escapeHtml(content.badge || '')}</span><h1 class="font-display-lg text-display-lg leading-tight">${escapeHtml(content.title || '')}</h1><p class="font-body-lg text-body-lg text-white/90 max-w-lg">${escapeHtml(content.text || '')}</p></div></div></section>`;
+        return `<section class="relative h-[420px] overflow-hidden flex items-center"><div class="absolute inset-0 bg-cover bg-center" style="background-image:linear-gradient(rgb(var(--c-on-surface) / .62),rgb(var(--c-on-surface) / .38)),url('/images/CAMA_3.3.jfif')"></div><div class="w-full px-6 md:px-16 relative z-10"><div class="text-white space-y-6 max-w-2xl mr-auto"><span class="inline-block bg-black/40 backdrop-blur-md border border-white/25 px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider">${escapeHtml(content.badge || '')}</span><h1 class="font-display-lg text-display-lg leading-tight">${escapeHtml(content.title || '')}</h1><p class="font-body-lg text-body-lg text-white/90 max-w-lg">${escapeHtml(content.text || '')}</p></div></div></section>`;
     }
 
     if (widget.type === 'about_director') {
@@ -329,7 +330,7 @@ function renderPublicSystemPreview(widget) {
     const content = widget.content ?? {};
 
     if (widget.type === 'resources_hero') {
-        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgba(27,28,28,.82),rgba(27,28,28,.7)),url('/images/CAMA_6.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full uppercase text-sm font-bold"><span class="material-symbols-outlined text-[18px]">${escapeHtml(content.badgeIcon || 'folder_open')}</span>${escapeHtml(content.badge || '')}</span><h1 class="font-headline-lg text-headline-lg mt-6 mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/85 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
+        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgb(var(--c-on-surface) / .82),rgb(var(--c-on-surface) / .7)),url('/images/CAMA_6.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><span class="inline-flex items-center gap-2 bg-white/10 border border-white/20 px-4 py-1.5 rounded-full uppercase text-sm font-bold"><span class="material-symbols-outlined text-[18px]">${escapeHtml(content.badgeIcon || 'folder_open')}</span>${escapeHtml(content.badge || '')}</span><h1 class="font-headline-lg text-headline-lg mt-6 mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/85 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
     }
 
     if (widget.type === 'resources_listing') {
@@ -337,7 +338,7 @@ function renderPublicSystemPreview(widget) {
     }
 
     if (widget.type === 'news_hero') {
-        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgba(27,28,28,.82),rgba(27,28,28,.7)),url('/images/CAMA_3.3.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><h1 class="font-headline-lg text-headline-lg mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/80 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
+        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgb(var(--c-on-surface) / .82),rgb(var(--c-on-surface) / .7)),url('/images/CAMA_3.3.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><h1 class="font-headline-lg text-headline-lg mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/80 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
     }
 
     if (widget.type === 'news_filters') {
@@ -353,7 +354,7 @@ function renderPublicSystemPreview(widget) {
     }
 
     if (widget.type === 'contact_hero') {
-        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgba(27,28,28,.82),rgba(27,28,28,.7)),url('/images/CAMA_1.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><p class="text-white/70 text-xs font-bold uppercase tracking-widest mb-3">${escapeHtml(content.eyebrow || '')}</p><h1 class="font-headline-lg text-headline-lg mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/80 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
+        return `<section class="relative py-20 text-white bg-cover bg-center" style="background-image:linear-gradient(rgb(var(--c-on-surface) / .82),rgb(var(--c-on-surface) / .7)),url('/images/CAMA_1.jfif')"><div class="max-w-container-max-width mx-auto px-margin-desktop text-center"><p class="text-white/70 text-xs font-bold uppercase tracking-widest mb-3">${escapeHtml(content.eyebrow || '')}</p><h1 class="font-headline-lg text-headline-lg mb-4">${escapeHtml(content.title || '')}</h1><p class="text-white/80 max-w-2xl mx-auto">${escapeHtml(content.text || '')}</p></div></section>`;
     }
 
     if (widget.type === 'contact_form') {
@@ -371,7 +372,7 @@ function renderServicesPreview(widget) {
     const content = widget.content ?? {};
 
     if (widget.type === 'services_hero') {
-        return `<section class="relative h-[420px] overflow-hidden flex items-center rounded-none"><div class="absolute inset-0 bg-cover bg-center" style="background-image:linear-gradient(rgba(27,28,28,.72),rgba(27,28,28,.5)),url('/images/CAMA_8.jfif')"></div><div class="w-full px-6 md:px-16 relative z-10"><div class="text-white space-y-6 max-w-2xl mr-auto"><span class="inline-block bg-black/40 backdrop-blur-md border border-white/25 text-white px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider shadow-sm">${escapeHtml(content.badge || '')}</span><h1 class="font-headline-lg text-headline-lg md:text-[40px] md:leading-[1.15] leading-tight">${escapeHtml(content.title || '')}</h1><p class="font-body-lg text-body-lg text-white/90 max-w-lg">${escapeHtml(content.text || '')}</p><div class="flex flex-wrap gap-4 pt-2"><a class="bg-primary-container text-on-primary-container px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md flex items-center gap-2 shadow-lg">${escapeHtml(content.primaryLabel || 'Voir le détail')} <span class="material-symbols-outlined">arrow_downward</span></a><a class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md">${escapeHtml(content.secondaryLabel || 'Foire aux questions')}</a></div></div></div></section>`;
+        return `<section class="relative h-[420px] overflow-hidden flex items-center rounded-none"><div class="absolute inset-0 bg-cover bg-center" style="background-image:linear-gradient(rgb(var(--c-on-surface) / .72),rgb(var(--c-on-surface) / .5)),url('/images/CAMA_8.jfif')"></div><div class="w-full px-6 md:px-16 relative z-10"><div class="text-white space-y-6 max-w-2xl mr-auto"><span class="inline-block bg-black/40 backdrop-blur-md border border-white/25 text-white px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider shadow-sm">${escapeHtml(content.badge || '')}</span><h1 class="font-headline-lg text-headline-lg md:text-[40px] md:leading-[1.15] leading-tight">${escapeHtml(content.title || '')}</h1><p class="font-body-lg text-body-lg text-white/90 max-w-lg">${escapeHtml(content.text || '')}</p><div class="flex flex-wrap gap-4 pt-2"><a class="bg-primary-container text-on-primary-container px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md flex items-center gap-2 shadow-lg">${escapeHtml(content.primaryLabel || 'Voir le détail')} <span class="material-symbols-outlined">arrow_downward</span></a><a class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md">${escapeHtml(content.secondaryLabel || 'Foire aux questions')}</a></div></div></div></section>`;
     }
 
     if (widget.type === 'services_stats') {
@@ -409,10 +410,18 @@ function sectionHtml(section) {
     return `<section style="${styleAttr(sectionStyle(section))}"><div class="${boxed ? 'max-w-[1100px] mx-auto' : ''} flex flex-wrap gap-6">${section.columns.map((column) => column.settings?.hidden ? '' : `<div style="flex:0 0 ${column.width}%;max-width:${column.width}%;${styleAttr(styleBox(column.settings))}">${column.widgets.map(renderWidgetHtml).join('')}</div>`).join('')}</div></section>`;
 }
 
+// L'export est une page autonome : on y recopie les couleurs du thème en cours.
+function exportThemeVariables() {
+    const computed = typeof window !== 'undefined' ? getComputedStyle(document.documentElement) : null;
+    return Object.entries(DEFAULT_TOKENS)
+        .map(([name, hex]) => `--c-${name}:${computed?.getPropertyValue(`--c-${name}`).trim() || hexToChannels(hex)}`)
+        .join(';');
+}
+
 function fullHtml(sourceSections = []) {
     const header = `<header class="sticky top-0 z-20 bg-white border-b border-outline-variant"><div class="max-w-[1200px] mx-auto px-8 h-16 flex items-center justify-between"><div class="flex items-center gap-3"><img src="/images/logo_cama.png" class="h-10 w-10 object-contain"/><strong>CAMA</strong></div><nav class="hidden md:flex gap-6 text-sm font-semibold"><span>Accueil</span><span>À propos</span><span>Services</span><span>Ressources</span><span>Actualités</span><span>Contact</span></nav></div></header>`;
     const footer = `<footer class="bg-on-background text-white px-8 py-10"><div class="max-w-[1200px] mx-auto text-sm opacity-80">© CAMA - Caisse d'Assurance Maladie des Armées</div></footer>`;
-    return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/><style>body{font-family:Inter}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style></head><body class="bg-background text-on-background">${header}${sourceSections.map(sectionHtml).join('')}${footer}</body></html>`;
+    return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/><style>:root{${exportThemeVariables()}}body{font-family:Inter}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style></head><body class="bg-background text-on-background">${header}${sourceSections.map(sectionHtml).join('')}${footer}</body></html>`;
 }
 
 function styleAttr(styles) {

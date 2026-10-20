@@ -1,5 +1,20 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import forms from '@tailwindcss/forms';
+import plugin from 'tailwindcss/plugin';
+import { DEFAULT_TOKENS, hexToChannels } from './resources/js/Utils/siteTheme.js';
+
+const themeColors = Object.fromEntries(
+    Object.keys(DEFAULT_TOKENS).map((name) => [name, `rgb(var(--c-${name}) / <alpha-value>)`]),
+);
+
+// Valeurs par défaut des variables ; un thème personnalisé les surcharge dans app.blade.php.
+const themeDefaults = plugin(({ addBase }) => {
+    addBase({
+        ':root': Object.fromEntries(
+            Object.entries(DEFAULT_TOKENS).map(([name, hex]) => [`--c-${name}`, hexToChannels(hex)]),
+        ),
+    });
+});
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -44,55 +59,9 @@ export default {
                 'stack-md': '16px',
                 'stack-lg': '32px',
             },
-            colors: {
-                'primary-container': '#c8102e',
-                'on-background': '#1b1c1c',
-                'primary-fixed': '#ffdad8',
-                error: '#ba1a1a',
-                'inverse-primary': '#ffb3b1',
-                'surface-container-low': '#f6f3f2',
-                primary: '#9e001f',
-                'on-primary-fixed-variant': '#92001c',
-                'on-secondary-fixed': '#002107',
-                'surface-container': '#f0eded',
-                'secondary-container': '#7ff98d',
-                'on-tertiary': '#ffffff',
-                'error-container': '#ffdad6',
-                'secondary-fixed-dim': '#65df76',
-                'tertiary-fixed-dim': '#f1c100',
-                'secondary-fixed': '#81fc90',
-                'on-tertiary-fixed': '#241a00',
-                tertiary: '#745b00',
-                'inverse-surface': '#303030',
-                'surface-bright': '#fbf9f8',
-                surface: '#fbf9f8',
-                secondary: '#006e27',
-                'on-tertiary-container': '#4f3d00',
-                'on-error': '#ffffff',
-                'tertiary-fixed': '#ffe08a',
-                'on-error-container': '#93000a',
-                'on-primary-fixed': '#410007',
-                'on-secondary-container': '#007329',
-                'surface-dim': '#dcd9d9',
-                'on-primary-container': '#ffdad8',
-                'on-surface-variant': '#5c403f',
-                outline: '#906f6e',
-                'primary-fixed-dim': '#ffb3b1',
-                'outline-variant': '#e5bdbb',
-                background: '#fbf9f8',
-                'on-surface': '#1b1c1c',
-                'surface-variant': '#e4e2e1',
-                'surface-container-highest': '#e4e2e1',
-                'on-tertiary-fixed-variant': '#574400',
-                'tertiary-container': '#d0a600',
-                'on-primary': '#ffffff',
-                'surface-tint': '#bf0229',
-                'on-secondary': '#ffffff',
-                'surface-container-high': '#eae7e7',
-                'on-secondary-fixed-variant': '#00531c',
-                'inverse-on-surface': '#f3f0f0',
-                'surface-container-lowest': '#ffffff',
-            },
+            // Couleurs pilotées par variables CSS (cf. resources/js/Utils/siteTheme.js) :
+            // modifiables depuis CMS > Identité visuelle sans recompiler le CSS.
+            colors: themeColors,
             borderRadius: {
                 DEFAULT: '0.125rem',
                 lg: '0.25rem',
@@ -101,5 +70,5 @@ export default {
             },
         },
     },
-    plugins: [forms],
+    plugins: [forms, themeDefaults],
 };

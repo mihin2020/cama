@@ -6,13 +6,25 @@ class CmsRichTextSanitizer
 {
     private const ALLOWED_TAGS = ['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'span', 'font'];
 
-    public static function sanitize(?string $html): string
+    /** Corps des actualités : mise en forme d'article (titres, listes, citations, images). */
+    public const ARTICLE_TAGS = [
+        'p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'span',
+        'h2', 'h3', 'h4', 'ul', 'ol', 'li', 'blockquote', 'img', 'figure', 'figcaption', 'hr',
+    ];
+
+    /**
+     * Ne garde que les balises autorisées et retire tout attribut dangereux
+     * (scripts, gestionnaires on*, liens javascript:, styles arbitraires).
+     *
+     * @param  list<string>  $allowedTags
+     */
+    public static function sanitize(?string $html, array $allowedTags = self::ALLOWED_TAGS): string
     {
         if ($html === null || trim($html) === '') {
             return '';
         }
 
-        $html = strip_tags($html, self::ALLOWED_TAGS);
+        $html = strip_tags($html, $allowedTags);
 
         $document = new \DOMDocument('1.0', 'UTF-8');
         libxml_use_internal_errors(true);
@@ -68,6 +80,22 @@ class CmsRichTextSanitizer
                     $element->removeAttribute($attribute->name);
                 }
             }
+        } elseif ($element->tagName === 'img') {
+            $src = trim($element->getAttribute('src'));
+            $alt = $element->getAttribute('alt');
+
+            if (! preg_match('#^(https?://|/)[^\s"\'<>]*$#i', $src)) {
+                $element->parentNode?->removeChild($element);
+
+                return;
+            }
+
+            foreach (iterator_to_array($element->attributes) as $attribute) {
+                $element->removeAttribute($attribute->name);
+            }
+            $element->setAttribute('src', $src);
+            $element->setAttribute('alt', $alt);
+            $element->setAttribute('loading', 'lazy');
         } elseif (in_array($element->tagName, ['span', 'font'], true)) {
             $style = $element->getAttribute('style');
             $size = $element->getAttribute('size');

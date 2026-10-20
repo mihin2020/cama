@@ -313,8 +313,7 @@ class CmsSeeder extends Seeder
             ['title' => 'Ressources', 'slug' => 'ressources', 'status' => 'published', 'subtitle' => 'Formulaires, guides, attestations et textes de référence.'],
             ['title' => 'Actualités', 'slug' => 'actualites', 'status' => 'published', 'subtitle' => 'Suivez les dernières évolutions de la CAMA.'],
             ['title' => 'Contact', 'slug' => 'contact', 'status' => 'published', 'subtitle' => 'Nos équipes vous répondent du lundi au vendredi.'],
-            ['title' => 'Mentions légales', 'slug' => 'mention_legales', 'status' => 'draft', 'subtitle' => 'Informations légales du site CAMA.'],
-            ['title' => 'Accessibilité', 'slug' => 'accessibilite', 'status' => 'published', 'subtitle' => 'Déclaration d\'accessibilité du site CAMA.'],
+            // Mentions légales : module dédié du studio de contenu (plus une page du page builder).
         ];
 
         foreach ($pages as $page) {

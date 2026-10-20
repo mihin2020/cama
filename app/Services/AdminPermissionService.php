@@ -12,6 +12,18 @@ class AdminPermissionService
         return $admin->effective_permissions;
     }
 
+    /**
+     * Toutes les permissions dont le compte dispose réellement, raccourcis développés
+     * (« Accès complet au studio » → chaque permission du studio). Transmis tel quel à l'interface :
+     * une seule source de vérité.
+     *
+     * @return list<string>
+     */
+    public function expanded(AdminUser $admin): array
+    {
+        return array_values(array_filter(AdminPermissions::allKeys(), fn (string $key) => $this->allows($admin, $key)));
+    }
+
     public function allows(?AdminUser $admin, string $permission): bool
     {
         if (! $admin) {
@@ -24,7 +36,7 @@ class AdminPermissionService
             return true;
         }
 
-        if (str_starts_with($permission, 'cms.') && in_array('cms.manage', $permissions, true)) {
+        if (AdminPermissions::coveredByCmsManage($permission) && in_array('cms.manage', $permissions, true)) {
             return true;
         }
 

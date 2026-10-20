@@ -1,12 +1,21 @@
 <script setup>
 import AssureLayout from '@/Layouts/AssureLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import { NOTIF_ICONS } from '@/Utils/camaStatus';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
     notifications: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 10, total: 0, perPageOptions: [10, 20, 50] }) },
     unreadCount: Number,
+});
+
+const listTop = ref(null);
+const { goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'assure.notifications',
+    anchor: listTop,
 });
 
 const notifIconClass = (type) => {
@@ -14,17 +23,6 @@ const notifIconClass = (type) => {
     const map = { secondary: 'bg-secondary/10 text-secondary', primary: 'bg-primary/10 text-primary', tertiary: 'bg-tertiary/10 text-tertiary', error: 'bg-error/10 text-error' };
     return map[color] ?? map.primary;
 };
-
-const PAGE_SIZE = 10;
-const page = ref(1);
-const totalPages = computed(() => Math.max(1, Math.ceil((props.notifications?.length ?? 0) / PAGE_SIZE)));
-const pagedNotifications = computed(() => (props.notifications ?? []).slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE));
-watch(() => props.notifications, () => { if (page.value > totalPages.value) page.value = totalPages.value; });
-
-function goToPage(n) {
-    if (n < 1 || n > totalPages.value) return;
-    page.value = n;
-}
 
 function markAllRead() {
     router.post(route('assure.notifications.read-all'));
@@ -40,9 +38,9 @@ function markAllRead() {
             <button v-if="unreadCount > 0" type="button" class="text-primary text-sm font-bold hover:underline" @click="markAllRead">Tout marquer comme lu</button>
         </div>
 
-        <div class="bg-white rounded-xl border border-outline-variant divide-y divide-outline-variant overflow-hidden">
+        <div ref="listTop" class="bg-white rounded-xl border border-outline-variant divide-y divide-outline-variant overflow-hidden scroll-mt-24">
             <button
-                v-for="n in pagedNotifications"
+                v-for="n in notifications"
                 :key="n.id"
                 type="button"
                 class="w-full text-left flex gap-3 px-4 md:px-5 py-4 hover:bg-surface-container-low transition-colors"
@@ -61,36 +59,6 @@ function markAllRead() {
             <p v-if="!notifications.length" class="p-8 text-center text-on-surface-variant text-sm">Aucune notification.</p>
         </div>
 
-        <div v-if="totalPages > 1" class="flex items-center justify-between gap-3 mt-4">
-            <p class="text-xs text-on-surface-variant">Page {{ page }} / {{ totalPages }} · {{ notifications.length }} notification(s)</p>
-            <div class="flex items-center gap-1">
-                <button
-                    type="button"
-                    class="w-9 h-9 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none"
-                    :disabled="page <= 1"
-                    aria-label="Page précédente"
-                    @click="goToPage(page - 1)"
-                >
-                    <span class="material-symbols-outlined text-[20px]">chevron_left</span>
-                </button>
-                <button
-                    v-for="n in totalPages"
-                    :key="n"
-                    type="button"
-                    class="min-w-9 h-9 px-2 rounded-lg border text-sm font-semibold transition-colors"
-                    :class="n === page ? 'bg-primary text-on-primary border-primary' : 'border-outline-variant text-on-surface-variant hover:bg-surface-container-low'"
-                    @click="goToPage(n)"
-                >{{ n }}</button>
-                <button
-                    type="button"
-                    class="w-9 h-9 rounded-lg border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low disabled:opacity-40 disabled:pointer-events-none"
-                    :disabled="page >= totalPages"
-                    aria-label="Page suivante"
-                    @click="goToPage(page + 1)"
-                >
-                    <span class="material-symbols-outlined text-[20px]">chevron_right</span>
-                </button>
-            </div>
-        </div>
+        <CamaPagination class="mt-2" v-bind="pagination" label="notification(s)" @change="goToPage" @per-page="setPerPage" />
     </AssureLayout>
 </template>

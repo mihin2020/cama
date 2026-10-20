@@ -10,18 +10,27 @@ return [
         'passwords' => env('AUTH_PASSWORD_BROKER', 'assures'),
     ],
 
+    // Back-office : déconnexion après N minutes sans activité, pour les admins qui
+    // ont activé l'option dans leur profil (désactivée par défaut). Hors appareil
+    // mémorisé par « Se souvenir de moi », borné par la durée « remember » ci-dessous.
+    'admin_idle_timeout' => (int) env('ADMIN_IDLE_TIMEOUT_MINUTES', 15),
+
     'guards' => [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        // « remember » = durée de vie (minutes) du cookie « Se souvenir de moi ».
+        // Par défaut Laravel le garde 400 jours : beaucoup trop pour un back-office.
         'assure' => [
             'driver' => 'session',
             'provider' => 'assures',
+            'remember' => (int) env('AUTH_ASSURE_REMEMBER_MINUTES', 60 * 24 * 1),
         ],
         'admin' => [
             'driver' => 'session',
             'provider' => 'admin_users',
+            'remember' => (int) env('AUTH_ADMIN_REMEMBER_MINUTES', 60 * 24 * 3),
         ],
     ],
 

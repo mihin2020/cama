@@ -217,4 +217,18 @@ class ParametresController extends Controller
 
         return back()->with('success', "Pièces d'inscription enregistrées.");
     }
+
+    public function updateInscriptionFields(Request $request, PlatformSettingsService $settings): RedirectResponse
+    {
+        $data = $request->validate([
+            'fields' => ['present', 'array'],
+            'fields.*.key' => ['required', 'string', 'max:50'],
+            'fields.*.actif' => ['boolean'],
+            'fields.*.required' => ['boolean'],
+        ]);
+
+        $settings->updateInscriptionFields($data['fields']);
+
+        return back()->with('success', "Champs du formulaire d'inscription enregistrés.");
+    }
 }

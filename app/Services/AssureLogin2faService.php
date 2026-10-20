@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Mail\AssureLogin2faCodeMail;
 use App\Models\Assure;
+use App\Support\DevCodes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -37,7 +38,7 @@ class AssureLogin2faService
 
         $this->dispatchLoginCodeMail($assure, $code);
 
-        if (config('mail.default') === 'log') {
+        if (DevCodes::visible()) {
             Log::info("CAMA 2FA (mailer log) — code pour {$assure->email} : {$code}");
 
             return $code;

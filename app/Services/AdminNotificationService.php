@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AdminNotification;
 use App\Models\AdminUser;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class AdminNotificationService
 {
@@ -13,16 +14,36 @@ class AdminNotificationService
             ->where('admin_user_id', $admin->id)
             ->orderByDesc('created_at')
             ->get()
-            ->map(fn (AdminNotification $n) => [
-                'id' => $n->id,
-                'type' => $n->type,
-                'titre' => $n->titre,
-                'contenu' => $n->contenu,
-                'lien' => $n->lien,
-                'lu' => $n->lu,
-                'date' => $n->created_at->format('d/m/Y H:i'),
-            ])
+            ->map(fn (AdminNotification $n) => $this->format($n))
             ->all();
+    }
+
+    /** Fil de notifications paginé (page Notifications). */
+    public function paginateFor(AdminUser $admin, int $perPage): LengthAwarePaginator
+    {
+        return AdminNotification::query()
+            ->where('admin_user_id', $admin->id)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (AdminNotification $n) => $this->format($n));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function format(AdminNotification $n): array
+    {
+        return [
+            'id' => $n->id,
+            'type' => $n->type,
+            'titre' => $n->titre,
+            'contenu' => $n->contenu,
+            'lien' => $n->lien,
+            'lu' => $n->lu,
+            'date' => $n->created_at->format('d/m/Y H:i'),
+        ];
     }
 
     public function unreadCount(AdminUser $admin): int

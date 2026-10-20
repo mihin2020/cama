@@ -3,15 +3,21 @@
 namespace App\Http\Controllers\Admin\Cms;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Public\ArticleController;
+use App\Http\Controllers\Public\ContactController;
+use App\Http\Controllers\Public\InstitutionController;
+use App\Http\Controllers\Public\ResourceController;
 use App\Models\CmsFaq;
-use App\Models\CmsPageVersion;
 use App\Models\CmsPage;
+use App\Models\CmsPageVersion;
 use App\Models\CmsPartner;
 use App\Services\CmsMediaService;
 use App\Services\CmsPageService;
 use App\Services\CmsPageVersionService;
 use App\Services\CmsPermissionService;
 use App\Services\PublicSiteService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -20,13 +26,19 @@ use Inertia\Response;
 
 class PageController extends Controller
 {
-    public function index(Request $request, CmsPageService $pages): Response
+    public function index(Request $request, CmsPageService $pages): Response|RedirectResponse
     {
         $status = $request->string('status')->toString();
         $query = $request->string('q')->toString();
+        $paginator = $pages->paginateForAdmin($query ?: null, $status ?: null, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.cms.pages', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Pages/Index', [
-            'items' => $pages->listForAdmin($query ?: null, $status ?: null),
+            'items' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator),
             'filters' => [
                 'q' => $query,
                 'status' => $status,
@@ -58,6 +70,38 @@ class PageController extends Controller
             'mediaItems' => $media->list(type: 'images'),
             'versions' => $versions->list($page),
             'cmsPermissions' => app(CmsPermissionService::class)->forAdmin($request->user('admin')),
+        ]);
+    }
+
+    /**
+     * Rendu réel d'une page (mêmes composants Vue, CSS et animations que le site public),
+     * affiché dans l'iframe du canevas et de l'aperçu. Les sections en cours d'édition
+     * sont ensuite poussées par l'éditeur via postMessage (cf. PageBuilderBridge.vue).
+     * Fonctionne aussi pour les brouillons et les pages créées par les utilisateurs.
+     */
+    public function preview(Request $request, CmsPage $page, PublicSiteService $site): Response
+    {
+        $response = match ($page->slug) {
+            'accueil' => app()->call([app(HomeController::class), '__invoke']),
+            'apropos' => app()->call([app(InstitutionController::class), 'about']),
+            'services' => app()->call([app(InstitutionController::class), 'services']),
+            'ressources' => app()->call([app(ResourceController::class), 'index']),
+            'actualites' => app()->call([app(ArticleController::class), 'index']),
+            'contact' => app()->call([app(ContactController::class), 'index']),
+            default => Inertia::render('Public/CmsPage', [
+                'cmsPage' => [
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                    'sections' => $page->sections_json ?? [],
+                    'updatedAt' => $page->updated_at?->format('d/m/Y'),
+                ],
+                'articles' => $site->publishedArticles(12),
+            ]),
+        };
+
+        return $response->with('builderPreview', [
+            'mode' => $request->query('mode') === 'edit' ? 'edit' : 'preview',
+            'pageId' => $page->id,
         ]);
     }
 

@@ -8,6 +8,7 @@ use App\Models\CmsNewsletterCampaign;
 use App\Models\CmsNewsletterSubscriber;
 use App\Services\CmsNewsletterCampaignService;
 use App\Services\PublicNewsletterService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,16 +17,22 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class NewsletterController extends Controller
 {
-    public function index(Request $request, PublicNewsletterService $newsletter, CmsNewsletterCampaignService $campaigns): Response
+    public function index(Request $request, PublicNewsletterService $newsletter, CmsNewsletterCampaignService $campaigns): Response|RedirectResponse
     {
         $tab = $request->string('tab')->toString() ?: 'overview';
         $status = $request->string('status')->toString();
         $segment = $request->string('segment')->toString();
         $query = $request->string('q')->toString();
+        $subscribers = $newsletter->paginateForAdmin($status ?: null, $query ?: null, $segment ?: null, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($subscribers)) {
+            return redirect()->route('admin.cms.newsletter', [...$request->query(), 'page' => $subscribers->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Newsletter/Index', [
             'tab' => $tab,
-            'items' => $newsletter->listForAdmin($status ?: null, $query ?: null, $segment ?: null),
+            'items' => $subscribers->items(),
+            'pagination' => Pagination::meta($subscribers),
             'batches' => $newsletter->listBatches(),
             'campaigns' => $campaigns->listCampaigns(),
             'templates' => $campaigns->listTemplates(),

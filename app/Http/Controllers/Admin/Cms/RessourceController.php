@@ -8,20 +8,26 @@ use App\Models\CmsResourceCategory;
 use App\Services\CmsDocumentUploadService;
 use App\Services\CmsResourceCategoryService;
 use App\Services\CmsResourceService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class RessourceController extends Controller
 {
-    public function index(Request $request, CmsResourceService $resources, CmsResourceCategoryService $categories): Response
+    public function index(Request $request, CmsResourceService $resources, CmsResourceCategoryService $categories): Response|RedirectResponse
     {
         $categoryId = $request->integer('category') ?: null;
+        $paginator = $resources->paginateForAdmin($categoryId, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.cms.ressources', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Ressources/Index', [
-            'items' => $resources->listForAdmin($categoryId),
+            'items' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator),
             'categoryList' => $categories->listForAdmin(),
             'categoryOptions' => $categories->options(),
             'activeCategoryId' => $categoryId,

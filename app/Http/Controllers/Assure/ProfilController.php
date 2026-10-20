@@ -1,43 +1,25 @@
 <?php
 
-
-
 namespace App\Http\Controllers\Assure;
-
-
 
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
 use App\Services\AssureDashboardService;
 use App\Services\PlatformSettingsService;
-
 use Illuminate\Http\RedirectResponse;
-
 use Illuminate\Http\Request;
-
 use Illuminate\Support\Facades\Hash;
-
 use Illuminate\Validation\Rules\Password;
-
 use Illuminate\Validation\ValidationException;
-
 use Inertia\Inertia;
-
 use Inertia\Response;
 
-
-
 class ProfilController extends Controller
-
 {
-
     public function show(AssureDashboardService $dashboard): Response
-
     {
 
         $assure = auth('assure')->user();
-
-
 
         return Inertia::render('Assure/Profil/Show', [
 
@@ -91,15 +73,10 @@ class ProfilController extends Controller
         return back()->with('success', 'Situation militaire mise à jour.');
     }
 
-
-
     public function update(Request $request): RedirectResponse
-
     {
 
         $assure = auth('assure')->user();
-
-
 
         $data = $request->validate([
 
@@ -115,15 +92,10 @@ class ProfilController extends Controller
 
         ]);
 
-
-
         if ($data['email'] !== $assure->email && Assure::query()->where('email', $data['email'])->where('id', '!=', $assure->id)->exists()) {
 
             throw ValidationException::withMessages(['email' => 'Cette adresse e-mail est déjà utilisée.']);
-
         }
-
-
 
         $assure->update([
 
@@ -139,21 +111,14 @@ class ProfilController extends Controller
 
         ]);
 
-
-
         return back()->with('success', 'Coordonnées mises à jour.');
 
     }
 
-
-
     public function updatePassword(Request $request): RedirectResponse
-
     {
 
         $assure = auth('assure')->user();
-
-
 
         $data = $request->validate([
 
@@ -163,33 +128,21 @@ class ProfilController extends Controller
 
         ]);
 
-
-
         if (! Hash::check($data['current_password'], $assure->password)) {
 
             throw ValidationException::withMessages(['current_password' => 'Mot de passe actuel incorrect.']);
-
         }
 
-
-
         $assure->update(['password' => $data['password']]);
-
-
 
         return back()->with('success', 'Mot de passe mis à jour.');
 
     }
 
-
-
     public function toggle2fa(Request $request): RedirectResponse
-
     {
 
         $assure = auth('assure')->user();
-
-
 
         $data = $request->validate([
 
@@ -197,20 +150,13 @@ class ProfilController extends Controller
 
         ]);
 
-
-
         $assure->update(['deux_fa_active' => $data['active']]);
-
-
 
         return back()->with('success', $data['active'] ? '2FA activée.' : '2FA désactivée.');
 
     }
 
-
-
     private function formatProfil($assure): array
-
     {
 
         return [
@@ -275,10 +221,7 @@ class ProfilController extends Controller
 
     }
 
-
-
     private function securityLog(): array
-
     {
 
         return [
@@ -292,7 +235,4 @@ class ProfilController extends Controller
         ];
 
     }
-
 }
-
-

@@ -2,15 +2,15 @@
 // Extrait de Index.vue pour alléger le composant.
 
 export const PALETTE = {
-    primary: '#9e001f',
-    secondary: '#006e27',
-    tertiary: '#745b00',
-    'surface-container-low': '#f6f3f2',
-    'surface-container': '#f0eded',
-    'surface-container-high': '#eae7e7',
-    'outline-variant': '#e5bdbb',
-    'on-surface': '#1b1c1c',
-    'on-surface-variant': '#5c403f',
+    primary: 'rgb(var(--c-primary))',
+    secondary: 'rgb(var(--c-secondary))',
+    tertiary: 'rgb(var(--c-tertiary))',
+    'surface-container-low': 'rgb(var(--c-surface-container-low))',
+    'surface-container': 'rgb(var(--c-surface-container))',
+    'surface-container-high': 'rgb(var(--c-surface-container-high))',
+    'outline-variant': 'rgb(var(--c-outline-variant))',
+    'on-surface': 'rgb(var(--c-on-surface))',
+    'on-surface-variant': 'rgb(var(--c-on-surface-variant))',
     white: '#ffffff',
     transparent: 'transparent',
 };
@@ -383,7 +383,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_text_editor',
             content: { html: '<p>Ajoutez votre texte ici.</p>' },
-            style: { textColor: '#1b1c1c', align: '', fontFamily: 'Inter', fontSize: 16, fontWeight: '400', lineHeight: 1.5 },
+            style: { textColor: 'rgb(var(--c-on-surface))', align: '', fontFamily: 'Inter', fontSize: 16, fontWeight: '400', lineHeight: 1.5 },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -394,7 +394,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_button',
             content: { text: 'Cliquez ici', link: { url: '#', is_external: '', nofollow: '', custom_attributes: '' }, icon: '', iconPosition: 'before' },
-            style: { textColor: '#ffffff', bgColor: '#9e001f', align: '', fontFamily: 'Inter', fontSize: 14, fontWeight: '700', borderRadius: 8, padding: { t: 12, r: 24, b: 12, l: 24 } },
+            style: { textColor: '#ffffff', bgColor: 'rgb(var(--c-primary))', align: '', fontFamily: 'Inter', fontSize: 14, fontWeight: '700', borderRadius: 8, padding: { t: 12, r: 24, b: 12, l: 24 } },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -427,7 +427,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_icon',
             content: { icon: 'star', link: { url: '', is_external: '', nofollow: '', custom_attributes: '' } },
-            style: { textColor: '#9e001f', size: 48, align: 'center' },
+            style: { textColor: 'rgb(var(--c-primary))', size: 48, align: 'center' },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -438,7 +438,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_icon_box',
             content: { icon: 'health_and_safety', title: 'Titre', text: 'Description du bloc.', link: { url: '', is_external: '', nofollow: '', custom_attributes: '' } },
-            style: { iconColor: '#9e001f', textColor: '#1b1c1c', align: 'center', fontFamily: 'Inter', fontSize: 16 },
+            style: { iconColor: 'rgb(var(--c-primary))', textColor: 'rgb(var(--c-on-surface))', align: 'center', fontFamily: 'Inter', fontSize: 16 },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -460,7 +460,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_accordion',
             content: { items: [{ title: 'Élément 1', content: 'Contenu de l’élément 1.' }, { title: 'Élément 2', content: 'Contenu de l’élément 2.' }] },
-            style: { titleColor: '#1b1c1c', textColor: '#5c403f', fontFamily: 'Inter', fontSize: 16 },
+            style: { titleColor: 'rgb(var(--c-on-surface))', textColor: 'rgb(var(--c-on-surface-variant))', fontFamily: 'Inter', fontSize: 16 },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -471,7 +471,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_tabs',
             content: { items: [{ title: 'Onglet 1', content: 'Contenu onglet 1.' }, { title: 'Onglet 2', content: 'Contenu onglet 2.' }] },
-            style: { titleColor: '#1b1c1c', textColor: '#5c403f', fontFamily: 'Inter', fontSize: 16 },
+            style: { titleColor: 'rgb(var(--c-on-surface))', textColor: 'rgb(var(--c-on-surface-variant))', fontFamily: 'Inter', fontSize: 16 },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -504,7 +504,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_form',
             content: { title: 'Formulaire', fields: [{ label: 'Nom', type: 'text' }, { label: 'Email', type: 'email' }], button: 'Envoyer' },
-            style: { bgColor: '', textColor: '#1b1c1c', borderRadius: 8 },
+            style: { bgColor: '', textColor: 'rgb(var(--c-on-surface))', borderRadius: 8 },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -537,7 +537,7 @@ export const WIDGETS = {
         defaults: () => ({
             type: 'elementor_menu',
             content: { source: 'public_menu', layout: 'horizontal' },
-            style: { align: 'center', gap: 24, textColor: '#1b1c1c' },
+            style: { align: 'center', gap: 24, textColor: 'rgb(var(--c-on-surface))' },
             advanced: defaultElementorAdvanced(),
         }),
     },
@@ -784,28 +784,23 @@ export const WIDGETS = {
             style: {},
         }),
     },
-    legal_content: {
-        label: 'Contenu légal',
+    // Mentions légales : contenu structuré (cf. CmsPageService::LEGAL_PAGE_DEFAULTS).
+    // Adresse, téléphones et e-mails sont repris automatiquement du module « Pied de page ».
+    legal_page: {
+        label: 'Mentions légales',
         icon: 'gavel',
         category: 'Mentions légales',
         page: 'mention_legales',
         defaults: () => ({
-            type: 'html',
+            type: 'legal_page',
             content: {
-                html: '<section class="bg-primary-container text-white p-12 rounded-xl mb-8"><h1 class="font-display-lg text-display-lg mb-4">Informations Légales & Confidentialité</h1><p class="font-body-lg text-body-lg max-w-2xl opacity-90">Engagement de la CAMA pour la transparence, la sécurité et le respect de la vie privée.</p></section><article class="bg-white p-stack-lg rounded-xl border border-outline-variant"><h2 class="font-headline-lg text-headline-lg mb-4">Politique de Protection des Données</h2><p class="text-on-surface-variant">Conformité à la loi burkinabè et secret médical.</p></article><article class="bg-white p-stack-lg rounded-xl border border-outline-variant mt-4"><h2 class="font-headline-lg text-headline-lg mb-4">Droits des assurés</h2><p class="text-on-surface-variant">Accès, rectification et opposition via le DPO.</p></article>',
-            },
-            style: {},
-        }),
-    },
-    accessibility_content: {
-        label: 'Contenu accessibilité',
-        icon: 'accessibility_new',
-        category: 'Accessibilité',
-        page: 'accessibilite',
-        defaults: () => ({
-            type: 'html',
-            content: {
-                html: '<section class="bg-primary-container text-white p-8 md:p-10 rounded-xl mb-8"><h1 class="font-headline-lg text-2xl md:text-headline-lg mb-3">Déclaration d’accessibilité</h1><p class="text-white/90 max-w-3xl">La CAMA s’engage à rendre son site internet accessible conformément aux référentiels WCAG 2.1 niveau AA.</p></section><article class="bg-white p-6 rounded-xl border border-outline-variant"><h2 class="font-bold text-lg mb-3">Signaler un problème d’accessibilité</h2><p class="text-sm text-on-surface-variant">Contactez accessibilite@cama.bf.</p></article>',
+                title: 'Informations légales & confidentialité',
+                intro: "Engagement de la Caisse d'Assurance Maladie des Armées pour la transparence, la sécurité et le respect de la vie privée des forces armées et de leurs familles.",
+                articles: [
+                    { anchor: 'rgpd', icon: 'security', title: 'Protection des données personnelles', body: "La CAMA s'engage à ce que la collecte et le traitement de vos données soient conformes à la Loi n°001-2021/AN du 30 mars 2021 portant protection des données à caractère personnel au Burkina Faso." },
+                    { anchor: 'droits', icon: 'assignment_ind', title: "Droits d'accès et de rectification", body: "Chaque assuré dispose des droits suivants :\n- accès ;\n- rectification ;\n- opposition." },
+                    { anchor: 'cookies', icon: 'cookie', title: 'Cookies', body: "Ce site n'utilise que des cookies techniques, indispensables au fonctionnement de la session et à la sécurité des espaces connectés." },
+                ],
             },
             style: {},
         }),
@@ -906,8 +901,7 @@ export const SYSTEM_PAGE_WIDGETS = {
     ressources: ['resources_hero', 'resources_listing'],
     actualites: ['news_hero', 'news_filters', 'news_listing', 'news_newsletter'],
     contact: ['contact_hero', 'contact_form', 'contact_map'],
-    mention_legales: ['legal_content'],
-    accessibilite: ['accessibility_content'],
+    mention_legales: ['legal_page'],
 };
 
 // Presets d'appareils pour l'aperçu responsive (largeurs/hauteurs réelles).

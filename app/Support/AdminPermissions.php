@@ -35,8 +35,10 @@ class AdminPermissions
             [
                 'group' => 'Dossiers',
                 'items' => [
-                    ['key' => 'dossiers.view', 'label' => 'Consulter les dossiers'],
+                    ['key' => 'dossiers.view', 'label' => 'Consulter les dossiers qui lui sont affectés'],
+                    ['key' => 'dossiers.view_all', 'label' => 'Consulter tous les dossiers (pas seulement les siens)'],
                     ['key' => 'dossiers.process', 'label' => 'Traiter / valider / refuser les dossiers'],
+                    ['key' => 'dossiers.supervise', 'label' => 'Valider en second niveau (supervision)'],
                     ['key' => 'dossiers.assign', 'label' => 'Affecter les dossiers aux gestionnaires'],
                 ],
             ],
@@ -57,7 +59,7 @@ class AdminPermissions
             [
                 'group' => 'Exports',
                 'items' => [
-                    ['key' => 'exports.export', 'label' => 'Exporter membres, dossiers et PDF'],
+                    ['key' => 'exports.export', 'label' => 'Exporter des données (Excel, CSV, SQL) et fiches PDF'],
                 ],
             ],
             [
@@ -72,6 +74,8 @@ class AdminPermissions
                     ['key' => 'cms.manage', 'label' => 'Accès complet au studio de contenu'],
                     ['key' => 'cms.dashboard', 'label' => 'Tableau de bord CMS'],
                     ['key' => 'cms.pages', 'label' => 'Pages et page builder'],
+                    ['key' => 'cms.publish', 'label' => 'Publier les pages et gérer leurs versions'],
+                    ['key' => 'cms.html', 'label' => 'Insérer du code HTML libre dans les pages (profil technique)'],
                     ['key' => 'cms.media', 'label' => 'Médiathèque'],
                     ['key' => 'cms.articles', 'label' => 'Actualités'],
                     ['key' => 'cms.faq', 'label' => 'FAQ'],
@@ -80,7 +84,8 @@ class AdminPermissions
                     ['key' => 'cms.ressources', 'label' => 'Ressources documentaires'],
                     ['key' => 'cms.partenaires', 'label' => 'Partenaires'],
                     ['key' => 'cms.menus', 'label' => 'Menus de navigation'],
-                    ['key' => 'cms.footer', 'label' => 'Pied de page'],
+                    ['key' => 'cms.footer', 'label' => 'Identité visuelle (logo, couleurs) et pied de page'],
+                    ['key' => 'cms.legal', 'label' => 'Mentions légales et confidentialité'],
                     ['key' => 'cms.contacts', 'label' => 'Messages contact'],
                     ['key' => 'cms.newsletter', 'label' => 'Newsletter'],
                 ],
@@ -98,6 +103,14 @@ class AdminPermissions
                 ],
             ],
         ];
+    }
+
+    /** Libellé lisible d'une permission (messages d'erreur). */
+    public static function label(string $key): string
+    {
+        return collect(self::catalog())
+            ->flatMap(fn (array $group) => $group['items'])
+            ->firstWhere('key', $key)['label'] ?? $key;
     }
 
     /**
@@ -122,17 +135,60 @@ class AdminPermissions
     }
 
     /**
+     * Permissions réservées à certains rôles : gérer les comptes internes n'a de sens que pour
+     * un superviseur ou un administrateur (un gestionnaire n'a aucun compte « en dessous » de lui).
+     *
+     * @var array<string, list<AdminRole>>
+     */
+    public const ROLE_RESTRICTED = [
+        'users.manage' => [AdminRole::Superviseur, AdminRole::Administrateur],
+    ];
+
+    /**
+     * Permissions du studio NON couvertes par « Accès complet au studio » : du HTML libre peut
+     * injecter du code dans le site public, il doit être accordé explicitement.
+     */
+    public const CMS_EXPLICIT_ONLY = ['cms.html'];
+
+    /** « Accès complet au studio » couvre-t-il cette permission ? */
+    public static function coveredByCmsManage(string $permission): bool
+    {
+        return str_starts_with($permission, 'cms.') && ! in_array($permission, self::CMS_EXPLICIT_ONLY, true);
+    }
+
+    /**
+     * Permissions qu'un compte peut attribuer : un administrateur, toutes ; les autres,
+     * uniquement celles qu'ils possèdent eux-mêmes (pas d'élévation de privilèges).
+     *
+     * @return list<string>
+     */
+    public static function grantableBy(AdminRole $actorRole, array $actorPermissions): array
+    {
+        if ($actorRole === AdminRole::Administrateur) {
+            return self::allKeys();
+        }
+
+        // « Accès complet au studio » vaut toutes les permissions du studio.
+        return array_values(array_filter(self::allKeys(), fn (string $key) => in_array($key, $actorPermissions, true)
+            || (self::coveredByCmsManage($key) && in_array('cms.manage', $actorPermissions, true))));
+    }
+
+    /** La permission peut-elle être donnée à un compte de ce rôle ? */
+    public static function allowedForRole(string $permission, AdminRole $role): bool
+    {
+        return ! isset(self::ROLE_RESTRICTED[$permission]) || in_array($role, self::ROLE_RESTRICTED[$permission], true);
+    }
+
+    /**
      * Permissions effectives : stockées si définies, sinon preset du rôle (comptes legacy).
      *
      * @return list<string>
      */
     public static function effective(?array $stored, AdminRole $role): array
     {
-        if ($stored !== null) {
-            return self::sanitize($stored);
-        }
+        $permissions = $stored !== null ? self::sanitize($stored) : self::presetForRole($role);
 
-        return self::presetForRole($role);
+        return array_values(array_filter($permissions, fn (string $key) => self::allowedForRole($key, $role)));
     }
 
     /**
@@ -151,7 +207,9 @@ class AdminPermissions
             ],
             AdminRole::Superviseur => [
                 'dossiers.view',
+                'dossiers.view_all',
                 'dossiers.process',
+                'dossiers.supervise',
                 'dossiers.assign',
                 'assures.view',
                 'assures.manage',
@@ -165,6 +223,7 @@ class AdminPermissions
             AdminRole::Administrateur => self::allKeys(),
             AdminRole::Direction => [
                 'dossiers.view',
+                'dossiers.view_all',
                 'assures.view',
                 'exports.export',
                 'notifications.receive',
@@ -184,8 +243,12 @@ class AdminPermissions
         $map = [
             'admin.dashboard' => null,
             'admin.logout' => null,
+            'admin.session.ping' => null,
             'admin.profil' => null,
             'admin.profil.password' => null,
+            'admin.profil.2fa' => null,
+            'admin.profil.idle' => null,
+            'admin.profil.devices' => null,
             'admin.notifications' => null,
             'admin.notifications.read' => null,
             'admin.notifications.read-all' => null,
@@ -199,6 +262,7 @@ class AdminPermissions
             'admin.dossiers.complement' => 'dossiers.process',
             'admin.dossiers.en-attente' => 'dossiers.process',
             'admin.dossiers.message' => 'dossiers.process',
+            'admin.dossiers.piece.download' => 'dossiers.view',
 
             'admin.assures' => 'assures.view',
             'admin.assures.statut' => 'assures.manage',
@@ -210,12 +274,14 @@ class AdminPermissions
             'admin.inscriptions.reject' => 'inscriptions.validate',
 
             'admin.exports' => 'exports.export',
-            'admin.exports.membres' => 'exports.export',
-            'admin.exports.dossiers' => 'exports.export',
+            'admin.exports.download' => 'exports.export',
             'admin.exports.dossier-pdf' => 'exports.export',
 
             'admin.parametres' => 'settings.manage',
             'admin.parametres.membres' => 'settings.manage',
+            'admin.parametres.photos' => 'settings.manage',
+            'admin.parametres.filiations' => 'settings.manage',
+            'admin.parametres.fif' => 'settings.manage',
             'admin.parametres.retention' => 'settings.manage',
             'admin.parametres.affectation' => 'settings.manage',
             'admin.parametres.libelles' => 'settings.manage',
@@ -238,6 +304,7 @@ class AdminPermissions
             'admin.cms.pages.duplicate' => 'cms.pages',
             'admin.cms.pages.status' => 'cms.pages',
             'admin.cms.page_builder' => 'cms.pages',
+            'admin.cms.page_builder.preview' => 'cms.pages',
             'admin.cms.page_builder.sections' => 'cms.pages',
             'admin.cms.page_builder.publish' => 'cms.pages',
             'admin.cms.page_builder.versions.restore' => 'cms.pages',
@@ -281,6 +348,14 @@ class AdminPermissions
             'admin.cms.partenaires.destroy' => 'cms.partenaires',
             'admin.cms.footer' => 'cms.footer',
             'admin.cms.footer.update' => 'cms.footer',
+            'admin.cms.legal' => 'cms.legal',
+            'admin.cms.legal.update' => 'cms.legal',
+            'admin.cms.legal.reset' => 'cms.legal',
+            'admin.cms.identity' => 'cms.footer',
+            'admin.cms.identity.logo' => 'cms.footer',
+            'admin.cms.identity.logo.reset' => 'cms.footer',
+            'admin.cms.identity.theme' => 'cms.footer',
+            'admin.cms.identity.theme.reset' => 'cms.footer',
             'admin.cms.menus' => 'cms.menus',
             'admin.cms.menus.pages.store' => 'cms.menus',
             'admin.cms.menus.custom.store' => 'cms.menus',

@@ -81,7 +81,7 @@ class DossierService
             ]);
         }
 
-        return DB::transaction(function () use ($assure, $data) {
+        $dossier = DB::transaction(function () use ($assure, $data) {
             $dossier = $this->saveDraft($assure, $data);
 
             $dossier->update([
@@ -90,10 +90,6 @@ class DossierService
             ]);
 
             $this->appendJournal($dossier, 'Dossier soumis par l\'assuré');
-
-            if ($gestionnaire = $this->affectation->autoAssign($dossier)) {
-                $this->appendJournal($dossier, "Affectation automatique à {$gestionnaire} ({$this->affectation->modeLabel()})");
-            }
 
             AssureNotification::query()->create([
                 'assure_id' => $assure->id,
@@ -104,8 +100,16 @@ class DossierService
                 'lu' => false,
             ]);
 
-            return $dossier->fresh();
+            return $dossier;
         });
+
+        // Affectation après validation de la soumission : elle passe par un verrou partagé
+        // entre toutes les soumissions simultanées et doit voir les dossiers déjà enregistrés.
+        if ($gestionnaire = $this->affectation->autoAssign($dossier)) {
+            $this->appendJournal($dossier->fresh(), "Affectation automatique à {$gestionnaire} ({$this->affectation->modeLabel()})");
+        }
+
+        return $dossier->fresh();
     }
 
     public function saveFamilleDraft(Assure $assure, array $conjoints, array $enfants): int

@@ -1,5 +1,6 @@
 <script setup>
 import { loadGoogleMaps } from '@/Composables/useGoogleMaps';
+import { themeColor } from '@/Utils/siteTheme';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -19,13 +20,18 @@ let mapInstance = null;
 let infoWindow = null;
 const markers = [];
 
-const MARKER_COLORS = {
-    'Siège CAMA': '#1a3a6b',
-    'Antenne CAMA': '#5c403f',
-    'Centre de santé': '#9e001f',
-    'Partenaire': '#006e27',
-    default: '#5c403f',
+// Le marqueur est une image SVG : il lui faut une vraie couleur, lue dans le thème au moment du rendu.
+const MARKER_TOKENS = {
+    'Antenne CAMA': 'on-surface-variant',
+    'Centre de santé': 'primary',
+    'Partenaire': 'secondary',
+    default: 'on-surface-variant',
 };
+
+function markerColor(type) {
+    if (type === 'Siège CAMA') return '#1a3a6b';
+    return themeColor(MARKER_TOKENS[type] ?? MARKER_TOKENS.default);
+}
 
 function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -54,11 +60,11 @@ function buildInfoContent(point) {
         : '';
 
     const descBlock = point.description
-        ? `<p style="margin:0 0 8px;color:#5c403f;font-size:11px;line-height:1.4;">${esc(point.description)}</p>`
+        ? `<p style="margin:0 0 8px;color:rgb(var(--c-on-surface-variant));font-size:11px;line-height:1.4;">${esc(point.description)}</p>`
         : '';
 
     const cityBlock = point.city
-        ? `<div style="display:flex;align-items:center;gap:4px;color:#5c403f;font-size:11px;margin-bottom:6px;">${esc(point.city)}</div>`
+        ? `<div style="display:flex;align-items:center;gap:4px;color:rgb(var(--c-on-surface-variant));font-size:11px;margin-bottom:6px;">${esc(point.city)}</div>`
         : '';
 
     const gmapsBtn = gmapsUrl
@@ -89,13 +95,14 @@ function renderMarkers() {
     const valid = props.points.filter(p => typeof p.lat === 'number' && typeof p.lon === 'number');
 
     valid.forEach((point) => {
-        const color = MARKER_COLORS[point.type] || MARKER_COLORS.default;
+        const color = markerColor(point.type);
         const marker = new google.maps.Marker({
             position: { lat: point.lat, lng: point.lon },
             map: mapInstance,
             title: point.name,
             icon: pinIcon(color),
-            animation: google.maps.Animation.DROP,
+            // Au-delà de quelques repères, l'animation de chute alourdit l'affichage sans rien apporter.
+            animation: valid.length <= 25 ? google.maps.Animation.DROP : null,
         });
 
         marker.addListener('click', () => {

@@ -4,9 +4,9 @@
 
 /* ── Sidebar (navigation latérale) ── */
 #sidebar {
-    background: linear-gradient(180deg, #1b1c1c 0%, #2a2222 100%);
+    background: linear-gradient(180deg, rgb(var(--c-on-surface)) 0%, #2a2222 100%);
     border-right: 1px solid rgba(255, 255, 255, 0.06);
-    box-shadow: 4px 0 24px rgba(27, 28, 28, 0.12);
+    box-shadow: 4px 0 24px rgb(var(--c-on-surface) / 0.12);
 }
 
 /* Scrollbar discrète et esthétique pour la navigation latérale */
@@ -49,9 +49,9 @@
 }
 
 #sidebar .sidebar-nav-link.is-active {
-    background-color: rgba(158, 0, 31, 0.28);
-    color: #ffdad8;
-    border-left-color: #c8102e;
+    background-color: rgb(var(--c-primary) / 0.28);
+    color: rgb(var(--c-primary-fixed));
+    border-left-color: rgb(var(--c-primary-container));
     font-weight: 700;
 }
 
@@ -66,38 +66,38 @@
 
 #sidebar .sidebar-logout:hover {
     background-color: rgba(255, 255, 255, 0.06);
-    color: #ffdad8;
+    color: rgb(var(--c-primary-fixed));
 }
 
 /* ── Header (barre supérieure) ── */
 #app-header {
     background-color: #ffffff;
-    border-bottom: 1px solid #e5bdbb;
-    box-shadow: 0 1px 4px rgba(27, 28, 28, 0.06);
+    border-bottom: 1px solid rgb(var(--c-outline-variant));
+    box-shadow: 0 1px 4px rgb(var(--c-on-surface) / 0.06);
 }
 
 #app-header .header-menu-btn:hover {
-    background-color: #f0eded;
+    background-color: rgb(var(--c-surface-container));
 }
 
 /* ── Zone de contenu ── */
 #content-shell {
-    background-color: #f6f3f2;
+    background-color: rgb(var(--c-surface-container-low));
 }
 
 #content-shell > footer {
-    background-color: #f0eded;
-    border-top: 1px solid #e5bdbb;
+    background-color: rgb(var(--c-surface-container));
+    border-top: 1px solid rgb(var(--c-outline-variant));
 }
 
 /* ── Cartes de contenu (profil, formulaires…) ── */
 .assure-card {
     background-color: #ffffff;
-    border: 1px solid #e5bdbb;
+    border: 1px solid rgb(var(--c-outline-variant));
     border-radius: 0.75rem;
-    box-shadow: 0 1px 3px rgba(27, 28, 28, 0.04);
+    box-shadow: 0 1px 3px rgb(var(--c-on-surface) / 0.04);
 }
 
 .assure-card:hover {
-    box-shadow: 0 4px 12px rgba(27, 28, 28, 0.06);
+    box-shadow: 0 4px 12px rgb(var(--c-on-surface) / 0.06);
 }

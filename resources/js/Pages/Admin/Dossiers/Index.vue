@@ -1,10 +1,13 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip, exportMembreFif } from '@/Composables/useCamaExport';
+import { useClientPagination } from '@/Composables/usePagination';
 import { formatPhonesDisplay } from '@/Utils/camaPhone';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 import { useAdminDossierBadge } from '@/Composables/useAdminDossierBadge';
+import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 
 const props = defineProps({
     families: Array,
@@ -13,6 +16,7 @@ const props = defineProps({
     adminRole: String,
     gestionnaireNom: String,
     isGestionnaire: Boolean,
+    canSupervise: { type: Boolean, default: false },
     validation2Niveaux: Boolean,
     fifRequise: { type: Boolean, default: false },
     affectationMode: String,
@@ -23,14 +27,11 @@ const props = defineProps({
     motifsRefus: { type: Array, default: () => [] },
 });
 
-const GROUP_PAGE_SIZE = 10;
-
 const { markFamilyViewed } = useAdminDossierBadge();
 
 const page = usePage();
 const queueTab = ref(localStorage.getItem('cama_admin_queue_tab') || 'a_traiter');
 const affectTab = ref(localStorage.getItem('cama_admin_affect_tab') || 'tous');
-const currentPage = ref(1);
 const selectedAssureIds = ref(new Set());
 const detailFamily = ref(null);
 const detailDossier = ref(null);
@@ -62,13 +63,20 @@ function applyRejectPreset() {
     }
 }
 
-const canBatchAssign = computed(() => !props.isGestionnaire && ['superviseur', 'administrateur'].includes(props.adminRole));
-const canActOnDossier = computed(() => ['gestionnaire', 'superviseur', 'administrateur'].includes(props.adminRole));
+// Actions selon les permissions cochées pour le compte (et non selon son rôle).
+const { can } = useAdminPermissions();
+const canBatchAssign = computed(() => can('dossiers.assign'));
+const canActOnDossier = computed(() => can('dossiers.process'));
 
+// Filtre : tous les noms qui détiennent des dossiers, y compris les comptes désactivés.
 const gestionnaireOptions = computed(() => {
     const names = props.gestionnaires.map((g) => g.nom);
     return ['Non affecté', ...names];
 });
+
+// Affectation : uniquement les gestionnaires actifs (le serveur refuse les autres).
+const assignableOptions = computed(() => ['Non affecté', ...props.gestionnaires.filter((g) => g.actif !== false).map((g) => g.nom)]);
+const inactiveGestionnaires = computed(() => new Set(props.gestionnaires.filter((g) => g.actif === false).map((g) => g.nom)));
 
 const STATUS_STYLES = {
     Brouillon: 'bg-surface-container-high text-on-surface-variant',
@@ -194,16 +202,17 @@ const affectCounts = computed(() => {
     };
 });
 
-const totalPages = computed(() => Math.max(1, Math.ceil(filteredFamilies.value.length / GROUP_PAGE_SIZE)));
-
-const pageFamilies = computed(() => {
-    const page = Math.min(currentPage.value, totalPages.value);
-    const start = (page - 1) * GROUP_PAGE_SIZE;
-    return filteredFamilies.value.slice(start, start + GROUP_PAGE_SIZE);
-});
-
-watch([queueTab, affectTab, filterStatut, filterGestionnaire, filterLien, filterLot, filterDateFrom, filterDateTo, filterSearch], () => {
-    currentPage.value = 1;
+// Familles découpées en pages (10, 25 ou 50) ; tout filtre ramène à la première page.
+const familiesTop = ref(null);
+const {
+    pagination: familiesPagination,
+    paged: pageFamilies,
+    goToPage: goToFamiliesPage,
+    setPerPage: setFamiliesPerPage,
+} = useClientPagination(() => filteredFamilies.value, {
+    perPageOptions: [10, 25, 50],
+    anchor: familiesTop,
+    resetOn: [queueTab, affectTab, filterStatut, filterGestionnaire, filterLien, filterLot, filterDateFrom, filterDateTo, filterSearch],
 });
 
 function resetFilters() {
@@ -441,31 +450,25 @@ function getValidationUi(d) {
             sub: 'La FIF signée du lot familial est absente. Demandez un complément à l\'assuré avant toute validation.',
         };
     }
-    if (d.statut === 'En attente supervision' && props.isGestionnaire) return { label: 'Valider', show: false };
-    if (d.statut === 'En attente supervision' && canBatchAssign.value) {
+    // Dossier en attente de supervision : seule la permission « Valider en second niveau » permet d'y toucher.
+    if (d.statut === 'En attente supervision' && !props.canSupervise) return { label: 'Valider', show: false };
+    if (d.statut === 'En attente supervision') {
         return {
             label: props.validation2Niveaux ? 'Valider (niveau 2)' : 'Valider',
             sub: 'Validation finale — le dossier quittera la file active.',
             show: true,
         };
     }
-    if (props.adminRole === 'superviseur' && d.statut === 'En attente supervision') {
-        return {
-            label: props.validation2Niveaux ? 'Valider (supervision)' : 'Valider',
-            sub: 'Validation finale par le superviseur.',
-            show: true,
-        };
-    }
-    if (props.validation2Niveaux && props.isGestionnaire) {
+    if (props.validation2Niveaux && !props.canSupervise) {
         return {
             label: 'Valider (niveau 1)',
-            sub: 'Validation à deux niveaux activée : le dossier passera « En attente supervision » et sera validé définitivement par le superviseur.',
+            sub: 'Validation à deux niveaux activée : le dossier passera « En attente supervision » et sera validé définitivement en second niveau.',
             show: true,
         };
     }
     return {
         label: 'Valider',
-        sub: props.adminRole === 'superviseur' ? 'Le superviseur peut traiter et valider ce dossier.' : "Le gestionnaire peut valider directement. L'assuré sera notifié.",
+        sub: "Validation directe. L'assuré sera notifié.",
         show: true,
     };
 }
@@ -708,7 +711,7 @@ const detailLotFifPiece = computed(() => {
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
                     <select v-model="batchGestionnaire" class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white min-w-0">
                         <option value="">Choisir un gestionnaire…</option>
-                        <option v-for="g in gestionnaireOptions" :key="g" :value="g">{{ g }}</option>
+                        <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
                     </select>
                     <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shrink-0" @click="batchAssign">Affecter la sélection</button>
                 </div>
@@ -749,7 +752,7 @@ const detailLotFifPiece = computed(() => {
             <button type="button" class="filter-field w-full sm:w-auto py-3 sm:py-2 px-4 rounded-lg border border-primary/30 bg-primary/5 text-primary font-bold text-sm sm:text-xs hover:bg-primary/10 sm:border-0 sm:bg-transparent sm:hover:underline" @click="resetFilters">Réinitialiser les filtres</button>
         </div>
 
-        <div class="space-y-3">
+        <div ref="familiesTop" class="space-y-3 scroll-mt-24">
             <div v-if="!pageFamilies.length" class="assure-card p-10 text-center text-on-surface-variant text-sm">
                 Aucun dossier familial ne correspond à ces filtres.
             </div>
@@ -810,7 +813,8 @@ const detailLotFifPiece = computed(() => {
                             <div v-if="canBatchAssign" class="flex items-center gap-2">
                                 <label class="text-[10px] text-on-surface-variant whitespace-nowrap">Affecter à</label>
                                 <select class="text-[11px] px-2 py-1.5 border border-outline-variant rounded-lg bg-white max-w-[280px]" :value="family.gestionnaire" @change="assignFamily(family.assureId, $event.target.value)">
-                                    <option v-for="g in gestionnaireOptions" :key="g" :value="g">{{ g }}</option>
+                                    <option v-if="inactiveGestionnaires.has(family.gestionnaire)" :value="family.gestionnaire" disabled>{{ family.gestionnaire }} (compte inactif — à réaffecter)</option>
+                                    <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
                                 </select>
                             </div>
                             <button type="button" class="text-[11px] font-bold text-primary hover:underline" @click="openFamily(family)">Traiter le dossier familial</button>
@@ -887,22 +891,7 @@ const detailLotFifPiece = computed(() => {
             </details>
         </div>
 
-        <div v-if="filteredFamilies.length > GROUP_PAGE_SIZE" class="px-1 py-4 flex items-center justify-between flex-wrap gap-3">
-            <p class="text-[11px] text-on-surface-variant">{{ filteredFamilies.length }} assurés</p>
-            <div class="flex gap-2">
-                <button
-                    v-for="p in totalPages"
-                    :key="p"
-                    type="button"
-                    class="w-8 h-8 rounded-lg text-xs font-bold"
-                    :class="p === currentPage ? 'bg-primary text-on-primary' : 'border border-outline text-on-surface-variant hover:bg-surface-container-low'"
-                    @click="currentPage = p"
-                >
-                    {{ p }}
-                </button>
-            </div>
-        </div>
-        <p v-else-if="filteredFamilies.length" class="text-[11px] text-on-surface-variant px-1 py-4">{{ filteredFamilies.length }} assuré{{ filteredFamilies.length > 1 ? 's' : '' }}</p>
+        <CamaPagination v-bind="familiesPagination" label="famille(s)" @change="goToFamiliesPage" @per-page="setFamiliesPerPage" />
 
         <!-- Panneau détail familial ou membre -->
         <div v-if="showDetail" class="fixed inset-0 bg-black/50 z-50 flex items-stretch justify-end" @click.self="closeDetail">
@@ -919,6 +908,7 @@ const detailLotFifPiece = computed(() => {
                             <p class="text-[10px] uppercase tracking-wide text-primary font-bold mb-0.5">Dossier familial</p>
                             <h2 class="font-title-lg text-lg text-on-surface leading-tight">{{ detailFamily.assureNom }}</h2>
                             <p class="text-xs text-on-surface-variant mt-1">{{ detailFamily.matricule }} · {{ detailFamily.numeroCama || '—' }} · {{ detailFamily.total }} membre(s)</p>
+                            <p v-if="detailFamily.exportProfile?.numeroFif" class="text-[11px] text-on-surface-variant mt-0.5">N° FIF <strong class="font-mono text-on-surface">{{ detailFamily.exportProfile.numeroFif }}</strong></p>
                         </div>
                     </div>
                     <div class="p-4 sm:p-5 space-y-5 pb-24">
@@ -940,7 +930,8 @@ const detailLotFifPiece = computed(() => {
                         <div v-if="canBatchAssign">
                             <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation du dossier familial</label>
                             <select class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg bg-white" :value="detailFamily.gestionnaire" @change="assignFamily(detailFamily.assureId, $event.target.value)">
-                                <option v-for="g in gestionnaireOptions" :key="g" :value="g">{{ g }}</option>
+                                <option v-if="inactiveGestionnaires.has(detailFamily.gestionnaire)" :value="detailFamily.gestionnaire" disabled>{{ detailFamily.gestionnaire }} (compte inactif — à réaffecter)</option>
+                                    <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
                             </select>
                         </div>
                         <div v-else class="bg-surface-container-low rounded-lg p-3 text-xs">

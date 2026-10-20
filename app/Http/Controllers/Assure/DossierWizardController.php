@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\AssureDashboardService;
 use App\Services\DossierPieceStorageService;
 use App\Services\DossierService;
+use App\Services\FifProfileService;
 use App\Services\PlatformSettingsService;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +17,7 @@ use Inertia\Response;
 
 class DossierWizardController extends Controller
 {
-    public function create(Request $request, AssureDashboardService $dashboard, DossierService $dossiers, PlatformSettingsService $settings): Response
+    public function create(Request $request, AssureDashboardService $dashboard, DossierService $dossiers, PlatformSettingsService $settings, FifProfileService $fif): Response
     {
         $assure = auth('assure')->user();
         $initial = ['conjoints' => [], 'enfants' => []];
@@ -73,7 +75,7 @@ class DossierWizardController extends Controller
             'peutEnroler' => $assure->peutEnroler(),
             'initialRows' => $initial,
             'focusDraftId' => $focusDraftId,
-            'assureExport' => $this->formatAssureExport($assure),
+            'assureExport' => $fif->profile($assure),
             'fifPieceType' => config('cama.fif_piece_type', 'FIF signée'),
         ]);
     }
@@ -237,7 +239,7 @@ class DossierWizardController extends Controller
             $piecesDef = $matrix[$lien] ?? [];
 
             if ($list === 'enfants' && ($scolarite['actif'] ?? false) && ! empty($row['date_naissance'])) {
-                $age = \Carbon\Carbon::parse($row['date_naissance'])->age;
+                $age = Carbon::parse($row['date_naissance'])->age;
                 if ($age >= $ageMax) {
                     $piecesDef[] = [
                         'key' => 'certificat_scolarite',
@@ -326,33 +328,5 @@ class DossierWizardController extends Controller
             'ref_acte_scolarite' => $d['refActeScolariteEtatCivil'] ?? $meta['ref_acte_scolarite'] ?? null,
             'nom_prenoms_parent' => $d['nomPrenomsParent'] ?? $meta['nom_prenoms_parent'] ?? null,
         ]);
-    }
-
-    private function formatAssureExport($assure): array
-    {
-        return [
-            'nom' => $assure->nom,
-            'prenom' => $assure->prenom,
-            'prenoms' => $assure->prenom,
-            'fullName' => $assure->full_name,
-            'sexe' => $assure->sexe,
-            'matricule' => $assure->matricule,
-            'numeroInformatique' => $assure->numero_informatique,
-            'grade' => $assure->grade,
-            'categorie' => $assure->categorie,
-            'numeroCim' => $assure->numero_cim,
-            'numeroCama' => $assure->numero_cama,
-            'numeroIup' => $assure->numero_iup,
-            'armee' => $assure->armee,
-            'region' => $assure->region,
-            'corps' => $assure->corps,
-            'service' => $assure->service,
-            'section' => $assure->section,
-            'sousSection' => $assure->sous_section,
-            'telephone' => $assure->telephone,
-            'email' => $assure->email,
-            'personneAPrevenir' => $assure->personne_a_prevenir,
-            'telPersonneAPrevenir' => $assure->tel_personne_a_prevenir,
-        ];
     }
 }

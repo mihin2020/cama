@@ -5,20 +5,24 @@ namespace App\Http\Controllers\Assure;
 use App\Http\Controllers\Controller;
 use App\Models\AssureNotification;
 use App\Services\AssureDashboardService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class NotificationController extends Controller
 {
-    public function index(AssureDashboardService $dashboard): Response
+    public function index(Request $request, AssureDashboardService $dashboard): Response|RedirectResponse
     {
         $assure = auth('assure')->user();
 
         $notifications = $assure->notifications()
             ->orderByDesc('created_at')
-            ->get()
-            ->map(fn (AssureNotification $n) => [
+            ->orderByDesc('id')
+            ->paginate(Pagination::perPage($request, Pagination::COMPACT))
+            ->withQueryString()
+            ->through(fn (AssureNotification $n) => [
                 'id' => $n->id,
                 'type' => $n->type,
                 'titre' => $n->titre,
@@ -28,8 +32,13 @@ class NotificationController extends Controller
                 'date' => $n->created_at->format('d/m/Y H:i'),
             ]);
 
+        if (Pagination::isBeyondLastPage($notifications)) {
+            return redirect()->route('assure.notifications', [...$request->query(), 'page' => $notifications->lastPage()]);
+        }
+
         return Inertia::render('Assure/Notifications/Index', [
-            'notifications' => $notifications,
+            'notifications' => $notifications->items(),
+            'pagination' => Pagination::meta($notifications, Pagination::COMPACT),
             'unreadCount' => $dashboard->stats($assure)['unreadCount'],
         ]);
     }

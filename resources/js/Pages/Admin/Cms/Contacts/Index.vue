@@ -1,11 +1,13 @@
 <script setup>
 import CmsLayout from '@/Layouts/CmsLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
-    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 50, total: 0 }) },
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
     filters: { type: Object, default: () => ({}) },
     statusOptions: { type: Object, default: () => ({}) },
     recipients: { type: Array, default: () => [] },
@@ -21,7 +23,6 @@ let toastTimer = null;
 const search = ref(props.filters?.q ?? '');
 const status = ref(props.filters?.status ?? '');
 const showArchived = ref(Boolean(props.filters?.archived));
-const perPage = ref(Number(props.filters?.per_page ?? 50));
 const archiveDate = ref('');
 const archiveForm = useForm({ before_date: '', ids: [] });
 const purgeForm = useForm({});
@@ -60,9 +61,19 @@ const recipientsForm = useForm({
     recipients: recipientEmails.value,
 });
 
-watch(status, applyFilters);
-watch(showArchived, applyFilters);
-watch(perPage, applyFilters);
+const listTop = ref(null);
+const { reload: applyFilters, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.contacts',
+    params: () => ({
+        q: search.value.trim(),
+        status: status.value,
+        archived: showArchived.value ? 1 : undefined,
+    }),
+    anchor: listTop,
+});
+
+watch(status, () => applyFilters());
+watch(showArchived, () => applyFilters());
 
 watch(
     () => props.recipients,
@@ -82,21 +93,7 @@ watch(
 
 function onSearch() {
     clearTimeout(timer);
-    timer = setTimeout(applyFilters, 250);
-}
-
-function applyFilters(pageNumber = 1) {
-    router.get(route('admin.cms.contacts'), {
-        q: search.value || undefined,
-        status: status.value || undefined,
-        archived: showArchived.value ? 1 : undefined,
-        per_page: perPage.value,
-        page: pageNumber > 1 ? pageNumber : undefined,
-    }, { preserveState: true, preserveScroll: true, replace: true });
-}
-
-function goToPage(pageNumber) {
-    applyFilters(pageNumber);
+    timer = setTimeout(() => applyFilters(), 300);
 }
 
 function archiveBeforeDate() {
@@ -326,11 +323,6 @@ onBeforeUnmount(() => {
                 <input v-model="showArchived" class="rounded border-outline-variant text-primary" type="checkbox" />
                 Archivés
             </label>
-            <select v-model.number="perPage" class="px-3 py-2 border border-outline-variant rounded-lg text-sm">
-                <option :value="25">25 / page</option>
-                <option :value="50">50 / page</option>
-                <option :value="100">100 / page</option>
-            </select>
         </div>
 
         <section v-if="!showArchived" class="assure-card p-4 flex flex-wrap items-end gap-3">
@@ -346,7 +338,7 @@ onBeforeUnmount(() => {
             </button>
         </section>
 
-        <section class="assure-card overflow-hidden">
+        <section ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant">
@@ -422,12 +414,8 @@ onBeforeUnmount(() => {
                     </tbody>
                 </table>
             </div>
-            <div v-if="pagination.lastPage > 1" class="flex items-center justify-between px-4 py-3 border-t border-outline-variant text-sm">
-                <p class="text-on-surface-variant">{{ pagination.total }} message(s) · page {{ pagination.currentPage }} / {{ pagination.lastPage }}</p>
-                <div class="flex gap-2">
-                    <button class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage <= 1" type="button" @click="goToPage(pagination.currentPage - 1)">Précédent</button>
-                    <button class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage >= pagination.lastPage" type="button" @click="goToPage(pagination.currentPage + 1)">Suivant</button>
-                </div>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="message(s)" @change="goToPage" @per-page="setPerPage" />
             </div>
         </section>
 

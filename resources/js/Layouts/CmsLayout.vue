@@ -1,9 +1,16 @@
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import CamaPageSkeleton from '@/Components/CamaPageSkeleton.vue';
+import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
 import AdminHeaderShortcuts from '@/Components/AdminHeaderShortcuts.vue';
+
+const { navigating } = usePageNavigation();
+
+const siteLogo = useSiteLogo();
 
 const props = defineProps({
     title: { type: String, default: 'Studio de contenu' },
@@ -31,7 +38,9 @@ const navItems = [
     { key: 'page-builder', label: 'Éditeur de pages', icon: 'dashboard_customize', href: 'admin.cms.page_builder', permission: 'cms.pages' },
     { key: 'media', label: 'Médiathèque', icon: 'perm_media', href: 'admin.cms.media', permission: 'cms.media' },
     { key: 'menus', label: 'Menus du site', icon: 'menu', href: 'admin.cms.menus', permission: 'cms.menus' },
+    { key: 'identity', label: 'Identité visuelle', icon: 'palette', href: 'admin.cms.identity', permission: 'cms.footer' },
     { key: 'footer', label: 'Pied de page', icon: 'call_to_action', href: 'admin.cms.footer', permission: 'cms.footer' },
+    { key: 'legal', label: 'Mentions légales', icon: 'gavel', href: 'admin.cms.legal', permission: 'cms.legal' },
     { key: 'banniere', label: "Bannière d'accueil", icon: 'view_carousel', href: 'admin.cms.banniere', permission: 'cms.banniere' },
     { key: 'chiffres-cles', label: 'Chiffres clés', icon: 'monitoring', href: 'admin.cms.chiffres_cles', permission: 'cms.chiffres' },
     { key: 'faq', label: 'FAQ', icon: 'quiz', href: 'admin.cms.faq', permission: 'cms.faq' },
@@ -51,7 +60,7 @@ const badgeValue = (item) => (item.badge ? Number(app.value?.[item.badge] ?? 0) 
 
     <aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
         <Link class="flex items-center gap-3 px-2 mb-4" href="/">
-            <img alt="Logo CAMA" class="h-10 w-10 object-contain" src="/images/logo_cama.png" />
+            <img alt="Logo CAMA" class="h-10 w-10 object-contain" :src="siteLogo" />
             <span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">
                 CAMA
                 <span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Studio de contenu</span>
@@ -120,7 +129,11 @@ const badgeValue = (item) => (item.badge ? Number(app.value?.[item.badge] ?? 0) 
         </header>
 
         <main class="flex-1 p-4 md:p-8 space-y-6">
-            <slot />
+            <!-- Changement de page : silhouette du contenu, l'ancienne page reste montée (masquée). -->
+            <CamaPageSkeleton v-if="navigating" />
+            <div v-show="!navigating" class="space-y-6">
+                <slot />
+            </div>
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">

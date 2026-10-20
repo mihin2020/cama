@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsMedia;
 use App\Services\CmsMediaService;
 use App\Services\CmsPermissionService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,16 +14,24 @@ use Inertia\Response;
 
 class MediaController extends Controller
 {
-    public function index(Request $request, CmsMediaService $media): Response
+    public function index(Request $request, CmsMediaService $media): Response|RedirectResponse
     {
+        $paginator = $media->paginateForAdmin(
+            Pagination::perPage($request, Pagination::GRID),
+            $request->string('q')->toString() ?: null,
+            $request->string('type')->toString() ?: null,
+            $request->string('folder')->toString() ?: null,
+            $request->string('category')->toString() ?: null,
+            $request->string('extension')->toString() ?: null,
+        );
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.cms.media', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
+
         return Inertia::render('Admin/Cms/Media/Index', [
-            'items' => $media->list(
-                $request->string('q')->toString() ?: null,
-                $request->string('type')->toString() ?: null,
-                $request->string('folder')->toString() ?: null,
-                $request->string('category')->toString() ?: null,
-                $request->string('extension')->toString() ?: null,
-            ),
+            'items' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator, Pagination::GRID),
             'options' => $media->options(),
             'permissions' => app(CmsPermissionService::class)->forAdmin($request->user('admin')),
             'filters' => [
@@ -38,7 +47,8 @@ class MediaController extends Controller
     public function store(Request $request, CmsMediaService $media): RedirectResponse
     {
         $request->validate([
-            'file' => ['required', 'file', 'max:10240'],
+            // Liste fermée de formats ; l'extension enregistrée est en plus déduite du contenu (SafeUpload).
+            'file' => ['required', 'file', 'max:10240', 'mimes:jpg,jpeg,png,webp,gif,pdf,doc,docx,xls,xlsx'],
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],
             'folder' => ['nullable', 'string', 'max:120'],

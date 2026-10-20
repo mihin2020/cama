@@ -184,13 +184,13 @@ const stats = computed(() => {
 .org-empty-state {
     text-align: center;
     padding: 32px 16px;
-    border: 1px dashed #e5bdbb;
+    border: 1px dashed rgb(var(--c-outline-variant));
     border-radius: 0.75rem;
     background: #faf8f7;
 }
 .org-region-block {
     background: #fff;
-    border: 1px solid #e5bdbb;
+    border: 1px solid rgb(var(--c-outline-variant));
     border-radius: 0.75rem;
     overflow: hidden;
 }
@@ -205,19 +205,19 @@ const stats = computed(() => {
     white-space: nowrap;
 }
 .org-level-pill .material-symbols-outlined { font-size: 14px; }
-.org-level-pill--1 { background: rgba(158, 0, 31, 0.1); color: #9e001f; }
+.org-level-pill--1 { background: rgb(var(--c-primary) / 0.1); color: rgb(var(--c-primary)); }
 .org-add-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
     border-radius: 0.5rem;
-    border: 1px dashed #e5bdbb;
-    color: #9e001f;
+    border: 1px dashed rgb(var(--c-outline-variant));
+    color: rgb(var(--c-primary));
     font-size: 11px;
     font-weight: 700;
     background: transparent;
     cursor: pointer;
 }
-.org-add-btn:hover { background: rgba(158, 0, 31, 0.06); border-color: #9e001f; }
+.org-add-btn:hover { background: rgb(var(--c-primary) / 0.06); border-color: rgb(var(--c-primary)); }
 </style>

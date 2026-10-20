@@ -101,24 +101,24 @@ function removeNode() {
     white-space: nowrap;
 }
 .org-level-pill .material-symbols-outlined { font-size: 14px; }
-.org-level-pill--1 { background: rgba(158, 0, 31, 0.1); color: #9e001f; }
-.org-level-pill--2 { background: rgba(0, 110, 39, 0.1); color: #006e27; }
-.org-level-pill--3 { background: rgba(116, 91, 0, 0.1); color: #745b00; }
-.org-level-pill--4 { background: rgba(144, 111, 110, 0.12); color: #5c403f; }
-.org-level-pill--5 { background: #f0eded; color: #5c403f; }
+.org-level-pill--1 { background: rgb(var(--c-primary) / 0.1); color: rgb(var(--c-primary)); }
+.org-level-pill--2 { background: rgb(var(--c-secondary) / 0.1); color: rgb(var(--c-secondary)); }
+.org-level-pill--3 { background: rgb(var(--c-tertiary) / 0.1); color: rgb(var(--c-tertiary)); }
+.org-level-pill--4 { background: rgb(var(--c-outline) / 0.12); color: rgb(var(--c-on-surface-variant)); }
+.org-level-pill--5 { background: rgb(var(--c-surface-container)); color: rgb(var(--c-on-surface-variant)); }
 .org-add-btn {
     display: inline-flex;
     align-items: center;
     gap: 4px;
     padding: 6px 10px;
     border-radius: 0.5rem;
-    border: 1px dashed #e5bdbb;
-    color: #9e001f;
+    border: 1px dashed rgb(var(--c-outline-variant));
+    color: rgb(var(--c-primary));
     font-size: 11px;
     font-weight: 700;
     background: transparent;
     cursor: pointer;
 }
-.org-add-btn:hover { background: rgba(158, 0, 31, 0.06); border-color: #9e001f; }
-.org-node-row input:focus { outline: 2px solid rgba(158, 0, 31, 0.25); border-color: #9e001f; }
+.org-add-btn:hover { background: rgb(var(--c-primary) / 0.06); border-color: rgb(var(--c-primary)); }
+.org-node-row input:focus { outline: 2px solid rgb(var(--c-primary) / 0.25); border-color: rgb(var(--c-primary)); }
 </style>

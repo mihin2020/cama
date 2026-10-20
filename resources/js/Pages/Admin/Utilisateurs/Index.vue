@@ -1,17 +1,38 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     users: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
+    search: { type: String, default: '' },
     permissionsCatalog: Array,
     rolePresets: Object,
     grades: Array,
     assignableRoles: Array,
+    grantablePermissions: { type: Array, default: () => [] },
+    roleRestricted: { type: Object, default: () => ({}) },
+    actorId: { type: Number, default: null },
+    actorIsAdmin: { type: Boolean, default: false },
+});
+
+const search = ref(props.search);
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.utilisateurs',
+    params: () => ({ q: search.value.trim() }),
+    anchor: listTop,
+});
+let searchTimer = null;
+watch(search, () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(reload, 300);
 });
 
 const page = usePage();
@@ -56,7 +77,7 @@ function openCreate() {
     form.reset();
     form.clearErrors();
     form.role = 'gestionnaire';
-    form.permissions = [...(props.rolePresets.gestionnaire ?? [])];
+    applyRolePreset();
     formOpen.value = true;
 }
 
@@ -79,17 +100,54 @@ function closeForm() {
     editingUser.value = null;
 }
 
+/* Règles d'attribution (vérifiées aussi par le serveur) : on ne donne que ce qu'on possède,
+   certaines permissions sont réservées à des rôles, et ses propres droits ne se modifient pas. */
+const CMS_EXPLICIT_ONLY = ['cms.html'];
+const isSelf = computed(() => isEditing.value && editingUser.value?.id === props.actorId);
+
+function allowedForRole(key, role = form.role) {
+    return !props.roleRestricted[key] || props.roleRestricted[key].includes(role);
+}
+
+function impliedByCmsManage(key) {
+    return key !== 'cms.manage' && key.startsWith('cms.') && !CMS_EXPLICIT_ONLY.includes(key)
+        && form.permissions.includes('cms.manage');
+}
+
+function permissionState(key) {
+    if (isSelf.value && !props.actorIsAdmin) {
+        return { disabled: true, reason: 'Vos propres droits ne peuvent être modifiés que par un administrateur.' };
+    }
+    if (!allowedForRole(key)) {
+        return { disabled: true, reason: 'Réservé aux rôles superviseur et administrateur.' };
+    }
+    if (impliedByCmsManage(key)) {
+        return { disabled: true, reason: 'Déjà inclus dans « Accès complet au studio de contenu ».' };
+    }
+    const alreadyHad = isEditing.value && (editingUser.value?.permissions ?? []).includes(key);
+    if (!props.grantablePermissions.includes(key) && !alreadyHad) {
+        return { disabled: true, reason: 'Vous ne possédez pas cette permission : vous ne pouvez pas l’attribuer.' };
+    }
+    return { disabled: false, reason: '' };
+}
+
 function applyRolePreset() {
-    form.permissions = [...(props.rolePresets[form.role] ?? [])];
+    form.permissions = (props.rolePresets[form.role] ?? [])
+        .filter((key) => allowedForRole(key) && props.grantablePermissions.includes(key));
 }
 
 watch(() => form.role, () => {
-    if (formOpen.value && !isEditing.value) {
+    if (!formOpen.value) return;
+    if (!isEditing.value) {
         applyRolePreset();
+    } else {
+        // Changement de rôle : on retire ce qui n'est pas permis pour le nouveau rôle.
+        form.permissions = form.permissions.filter((key) => allowedForRole(key));
     }
 });
 
 function togglePermission(key) {
+    if (permissionState(key).disabled) return;
     if (form.permissions.includes(key)) {
         form.permissions = form.permissions.filter((p) => p !== key);
     } else {
@@ -202,14 +260,17 @@ function executeDelete(user) {
     <AdminLayout active-nav="utilisateurs" title="Comptes internes" subtitle="Gestionnaires, superviseurs, administrateurs">
         <FlashMessage />
 
-        <div class="flex justify-between items-center mb-5">
-            <p class="text-xs text-on-surface-variant">{{ users.length }} compte{{ users.length > 1 ? 's' : '' }} interne{{ users.length > 1 ? 's' : '' }}</p>
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+            <div class="relative w-full sm:w-72">
+                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                <input v-model="search" class="w-full pl-8 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" placeholder="Rechercher (nom, e-mail)…" type="search" />
+            </div>
             <button class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:opacity-90" type="button" @click="openCreate">
                 <span class="material-symbols-outlined text-[16px]">person_add</span> Nouveau compte
             </button>
         </div>
 
-        <div class="assure-card overflow-hidden">
+        <div ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -280,10 +341,15 @@ function executeDelete(user) {
                             </td>
                         </tr>
                         <tr v-if="!users.length">
-                            <td class="px-5 py-10 text-center text-on-surface-variant text-sm" colspan="5">Aucun compte interne.</td>
+                            <td class="px-5 py-10 text-center text-on-surface-variant text-sm" colspan="5">
+                                {{ props.search ? `Aucun compte ne correspond à « ${props.search} ».` : 'Aucun compte interne.' }}
+                            </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="compte(s)" @change="goToPage" @per-page="setPerPage" />
             </div>
         </div>
 
@@ -333,22 +399,40 @@ function executeDelete(user) {
                             <span class="material-symbols-outlined text-[14px]">restart_alt</span> Appliquer le rôle
                         </button>
                     </div>
+                    <p v-if="isSelf && !actorIsAdmin" class="mb-2 text-[11px] text-tertiary flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">lock</span>
+                        Vos propres droits ne peuvent être modifiés que par un administrateur.
+                    </p>
+                    <p v-else-if="!actorIsAdmin" class="mb-2 text-[11px] text-on-surface-variant">
+                        Les cases grisées correspondent à des permissions que vous ne possédez pas vous-même : vous ne pouvez pas les attribuer.
+                    </p>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <div v-for="group in permissionsCatalog" :key="group.group" class="border border-outline-variant rounded-lg p-3">
                             <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-1.5">{{ group.group }}</p>
                             <div class="space-y-1.5">
-                                <label v-for="item in group.items" :key="item.key" class="flex items-center gap-2 text-xs cursor-pointer">
+                                <label
+                                    v-for="item in group.items"
+                                    :key="item.key"
+                                    class="flex items-start gap-2 text-xs"
+                                    :class="permissionState(item.key).disabled ? 'opacity-55 cursor-not-allowed' : 'cursor-pointer'"
+                                    :title="permissionState(item.key).reason"
+                                >
                                     <input
                                         type="checkbox"
-                                        class="rounded border-outline-variant text-primary"
-                                        :checked="form.permissions.includes(item.key)"
+                                        class="mt-0.5 rounded border-outline-variant text-primary disabled:cursor-not-allowed"
+                                        :checked="form.permissions.includes(item.key) || impliedByCmsManage(item.key)"
+                                        :disabled="permissionState(item.key).disabled"
                                         @change="togglePermission(item.key)"
                                     />
-                                    {{ item.label }}
+                                    <span>
+                                        {{ item.label }}
+                                        <span v-if="item.key === 'cms.manage'" class="block text-[10px] text-on-surface-variant">Inclut tout le studio, sauf le HTML libre.</span>
+                                    </span>
                                 </label>
                             </div>
                         </div>
                     </div>
+                    <p v-if="form.errors.permissions" class="text-[11px] text-error mt-2">{{ form.errors.permissions }}</p>
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">

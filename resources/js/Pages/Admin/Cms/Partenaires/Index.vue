@@ -3,30 +3,88 @@ import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import CamaGoogleMap from '@/Components/CamaGoogleMap.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { isInBurkinaFaso, parseCoordinates } from '@/Utils/parseCoordinates';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     items: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
+    perPageOptions: { type: Array, default: () => [20, 50, 100] },
+    // Points géolocalisés du filtre courant, toutes pages confondues.
+    mapPoints: { type: Array, default: () => [] },
     types: Array,
     activeType: { type: String, default: null },
+    search: { type: String, default: '' },
+    counts: { type: Object, default: () => ({}) },
+    noPositionFilter: { type: String, default: 'À localiser' },
 });
 
-const mapPoints = computed(() => (props.items || [])
-    .filter(item => typeof item.lat === 'number' && typeof item.lon === 'number')
-    .map(item => ({
-        id: item.id,
-        lat: item.lat,
-        lon: item.lon,
-        name: item.nom,
-        type: item.type,
-        city: item.ville,
-        description: item.adresse || item.description,
-        mapsUrl: item.mapsUrl,
-        imageSrc: item.image_src,
-    })));
+/* Filtres, recherche et pagination côté serveur (l'URL garde l'état : lien partageable, retour arrière). */
+const search = ref(props.search);
+
+function visit(params) {
+    const query = {
+        type: props.activeType || undefined,
+        q: search.value.trim() || undefined,
+        per_page: props.pagination.perPage !== props.perPageOptions[0] ? props.pagination.perPage : undefined,
+        ...params,
+    };
+    Object.keys(query).forEach((key) => query[key] === undefined && delete query[key]);
+    router.get(route('admin.cms.partenaires'), query, { preserveState: true, preserveScroll: true, replace: true });
+}
+
+let searchTimer = null;
+watch(search, () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => visit({ page: undefined }), 300);
+});
+
+function goToPage(pageNumber) {
+    visit({ page: pageNumber });
+}
+
+function setPerPage(size) {
+    visit({ per_page: size === props.perPageOptions[0] ? undefined : size, page: undefined });
+}
+
+const mapPoints = computed(() => props.mapPoints ?? []);
+
+/* Localisation rapide dans le formulaire : lien Google Maps ou coordonnées collés. */
+const pastedLocation = ref('');
+const pasteFeedback = ref(null);
+
+const googleSearchUrl = computed(() => {
+    const query = [form.nom, form.ville, 'Burkina Faso'].filter(Boolean).join(', ');
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+});
+
+function applyPastedLocation() {
+    const text = pastedLocation.value.trim();
+    if (!text) {
+        pasteFeedback.value = null;
+        return;
+    }
+    const coords = parseCoordinates(text);
+    if (!coords) {
+        pasteFeedback.value = {
+            ok: false,
+            text: /goo\.gl|maps\.app/.test(text)
+                ? 'Lien court : ouvrez-le, puis copiez l\'adresse complète de la page Google Maps.'
+                : 'Aucune coordonnée reconnue dans ce texte.',
+        };
+        return;
+    }
+    form.lat = coords.lat;
+    form.lon = coords.lon;
+    if (/^https?:\/\//i.test(text) && !form.mapsUrl) form.mapsUrl = text;
+    pasteFeedback.value = isInBurkinaFaso(coords)
+        ? { ok: true, text: `Position enregistrée : ${coords.lat}, ${coords.lon}` }
+        : { ok: false, text: `Position ${coords.lat}, ${coords.lon} hors du Burkina Faso : vérifiez l'ordre latitude / longitude.` };
+}
 
 const selectedMapId = ref(null);
 const mapFocusPoint = computed(() => {
@@ -41,7 +99,7 @@ function focusOnMap(item) {
 }
 
 const geolocatedCount = computed(() => mapPoints.value.length);
-const missingCount = computed(() => (props.items?.length ?? 0) - geolocatedCount.value);
+const missingCount = computed(() => props.counts[props.noPositionFilter] ?? 0);
 
 const page = usePage();
 const googleMapsApiKey = computed(() => page.props.app?.googleMapsApiKey ?? '');
@@ -75,12 +133,12 @@ const toast = computed(() => page.props.flash?.success ?? null);
 
 const typePills = computed(() => ['Tous', ...(props.types ?? [])]);
 
+function isActivePill(pill) {
+    return (pill === 'Tous' && !props.activeType) || pill === props.activeType;
+}
+
 function setTypeFilter(type) {
-    router.get(
-        route('admin.cms.partenaires'),
-        type && type !== 'Tous' ? { type } : {},
-        { preserveState: true, preserveScroll: true },
-    );
+    visit({ type: type && type !== 'Tous' ? type : undefined, page: undefined });
 }
 
 function resolveImageSrc(url) {
@@ -128,6 +186,8 @@ function onImageUrlInput() {
 
 function openEditor(item = null) {
     editingId.value = item?.id ?? null;
+    pastedLocation.value = '';
+    pasteFeedback.value = null;
     form.reset();
     form.clearErrors();
     clearImageFile();
@@ -152,7 +212,7 @@ function openEditor(item = null) {
         focusOnMap(item);
     } else {
         form.type = 'Centre de santé';
-        form.ordre = (props.items?.length ?? 0) + 1;
+        form.ordre = (props.counts.Tous ?? 0) + 1;
         form.publie = true;
     }
 
@@ -209,7 +269,7 @@ function removePartner(item) {
                     </h2>
                     <p class="text-[11px] text-on-surface-variant mt-1">
                         {{ geolocatedCount }} entité(s) géolocalisée(s)
-                        <span v-if="missingCount > 0" class="text-tertiary"> · {{ missingCount }} sans coordonnées</span>
+                        <span v-if="missingCount > 0" class="text-tertiary"> · {{ missingCount }} à localiser (visibles sur le site, sans repère sur la carte)</span>
                     </p>
                 </div>
                 <div class="hidden md:flex gap-3 text-[11px] flex-wrap">
@@ -218,15 +278,15 @@ function removePartner(item) {
                         Siège CAMA
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full inline-block" style="background:#5c403f"></span>
+                        <span class="w-3 h-3 rounded-full inline-block" style="background:rgb(var(--c-on-surface-variant))"></span>
                         Antennes CAMA
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full inline-block" style="background:#9e001f"></span>
+                        <span class="w-3 h-3 rounded-full inline-block" style="background:rgb(var(--c-primary))"></span>
                         Centres de santé
                     </span>
                     <span class="inline-flex items-center gap-1.5">
-                        <span class="w-3 h-3 rounded-full inline-block" style="background:#006e27"></span>
+                        <span class="w-3 h-3 rounded-full inline-block" style="background:rgb(var(--c-secondary))"></span>
                         Partenaires
                     </span>
                 </div>
@@ -235,17 +295,44 @@ function removePartner(item) {
         </div>
 
         <div class="flex flex-wrap gap-2 items-center justify-between">
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2" role="tablist" aria-label="Filtrer par type">
                 <button
                     v-for="pill in typePills"
                     :key="pill"
                     type="button"
-                    class="px-3 py-1.5 rounded-full text-[11px] font-semibold border"
-                    :class="((pill === 'Tous' && !activeType) || pill === activeType) ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant'"
+                    role="tab"
+                    :aria-selected="isActivePill(pill)"
+                    class="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-[11px] font-semibold border transition-colors"
+                    :class="isActivePill(pill) ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'"
                     @click="setTypeFilter(pill)"
                 >
                     {{ pill }}
+                    <span
+                        class="min-w-[22px] px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums text-center"
+                        :class="isActivePill(pill) ? 'bg-white/25 text-on-primary' : 'bg-surface-container-high text-on-surface'"
+                    >{{ counts[pill] ?? 0 }}</span>
                 </button>
+                <button
+                    v-if="counts[noPositionFilter]"
+                    type="button"
+                    role="tab"
+                    :aria-selected="activeType === noPositionFilter"
+                    class="inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-full text-[11px] font-semibold border transition-colors"
+                    :class="activeType === noPositionFilter ? 'bg-tertiary text-on-tertiary border-tertiary' : 'bg-tertiary/5 text-tertiary border-tertiary/40 hover:border-tertiary'"
+                    title="Liste de travail interne : ces fiches sont affichées sur le site comme les autres, seul leur repère sur la carte reste à placer"
+                    @click="setTypeFilter(noPositionFilter)"
+                >
+                    <span class="material-symbols-outlined text-[14px]">add_location_alt</span>
+                    {{ noPositionFilter }}
+                    <span
+                        class="min-w-[22px] px-1.5 py-0.5 rounded-full text-[10px] font-bold tabular-nums text-center"
+                        :class="activeType === noPositionFilter ? 'bg-white/25' : 'bg-tertiary/10'"
+                    >{{ counts[noPositionFilter] }}</span>
+                </button>
+            </div>
+            <div class="relative w-full sm:w-64">
+                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-[18px] text-on-surface-variant">search</span>
+                <input v-model="search" class="w-full pl-9 pr-3 py-2 text-xs border border-outline-variant rounded-lg" placeholder="Rechercher (nom, ville, adresse)…" type="search" />
             </div>
             <button
                 type="button"
@@ -300,10 +387,24 @@ function removePartner(item) {
                         </td>
                     </tr>
                     <tr v-if="!items.length">
-                        <td class="p-6 text-center text-on-surface-variant" colspan="6">Aucune entrée.</td>
+                        <td class="p-6 text-center text-on-surface-variant" colspan="6">
+                            {{ props.search ? `Aucune entrée ne correspond à « ${props.search} ».` : 'Aucune entrée.' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
+            <div v-if="pagination.total" class="px-3 border-t border-outline-variant">
+                <CamaPagination
+                    :current-page="pagination.currentPage"
+                    :last-page="pagination.lastPage"
+                    :total="pagination.total"
+                    :per-page="pagination.perPage"
+                    :per-page-options="perPageOptions"
+                    label="entrée(s)"
+                    @change="goToPage"
+                    @per-page="setPerPage"
+                />
+            </div>
         </div>
     </CmsLayout>
 
@@ -388,6 +489,33 @@ function removePartner(item) {
                     <p v-if="form.errors.image_file" class="text-error text-[10px] mt-1">{{ form.errors.image_file }}</p>
                 </div>
 
+                <div class="rounded-xl border border-outline-variant bg-surface-container-low p-3 space-y-2">
+                    <div class="flex items-center justify-between gap-2">
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Position sur la carte</p>
+                        <a
+                            class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
+                            :href="googleSearchUrl"
+                            target="_blank"
+                            rel="noopener"
+                        >
+                            <span class="material-symbols-outlined text-[16px]">travel_explore</span> Trouver sur Google Maps
+                        </a>
+                    </div>
+                    <input
+                        v-model="pastedLocation"
+                        class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white"
+                        placeholder="Collez un lien Google Maps ou des coordonnées (ex. 12.37145, -1.51972)"
+                        type="text"
+                        @input="applyPastedLocation"
+                    />
+                    <p v-if="pasteFeedback" class="text-[10px] flex items-start gap-1" :class="pasteFeedback.ok ? 'text-secondary' : 'text-tertiary'">
+                        <span class="material-symbols-outlined text-[14px]">{{ pasteFeedback.ok ? 'check_circle' : 'info' }}</span>{{ pasteFeedback.text }}
+                    </p>
+                    <p v-else class="text-[10px] text-on-surface-variant">
+                        Sur Google Maps : clic droit sur le lieu, puis cliquez sur les coordonnées pour les copier, et collez-les ici.
+                    </p>
+                </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Latitude</label>
@@ -398,7 +526,7 @@ function removePartner(item) {
                         <input v-model.number="form.lon" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" placeholder="-1.5197" step="any" type="number" />
                     </div>
                 </div>
-                <p class="text-[10px] text-on-surface-variant -mt-2">Renseignez latitude et longitude pour afficher l'entité sur la cartographie de la page Contact.</p>
+                <p class="text-[10px] text-on-surface-variant -mt-2">Sans coordonnées, la fiche reste affichée sur le site (liste, recherche, itinéraire) ; seul son repère manque sur la carte.</p>
 
                 <div>
                     <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Lien Google Maps</label>

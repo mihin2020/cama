@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateAdminUserRequest;
 use App\Models\AdminUser;
 use App\Services\AdminUserService;
 use App\Support\AdminPermissions;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,10 +17,16 @@ use Inertia\Response;
 
 class AdminUserController extends Controller
 {
-    public function index(Request $request, AdminUserService $service): Response
+    public function index(Request $request, AdminUserService $service): Response|RedirectResponse
     {
         /** @var AdminUser $actor */
         $actor = $request->user('admin');
+        $search = mb_substr(trim($request->string('q')->toString()), 0, 100) ?: null;
+        $paginator = $service->paginateForActor($actor, $search, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.utilisateurs', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         $assignableRoles = $actor->role === AdminRole::Administrateur
             ? [
@@ -33,8 +40,18 @@ class AdminUserController extends Controller
             ];
 
         return Inertia::render('Admin/Utilisateurs/Index', [
-            'users' => $service->listForActor($actor),
+            'users' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator),
+            'search' => $search ?? '',
             'permissionsCatalog' => AdminPermissions::catalog(),
+            // Cases que le compte connecté peut cocher (pas d'élévation de privilèges) et
+            // permissions réservées à certains rôles.
+            'grantablePermissions' => $service->grantableBy($actor),
+            'roleRestricted' => collect(AdminPermissions::ROLE_RESTRICTED)
+                ->map(fn (array $roles) => array_map(fn (AdminRole $role) => $role->value, $roles))
+                ->all(),
+            'actorId' => $actor->id,
+            'actorIsAdmin' => $actor->role === AdminRole::Administrateur,
             'rolePresets' => [
                 AdminRole::Gestionnaire->value => AdminPermissions::presetForRole(AdminRole::Gestionnaire),
                 AdminRole::Superviseur->value => AdminPermissions::presetForRole(AdminRole::Superviseur),

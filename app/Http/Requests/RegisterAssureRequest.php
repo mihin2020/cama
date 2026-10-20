@@ -16,38 +16,88 @@ class RegisterAssureRequest extends FormRequest
 
     public function rules(): array
     {
-        $org = app(PlatformSettingsService::class)->orgStructure();
+        $settings = app(PlatformSettingsService::class);
+        $org = $settings->orgStructure();
 
+        // Champs toujours présents et obligatoires (indispensables au compte).
         $rules = [
             'nom' => ['required', 'string', 'max:100'],
             'prenom' => ['required', 'string', 'max:150'],
-            'sexe' => ['required', 'in:Masculin,Féminin'],
-            'matricule' => ['required', 'string', 'max:50', 'unique:assures,matricule'],
-            'grade' => ['required', 'string', 'max:100', Rule::in($org['grades'] ?? [])],
-            'categorie' => ['required', 'string', 'max:100', Rule::in($org['categories'] ?? [])],
-            'numero_informatique' => ['required', 'string', 'max:50'],
-            'numero_cim' => ['required', 'string', 'max:50'],
-            'numero_cama' => ['required', 'string', 'max:50'],
-            'numero_iup' => ['nullable', 'string', 'max:50'],
-            'armee' => ['required', 'string', 'max:150', Rule::in($org['armees'] ?? [])],
-            'region' => ['required', 'string', 'max:200'],
-            'corps' => ['nullable', 'string', 'max:200'],
-            'service' => ['nullable', 'string', 'max:200'],
-            'section' => ['nullable', 'string', 'max:200'],
-            'sous_section' => ['nullable', 'string', 'max:200'],
-            'telephone' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:assures,email'],
-            'personne_a_prevenir' => ['nullable', 'string', 'max:200'],
-            'tel_personne_a_prevenir' => ['nullable', 'string', 'max:255'],
             'password' => ['required', 'confirmed', Password::min(12)->mixedCase()->numbers()->symbols()],
             'cgu' => ['accepted'],
         ];
 
-        foreach (app(PlatformSettingsService::class)->activeInscriptionDocuments() as $slot) {
+        // Champs paramétrables (Paramètres › Champs d'inscription).
+        $base = [
+            'matricule' => ['string', 'max:50', 'unique:assures,matricule'],
+            'sexe' => ['in:Masculin,Féminin'],
+            'grade' => ['string', 'max:100', Rule::in($org['grades'] ?? [])],
+            'categorie' => ['string', 'max:100', Rule::in($org['categories'] ?? [])],
+            'numero_informatique' => ['string', 'max:50'],
+            'numero_cim' => ['string', 'max:50'],
+            'numero_cama' => ['string', 'max:50'],
+            'numero_iup' => ['string', 'max:50'],
+            'armee' => ['string', 'max:150', Rule::in($org['armees'] ?? [])],
+            'region' => ['string', 'max:200'],
+            'corps' => ['string', 'max:200'],
+            'service' => ['string', 'max:200'],
+            'section' => ['string', 'max:200'],
+            'sous_section' => ['string', 'max:200'],
+            'telephone' => ['string', 'max:255'],
+            'personne_a_prevenir' => ['string', 'max:200'],
+            'tel_personne_a_prevenir' => ['string', 'max:255'],
+        ];
+
+        $cascadeHasOptions = $this->cascadeHasOptions($org['regions'] ?? []);
+
+        foreach ($settings->inscriptionFieldsMap() as $key => $config) {
+            if (! isset($base[$key])) {
+                continue;
+            }
+
+            if (! $config['actif']) {
+                // Champ masqué : toute valeur envoyée est ignorée.
+                $rules[$key] = ['exclude'];
+
+                continue;
+            }
+
+            // Un niveau de rattachement sans option disponible ne peut pas être exigé.
+            $required = $config['required'] && ($cascadeHasOptions[$key] ?? true);
+
+            $rules[$key] = array_merge([$required ? 'required' : 'nullable'], $base[$key]);
+        }
+
+        foreach ($settings->activeInscriptionDocuments() as $slot) {
             $rules["documents.{$slot['key']}"] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'];
         }
 
         return $rules;
+    }
+
+    /**
+     * Indique, pour chaque sous-niveau de rattachement, si la sélection du niveau
+     * parent propose effectivement des options.
+     *
+     * @return array<string, bool>
+     */
+    private function cascadeHasOptions(array $regions): array
+    {
+        $find = fn (array $nodes, mixed $libelle) => collect($nodes)
+            ->first(fn ($n) => is_array($n) && ($n['libelle'] ?? null) === $libelle);
+
+        $region = $find($regions, $this->input('region'));
+        $corps = $region ? $find($region['corps'] ?? [], $this->input('corps')) : null;
+        $service = $corps ? $find($corps['services'] ?? [], $this->input('service')) : null;
+        $section = $service ? $find($service['sections'] ?? [], $this->input('section')) : null;
+
+        return [
+            'corps' => ! empty($region['corps'] ?? []),
+            'service' => ! empty($corps['services'] ?? []),
+            'section' => ! empty($service['sections'] ?? []),
+            'sous_section' => ! empty($section['sous_sections'] ?? []),
+        ];
     }
 
     public function messages(): array

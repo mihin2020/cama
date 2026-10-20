@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\SafeUpload;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 
@@ -15,7 +16,7 @@ class CmsImageUploadService
             mkdir($directory, 0755, true);
         }
 
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
+        $extension = SafeUpload::extension($file, SafeUpload::IMAGES, 'image_file');
         $filename = Str::uuid().'.'.$extension;
 
         $file->move($directory, $filename);

@@ -1,10 +1,20 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     notifications: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 15, total: 0, perPageOptions: [15, 30, 60] }) },
     unreadCount: Number,
+});
+
+const listTop = ref(null);
+const { goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.notifications',
+    anchor: listTop,
 });
 
 const ADMIN_NOTIF_ICONS = {
@@ -46,7 +56,7 @@ function markAllRead() {
                     <span class="hidden sm:inline">Tout marquer comme lu</span>
                 </button>
             </div>
-            <div class="bg-white rounded-xl border border-outline-variant divide-y divide-outline-variant overflow-hidden">
+            <div ref="listTop" class="bg-white rounded-xl border border-outline-variant divide-y divide-outline-variant overflow-hidden scroll-mt-24">
                 <button
                     v-for="n in notifications"
                     :key="n.id"
@@ -71,6 +81,7 @@ function markAllRead() {
                 </button>
                 <p v-if="!notifications.length" class="p-10 text-center text-on-surface-variant text-sm">Aucune notification.</p>
             </div>
+            <CamaPagination v-bind="pagination" label="notification(s)" @change="goToPage" @per-page="setPerPage" />
         </div>
     </AdminLayout>
 </template>

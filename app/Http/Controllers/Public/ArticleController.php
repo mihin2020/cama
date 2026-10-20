@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsArticle;
 use App\Services\CmsArticleService;
 use App\Services\PublicSiteService;
+use App\Support\CmsRichTextSanitizer;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -59,7 +60,7 @@ class ArticleController extends Controller
                 'publishedAt' => $article->published_at?->format('d/m/Y'),
                 'imageSrc' => CmsArticleService::resolveImageUrl($article->image_url),
                 'excerpt' => $article->excerpt,
-                'bodyHtml' => $article->body_html,
+                'bodyHtml' => CmsRichTextSanitizer::sanitize($article->body_html, CmsRichTextSanitizer::ARTICLE_TAGS),
             ],
         ]);
     }

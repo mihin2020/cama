@@ -3,8 +3,8 @@ import { ref } from 'vue';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
-    titleColor: { type: String, default: '#1b1c1c' },
-    textColor: { type: String, default: '#5c403f' },
+    titleColor: { type: String, default: 'rgb(var(--c-on-surface))' },
+    textColor: { type: String, default: 'rgb(var(--c-on-surface-variant))' },
 });
 
 const openIndex = ref(0);

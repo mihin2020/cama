@@ -13,7 +13,7 @@ const props = defineProps({
     <Head title="Mentions légales" />
 
     <PublicLayout>
-        <main class="flex-grow py-stack-lg">
+        <main class="flex-grow">
             <PublicCmsSections :sections="pageSections" :system-data="{ articles: props.articles }" />
         </main>
     </PublicLayout>

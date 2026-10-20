@@ -7,6 +7,7 @@ use App\Models\CmsFaq;
 use App\Models\CmsFaqCategory;
 use App\Services\CmsFaqCategoryService;
 use App\Services\CmsFaqService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,12 +16,18 @@ use Inertia\Response;
 
 class FaqController extends Controller
 {
-    public function index(Request $request, CmsFaqService $faq, CmsFaqCategoryService $categories): Response
+    public function index(Request $request, CmsFaqService $faq, CmsFaqCategoryService $categories): Response|RedirectResponse
     {
         $categoryId = $request->integer('category') ?: null;
+        $paginator = $faq->paginateForAdmin($categoryId, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.cms.faq', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Faq/Index', [
-            'items' => $faq->listForAdmin($categoryId),
+            'items' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator),
             'categoryList' => $categories->listForAdmin(),
             'categoryOptions' => $categories->options(),
             'activeCategoryId' => $categoryId,

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AdminUser;
 use App\Models\CmsPage;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class CmsPageService
@@ -16,9 +17,9 @@ class CmsPageService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForAdmin(?string $query = null, ?string $status = null): array
+    public function paginateForAdmin(?string $query, ?string $status, int $perPage): LengthAwarePaginator
     {
-        $pages = CmsPage::query()
+        return CmsPage::query()
             ->with('author')
             ->when($query, function ($builder) use ($query) {
                 $builder->where(function ($inner) use ($query) {
@@ -29,9 +30,10 @@ class CmsPageService
             ->when($status && array_key_exists($status, self::STATUSES), fn ($builder) => $builder->where('status', $status))
             ->orderByRaw("case when slug = 'accueil' then 0 else 1 end")
             ->orderBy('title')
-            ->get();
-
-        return $pages->map(fn (CmsPage $page) => $this->format($page))->all();
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsPage $page) => $this->format($page));
     }
 
     /**
@@ -62,7 +64,7 @@ class CmsPageService
             'title' => $data['title'],
             'slug' => $slug,
             'status' => $data['status'] ?? 'draft',
-                    'sections_json' => $this->systemSectionsForSlug($slug) ?? $this->defaultSections($data['title']),
+            'sections_json' => $this->systemSectionsForSlug($slug) ?? $this->defaultSections($data['title']),
             'author_id' => $admin?->id,
             'published_at' => ($data['status'] ?? 'draft') === 'published' ? now() : null,
         ]);
@@ -292,8 +294,6 @@ class CmsPageService
             'ressources' => $this->resourcesSystemSections(),
             'actualites' => $this->newsSystemSections(),
             'contact' => $this->contactSystemSections(),
-            'mention_legales' => $this->legalSystemSections(),
-            'accessibilite' => $this->accessibilitySystemSections(),
             default => null,
         };
     }
@@ -434,111 +434,60 @@ class CmsPageService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function legalSystemSections(): array
+    /**
+     * Page publique des mentions légales. Le contenu vient du module « Mentions légales »
+     * (PlatformSettingsService::legalNotice) ; le bloc « Coordonnées » reprend le module
+     * « Pied de page » (cf. widget legal_page dans PublicCmsSections.vue). Pas de rubrique
+     * éditeur / hébergeur : retirées à la demande de la CAMA (cf. SeptembreEvolutionsContentTest).
+     *
+     * @param  array<string, mixed>|null  $content
+     */
+    public function legalSystemSections(?array $content = null): array
     {
         return [
-            $this->htmlSection(<<<'HTML'
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-    <aside class="hidden lg:block lg:col-span-3">
-        <div class="sticky top-28 space-y-2 p-4 bg-surface-container-low rounded-xl border border-outline-variant">
-            <h3 class="font-headline-md text-headline-md text-primary mb-4 px-2">Navigation</h3>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#rgpd"><span class="material-symbols-outlined">security</span> Protection des Données</a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#droits"><span class="material-symbols-outlined">assignment_ind</span> Droits des assurés</a>
-            <a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-high transition-all font-label-md text-label-md" href="#cookies"><span class="material-symbols-outlined">cookie</span> Cookies</a>
-        </div>
-    </aside>
-    <div class="col-span-1 lg:col-span-9 space-y-stack-lg">
-        <section class="bg-primary-container text-white p-12 rounded-xl relative overflow-hidden">
-            <div class="relative z-10">
-                <h1 class="font-display-lg text-display-lg mb-4">Informations Légales & Confidentialité</h1>
-                <p class="font-body-lg text-body-lg max-w-2xl opacity-90">Engagement de la Caisse d'Assurance Maladie des Armées pour la transparence, la sécurité et le respect de la vie privée des forces armées et de leurs familles.</p>
-            </div>
-            <div class="absolute right-0 bottom-0 opacity-10 translate-x-1/4 translate-y-1/4"><span class="material-symbols-outlined text-[300px]">shield</span></div>
-        </section>
-        <article id="rgpd" class="bg-white p-stack-lg rounded-xl border border-outline-variant">
-            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">Politique de Protection des Données</h2>
-            <p class="text-on-surface-variant mb-4">La CAMA s'engage à ce que la collecte et le traitement de vos données, effectués à partir du site cama.bf, soient conformes à la <strong>Loi n°001-2021/AN du 30 mars 2021</strong> portant protection des données à caractère personnel au Burkina Faso.</p>
-            <div class="bg-surface-container-low p-6 rounded-lg mb-4">
-                <h3 class="font-title-lg text-title-lg text-primary mb-3">Finalités du traitement</h3>
-                <ul class="list-disc ml-6 space-y-2 text-on-surface-variant">
-                    <li>Gestion des enrôlements et des droits aux prestations de santé.</li>
-                    <li>Traitement des réclamations et assistance aux assurés.</li>
-                    <li>Sécurisation des accès à l'Espace Personnel via authentification forte.</li>
-                    <li>Amélioration des services administratifs militaires.</li>
-                </ul>
-            </div>
-            <p class="text-on-surface-variant">Les données de santé sont soumises au <strong>secret médical</strong> et ne sont accessibles qu'au personnel habilité du service de santé des armées et des prestataires conventionnés, dans la limite de leurs attributions respectives.</p>
-        </article>
-        <article id="droits" class="bg-white p-stack-lg rounded-xl border border-outline-variant">
-            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">Droits d'accès et de rectification</h2>
-            <p class="text-on-surface-variant mb-4">Conformément à la législation en vigueur, chaque assuré (militaire ou ayant-droit) dispose des droits suivants :</p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div class="border border-outline-variant p-4 rounded-lg"><span class="material-symbols-outlined text-primary block mb-2">visibility</span><span class="font-bold block mb-1">Accès</span><span class="text-on-surface-variant text-sm">Droit de connaître les données stockées à votre sujet.</span></div>
-                <div class="border border-outline-variant p-4 rounded-lg"><span class="material-symbols-outlined text-primary block mb-2">edit_note</span><span class="font-bold block mb-1">Rectification</span><span class="text-on-surface-variant text-sm">Droit de corriger des informations erronées ou incomplètes.</span></div>
-                <div class="border border-outline-variant p-4 rounded-lg"><span class="material-symbols-outlined text-primary block mb-2">do_not_disturb_on</span><span class="font-bold block mb-1">Opposition</span><span class="text-on-surface-variant text-sm">Droit de s'opposer au traitement pour des motifs légitimes (hors obligations légales).</span></div>
-            </div>
-            <div class="p-6 border-2 border-primary/20 rounded-xl bg-surface-container-low">
-                <h4 class="font-bold text-on-surface mb-2 flex items-center gap-2"><span class="material-symbols-outlined text-primary">mail</span> Comment exercer vos droits ?</h4>
-                <p class="text-on-surface-variant">Toute demande doit être adressée au <strong>Délégué à la Protection des Données (DPO)</strong> de la CAMA :</p>
-                <p class="text-on-surface-variant mt-2">• Par courrier : Direction Générale de la CAMA, Service Juridique, Ouagadougou.</p>
-                <p class="text-on-surface-variant">• Par voie électronique : dpo@cama.bf</p>
-            </div>
-        </article>
-        <article id="cookies" class="bg-white p-stack-lg rounded-xl border border-outline-variant">
-            <h2 class="font-headline-lg text-headline-lg text-on-surface mb-4">Cookies</h2>
-            <p class="text-on-surface-variant">Ce site utilise des cookies techniques indispensables au fonctionnement de la session et à la sécurité des espaces authentifiés. Aucun cookie publicitaire n'est déposé.</p>
-        </article>
-    </div>
-</div>
-HTML),
+            $this->systemSection('legal_page', $content ?? self::LEGAL_PAGE_DEFAULTS),
         ];
     }
 
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    public function accessibilitySystemSections(): array
-    {
-        return [
-            $this->htmlSection(<<<'HTML'
-<section class="bg-primary-container text-white p-8 md:p-10 rounded-xl mb-8">
-    <h1 class="font-headline-lg text-2xl md:text-headline-lg mb-3">Déclaration d'accessibilité</h1>
-    <p class="text-white/90 text-sm md:text-base max-w-3xl">La CAMA s'engage à rendre son site internet accessible conformément à l'article 47 de la loi n° 2006-009 et aux référentiels WCAG 2.1 niveau AA.</p>
-    <p class="mt-4 text-sm font-semibold inline-flex items-center gap-2 bg-white/15 px-3 py-1.5 rounded-full"><span class="material-symbols-outlined text-[18px]">info</span> État : partiellement conforme</p>
-</section>
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-    <article class="bg-white p-6 rounded-xl border border-outline-variant">
-        <h2 class="font-bold text-lg mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-primary">check_circle</span> Points conformes</h2>
-        <ul class="space-y-2 text-sm text-on-surface-variant list-disc pl-5">
-            <li>Contrastes de couleurs institutionnels (rouge CAMA / fond clair)</li>
-            <li>Navigation clavier sur le menu principal et le pied de page</li>
-            <li>Structure sémantique (titres, landmarks, labels de formulaires)</li>
-            <li>Textes alternatifs sur les logos et images principales</li>
-            <li>Redimensionnement du texte jusqu'à 200 % sans perte de contenu</li>
-        </ul>
-    </article>
-    <article class="bg-white p-6 rounded-xl border border-outline-variant">
-        <h2 class="font-bold text-lg mb-3 flex items-center gap-2"><span class="material-symbols-outlined text-tertiary">warning</span> Améliorations en cours</h2>
-        <ul class="space-y-2 text-sm text-on-surface-variant list-disc pl-5">
-            <li>Sous-titrage des vidéos institutionnelles</li>
-            <li>Descriptions audio enrichies du carrousel d'accueil</li>
-            <li>Cartes interactives : alternative textuelle détaillée</li>
-            <li>Audit complet des composants dynamiques (back-office)</li>
-        </ul>
-    </article>
-</div>
-<article class="bg-white p-6 md:p-8 rounded-xl border border-outline-variant mb-6">
-    <h2 class="font-bold text-lg mb-4">Signaler un problème d'accessibilité</h2>
-    <p class="text-sm text-on-surface-variant mb-4">Si vous rencontrez un obstacle à la navigation ou à la consultation des contenus, contactez notre référent accessibilité :</p>
-    <div class="grid md:grid-cols-2 gap-4">
-        <div class="p-4 bg-surface-container-low rounded-lg"><p class="text-xs uppercase text-on-surface-variant mb-1">E-mail</p><a class="font-bold text-primary" href="mailto:accessibilite@cama.bf">accessibilite@cama.bf</a></div>
-        <div class="p-4 bg-surface-container-low rounded-lg"><p class="text-xs uppercase text-on-surface-variant mb-1">Délai de réponse</p><p class="font-bold">15 jours ouvrés maximum</p></div>
-    </div>
-</article>
-<p class="text-xs text-on-surface-variant">Dernière revue : juin 2026 — Référentiel : WCAG 2.1 niveau AA, RGAA 4.1 (inspiration).</p>
-HTML),
-        ];
-    }
+    public const LEGAL_PAGE_DEFAULTS = [
+        'title' => 'Informations légales & confidentialité',
+        'intro' => "Engagement de la Caisse d'Assurance Maladie des Armées pour la transparence, la sécurité et le respect de la vie privée des forces armées et de leurs familles.",
+        'articles' => [
+            [
+                'anchor' => 'rgpd',
+                'icon' => 'security',
+                'title' => 'Protection des données personnelles',
+                'body' => "La CAMA s'engage à ce que la collecte et le traitement de vos données, effectués à partir de ce site, soient conformes à la Loi n°001-2021/AN du 30 mars 2021 portant protection des données à caractère personnel au Burkina Faso.
+
+Vos données sont utilisées pour :
+- la gestion des enrôlements et des droits aux prestations de santé ;
+- le traitement des réclamations et l'assistance aux assurés ;
+- la sécurisation des accès à l'espace assuré ;
+- l'amélioration des services administratifs.
+
+Les données de santé sont soumises au secret médical et ne sont accessibles qu'au personnel habilité et aux prestataires conventionnés, dans la limite de leurs attributions.",
+            ],
+            [
+                'anchor' => 'droits',
+                'icon' => 'assignment_ind',
+                'title' => "Droits d'accès et de rectification",
+                'body' => "Conformément à la législation en vigueur, chaque assuré (militaire ou ayant droit) dispose des droits suivants :
+- accès : connaître les données conservées à son sujet ;
+- rectification : corriger des informations erronées ou incomplètes ;
+- opposition : s'opposer au traitement pour des motifs légitimes, hors obligations légales.
+
+Toute demande est à adresser à la Direction Générale de la CAMA, par courrier ou par e-mail (voir les coordonnées ci-dessous).",
+            ],
+            [
+                'anchor' => 'cookies',
+                'icon' => 'cookie',
+                'title' => 'Cookies',
+                'body' => "Ce site n'utilise que des cookies techniques, indispensables au fonctionnement de la session et à la sécurité des espaces connectés. Aucun cookie publicitaire ni de mesure d'audience tierce n'est déposé.
+
+Votre choix concernant le bandeau cookies est conservé dans votre navigateur ; vous pouvez le réinitialiser à tout moment en effaçant les données du site.",
+            ],
+        ],
+    ];
 
     private function uniqueSlug(string $value, ?CmsPage $ignore = null): string
     {
@@ -593,7 +542,7 @@ HTML),
                     [
                         'type' => 'elementor_text_editor',
                         'content' => ['html' => '<p>Contenu de la page à compléter dans l’éditeur visuel.</p>'],
-                        'style' => ['textColor' => '#5c403f', 'fontFamily' => 'Inter', 'fontSize' => 16, 'lineHeight' => 1.5],
+                        'style' => ['textColor' => 'rgb(var(--c-on-surface-variant))', 'fontFamily' => 'Inter', 'fontSize' => 16, 'lineHeight' => 1.5],
                     ],
                 ],
             ]],
@@ -620,28 +569,6 @@ HTML),
                 'widgets' => [[
                     'type' => $widgetType,
                     'content' => $content,
-                    'style' => [],
-                ]],
-            ]],
-        ];
-    }
-
-    private function htmlSection(string $html): array
-    {
-        return [
-            'type' => 'section',
-            'settings' => [
-                'contentWidth' => 'boxed',
-                'bgColor' => 'transparent',
-                'padding' => ['t' => 48, 'r' => 16, 'b' => 48, 'l' => 16],
-            ],
-            'columns' => [[
-                'type' => 'column',
-                'width' => 100,
-                'settings' => ['padding' => ['t' => 0, 'r' => 0, 'b' => 0, 'l' => 0]],
-                'widgets' => [[
-                    'type' => 'html',
-                    'content' => ['html' => $html],
                     'style' => [],
                 ]],
             ]],

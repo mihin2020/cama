@@ -1,11 +1,14 @@
 <script setup>
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaIconPicker from '@/Components/CamaIconPicker.vue';
+import CamaSkeleton from '@/Components/CamaSkeleton.vue';
 import SourceModuleNote from '@/Components/PageBuilder/SourceModuleNote.vue';
 import VersionHistoryModal from '@/Components/PageBuilder/VersionHistoryModal.vue';
+import { PB_WIDGET_MIME, isBuilderMessage, postToPreview } from '@/Components/PageBuilder/pageBuilderPreview';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { colorToHex } from '@/Utils/siteTheme';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { PALETTE, ANIMATIONS, ELEMENTOR_TABS, ELEMENTOR_ADVANCED_SECTIONS, ELEMENTOR_WIDGET_SCHEMAS, WIDGETS, SYSTEM_PAGE_WIDGETS, DEVICE_PRESETS } from './builderConstants';
 import { createBuilderRender } from './builderRender';
 import { SECTION_LIBRARY, SECTION_LIBRARY_CATEGORIES, buildSectionFromTemplate } from './builderSectionLibrary';
@@ -35,8 +38,9 @@ const props = defineProps({
 const page = usePage();
 const toast = computed(() => page.props.flash?.success ?? null);
 
-const builderRender = createBuilderRender(() => props.systemPreviewData);
-const { styleBox, sectionStyle, columnStyle, renderWidgetHtml, fullHtml, animationClass } = builderRender;
+// Ne sert plus qu'à l'export HTML autonome : le canevas et l'aperçu affichent
+// désormais la vraie page publique dans une iframe (cf. PageBuilderBridge.vue).
+const { fullHtml } = createBuilderRender(() => props.systemPreviewData);
 
 const pageId = ref(props.currentPage.id);
 const loadedPageId = ref(props.currentPage.id);
@@ -67,7 +71,23 @@ const draggedWidget = ref(null);
 const history = ref([]);
 const historyIndex = ref(-1);
 const elementorPanelTab = ref('content');
+const canvasFrame = ref(null);
+const canvasBox = ref(null);
+const canvasBoxSize = ref({ width: 1200, height: 800 });
+const previewFrameEl = ref(null);
+const versionFrameEl = ref(null);
+const newPageOpen = ref(false);
+const unsavedGuard = ref(null);
 let saveTimer = null;
+let syncTimer = null;
+let canvasResizeObserver = null;
+
+const newPageForm = useForm({
+    title: 'Nouvelle page',
+    slug: '',
+    status: 'draft',
+    from_builder: true,
+});
 
 const builderMediaForm = useForm({
     file: null,
@@ -85,7 +105,7 @@ const widgetGroups = computed(() => {
     const groups = {};
     Object.entries(WIDGETS).forEach(([type, widget]) => {
         if (widget.page && widget.page !== currentPageOption.value.slug) return;
-        if (!props.cmsPermissions.canUseHtmlWidget && ['html', 'legal_content', 'accessibility_content'].includes(type)) return;
+        if (!props.cmsPermissions.canUseHtmlWidget && type === 'html') return;
         groups[widget.category] ??= [];
         groups[widget.category].push({ type, ...widget });
     });
@@ -96,7 +116,32 @@ const currentPageOption = computed(() => props.pageOptions.find((p) => p.id === 
 const selectedNode = computed(() => findNode(selected.value));
 const previewHtml = computed(() => fullHtml(sections.value));
 const publicPreviewUrl = computed(() => currentPageOption.value.href ?? (currentPageOption.value.slug === 'accueil' ? '/' : `/${currentPageOption.value.slug}`));
-const canvasWidth = computed(() => device.value === 'mobile' ? '390px' : device.value === 'tablet' ? '768px' : '1100px');
+// Le canevas est une iframe à la vraie largeur de l'appareil : les règles responsives
+// (@media, md:, lg:) s'y appliquent comme sur un vrai écran. Si la place manque,
+// l'iframe est réduite visuellement (transform) sans changer sa largeur logique.
+const canvasFrameUrl = computed(() => frameUrl('edit'));
+// Squelette affiché sur le canevas tant que la page n'a pas signalé qu'elle est prête.
+const canvasLoading = ref(true);
+watch(canvasFrameUrl, () => {
+    canvasLoading.value = true;
+});
+const previewFrameUrl = computed(() => frameUrl('preview'));
+const canvasLayout = computed(() => {
+    // contentRect exclut déjà le padding de <main> ; on réserve la ligne d'info sous l'iframe.
+    const available = Math.max(320, canvasBoxSize.value.width);
+    const height = Math.max(320, canvasBoxSize.value.height - 24);
+    const width = device.value === 'desktop'
+        ? Math.max(available, DEVICE_PRESETS.desktop.width)
+        : DEVICE_PRESETS[device.value].width;
+    const scale = Math.min(1, available / width);
+    return {
+        framed: device.value !== 'desktop',
+        scale,
+        label: `${DEVICE_PRESETS[device.value].label} · ${width}px${scale < 1 ? ` · ${Math.round(scale * 100)} %` : ''}`,
+        wrapper: { width: `${width * scale}px`, height: `${height}px` },
+        frame: { width: `${width}px`, height: `${height / scale}px`, transform: `scale(${scale})`, transformOrigin: 'top left' },
+    };
+});
 const previewFrame = computed(() => {
     const preset = DEVICE_PRESETS[previewDevice.value] ?? DEVICE_PRESETS.desktop;
     const framed = previewDevice.value !== 'desktop';
@@ -131,6 +176,133 @@ watch(
 );
 
 resetHistory();
+
+function frameUrl(mode) {
+    return route('admin.cms.page_builder.preview', { page: loadedPageId.value, mode });
+}
+
+function syncCanvas() {
+    postToPreview(canvasFrame.value, 'state', {
+        sections: sections.value,
+        selected: selected.value,
+        canPaste: canPasteStyle.value,
+    });
+}
+
+function syncPreview() {
+    if (previewOpen.value) postToPreview(previewFrameEl.value, 'state', { sections: sections.value });
+}
+
+function scheduleSync() {
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(() => {
+        syncCanvas();
+        syncPreview();
+    }, 40);
+}
+
+watch([sections, selected, canPasteStyle], scheduleSync, { deep: true });
+
+function onFrameMessage(event) {
+    if (!isBuilderMessage(event)) return;
+    const data = event.data;
+
+    if (data.type === 'ready') {
+        if (event.source === canvasFrame.value?.contentWindow) {
+            canvasLoading.value = false;
+            syncCanvas();
+        }
+        else if (event.source === previewFrameEl.value?.contentWindow) syncPreview();
+        else if (event.source === versionFrameEl.value?.contentWindow) {
+            postToPreview(versionFrameEl.value, 'state', { sections: versionPreview.value?.sections ?? [] });
+        }
+        return;
+    }
+
+    if (event.source !== canvasFrame.value?.contentWindow) return;
+
+    if (data.type === 'select') select(data.kind, data.uid);
+    else if (data.type === 'deselect') selected.value = null;
+    else if (data.type === 'addSection') structureOpen.value = true;
+    else if (data.type === 'openLibrary') sectionLibraryOpen.value = true;
+    else if (data.type === 'drop') {
+        const target = findNode({ kind: 'column', uid: data.columnUid });
+        if (target && WIDGETS[data.widgetType]) addWidget(target.node, data.widgetType);
+    } else if (data.type === 'action') runCanvasAction(data);
+}
+
+function runCanvasAction({ action, kind, uid: targetUid }) {
+    const found = findNode({ kind, uid: targetUid });
+    if (!found) return;
+
+    const handlers = {
+        section: {
+            addColumn: () => addColumn(found.node),
+            moveUp: () => moveSection(found.sectionIndex, -1),
+            moveDown: () => moveSection(found.sectionIndex, 1),
+            toggleHidden: () => toggleSectionHidden(found.node),
+            duplicate: () => duplicateSection(found.sectionIndex),
+            delete: () => deleteSection(found.sectionIndex),
+        },
+        column: {
+            toggleHidden: () => toggleColumnHidden(found.node),
+            delete: () => deleteColumn(found.section, found.columnIndex),
+        },
+        widget: {
+            toggleHidden: () => toggleWidgetHidden(found.node),
+            copyStyle: () => copyWidgetStyle(found.node),
+            pasteStyle: () => pasteWidgetStyle(found.node),
+            duplicate: () => duplicateWidget(found.column, found.widgetIndex),
+            delete: () => deleteWidget(found.column, found.widgetIndex),
+        },
+    };
+
+    handlers[kind]?.[action]?.();
+}
+
+function onWidgetDragStart(event, type) {
+    draggedWidget.value = type;
+    event.dataTransfer.effectAllowed = 'copy';
+    event.dataTransfer.setData(PB_WIDGET_MIME, type);
+}
+
+onMounted(() => {
+    window.addEventListener('message', onFrameMessage);
+    canvasResizeObserver = new ResizeObserver(([entry]) => {
+        canvasBoxSize.value = { width: entry.contentRect.width, height: entry.contentRect.height };
+    });
+    if (canvasBox.value) canvasResizeObserver.observe(canvasBox.value);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('message', onFrameMessage);
+    canvasResizeObserver?.disconnect();
+    clearTimeout(syncTimer);
+});
+
+/**
+ * Exécute `run` directement, ou après confirmation dans une modale si des
+ * modifications ne sont pas enregistrées (enregistrer d'abord, ou abandonner).
+ */
+function guardUnsaved(label, run) {
+    if (saveState.value !== 'dirty') {
+        run();
+        return;
+    }
+    unsavedGuard.value = { label, run };
+}
+
+function resolveUnsavedGuard(choice) {
+    const guard = unsavedGuard.value;
+    unsavedGuard.value = null;
+    if (!guard || choice === 'cancel') return;
+    if (choice === 'discard') {
+        saveState.value = 'saved';
+        guard.run();
+        return;
+    }
+    saveNow({ onSuccess: () => guard.run() });
+}
 
 function uid() {
     return `e${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
@@ -443,18 +615,22 @@ function uploadBuilderMedia() {
 }
 
 function restoreVersion(version) {
-    if (!window.confirm(`Restaurer la version ${version.versionNumber} du ${version.createdAt} ? Les changements non enregistrés seront remplacés.`)) {
-        return;
-    }
-
-    router.post(
-        route('admin.cms.page_builder.versions.restore', {
-            page: loadedPageId.value,
-            version: version.id,
-        }),
-        {},
-        { preserveScroll: true },
-    );
+    askConfirm({
+        title: `Restaurer la version ${version.versionNumber} ?`,
+        message: `Version du ${version.createdAt}. Les changements non enregistrés seront remplacés.`,
+        confirmLabel: 'Restaurer',
+        variant: 'danger',
+        onConfirm: () => {
+            router.post(
+                route('admin.cms.page_builder.versions.restore', {
+                    page: loadedPageId.value,
+                    version: version.id,
+                }),
+                {},
+                { preserveScroll: true },
+            );
+        },
+    });
 }
 
 function duplicateVersion(version) {
@@ -505,29 +681,31 @@ function versionDiff(version) {
 
 function changePage() {
     const targetPageId = pageId.value;
+    // La liste reste sur la page actuelle tant que le changement n'est pas confirmé.
+    pageId.value = loadedPageId.value;
 
-    if (saveState.value === 'dirty' && !window.confirm('Des modifications ne sont pas enregistrées. Changer de page sans enregistrer ?')) {
-        pageId.value = loadedPageId.value;
-        return;
-    }
-
-    clearTimeout(saveTimer);
-    router.get(route('admin.cms.page_builder'), { page: targetPageId }, { preserveScroll: true, preserveState: false });
+    const target = props.pageOptions.find((option) => option.id === targetPageId);
+    guardUnsaved(`ouvrir la page « ${target?.title ?? 'sélectionnée'} »`, () => {
+        clearTimeout(saveTimer);
+        router.get(route('admin.cms.page_builder'), { page: targetPageId }, { preserveScroll: true, preserveState: false });
+    });
 }
 
 function newPage() {
-    if (saveState.value === 'dirty' && !window.confirm('Des modifications ne sont pas enregistrées. Créer une nouvelle page sans enregistrer ?')) {
-        return;
-    }
+    guardUnsaved('créer une nouvelle page', () => {
+        newPageForm.reset();
+        newPageForm.clearErrors();
+        newPageOpen.value = true;
+    });
+}
 
-    const title = window.prompt('Titre de la nouvelle page :', 'Nouvelle page');
-    if (title === null) return;
-
-    router.post(
-        route('admin.cms.pages.store'),
-        { title: title.trim() || 'Nouvelle page', slug: '', status: 'draft', from_builder: true },
-        { preserveScroll: true },
-    );
+function submitNewPage() {
+    newPageForm
+        .transform((data) => ({ ...data, title: data.title.trim() || 'Nouvelle page' }))
+        .post(route('admin.cms.pages.store'), {
+            preserveScroll: true,
+            onSuccess: () => { newPageOpen.value = false; },
+        });
 }
 
 function addSection(widths) {
@@ -583,7 +761,13 @@ function deleteSection(index) {
 function resetCurrentPageFromTemplate() {
     const template = systemTemplateSections(currentPageOption.value.slug);
     if (!template.length) {
-        window.alert('Cette page ne possède pas encore de maquette système.');
+        askConfirm({
+            title: 'Aucune maquette disponible',
+            message: 'Cette page ne possède pas encore de maquette système.',
+            confirmLabel: 'Compris',
+            variant: 'info',
+            alertOnly: true,
+        });
         return;
     }
 
@@ -712,6 +896,12 @@ function setControlValue(widget, tab, control, value) {
     updateSelected();
 }
 
+// Couleur par défaut du widget quand elle suit le thème (« rgb(var(--c-…)) »), sinon null.
+function themeDefaultFor(widget, control) {
+    const value = getPath(WIDGETS[widget.type]?.defaults?.().style ?? {}, control.key);
+    return typeof value === 'string' && value.includes('var(--c-') ? value : null;
+}
+
 function controlItems(widget, tab, control) {
     const value = controlValue(widget, tab, control);
     if (Array.isArray(value)) return value;
@@ -741,6 +931,14 @@ function addRepeaterItem(key, template) {
 
 function removeRepeaterItem(key, index) {
     selectedNode.value.node.content[key].splice(index, 1);
+    updateSelected();
+}
+
+function moveRepeaterItem(key, index, dir) {
+    const items = selectedNode.value.node.content[key];
+    const next = index + dir;
+    if (!items || next < 0 || next >= items.length) return;
+    [items[index], items[next]] = [items[next], items[index]];
     updateSelected();
 }
 
@@ -852,7 +1050,7 @@ async function copyExport() {
                                 :key="widget.type"
                                 class="widget-card border border-outline-variant rounded-lg p-3 flex flex-col items-center gap-1.5 text-center hover:border-primary hover:bg-primary/5"
                                 draggable="true"
-                                @dragstart="draggedWidget = widget.type"
+                                @dragstart="onWidgetDragStart($event, widget.type)"
                                 @dragend="draggedWidget = null"
                             >
                                 <span class="material-symbols-outlined text-primary text-[22px]">{{ widget.icon }}</span>
@@ -863,98 +1061,41 @@ async function copyExport() {
                 </div>
             </aside>
 
-            <main class="flex-1 overflow-y-auto bg-surface-container p-6 flex justify-center">
-                <div class="bg-white shadow-md transition-all w-full mb-24" :style="{ maxWidth: canvasWidth }">
-                    <div class="border-b border-outline-variant bg-white sticky top-0 z-10">
-                        <div class="h-16 px-6 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <img alt="Logo CAMA" class="h-10 w-10 object-contain" src="/images/logo_cama.png" />
-                                <div class="leading-tight">
-                                    <p class="font-headline-lg font-bold text-on-surface">CAMA</p>
-                                    <p class="text-[10px] uppercase tracking-wide text-on-surface-variant">Aperçu site public</p>
-                                </div>
-                            </div>
-                            <div class="hidden lg:flex gap-5 text-xs font-bold text-on-surface-variant">
-                                <span>Accueil</span><span>À propos</span><span>Services</span><span>Ressources</span><span>Actualités</span><span>Contact</span>
-                            </div>
+            <main ref="canvasBox" class="flex-1 min-w-0 overflow-hidden bg-surface-container p-6 flex flex-col items-center">
+                <div class="relative shrink-0" :style="canvasLayout.wrapper">
+                    <iframe
+                        ref="canvasFrame"
+                        :key="canvasFrameUrl"
+                        :src="canvasFrameUrl"
+                        class="absolute top-0 left-0 bg-white shadow-md transition-[width] duration-300"
+                        :class="canvasLayout.framed ? 'rounded-lg ring-[6px] ring-on-background/80' : ''"
+                        :style="canvasLayout.frame"
+                        title="Canevas d'édition — rendu réel de la page"
+                    />
+                    <div
+                        v-if="canvasLoading"
+                        class="absolute top-0 left-0 bg-white overflow-hidden p-8 space-y-6"
+                        :class="canvasLayout.framed ? 'rounded-lg' : ''"
+                        :style="canvasLayout.frame"
+                        role="status"
+                        aria-label="Chargement de la page"
+                    >
+                        <div class="flex items-center justify-between">
+                            <CamaSkeleton width="8rem" height="2rem" />
+                            <div class="flex gap-3"><CamaSkeleton v-for="n in 4" :key="n" width="4rem" /></div>
                         </div>
-                    </div>
-                    <div>
-                        <div
-                            v-for="(section, sectionIndex) in sections"
-                            :key="section.uid"
-                            class="cv-section relative"
-                            :class="[{ 'is-selected': selected?.uid === section.uid, 'opacity-45 outline outline-1 outline-dashed outline-tertiary': section.settings.hidden }, animationClass(section.settings)]"
-                            :style="sectionStyle(section)"
-                            @click.stop="select('section', section.uid)"
-                        >
-                            <span class="el-label sec-lb bg-primary text-white">Section</span>
-                            <div class="el-toolbar sec-tb top-1 left-1/2 -translate-x-1/2 bg-primary text-white rounded-full text-[11px] overflow-hidden shadow-lg">
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" title="Ajouter colonne" @click.stop="addColumn(section)"><span class="material-symbols-outlined text-[14px]">view_column</span></button>
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" title="Monter" @click.stop="moveSection(sectionIndex, -1)"><span class="material-symbols-outlined text-[14px]">arrow_upward</span></button>
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" title="Descendre" @click.stop="moveSection(sectionIndex, 1)"><span class="material-symbols-outlined text-[14px]">arrow_downward</span></button>
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" :title="section.settings.hidden ? 'Afficher' : 'Masquer'" @click.stop="toggleSectionHidden(section)"><span class="material-symbols-outlined text-[14px]">{{ section.settings.hidden ? 'visibility' : 'visibility_off' }}</span></button>
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" title="Dupliquer" @click.stop="duplicateSection(sectionIndex)"><span class="material-symbols-outlined text-[14px]">content_copy</span></button>
-                                <button class="px-2 py-1 hover:bg-black/20" type="button" title="Supprimer" @click.stop="deleteSection(sectionIndex)"><span class="material-symbols-outlined text-[14px]">delete</span></button>
-                            </div>
-                            <div class="flex flex-wrap gap-6" :class="section.settings.contentWidth === 'full' ? '' : 'max-w-[1100px] mx-auto'">
-                                <div
-                                    v-for="(column, columnIndex) in section.columns"
-                                    :key="column.uid"
-                                    class="cv-col relative"
-                                    :class="[{ 'is-selected': selected?.uid === column.uid, 'opacity-45 outline outline-1 outline-dashed outline-tertiary': column.settings.hidden }, animationClass(column.settings)]"
-                                    :style="columnStyle(column)"
-                                    @click.stop="select('column', column.uid)"
-                                    @dragover.prevent
-                                    @drop.stop="onDropWidget(column)"
-                                >
-                                    <span class="el-label col-lb bg-secondary text-white">Colonne {{ column.width }}%</span>
-                                    <div class="el-toolbar col-tb top-1 right-1 bg-secondary text-white rounded-md text-[11px] overflow-hidden">
-                                        <button class="px-1.5 py-1 hover:bg-black/20" type="button" :title="column.settings.hidden ? 'Afficher' : 'Masquer'" @click.stop="toggleColumnHidden(column)"><span class="material-symbols-outlined text-[14px]">{{ column.settings.hidden ? 'visibility' : 'visibility_off' }}</span></button>
-                                        <button class="px-1.5 py-1 hover:bg-black/20" type="button" title="Supprimer" @click.stop="deleteColumn(section, columnIndex)"><span class="material-symbols-outlined text-[14px]">delete</span></button>
-                                    </div>
-                                    <div v-if="!column.widgets.length" class="drop-empty py-8 text-center text-[11px] text-on-surface-variant">
-                                        Glissez un élément ici
-                                    </div>
-                                    <div
-                                        v-for="(widget, widgetIndex) in column.widgets"
-                                        :key="widget.uid"
-                                        class="cv-widget relative"
-                                        :class="[{ 'is-selected': selected?.uid === widget.uid, 'opacity-45 outline outline-1 outline-dashed outline-tertiary': widget.style.hidden }, animationClass(widget.style)]"
-                                        :style="styleBox(widget.style)"
-                                        @click.stop="select('widget', widget.uid)"
-                                    >
-                                        <div class="el-toolbar wid-tb -top-3 right-1 bg-primary text-white rounded-md text-[11px] overflow-hidden">
-                                            <span class="px-2 py-1 font-semibold inline-flex items-center gap-1">{{ WIDGETS[widget.type].label }}</span>
-                                            <button class="px-1.5 py-1 hover:bg-black/20" type="button" :title="widget.style.hidden ? 'Afficher' : 'Masquer'" @click.stop="toggleWidgetHidden(widget)"><span class="material-symbols-outlined text-[14px]">{{ widget.style.hidden ? 'visibility' : 'visibility_off' }}</span></button>
-                                            <button class="px-1.5 py-1 hover:bg-black/20" type="button" title="Copier le style" @click.stop="copyWidgetStyle(widget)"><span class="material-symbols-outlined text-[14px]">format_paint</span></button>
-                                            <button class="px-1.5 py-1 hover:bg-black/20 disabled:opacity-30" type="button" title="Coller le style" :disabled="!canPasteStyle" @click.stop="pasteWidgetStyle(widget)"><span class="material-symbols-outlined text-[14px]">content_paste</span></button>
-                                            <button class="px-1.5 py-1 hover:bg-black/20" type="button" title="Dupliquer" @click.stop="duplicateWidget(column, widgetIndex)"><span class="material-symbols-outlined text-[14px]">content_copy</span></button>
-                                            <button class="px-1.5 py-1 hover:bg-black/20" type="button" title="Supprimer" @click.stop="deleteWidget(column, widgetIndex)"><span class="material-symbols-outlined text-[14px]">delete</span></button>
-                                        </div>
-                                        <div v-html="renderWidgetHtml(widget)" />
-                                    </div>
-                                </div>
-                            </div>
+                        <CamaSkeleton height="14rem" rounded="rounded-xl" />
+                        <div class="space-y-3 max-w-xl mx-auto">
+                            <CamaSkeleton width="60%" height="1.5rem" class="mx-auto" />
+                            <CamaSkeleton />
+                            <CamaSkeleton width="85%" />
                         </div>
-                        <div class="p-4 flex flex-col sm:flex-row gap-2">
-                            <button class="flex-1 border-2 border-dashed border-outline-variant rounded-xl py-3 text-sm font-bold text-on-surface-variant hover:border-primary hover:text-primary flex items-center justify-center gap-2" type="button" @click="structureOpen = true">
-                                <span class="material-symbols-outlined">add</span>
-                                Section vide
-                            </button>
-                            <button class="flex-1 border-2 border-primary/30 bg-primary/5 rounded-xl py-3 text-sm font-bold text-primary hover:bg-primary/10 flex items-center justify-center gap-2" type="button" @click="sectionLibraryOpen = true">
-                                <span class="material-symbols-outlined">dashboard</span>
-                                Bibliothèque
-                            </button>
-                        </div>
-                    </div>
-                    <div class="bg-on-background text-white px-6 py-8 text-xs">
-                        <div class="flex items-center gap-3">
-                            <img alt="Logo CAMA" class="h-9 w-9 object-contain bg-white rounded" src="/images/logo_cama.png" />
-                            <span>© CAMA - Pied de page public</span>
+                        <div class="grid grid-cols-3 gap-4">
+                            <CamaSkeleton v-for="n in 3" :key="n" height="8rem" rounded="rounded-xl" />
                         </div>
                     </div>
                 </div>
+                <p class="mt-2 text-[10px] text-on-surface-variant tabular-nums shrink-0">{{ canvasLayout.label }}</p>
             </main>
 
             <aside class="w-80 border-l border-outline-variant bg-white shrink-0 flex flex-col">
@@ -1147,7 +1288,18 @@ async function copyExport() {
                                         <p class="text-[11px] font-bold uppercase tracking-wider text-primary">Style</p>
                                         <template v-for="control in elementorSchema(selectedNode.node).style" :key="control.key">
                                             <label class="ctrl-label">{{ control.label }}</label>
-                                            <input v-if="control.type === 'color'" type="color" :value="controlValue(selectedNode.node, 'style', control) || '#000000'" class="ctrl-input" @input="setControlValue(selectedNode.node, 'style', control, $event.target.value)" />
+                                            <div v-if="control.type === 'color'" class="flex items-center gap-2">
+                                                <input type="color" :value="colorToHex(controlValue(selectedNode.node, 'style', control))" class="ctrl-input" @input="setControlValue(selectedNode.node, 'style', control, $event.target.value)" />
+                                                <button
+                                                    v-if="themeDefaultFor(selectedNode.node, control) && controlValue(selectedNode.node, 'style', control) !== themeDefaultFor(selectedNode.node, control)"
+                                                    class="shrink-0 text-[10px] font-semibold text-primary hover:underline"
+                                                    type="button"
+                                                    title="Suivre la couleur définie dans CMS > Identité visuelle"
+                                                    @click="setControlValue(selectedNode.node, 'style', control, themeDefaultFor(selectedNode.node, control))"
+                                                >
+                                                    Couleur du thème
+                                                </button>
+                                            </div>
                                             <div v-else-if="control.type === 'responsive-align'" class="grid grid-cols-3 gap-2">
                                                 <select :value="selectedNode.node.style.align" class="ctrl-select" @change="setControlValue(selectedNode.node, 'style', { key: 'align' }, $event.target.value)">
                                                     <option value="">Desk</option><option value="left">Gauche</option><option value="center">Centre</option><option value="right">Droite</option>
@@ -1442,6 +1594,33 @@ async function copyExport() {
                                 </div>
                             </template>
 
+                            <template v-if="selectedNode.node.type === 'legal_page'">
+                                <label class="ctrl-label">Titre</label>
+                                <input v-model="selectedNode.node.content.title" class="ctrl-input" @input="updateSelected" />
+                                <label class="ctrl-label">Introduction</label>
+                                <textarea v-model="selectedNode.node.content.intro" rows="3" class="ctrl-area" @input="updateSelected" />
+
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-primary pt-2">Coordonnées</p>
+                                <SourceModuleNote route-name="admin.cms.footer" module-label="Pied de page">
+                                    Adresse, téléphones, e-mails et horaires sont repris automatiquement du pied de page : modifiez-les une seule fois, là-bas.
+                                </SourceModuleNote>
+
+                                <p class="text-[11px] font-bold uppercase tracking-wider text-primary pt-2">Articles</p>
+                                <p class="text-[10px] text-on-surface-variant leading-snug">Ligne vide = nouveau paragraphe. Ligne commençant par « - » = puce.</p>
+                                <div v-for="(article, index) in selectedNode.node.content.articles" :key="index" class="border border-outline-variant rounded-lg p-2 space-y-1">
+                                    <CamaIconPicker v-model="article.icon" label="" @update:modelValue="updateSelected" />
+                                    <input v-model="article.title" class="ctrl-input" placeholder="Titre" @input="updateSelected" />
+                                    <input v-model="article.anchor" class="ctrl-input" placeholder="Ancre (ex. cookies)" @input="updateSelected" />
+                                    <textarea v-model="article.body" class="ctrl-area" rows="7" placeholder="Texte de l'article" @input="updateSelected" />
+                                    <div class="flex items-center gap-3">
+                                        <button class="text-[10px] text-on-surface-variant hover:text-primary disabled:opacity-30" type="button" :disabled="index === 0" @click="moveRepeaterItem('articles', index, -1)">Monter</button>
+                                        <button class="text-[10px] text-on-surface-variant hover:text-primary disabled:opacity-30" type="button" :disabled="index === selectedNode.node.content.articles.length - 1" @click="moveRepeaterItem('articles', index, 1)">Descendre</button>
+                                        <button class="text-[10px] text-error ml-auto" type="button" @click="removeRepeaterItem('articles', index)">Supprimer</button>
+                                    </div>
+                                </div>
+                                <button class="w-full border border-dashed border-outline-variant rounded-lg py-1.5 text-[11px] font-semibold text-primary" type="button" @click="addRepeaterItem('articles', { anchor: '', icon: 'article', title: 'Nouvel article', body: '' })">Ajouter un article</button>
+                            </template>
+
                             <template v-if="selectedNode.node.type === 'about_cta'">
                                 <label class="ctrl-label">Titre</label>
                                 <input v-model="selectedNode.node.content.title" class="ctrl-input" @input="updateSelected" />
@@ -1719,8 +1898,9 @@ async function copyExport() {
             <iframe
                 class="bg-white shadow-2xl transition-all duration-300 rounded-lg"
                 :class="previewFrame.framed ? 'border-[10px] border-on-background/80' : ''"
+                ref="previewFrameEl"
                 :style="previewFrame.style"
-                :srcdoc="previewHtml"
+                :src="previewFrameUrl"
                 title="Aperçu responsive"
             />
         </div>
@@ -1826,7 +2006,7 @@ async function copyExport() {
             </div>
             <button class="px-3 py-1.5 rounded-lg text-xs font-bold border border-outline-variant" type="button" @click="versionPreview = null">Fermer</button>
         </div>
-        <iframe class="flex-1 w-full bg-white" :srcdoc="fullHtml(versionPreview.sections ?? [])" title="Aperçu version" />
+        <iframe ref="versionFrameEl" class="flex-1 w-full bg-white" :src="previewFrameUrl" title="Aperçu version" />
     </div>
 
     <div v-if="versionCompare" class="fixed inset-0 bg-black/60 z-[88] flex items-center justify-center p-6">
@@ -1889,6 +2069,55 @@ async function copyExport() {
         </div>
     </div>
 
+    <div v-if="newPageOpen" class="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4" @click.self="newPageOpen = false">
+        <form class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" @submit.prevent="submitNewPage">
+            <div class="px-6 py-4 border-b border-outline-variant flex items-center gap-3">
+                <span class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">note_add</span></span>
+                <div>
+                    <p class="text-sm font-bold text-on-surface">Nouvelle page</p>
+                    <p class="text-[11px] text-on-surface-variant">Créée en brouillon, puis ouverte dans l'éditeur.</p>
+                </div>
+            </div>
+            <div class="px-6 py-5 space-y-4">
+                <div>
+                    <label class="ctrl-label" for="new-page-title">Titre de la page</label>
+                    <input id="new-page-title" v-model="newPageForm.title" class="ctrl-input" maxlength="255" required autofocus />
+                    <p v-if="newPageForm.errors.title" class="text-error text-[11px] mt-1">{{ newPageForm.errors.title }}</p>
+                </div>
+                <div>
+                    <label class="ctrl-label" for="new-page-slug">Adresse (facultatif)</label>
+                    <input id="new-page-slug" v-model="newPageForm.slug" class="ctrl-input" maxlength="255" placeholder="Générée à partir du titre" />
+                    <p v-if="newPageForm.errors.slug" class="text-error text-[11px] mt-1">{{ newPageForm.errors.slug }}</p>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 px-6 py-4 border-t border-outline-variant bg-surface-container-low/50">
+                <button class="px-4 py-2 rounded-lg text-xs font-bold border border-outline-variant" type="button" @click="newPageOpen = false">Annuler</button>
+                <button class="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-on-primary disabled:opacity-50" type="submit" :disabled="newPageForm.processing">
+                    {{ newPageForm.processing ? 'Création…' : 'Créer la page' }}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div v-if="unsavedGuard" class="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4" @click.self="resolveUnsavedGuard('cancel')">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" role="alertdialog" aria-modal="true">
+            <div class="px-6 py-5 flex items-start gap-3">
+                <span class="w-9 h-9 shrink-0 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center"><span class="material-symbols-outlined text-[20px]">warning</span></span>
+                <div>
+                    <p class="text-sm font-bold text-on-surface">Modifications non enregistrées</p>
+                    <p class="text-xs text-on-surface-variant leading-relaxed mt-1">
+                        La page « {{ currentPageOption.title }} » contient des modifications non enregistrées. Que faire avant de {{ unsavedGuard.label }} ?
+                    </p>
+                </div>
+            </div>
+            <div class="flex flex-wrap justify-end gap-2 px-6 py-4 border-t border-outline-variant bg-surface-container-low/50">
+                <button class="px-4 py-2 rounded-lg text-xs font-bold border border-outline-variant" type="button" @click="resolveUnsavedGuard('cancel')">Annuler</button>
+                <button class="px-4 py-2 rounded-lg text-xs font-bold border border-error/40 text-error" type="button" @click="resolveUnsavedGuard('discard')">Ne pas enregistrer</button>
+                <button class="px-4 py-2 rounded-lg text-xs font-bold bg-primary text-on-primary" type="button" @click="resolveUnsavedGuard('save')">Enregistrer et continuer</button>
+            </div>
+        </div>
+    </div>
+
     <CamaConfirmModal
         :show="confirmState.show"
         :title="confirmState.title"
@@ -1907,14 +2136,14 @@ async function copyExport() {
 .widget-card { cursor: grab; user-select: none; }
 .widget-card:active { cursor: grabbing; }
 .cv-section { outline: 1px dashed transparent; transition: outline-color .12s; }
-.cv-section:hover { outline-color: #e5bdbb; }
-.cv-section.is-selected { outline: 2px solid #9e001f; }
+.cv-section:hover { outline-color: rgb(var(--c-outline-variant)); }
+.cv-section.is-selected { outline: 2px solid rgb(var(--c-primary)); }
 .cv-col { outline: 1px dashed transparent; min-height: 80px; transition: outline-color .12s; }
-.cv-col:hover { outline-color: #ffb3b1; }
-.cv-col.is-selected { outline: 2px solid #006e27; }
+.cv-col:hover { outline-color: rgb(var(--c-primary-fixed-dim)); }
+.cv-col.is-selected { outline: 2px solid rgb(var(--c-secondary)); }
 .cv-widget { outline: 2px solid transparent; transition: outline-color .12s; }
-.cv-widget:hover { outline-color: #ffb3b1; }
-.cv-widget.is-selected { outline: 2px solid #9e001f; }
+.cv-widget:hover { outline-color: rgb(var(--c-primary-fixed-dim)); }
+.cv-widget.is-selected { outline: 2px solid rgb(var(--c-primary)); }
 .el-toolbar { display: none; position: absolute; z-index: 20; }
 .cv-section.is-selected > .el-toolbar.sec-tb,
 .cv-section:hover > .el-toolbar.sec-tb,
@@ -1927,10 +2156,10 @@ async function copyExport() {
 .cv-section.is-selected > .el-label.sec-lb,
 .cv-col:hover > .el-label.col-lb,
 .cv-col.is-selected > .el-label.col-lb { display:block; }
-.drop-empty { border: 2px dashed #e5bdbb; border-radius: 8px; }
-.ctrl-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:#5c403f; margin-bottom:4px; display:flex; align-items:center; justify-content:space-between; }
-.ctrl-input, .ctrl-select, .ctrl-area { width:100%; padding:6px 8px; font-size:12px; border:1px solid #e5bdbb; border-radius:6px; background:#fff; }
-.ctrl-input:focus, .ctrl-select:focus, .ctrl-area:focus { outline:none; border-color:#9e001f; }
+.drop-empty { border: 2px dashed rgb(var(--c-outline-variant)); border-radius: 8px; }
+.ctrl-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:rgb(var(--c-on-surface-variant)); margin-bottom:4px; display:flex; align-items:center; justify-content:space-between; }
+.ctrl-input, .ctrl-select, .ctrl-area { width:100%; padding:6px 8px; font-size:12px; border:1px solid rgb(var(--c-outline-variant)); border-radius:6px; background:#fff; }
+.ctrl-input:focus, .ctrl-select:focus, .ctrl-area:focus { outline:none; border-color:rgb(var(--c-primary)); }
 .device-btn.is-active { background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.12); }
 .pb-tool-btn {
     display: inline-flex;
@@ -1939,10 +2168,10 @@ async function copyExport() {
     width: 36px;
     height: 36px;
     border-radius: 8px;
-    color: #5c403f;
+    color: rgb(var(--c-on-surface-variant));
     transition: background-color 0.15s;
 }
-.pb-tool-btn:hover:not(:disabled) { background: #f0eded; color: #9e001f; }
+.pb-tool-btn:hover:not(:disabled) { background: rgb(var(--c-surface-container)); color: rgb(var(--c-primary)); }
 .pb-tool-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 .pb-action-btn {
     display: inline-flex;
@@ -1950,14 +2179,14 @@ async function copyExport() {
     gap: 6px;
     padding: 7px 12px;
     border-radius: 8px;
-    border: 1px solid #e5bdbb;
+    border: 1px solid rgb(var(--c-outline-variant));
     font-size: 12px;
     font-weight: 700;
-    color: #5c403f;
+    color: rgb(var(--c-on-surface-variant));
     background: #fff;
     white-space: nowrap;
 }
-.pb-action-btn:hover { border-color: #9e001f; color: #9e001f; }
+.pb-action-btn:hover { border-color: rgb(var(--c-primary)); color: rgb(var(--c-primary)); }
 .pb-menu-item {
     display: flex;
     align-items: center;
@@ -1967,9 +2196,9 @@ async function copyExport() {
     text-align: left;
     font-size: 13px;
     font-weight: 600;
-    color: #1b1c1c;
+    color: rgb(var(--c-on-surface));
 }
-.pb-menu-item:hover { background: #f6f3f2; color: #9e001f; }
+.pb-menu-item:hover { background: rgb(var(--c-surface-container-low)); color: rgb(var(--c-primary)); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

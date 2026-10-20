@@ -68,7 +68,7 @@ class BanniereController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'subtitle' => ['nullable', 'string', 'max:2000'],
             'image_url' => ['nullable', 'string', 'max:500'],
-            'image_file' => ['nullable', 'image', 'max:5120'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'sort_order' => ['required', 'integer', 'min:1'],
             'active' => ['boolean'],
         ]);

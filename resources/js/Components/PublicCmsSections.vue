@@ -4,8 +4,15 @@ import ElementorAccordion from '@/Components/PublicWidgets/ElementorAccordion.vu
 import ElementorCarousel from '@/Components/PublicWidgets/ElementorCarousel.vue';
 import ElementorPosts from '@/Components/PublicWidgets/ElementorPosts.vue';
 import ElementorTabs from '@/Components/PublicWidgets/ElementorTabs.vue';
+import { pbPreview, postToBuilder } from '@/Components/PageBuilder/pageBuilderPreview';
+import { legalAnchor, legalBlocks } from '@/Utils/legalText';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useClientPagination } from '@/Composables/usePagination';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+
+// Chargé seulement dans l'iframe du page builder, jamais sur le site public.
+const PageBuilderBridge = defineAsyncComponent(() => import('@/Components/PageBuilder/PageBuilderBridge.vue'));
 
 const props = defineProps({
     sections: {
@@ -19,6 +26,14 @@ const props = defineProps({
 });
 
 const page = usePage();
+// Rendu dans l'éditeur de pages (canevas ou aperçu) : les sections viennent de l'éditeur.
+const builderPreview = computed(() => page.props.builderPreview ?? null);
+const pbEditing = computed(() => builderPreview.value?.mode === 'edit');
+const renderedSections = computed(() => (builderPreview.value && pbPreview.sections) ? pbPreview.sections : props.sections);
+
+function pbAttr(node) {
+    return builderPreview.value ? node?.uid : undefined;
+}
 const flashSuccess = computed(() => page.props.flash?.success ?? '');
 const flashError = computed(() => page.props.flash?.error ?? '');
 const fallbackSlide = {
@@ -39,6 +54,43 @@ const homeFeaturedArticle = computed(() => homeArticles.value.find(article => ar
 const homeSideArticles = computed(() => homeArticles.value.filter(article => !homeFeaturedArticle.value || article.id !== homeFeaturedArticle.value.id).slice(0, 2));
 const serviceFaqs = computed(() => props.systemData.faqs ?? []);
 const servicePartners = computed(() => props.systemData.partners ?? []);
+// Prestataires (page Services) : recherche, ville, type et affichage progressif (plus de 200 fiches).
+const PARTNER_PAGE = 12;
+const partnerTypes = [
+    { key: 'Tous', label: 'Tous', icon: 'apps' },
+    { key: 'Centre de santé', label: 'Centres de santé', icon: 'local_hospital' },
+    { key: 'Partenaire', label: 'Pharmacies & laboratoires', icon: 'medication' },
+];
+const partnerSearch = ref('');
+const partnerCity = ref('');
+const partnerType = ref('Tous');
+const partnerLimit = ref(PARTNER_PAGE);
+const partnerCities = computed(() => {
+    const counts = new Map();
+    servicePartners.value.forEach((partner) => {
+        if (partner.city) counts.set(partner.city, (counts.get(partner.city) ?? 0) + 1);
+    });
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], 'fr')).map(([city, count]) => ({ city, count }));
+});
+const partnersMatchingSearch = computed(() => {
+    const q = partnerSearch.value.trim().toLowerCase();
+    return servicePartners.value.filter((partner) => (!partnerCity.value || partner.city === partnerCity.value)
+        && (!q || `${partner.name} ${partner.city ?? ''} ${partner.address ?? ''}`.toLowerCase().includes(q)));
+});
+const filteredPartners = computed(() => partnersMatchingSearch.value
+    .filter((partner) => partnerType.value === 'Tous' || partner.type === partnerType.value));
+const visiblePartners = computed(() => filteredPartners.value.slice(0, partnerLimit.value));
+function partnerTypeCount(key) {
+    return key === 'Tous'
+        ? partnersMatchingSearch.value.length
+        : partnersMatchingSearch.value.filter((partner) => partner.type === key).length;
+}
+function partnerIcon(type) {
+    return type === 'Centre de santé' ? 'local_hospital' : 'medication';
+}
+watch([partnerSearch, partnerCity, partnerType], () => {
+    partnerLimit.value = PARTNER_PAGE;
+});
 const resourceCategories = computed(() => ['Toutes', ...(props.systemData.categories ?? [])]);
 const resourceActiveCategory = ref('Toutes');
 const resourceToast = ref('');
@@ -47,8 +99,6 @@ const filteredResources = computed(() => resourceActiveCategory.value === 'Toute
     : (props.systemData.resources ?? []).filter(resource => resource.category === resourceActiveCategory.value));
 const newsActiveCategory = ref('Tout');
 const newsSearchQuery = ref(props.systemData.initialSearch ?? '');
-const newsCurrentPage = ref(1);
-const newsPerPage = 6;
 const newsFilters = computed(() => ['Tout', ...(props.systemData.categories ?? [])]);
 const filteredNews = computed(() => {
     const q = newsSearchQuery.value.trim().toLowerCase();
@@ -60,8 +110,19 @@ const filteredNews = computed(() => {
 });
 const featuredNews = computed(() => filteredNews.value.find(article => article.featured) ?? filteredNews.value[0] ?? null);
 const listedNews = computed(() => filteredNews.value.filter(article => !featuredNews.value || article.id !== featuredNews.value.id));
-const newsTotalPages = computed(() => Math.max(1, Math.ceil(listedNews.value.length / newsPerPage)));
-const pagedNews = computed(() => listedNews.value.slice((newsCurrentPage.value - 1) * newsPerPage, newsCurrentPage.value * newsPerPage));
+// Actualités : 9 par page (3 rangées de 3) ; ressources : 12 par page. Filtre ou recherche → page 1.
+const newsTop = ref(null);
+const {
+    pagination: newsPagination,
+    paged: pagedNews,
+    goToPage: setNewsPage,
+} = useClientPagination(() => listedNews.value, { perPageOptions: [9], anchor: newsTop, resetOn: [newsActiveCategory, newsSearchQuery] });
+const resourcesTop = ref(null);
+const {
+    pagination: resourcesPagination,
+    paged: pagedResources,
+    goToPage: setResourcesPage,
+} = useClientPagination(() => filteredResources.value, { perPageOptions: [12], anchor: resourcesTop, resetOn: resourceActiveCategory });
 const contactSearchQuery = ref('');
 const contactActiveFilter = ref('all');
 const contactActiveId = ref(null);
@@ -80,7 +141,7 @@ const filteredContactLocations = computed(() => {
     const q = contactSearchQuery.value.trim().toLowerCase();
     return (props.systemData.locations ?? []).filter((location) => {
         const matchesFilter = filter.match(location.type);
-        const matchesSearch = !q || `${location.name} ${location.address}`.toLowerCase().includes(q);
+        const matchesSearch = !q || `${location.name} ${location.city ?? ''} ${location.address}`.toLowerCase().includes(q);
         return matchesFilter && matchesSearch;
     });
 });
@@ -88,7 +149,21 @@ const activeContactLocation = computed(() => {
     const locations = props.systemData.locations ?? [];
     return locations.find(location => location.id === contactActiveId.value) ?? locations[0] ?? null;
 });
-const contactMapPoints = computed(() => (props.systemData.locations ?? []).map(location => ({
+const isLocated = location => location?.lat != null && location?.lon != null;
+// Centre approximatif de chaque ville (moyenne des lieux localisés) : sert à recentrer la carte
+// sur la ville d'une fiche sans coordonnées, qui reste listée et sélectionnable comme les autres.
+const contactCityCenters = computed(() => {
+    const sums = new Map();
+    (props.systemData.locations ?? []).filter(isLocated).forEach((location) => {
+        const entry = sums.get(location.city) ?? { lat: 0, lon: 0, n: 0 };
+        entry.lat += Number(location.lat);
+        entry.lon += Number(location.lon);
+        entry.n += 1;
+        sums.set(location.city, entry);
+    });
+    return new Map([...sums].map(([city, s]) => [city, { lat: s.lat / s.n, lon: s.lon / s.n }]));
+});
+const contactMapPoints = computed(() => filteredContactLocations.value.filter(isLocated).map(location => ({
     id: location.id,
     name: location.name,
     type: location.partnerType || (location.type === 'centre' ? 'Centre de santé' : location.type === 'partenaire' ? 'Partenaire' : location.type === 'siege' ? 'Siège CAMA' : 'Antenne CAMA'),
@@ -101,8 +176,10 @@ const contactMapPoints = computed(() => (props.systemData.locations ?? []).map(l
 })));
 const contactMapFocus = computed(() => {
     const location = activeContactLocation.value;
-    if (!location || typeof location.lat !== 'number' || typeof location.lon !== 'number') return null;
-    return { lat: Number(location.lat), lon: Number(location.lon), zoom: 14, key: location.id };
+    if (!location) return null;
+    if (isLocated(location)) return { lat: Number(location.lat), lon: Number(location.lon), zoom: 14, key: location.id };
+    const city = contactCityCenters.value.get(location.city);
+    return city ? { lat: city.lat, lon: city.lon, zoom: 13, key: location.id } : null;
 });
 
 const contactForm = useForm({
@@ -128,37 +205,50 @@ onMounted(() => {
         }, 7000);
     }
 
-    nextTick(() => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('opacity-100', 'translate-y-0');
-                    entry.target.classList.remove('opacity-0', 'translate-y-10');
-                }
-            });
-        }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-
-        document.querySelectorAll('main section > div').forEach((el) => {
-            el.classList.add('transition-all', 'duration-1000', 'ease-out', 'opacity-0', 'translate-y-10');
-            observer.observe(el);
-        });
-    });
+    nextTick(setupReveal);
 });
+
+// Dans l'éditeur, les vraies sections arrivent après le premier rendu : on relance
+// l'animation d'apparition pour qu'elle soit identique à celle du site publié.
+watch(() => pbPreview.revision, (revision) => {
+    if (revision === 1) nextTick(setupReveal);
+});
+
+let revealObserver = null;
+
+function setupReveal() {
+    revealObserver?.disconnect();
+    revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('opacity-100', 'translate-y-0');
+                entry.target.classList.remove('opacity-0', 'translate-y-10');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('main section > div').forEach((el) => {
+        el.classList.remove('opacity-100', 'translate-y-0');
+        el.classList.add('transition-all', 'duration-1000', 'ease-out', 'opacity-0', 'translate-y-10');
+        revealObserver.observe(el);
+    });
+}
 
 onBeforeUnmount(() => {
     if (slideTimer) window.clearInterval(slideTimer);
+    revealObserver?.disconnect();
 });
 
 const palette = {
-    primary: '#9e001f',
-    secondary: '#006e27',
-    tertiary: '#745b00',
-    'surface-container-low': '#f6f3f2',
-    'surface-container': '#f0eded',
-    'surface-container-high': '#eae7e7',
-    'outline-variant': '#e5bdbb',
-    'on-surface': '#1b1c1c',
-    'on-surface-variant': '#5c403f',
+    primary: 'rgb(var(--c-primary))',
+    secondary: 'rgb(var(--c-secondary))',
+    tertiary: 'rgb(var(--c-tertiary))',
+    'surface-container-low': 'rgb(var(--c-surface-container-low))',
+    'surface-container': 'rgb(var(--c-surface-container))',
+    'surface-container-high': 'rgb(var(--c-surface-container-high))',
+    'outline-variant': 'rgb(var(--c-outline-variant))',
+    'on-surface': 'rgb(var(--c-on-surface))',
+    'on-surface-variant': 'rgb(var(--c-on-surface-variant))',
     white: '#ffffff',
     transparent: 'transparent',
 };
@@ -171,7 +261,15 @@ function styleBox(style = {}) {
     const padding = style.padding ?? {};
     const margin = style.margin ?? {};
     const styles = {};
-    if (style.hidden) styles.display = 'none';
+    if (style.hidden) {
+        // Dans le canevas de l'éditeur, un élément masqué reste visible (estompé) pour rester sélectionnable.
+        if (pbEditing.value) {
+            styles.opacity = '0.45';
+            styles.outline = '1px dashed rgb(var(--c-tertiary))';
+        } else {
+            styles.display = 'none';
+        }
+    }
     if (style.bgColor && style.bgColor !== 'transparent') styles.backgroundColor = colorValue(style.bgColor);
     if (style.bgImage) {
         styles.backgroundImage = `url('${style.bgImage}')`;
@@ -258,7 +356,7 @@ function renderElementorWidgetHtml(widget) {
     if (widget.type === 'elementor_button') {
         const icon = content.icon ? `<span class="material-symbols-outlined text-[18px]">${escapeHtml(content.icon)}</span>` : '';
         const label = `<span>${escapeHtml(content.text || '')}</span>`;
-        return `<div class="${align}" style="${inlineStyle}"><a class="inline-flex items-center gap-2" href="${escapeAttr(content.link?.url || '#')}" style="background:${style.bgColor || '#9e001f'};color:${style.textColor || '#fff'};border-radius:${style.borderRadius || 0}px;padding:${spacingCss(style.padding)};font-family:${style.fontFamily || 'Inter'};font-size:${cssLength(style.fontSize, 'px', '14px')};font-weight:${style.fontWeight || '700'}">${content.iconPosition === 'after' ? label + icon : icon + label}</a></div>`;
+        return `<div class="${align}" style="${inlineStyle}"><a class="inline-flex items-center gap-2" href="${escapeAttr(content.link?.url || '#')}" style="background:${style.bgColor || 'rgb(var(--c-primary))'};color:${style.textColor || '#fff'};border-radius:${style.borderRadius || 0}px;padding:${spacingCss(style.padding)};font-family:${style.fontFamily || 'Inter'};font-size:${cssLength(style.fontSize, 'px', '14px')};font-weight:${style.fontWeight || '700'}">${content.iconPosition === 'after' ? label + icon : icon + label}</a></div>`;
     }
 
     if (widget.type === 'elementor_image') {
@@ -271,11 +369,11 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_icon') {
-        return `<div class="${align}" style="${inlineStyle}"><span class="material-symbols-outlined" style="font-size:${style.size || 48}px;color:${style.textColor || '#9e001f'}">${escapeHtml(content.icon || 'star')}</span></div>`;
+        return `<div class="${align}" style="${inlineStyle}"><span class="material-symbols-outlined" style="font-size:${style.size || 48}px;color:${style.textColor || 'rgb(var(--c-primary))'}">${escapeHtml(content.icon || 'star')}</span></div>`;
     }
 
     if (widget.type === 'elementor_icon_box') {
-        return `<div class="${align}" style="${inlineStyle};color:${style.textColor || 'inherit'}"><span class="material-symbols-outlined block mb-3" style="font-size:42px;color:${style.iconColor || '#9e001f'}">${escapeHtml(content.icon || 'star')}</span><h3 class="font-bold text-xl mb-2">${escapeHtml(content.title || '')}</h3><p class="text-on-surface-variant">${escapeHtml(content.text || '')}</p></div>`;
+        return `<div class="${align}" style="${inlineStyle};color:${style.textColor || 'inherit'}"><span class="material-symbols-outlined block mb-3" style="font-size:42px;color:${style.iconColor || 'rgb(var(--c-primary))'}">${escapeHtml(content.icon || 'star')}</span><h3 class="font-bold text-xl mb-2">${escapeHtml(content.title || '')}</h3><p class="text-on-surface-variant">${escapeHtml(content.text || '')}</p></div>`;
     }
 
     if (widget.type === 'elementor_image_box') {
@@ -283,7 +381,7 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_container') {
-        return `<div style="${inlineStyle};display:flex;flex-direction:${content.direction || 'column'};gap:${content.gap || 16}px;border:1px dashed #e5bdbb;border-radius:${style.borderRadius || 0}px"><span class="text-xs text-on-surface-variant">Container Elementor</span></div>`;
+        return `<div style="${inlineStyle};display:flex;flex-direction:${content.direction || 'column'};gap:${content.gap || 16}px;border:1px dashed rgb(var(--c-outline-variant));border-radius:${style.borderRadius || 0}px"><span class="text-xs text-on-surface-variant">Container Elementor</span></div>`;
     }
 
     if (widget.type === 'elementor_form') {
@@ -291,7 +389,7 @@ function renderElementorWidgetHtml(widget) {
     }
 
     if (widget.type === 'elementor_menu') {
-        return `<nav class="flex ${content.layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'}" style="${inlineStyle};justify-content:${style.align || 'center'};gap:${style.gap || 24}px;color:${style.textColor || '#1b1c1c'}"><span>Accueil</span><span>Services</span><span>Actualités</span><span>Contact</span></nav>`;
+        return `<nav class="flex ${content.layout === 'vertical' ? 'flex-col' : 'flex-row flex-wrap'}" style="${inlineStyle};justify-content:${style.align || 'center'};gap:${style.gap || 24}px;color:${style.textColor || 'rgb(var(--c-on-surface))'}"><span>Accueil</span><span>Services</span><span>Actualités</span><span>Contact</span></nav>`;
     }
 
     return '';
@@ -302,10 +400,25 @@ function sectionStyle(section) {
 }
 
 function columnStyle(column) {
+    const width = Number(column.width ?? 100);
     return {
-        '--column-width': `${column.width ?? 100}%`,
+        '--column-width': `${width}%`,
+        // Sert à retrancher la gouttière (cf. .cms-page-column) : sans cela, deux
+        // colonnes à 50 % + l'espacement dépassent 100 % et passent l'une sous l'autre.
+        '--column-ratio': String(width / 100),
         ...styleBox(column.settings),
     };
+}
+
+function widgetClasses(widget) {
+    const advanced = widget.advanced ?? {};
+    return [
+        // Les widgets « Elementor » rangent leur animation dans l'onglet Avancé.
+        animationClass(widget.style) || animationClass(advanced),
+        advanced.hideDesktop ? 'cms-hide-desktop' : '',
+        advanced.hideTablet ? 'cms-hide-tablet' : '',
+        advanced.hideMobile ? 'cms-hide-mobile' : '',
+    ];
 }
 
 function alignClass(style = {}) {
@@ -318,8 +431,10 @@ function animationClass(style = {}) {
     return style.animation && style.animation !== 'none' ? `cms-anim-${style.animation}` : '';
 }
 
+// Nombre de colonnes appliqué à partir de la tablette (cf. .cms-grid) : un style
+// « grid-template-columns » en ligne imposait 3-4 colonnes même sur téléphone.
 function gridColumns(count) {
-    return { gridTemplateColumns: `repeat(${Math.min(Number(count) || 3, 4)}, minmax(0, 1fr))` };
+    return { '--cms-grid-cols': String(Math.min(Number(count) || 3, 4)) };
 }
 
 function resourceIcon(format) {
@@ -346,11 +461,6 @@ function showResourceToast(event, resource) {
 
 function selectNewsCategory(category) {
     newsActiveCategory.value = category;
-    newsCurrentPage.value = 1;
-}
-
-function setNewsPage(pageNumber) {
-    newsCurrentPage.value = Math.min(Math.max(pageNumber, 1), newsTotalPages.value);
 }
 
 function contactFilterCount(filter) {
@@ -377,7 +487,8 @@ function contactStyle(type) {
 
 function mapsUrl(location) {
     if (location?.mapsUrl) return location.mapsUrl;
-    return `https://www.google.com/maps/search/?api=1&query=${location?.lat},${location?.lon}`;
+    const query = isLocated(location) ? `${location.lat},${location.lon}` : `${location?.name}, ${location?.city ?? ''}, Burkina Faso`;
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 function submitContact() {
@@ -467,10 +578,14 @@ function systemWidget(section) {
         'contact_hero',
         'contact_form',
         'contact_map',
+        'legal_page',
     ];
 
     return types.includes(widgets[0].type) ? widgets[0] : null;
 }
+
+// Mentions légales : textes du page builder, bloc « Coordonnées » issu du module « Pied de page ».
+const siteFooter = computed(() => page.props.publicSite?.footer ?? {});
 
 // Frise « Notre Évolution » : autant de colonnes que de jalons (3 max), trait de
 // liaison d'un centre de jalon à l'autre. Classes écrites en entier pour Tailwind.
@@ -543,8 +658,8 @@ function faqMeta(category) {
 </script>
 
 <template>
-    <template v-for="(section, sectionIndex) in sections" :key="section.uid ?? sectionIndex">
-        <section v-if="systemWidget(section)?.type === 'home_hero'" id="hero-carousel" class="relative h-[480px] md:h-[560px] overflow-hidden bg-on-background" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+    <template v-for="(section, sectionIndex) in renderedSections" :key="section.uid ?? sectionIndex">
+        <section v-if="systemWidget(section)?.type === 'home_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="hero-carousel" class="relative h-[480px] md:h-[560px] overflow-hidden bg-on-background" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <article
                 v-for="(slide, index) in homeSlides"
                 :key="slide.id ?? index"
@@ -615,7 +730,7 @@ function faqMeta(category) {
             </template>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'home_pillars'" class="py-stack-lg relative overflow-hidden bg-surface-container-lowest" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'home_pillars'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg relative overflow-hidden bg-surface-container-lowest" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="shield-pattern absolute inset-0" />
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop relative z-10">
                 <div class="text-center mb-16 space-y-2">
@@ -650,7 +765,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'home_key_figures'" id="key-figures" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'home_key_figures'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="key-figures" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="text-center mb-12 space-y-2">
                     <span class="text-primary font-label-md uppercase tracking-widest">{{ systemWidget(section).content?.eyebrow || 'En Chiffres' }}</span>
@@ -671,7 +786,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'home_latest_articles' && homeFeaturedArticle" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'home_latest_articles' && homeFeaturedArticle" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="flex justify-between items-end mb-12 gap-4">
                     <div class="space-y-2">
@@ -718,7 +833,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_hero'" class="relative h-[420px] overflow-hidden flex items-center" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="relative h-[420px] overflow-hidden flex items-center" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="absolute inset-0 bg-cover bg-center bg-services-hero" />
             <div class="w-full px-6 md:px-16 relative z-10">
                 <div class="text-white space-y-6 max-w-2xl mr-auto">
@@ -737,7 +852,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_stats'" class="bg-surface-container-lowest py-stack-lg border-b border-outline-variant" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_stats'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="bg-surface-container-lowest py-stack-lg border-b border-outline-variant" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="px-4 md:px-margin-desktop max-w-container-max-width mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div v-for="item in systemWidget(section).content?.items || []" :key="`${item.value}-${item.label}`" class="group rounded-xl p-6 flex flex-col gap-1 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300" :class="serviceTone(item.tone)">
                     <span class="material-symbols-outlined text-3xl opacity-90 group-hover:scale-110 transition-transform duration-300">{{ item.icon }}</span>
@@ -747,7 +862,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_coverage'" id="coverage" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_coverage'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="coverage" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="flex items-end justify-between gap-6 mb-12">
                     <div>
@@ -781,7 +896,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_steps'" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_steps'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="px-4 md:px-margin-desktop max-w-container-max-width mx-auto">
                 <div class="text-center mb-12">
                     <span class="text-primary font-label-md uppercase tracking-widest">{{ systemWidget(section).content?.eyebrow }}</span>
@@ -799,35 +914,80 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_partners'" id="section-partenaires" class="py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_partners'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="section-partenaires" class="py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="px-4 md:px-margin-desktop max-w-container-max-width mx-auto">
                 <div class="text-center mb-12">
                     <span class="text-primary font-label-md uppercase tracking-widest">{{ systemWidget(section).content?.eyebrow }}</span>
                     <h2 class="font-headline-md text-headline-md mt-2">{{ systemWidget(section).content?.title }}</h2>
                     <p class="text-on-surface-variant font-body-md mt-2 max-w-2xl mx-auto">{{ systemWidget(section).content?.text }}</p>
                 </div>
-                <div v-if="servicePartners.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <article v-for="partner in servicePartners" :key="partner.id" class="bg-white rounded-xl border border-outline-variant overflow-hidden shadow-sm flex flex-col">
-                        <div class="h-36 bg-surface-container-low bg-cover bg-center" :style="{ backgroundImage: `url('${partner.imageSrc}')` }" />
-                        <div class="p-4 flex flex-col flex-1">
-                            <span class="inline-flex items-center gap-1 self-start text-[11px] font-semibold px-2 py-0.5 rounded-full mb-2" :class="partner.type === 'Centre de santé' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'">
-                                <span class="material-symbols-outlined text-[14px]">{{ partner.type === 'Centre de santé' ? 'local_hospital' : 'handshake' }}</span> {{ partner.type }}
-                            </span>
-                            <h3 class="font-title-lg text-base text-on-surface leading-snug">{{ partner.name }}</h3>
-                            <p v-if="partner.city" class="text-xs text-on-surface-variant mt-0.5 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]">place</span> {{ partner.city }}</p>
-                            <p class="text-sm text-on-surface-variant mt-2 flex-1">{{ partner.description }}</p>
-                            <div class="flex flex-wrap gap-2 mt-4">
-                                <a v-if="partner.mapsUrl" :href="partner.mapsUrl" target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 bg-primary text-on-primary px-3 py-2 rounded-lg text-xs font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm"><span class="material-symbols-outlined text-[16px]">map</span> Google Maps</a>
-                                <Link href="/contact#section-carte" class="inline-flex items-center gap-1.5 border border-outline text-on-surface px-3 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-low transition-all"><span class="material-symbols-outlined text-[16px]">location_on</span> Nos antennes</Link>
-                            </div>
+                <template v-if="servicePartners.length">
+                    <div class="flex flex-col md:flex-row gap-3 mb-4">
+                        <div class="relative flex-1">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                            <input v-model="partnerSearch" class="w-full pl-10 pr-3 py-2.5 text-sm border border-outline-variant rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Rechercher une pharmacie, un hôpital, un laboratoire…" type="search" aria-label="Rechercher un prestataire" />
                         </div>
-                    </article>
-                </div>
+                        <select v-model="partnerCity" class="md:w-64 px-3 py-2.5 text-sm border border-outline-variant rounded-lg bg-white focus:ring-2 focus:ring-primary outline-none" aria-label="Filtrer par ville">
+                            <option value="">Toutes les villes ({{ partnerCities.length }})</option>
+                            <option v-for="item in partnerCities" :key="item.city" :value="item.city">{{ item.city }} ({{ item.count }})</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-6" role="tablist" aria-label="Type de prestataire">
+                        <button
+                            v-for="item in partnerTypes"
+                            :key="item.key"
+                            type="button"
+                            role="tab"
+                            :aria-selected="partnerType === item.key"
+                            class="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1.5 rounded-full text-xs font-semibold border transition-colors"
+                            :class="partnerType === item.key ? 'bg-primary text-on-primary border-primary' : 'bg-white text-on-surface-variant border-outline-variant hover:border-primary'"
+                            @click="partnerType = item.key"
+                        >
+                            <span class="material-symbols-outlined text-[16px]">{{ item.icon }}</span>
+                            {{ item.label }}
+                            <span class="min-w-[24px] px-1.5 py-0.5 rounded-full text-[11px] font-bold tabular-nums text-center" :class="partnerType === item.key ? 'bg-white/25' : 'bg-surface-container-high text-on-surface'">{{ partnerTypeCount(item.key) }}</span>
+                        </button>
+                    </div>
+
+                    <div v-if="visiblePartners.length" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <article v-for="partner in visiblePartners" :key="partner.id" class="bg-white rounded-xl border border-outline-variant p-4 shadow-sm flex gap-3 hover:border-primary/40 transition-colors">
+                            <img v-if="partner.imageSrc" :src="partner.imageSrc" :alt="partner.name" class="w-12 h-12 rounded-lg object-cover shrink-0" loading="lazy" />
+                            <div v-else class="w-12 h-12 rounded-lg flex items-center justify-center shrink-0" :class="partner.type === 'Centre de santé' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary/10 text-tertiary'">
+                                <span class="material-symbols-outlined">{{ partnerIcon(partner.type) }}</span>
+                            </div>
+                            <div class="min-w-0 flex-1 flex flex-col">
+                                <h3 class="font-title-lg text-sm font-bold text-on-surface leading-snug">{{ partner.name }}</h3>
+                                <p class="text-xs text-on-surface-variant mt-1 flex items-start gap-1">
+                                    <span class="material-symbols-outlined text-[14px] mt-px">place</span>
+                                    <span>{{ partner.city }}<template v-if="partner.address"> · {{ partner.address }}</template></span>
+                                </p>
+                                <a v-if="partner.mapsUrl" :href="partner.mapsUrl" target="_blank" rel="noopener" class="mt-3 self-start inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+                                    <span class="material-symbols-outlined text-[16px]">directions</span> Itinéraire
+                                </a>
+                            </div>
+                        </article>
+                    </div>
+                    <p v-else class="text-center text-on-surface-variant py-10">Aucun prestataire ne correspond à votre recherche.</p>
+
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
+                        <p class="text-xs text-on-surface-variant">
+                            {{ visiblePartners.length }} sur {{ filteredPartners.length }} prestataire{{ filteredPartners.length > 1 ? 's' : '' }}
+                        </p>
+                        <div class="flex gap-2">
+                            <button v-if="visiblePartners.length < filteredPartners.length" type="button" class="inline-flex items-center gap-1.5 border border-outline text-on-surface px-4 py-2 rounded-lg text-xs font-bold hover:bg-surface-container-low transition-all" @click="partnerLimit += 24">
+                                <span class="material-symbols-outlined text-[16px]">expand_more</span> Afficher plus ({{ filteredPartners.length - visiblePartners.length }} restants)
+                            </button>
+                            <Link href="/contact#section-carte" class="inline-flex items-center gap-1.5 bg-primary text-on-primary px-4 py-2 rounded-lg text-xs font-bold hover:opacity-90 transition-all shadow-sm">
+                                <span class="material-symbols-outlined text-[16px]">map</span> Voir sur la carte
+                            </Link>
+                        </div>
+                    </div>
+                </template>
                 <p v-else class="text-center text-on-surface-variant py-10">Aucun partenaire publié pour le moment.</p>
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_faq'" id="faq" class="py-stack-lg bg-surface-container-lowest" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_faq'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="faq" class="py-stack-lg bg-surface-container-lowest" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="px-4 md:px-margin-desktop max-w-container-max-width mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg">
                     <div class="lg:col-span-4">
@@ -864,7 +1024,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'services_cta'" class="py-stack-lg bg-primary" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'services_cta'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-primary" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="px-4 md:px-margin-desktop max-w-container-max-width mx-auto flex flex-col md:flex-row items-center justify-between gap-stack-lg text-on-primary">
                 <div class="max-w-xl text-center md:text-left">
                     <h3 class="font-headline-lg text-headline-lg mb-2">{{ systemWidget(section).content?.title }}</h3>
@@ -879,7 +1039,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'about_hero'" class="relative h-[420px] overflow-hidden flex items-center" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'about_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="relative h-[420px] overflow-hidden flex items-center" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="absolute inset-0 bg-cover bg-center bg-about-hero" />
             <div class="w-full px-6 md:px-16 relative z-10">
                 <div class="text-white space-y-6 max-w-2xl mr-auto">
@@ -890,7 +1050,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'about_director'" class="py-stack-lg bg-surface-container-lowest relative overflow-hidden" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'about_director'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container-lowest relative overflow-hidden" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="absolute -left-24 top-1/2 -translate-y-1/2 w-72 h-72 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop relative z-10">
                 <div class="text-center lg:text-left mb-12">
@@ -941,7 +1101,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'about_timeline'" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'about_timeline'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="text-center mb-16 space-y-2">
                     <span class="text-primary font-label-md uppercase tracking-widest">{{ systemWidget(section).content?.eyebrow }}</span>
@@ -975,7 +1135,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'about_missions'" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'about_missions'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                     <div class="max-w-xl">
@@ -1001,7 +1161,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'about_cta'" class="py-stack-lg px-4 md:px-margin-desktop mb-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'about_cta'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg px-4 md:px-margin-desktop mb-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto bg-surface-container p-stack-lg rounded-3xl flex flex-col md:flex-row items-center justify-between gap-stack-lg border border-outline-variant overflow-hidden relative">
                 <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-secondary/5 rounded-full blur-3xl pointer-events-none" />
                 <div class="relative z-10 text-center md:text-left">
@@ -1020,7 +1180,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'resources_hero'" class="relative py-16 md:py-24 overflow-hidden text-white bg-cover bg-center bg-resources-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'resources_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="relative py-16 md:py-24 overflow-hidden text-white bg-cover bg-center bg-resources-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="relative z-10 max-w-container-max-width mx-auto px-4 md:px-margin-desktop text-center">
                 <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full font-label-md text-label-md uppercase tracking-wider mb-6">
                     <span class="material-symbols-outlined text-[18px]">{{ systemWidget(section).content?.badgeIcon || 'folder_open' }}</span> {{ systemWidget(section).content?.badge }}
@@ -1030,7 +1190,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'resources_listing'" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'resources_listing'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-stack-lg bg-surface-container-low" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="flex flex-wrap gap-2 mb-8 justify-center">
                     <button
@@ -1045,8 +1205,8 @@ function faqMeta(category) {
                     </button>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    <article v-for="resource in filteredResources" :key="resource.id" class="bg-white rounded-xl border border-outline-variant p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow">
+                <div ref="resourcesTop" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 scroll-mt-28">
+                    <article v-for="resource in pagedResources" :key="resource.id" class="bg-white rounded-xl border border-outline-variant p-5 flex flex-col shadow-sm hover:shadow-md transition-shadow">
                         <div class="flex items-start gap-3 mb-3">
                             <span class="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined">{{ resourceIcon(resource.format) }}</span></span>
                             <div class="min-w-0">
@@ -1075,6 +1235,7 @@ function faqMeta(category) {
                 </div>
 
                 <p v-if="!filteredResources.length" class="text-center text-on-surface-variant py-16">{{ systemWidget(section).content?.emptyText }}</p>
+                <CamaPagination v-if="resourcesPagination.lastPage > 1" class="mt-6" v-bind="resourcesPagination" label="document(s)" @change="setResourcesPage" />
             </div>
             <div class="fixed bottom-6 right-6 z-[70]" :class="{ hidden: !resourceToast }">
                 <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">
@@ -1083,14 +1244,14 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'news_hero'" class="relative py-20 md:py-24 text-white overflow-hidden bg-cover bg-center bg-news-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'news_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="relative py-20 md:py-24 text-white overflow-hidden bg-cover bg-center bg-news-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="relative max-w-container-max-width mx-auto px-4 md:px-margin-desktop text-center">
                 <h1 class="font-headline-lg text-headline-lg mb-4">{{ systemWidget(section).content?.title }}</h1>
                 <p class="font-body-lg text-body-lg max-w-2xl mx-auto opacity-80">{{ systemWidget(section).content?.text }}</p>
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'news_filters'" class="py-6 border-b border-outline-variant bg-surface" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'news_filters'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-6 border-b border-outline-variant bg-surface" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div class="flex flex-wrap gap-2">
@@ -1107,13 +1268,13 @@ function faqMeta(category) {
                     </div>
                     <div class="relative w-full md:w-80">
                         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
-                        <input v-model="newsSearchQuery" class="w-full pl-10 pr-4 py-2 bg-white border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none font-body-md text-body-md" :placeholder="systemWidget(section).content?.searchPlaceholder" type="search" @input="newsCurrentPage = 1" />
+                        <input v-model="newsSearchQuery" class="w-full pl-10 pr-4 py-2 bg-white border border-outline rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none font-body-md text-body-md" :placeholder="systemWidget(section).content?.searchPlaceholder" type="search" />
                     </div>
                 </div>
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'news_listing'" class="py-12 md:py-16 bg-background" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'news_listing'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-12 md:py-16 bg-background" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div v-if="featuredNews" class="grid grid-cols-1 lg:grid-cols-12 gap-gutter mb-12">
                     <article class="lg:col-span-8 group relative overflow-hidden rounded-xl bg-white border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
@@ -1134,7 +1295,7 @@ function faqMeta(category) {
                     </article>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+                <div ref="newsTop" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter scroll-mt-28">
                     <article v-for="article in pagedNews" :key="article.id" class="bg-white border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                         <div class="h-48 overflow-hidden"><img :alt="article.title" class="w-full h-full object-cover" :src="article.imageSrc" /></div>
                         <div class="p-6">
@@ -1149,21 +1310,11 @@ function faqMeta(category) {
                     <p v-if="!featuredNews" class="md:col-span-2 lg:col-span-3 text-center text-on-surface-variant py-12">{{ systemWidget(section).content?.emptyText }}</p>
                 </div>
 
-                <div v-if="newsTotalPages > 1" class="mt-12 flex justify-center items-center gap-2 flex-wrap">
-                    <button type="button" class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline text-on-surface-variant hover:bg-surface-container-high transition-colors" :disabled="newsCurrentPage === 1" @click="setNewsPage(newsCurrentPage - 1)">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    <button v-for="pageNumber in newsTotalPages" :key="pageNumber" type="button" class="w-10 h-10 flex items-center justify-center rounded-lg font-bold" :class="pageNumber === newsCurrentPage ? 'bg-primary text-on-primary' : 'border border-outline text-on-surface-variant hover:bg-surface-container-high transition-colors'" @click="setNewsPage(pageNumber)">
-                        {{ pageNumber }}
-                    </button>
-                    <button type="button" class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline text-on-surface-variant hover:bg-surface-container-high transition-colors" :disabled="newsCurrentPage === newsTotalPages" @click="setNewsPage(newsCurrentPage + 1)">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                </div>
+                <CamaPagination v-if="newsPagination.lastPage > 1" class="mt-8" v-bind="newsPagination" label="article(s)" @change="setNewsPage" />
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'news_newsletter'" class="py-12 bg-surface-container-low border-t border-outline-variant" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'news_newsletter'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="py-12 bg-surface-container-low border-t border-outline-variant" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="bg-white p-8 md:p-10 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 shadow-sm border border-outline-variant">
                     <div class="max-w-md text-center md:text-left">
@@ -1184,7 +1335,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'contact_hero'" class="relative py-20 md:py-24 text-white overflow-hidden bg-cover bg-center bg-contact-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'contact_hero'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" class="relative py-20 md:py-24 text-white overflow-hidden bg-cover bg-center bg-contact-hero" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="relative max-w-container-max-width mx-auto px-4 md:px-margin-desktop text-center">
                 <p class="text-white/70 text-xs font-semibold uppercase tracking-widest mb-3">{{ systemWidget(section).content?.eyebrow }}</p>
                 <h1 class="font-headline-lg text-headline-lg mb-4">{{ systemWidget(section).content?.title }}</h1>
@@ -1192,7 +1343,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'contact_form'" id="section-contact" class="contact-section py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'contact_form'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="section-contact" class="contact-section py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-white p-6 md:p-8 rounded-xl border border-outline-variant shadow-sm">
@@ -1222,7 +1373,7 @@ function faqMeta(category) {
             </div>
         </section>
 
-        <section v-else-if="systemWidget(section)?.type === 'contact_map'" id="section-carte" class="contact-section bg-surface-container-low border-t border-outline-variant py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
+        <section v-else-if="systemWidget(section)?.type === 'contact_map'" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))" id="section-carte" class="contact-section bg-surface-container-low border-t border-outline-variant py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <div class="mb-6">
                     <h2 class="font-headline-md text-xl md:text-2xl text-on-surface mb-1">{{ systemWidget(section).content?.title }}</h2>
@@ -1267,9 +1418,84 @@ function faqMeta(category) {
             </div>
         </section>
 
+        <section v-else-if="systemWidget(section)?.type === 'legal_page'" class="py-stack-lg" :class="animationClass(section.settings)" :style="sectionStyle(section)" :data-pb-section="pbAttr(section)" :data-pb-widget="pbAttr(systemWidget(section))">
+            <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+                    <aside class="hidden lg:block lg:col-span-3">
+                        <nav class="sticky top-28 space-y-1 p-4 bg-surface-container-low rounded-xl border border-outline-variant" aria-label="Sommaire des mentions légales">
+                            <p class="font-headline-md text-lg font-bold text-primary mb-3 px-2">Sommaire</p>
+                            <a
+                                v-for="(article, articleIndex) in systemWidget(section).content?.articles || []"
+                                :key="articleIndex"
+                                class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors text-sm font-semibold"
+                                :href="`#${legalAnchor(article, articleIndex)}`"
+                            >
+                                <span class="material-symbols-outlined text-[20px]">{{ article.icon || 'article' }}</span> {{ article.title }}
+                            </a>
+                            <a v-if="siteFooter.address || siteFooter.phones?.length || siteFooter.emails?.length" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-primary transition-colors text-sm font-semibold" href="#coordonnees">
+                                <span class="material-symbols-outlined text-[20px]">contact_mail</span> Coordonnées
+                            </a>
+                        </nav>
+                    </aside>
+
+                    <div class="lg:col-span-9 min-w-0 space-y-6">
+                        <header class="relative overflow-hidden rounded-xl bg-primary-container text-white p-8 md:p-12">
+                            <div class="relative z-10">
+                                <h1 class="font-headline-lg text-3xl md:text-headline-lg leading-tight mb-4">{{ systemWidget(section).content?.title }}</h1>
+                                <p v-if="systemWidget(section).content?.intro" class="font-body-lg md:text-body-lg max-w-2xl opacity-90">{{ systemWidget(section).content.intro }}</p>
+                            </div>
+                            <span class="material-symbols-outlined pointer-events-none absolute -right-10 -bottom-16 text-[240px] opacity-10" aria-hidden="true">shield</span>
+                        </header>
+
+                        <article
+                            v-for="(article, articleIndex) in systemWidget(section).content?.articles || []"
+                            :id="legalAnchor(article, articleIndex)"
+                            :key="articleIndex"
+                            class="scroll-mt-28 bg-white p-6 md:p-8 rounded-xl border border-outline-variant"
+                        >
+                            <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-surface mb-4 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">{{ article.icon || 'article' }}</span> {{ article.title }}
+                            </h2>
+                            <template v-for="(block, blockIndex) in legalBlocks(article.body)" :key="blockIndex">
+                                <p v-if="block.type === 'p'" class="text-on-surface-variant leading-relaxed mb-4 last:mb-0">{{ block.text }}</p>
+                                <ul v-else class="list-disc ml-6 space-y-2 text-on-surface-variant mb-4 last:mb-0">
+                                    <li v-for="(item, itemIndex) in block.items" :key="itemIndex">{{ item }}</li>
+                                </ul>
+                            </template>
+                        </article>
+
+                        <article v-if="siteFooter.address || siteFooter.phones?.length || siteFooter.emails?.length" id="coordonnees" class="scroll-mt-28 bg-white p-6 md:p-8 rounded-xl border border-outline-variant">
+                            <h2 class="font-headline-md text-xl md:text-2xl font-bold text-on-surface mb-5 flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary">contact_mail</span> Coordonnées
+                            </h2>
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
+                                <div v-if="siteFooter.address">
+                                    <dt class="text-xs uppercase tracking-wide text-on-surface-variant mb-1">Adresse</dt>
+                                    <dd class="text-on-surface">{{ siteFooter.address }}</dd>
+                                </div>
+                                <div v-if="siteFooter.hours">
+                                    <dt class="text-xs uppercase tracking-wide text-on-surface-variant mb-1">Horaires</dt>
+                                    <dd class="text-on-surface">{{ siteFooter.hours }}</dd>
+                                </div>
+                                <div v-if="siteFooter.phones?.length">
+                                    <dt class="text-xs uppercase tracking-wide text-on-surface-variant mb-1">Téléphone</dt>
+                                    <dd v-for="phone in siteFooter.phones" :key="phone"><a class="text-primary font-semibold hover:underline" :href="`tel:${phone.replace(/\s+/g, '')}`">{{ phone }}</a></dd>
+                                </div>
+                                <div v-if="siteFooter.emails?.length">
+                                    <dt class="text-xs uppercase tracking-wide text-on-surface-variant mb-1">E-mail</dt>
+                                    <dd v-for="email in siteFooter.emails" :key="email" class="break-all"><a class="text-primary font-semibold hover:underline" :href="`mailto:${email}`">{{ email }}</a></dd>
+                                </div>
+                            </dl>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section
             v-else
             class="cms-page-section"
+            :data-pb-section="pbAttr(section)"
             :class="animationClass(section.settings)"
             :style="sectionStyle(section)"
         >
@@ -1281,13 +1507,18 @@ function faqMeta(category) {
                         class="cms-page-column"
                         :class="animationClass(column.settings)"
                         :style="columnStyle(column)"
+                        :data-pb-column="pbAttr(column)"
                     >
+                        <div v-if="pbEditing && !column.widgets?.length" class="rounded-lg border-2 border-dashed border-outline-variant py-8 text-center text-[11px] text-on-surface-variant">
+                            Glissez un élément ici
+                        </div>
                         <div
                             v-for="(widget, widgetIndex) in column.widgets"
                             :key="widget.uid ?? widgetIndex"
                             class="cms-page-widget"
-                            :class="animationClass(widget.style)"
+                            :class="widgetClasses(widget)"
                             :style="styleBox(widget.style)"
+                            :data-pb-widget="pbAttr(widget)"
                         >
                             <component
                                 :is="widget.content?.tag || 'h2'"
@@ -1301,15 +1532,15 @@ function faqMeta(category) {
                             <ElementorAccordion
                                 v-else-if="widget.type === 'elementor_accordion'"
                                 :items="widget.content?.items ?? []"
-                                :title-color="widget.style?.titleColor || '#1b1c1c'"
-                                :text-color="widget.style?.textColor || '#5c403f'"
+                                :title-color="widget.style?.titleColor || 'rgb(var(--c-on-surface))'"
+                                :text-color="widget.style?.textColor || 'rgb(var(--c-on-surface-variant))'"
                             />
 
                             <ElementorTabs
                                 v-else-if="widget.type === 'elementor_tabs'"
                                 :items="widget.content?.items ?? []"
-                                :title-color="widget.style?.titleColor || '#1b1c1c'"
-                                :text-color="widget.style?.textColor || '#5c403f'"
+                                :title-color="widget.style?.titleColor || 'rgb(var(--c-on-surface))'"
+                                :text-color="widget.style?.textColor || 'rgb(var(--c-on-surface-variant))'"
                             />
 
                             <ElementorCarousel
@@ -1359,7 +1590,7 @@ function faqMeta(category) {
                                 <p class="text-sm text-on-surface-variant">{{ widget.content?.text }}</p>
                             </div>
 
-                            <div v-else-if="widget.type === 'cards'" class="grid grid-cols-1 md:grid-flow-col gap-4" :style="{ ...gridColumns(widget.content?.columns), ...styleBox(widget.style) }">
+                            <div v-else-if="widget.type === 'cards'" class="cms-grid gap-4" :style="{ ...gridColumns(widget.content?.columns), ...styleBox(widget.style) }">
                                 <div v-for="(item, itemIndex) in widget.content?.items || []" :key="itemIndex" class="bg-white border border-outline-variant rounded-xl p-5">
                                     <div class="w-11 h-11 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-3">
                                         <span class="material-symbols-outlined">{{ item.icon || 'shield' }}</span>
@@ -1369,7 +1600,7 @@ function faqMeta(category) {
                                 </div>
                             </div>
 
-                            <div v-else-if="widget.type === 'stats'" class="grid grid-cols-1 md:grid-flow-col gap-6 text-center" :style="{ ...gridColumns((widget.content?.items || []).length || 3), ...styleBox(widget.style) }">
+                            <div v-else-if="widget.type === 'stats'" class="cms-grid gap-6 text-center" :style="{ ...gridColumns((widget.content?.items || []).length || 3), ...styleBox(widget.style) }">
                                 <div v-for="(item, itemIndex) in widget.content?.items || []" :key="itemIndex">
                                     <p class="text-3xl font-extrabold text-primary">{{ item.value }}</p>
                                     <p class="text-xs text-on-surface-variant uppercase tracking-wide mt-1">{{ item.label }}</p>
@@ -1396,4 +1627,17 @@ function faqMeta(category) {
             </div>
         </section>
     </template>
+
+    <div v-if="pbEditing" data-pb-ui class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop py-6 flex flex-col sm:flex-row gap-2">
+        <button class="flex-1 border-2 border-dashed border-outline-variant rounded-xl py-3 text-sm font-bold text-on-surface-variant hover:border-primary hover:text-primary flex items-center justify-center gap-2" type="button" @click="postToBuilder('addSection')">
+            <span class="material-symbols-outlined">add</span>
+            Section vide
+        </button>
+        <button class="flex-1 border-2 border-primary/30 bg-primary/5 rounded-xl py-3 text-sm font-bold text-primary hover:bg-primary/10 flex items-center justify-center gap-2" type="button" @click="postToBuilder('openLibrary')">
+            <span class="material-symbols-outlined">dashboard</span>
+            Bibliothèque
+        </button>
+    </div>
+
+    <PageBuilderBridge v-if="builderPreview" />
 </template>

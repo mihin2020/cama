@@ -6,6 +6,8 @@ use App\Enums\AdminRole;
 use App\Models\AdminUser;
 use App\Models\Dossier;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AdminProfilService
@@ -21,6 +23,8 @@ class AdminProfilService
             'email' => $admin->email,
             'lastLogin' => $admin->last_login_at?->format('d/m/Y H:i') ?? '—',
             'initiales' => $admin->initiales,
+            'deuxFa' => (bool) $admin->deux_fa_active,
+            'deconnexionAuto' => (bool) $admin->deconnexion_auto_active,
             'isGestionnaire' => $admin->role === AdminRole::Gestionnaire,
             'workload' => $admin->role === AdminRole::Gestionnaire
                 ? $this->gestionnaireWorkload($admin)
@@ -38,7 +42,30 @@ class AdminProfilService
             throw ValidationException::withMessages(['password' => 'Le mot de passe doit contenir au moins 12 caractères.']);
         }
 
-        $admin->update(['password' => $new]);
+        // Nouveau jeton : tous les cookies « Se souvenir de moi » déjà émis deviennent invalides.
+        $admin->forceFill([
+            'password' => $new,
+            'remember_token' => Str::random(60),
+        ])->save();
+    }
+
+    public function setTwoFactor(AdminUser $admin, bool $active): void
+    {
+        $admin->forceFill([
+            'deux_fa_active' => $active,
+            'login_2fa_code' => null,
+            'login_2fa_expires_at' => null,
+            'login_2fa_attempts' => 0,
+        ])->save();
+
+        Log::info($active ? '2FA admin activée' : '2FA admin désactivée', ['admin_id' => $admin->id]);
+    }
+
+    public function setIdleLogout(AdminUser $admin, bool $active): void
+    {
+        $admin->forceFill(['deconnexion_auto_active' => $active])->save();
+
+        Log::info($active ? 'Déconnexion auto admin activée' : 'Déconnexion auto admin désactivée', ['admin_id' => $admin->id]);
     }
 
     private function gestionnaireWorkload(AdminUser $admin): array

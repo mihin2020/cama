@@ -6,6 +6,7 @@ use App\Models\AdminUser;
 use App\Models\CmsNewsletterBatch;
 use App\Models\CmsNewsletterSubscriber;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -139,7 +140,7 @@ class PublicNewsletterService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForAdmin(?string $status = null, ?string $query = null, ?string $segment = null): array
+    public function paginateForAdmin(?string $status, ?string $query, ?string $segment, int $perPage): LengthAwarePaginator
     {
         $batchMap = $this->subscriberBatchMap();
         $segments = CmsNewsletterCampaignService::SEGMENTS;
@@ -156,9 +157,9 @@ class PublicNewsletterService
             }))
             ->orderByDesc('subscribed_at')
             ->orderByDesc('id')
-            ->limit(1000)
-            ->get()
-            ->map(fn (CmsNewsletterSubscriber $subscriber) => [
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsNewsletterSubscriber $subscriber) => [
                 'id' => $subscriber->id,
                 'email' => $subscriber->email,
                 'fullName' => $subscriber->full_name,
@@ -177,8 +178,7 @@ class PublicNewsletterService
                 'token' => $subscriber->token,
                 'batchIds' => collect($batchMap[$subscriber->id] ?? [])->pluck('id')->all(),
                 'batchNames' => collect($batchMap[$subscriber->id] ?? [])->pluck('name')->all(),
-            ])
-            ->all();
+            ]);
     }
 
     public function updateSubscriber(CmsNewsletterSubscriber $subscriber, array $data): CmsNewsletterSubscriber

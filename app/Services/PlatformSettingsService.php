@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class PlatformSettingsService
 {
@@ -76,6 +77,7 @@ class PlatformSettingsService
             'validation2Niveaux' => (bool) ($this->get('validation_2niveaux') ?? false),
             'orgStructure' => $org,
             'inscriptionDocuments' => $this->inscriptionDocuments(),
+            'inscriptionFields' => $this->inscriptionFields(),
             'assureNotifyChannels' => $this->assureNotifyChannels(),
         ];
     }
@@ -238,6 +240,108 @@ class PlatformSettingsService
         }, self::DEFAULT_INSCRIPTION_DOCUMENTS);
 
         $this->set('inscription_documents', $normalized);
+    }
+
+    /**
+     * Champs configurables du formulaire public d'inscription assuré.
+     * `parent` : champ dont dépend la saisie (cascade de rattachement) — si le parent
+     * est désactivé, l'enfant l'est aussi. Les champs indispensables au compte
+     * (nom, prénom, e-mail, mot de passe) ne figurent pas ici : ils restent
+     * toujours affichés et obligatoires.
+     */
+    public const INSCRIPTION_FIELDS = [
+        ['key' => 'matricule', 'label' => 'Matricule militaire', 'group' => 'Identité', 'actif' => true, 'required' => true],
+        ['key' => 'sexe', 'label' => 'Sexe', 'group' => 'Identité', 'actif' => true, 'required' => true],
+        ['key' => 'grade', 'label' => 'Grade', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
+        ['key' => 'categorie', 'label' => 'Catégorie', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
+        ['key' => 'numero_informatique', 'label' => 'N° informatique', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
+        ['key' => 'numero_cim', 'label' => 'N° CIM', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
+        ['key' => 'numero_cama', 'label' => 'N° Carte CAMA', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
+        ['key' => 'numero_iup', 'label' => 'N° IUP', 'group' => 'Situation administrative', 'actif' => true, 'required' => false],
+        ['key' => 'armee', 'label' => 'Armée', 'group' => 'Rattachement', 'actif' => true, 'required' => true],
+        ['key' => 'region', 'label' => 'Région', 'group' => 'Rattachement', 'actif' => true, 'required' => true],
+        ['key' => 'corps', 'label' => 'Corps', 'group' => 'Rattachement', 'actif' => true, 'required' => false, 'parent' => 'region'],
+        ['key' => 'service', 'label' => 'Service', 'group' => 'Rattachement', 'actif' => true, 'required' => false, 'parent' => 'corps'],
+        ['key' => 'section', 'label' => 'Section', 'group' => 'Rattachement', 'actif' => true, 'required' => false, 'parent' => 'service'],
+        ['key' => 'sous_section', 'label' => 'Sous-section', 'group' => 'Rattachement', 'actif' => true, 'required' => false, 'parent' => 'section'],
+        ['key' => 'telephone', 'label' => 'Téléphones', 'group' => 'Coordonnées', 'actif' => true, 'required' => true],
+        ['key' => 'personne_a_prevenir', 'label' => 'Personne à prévenir', 'group' => 'Coordonnées', 'actif' => true, 'required' => false],
+        ['key' => 'tel_personne_a_prevenir', 'label' => 'Téléphone (personne à prévenir)', 'group' => 'Coordonnées', 'actif' => true, 'required' => false],
+    ];
+
+    /**
+     * Configuration des champs d'inscription (défauts fusionnés avec les valeurs enregistrées).
+     *
+     * @return array<int, array{key: string, label: string, group: string, parent: ?string, actif: bool, required: bool}>
+     */
+    public function inscriptionFields(): array
+    {
+        $stored = $this->get('inscription_fields');
+
+        return $this->normalizeInscriptionFields(is_array($stored) ? $stored : []);
+    }
+
+    /**
+     * Vue compacte clé => {actif, required} utilisée par le formulaire et la validation.
+     *
+     * @return array<string, array{actif: bool, required: bool}>
+     */
+    public function inscriptionFieldsMap(): array
+    {
+        $map = [];
+        foreach ($this->inscriptionFields() as $field) {
+            $map[$field['key']] = ['actif' => $field['actif'], 'required' => $field['required']];
+        }
+
+        return $map;
+    }
+
+    public function updateInscriptionFields(array $fields): void
+    {
+        $normalized = $this->normalizeInscriptionFields($fields);
+
+        $this->set('inscription_fields', array_map(
+            fn (array $f) => ['key' => $f['key'], 'actif' => $f['actif'], 'required' => $f['required']],
+            $normalized,
+        ));
+    }
+
+    /**
+     * @param  array<int, mixed>  $rows
+     * @return array<int, array{key: string, label: string, group: string, parent: ?string, actif: bool, required: bool}>
+     */
+    private function normalizeInscriptionFields(array $rows): array
+    {
+        $byKey = [];
+        foreach ($rows as $row) {
+            if (is_array($row) && ! empty($row['key'])) {
+                $byKey[$row['key']] = $row;
+            }
+        }
+
+        $result = [];
+        foreach (self::INSCRIPTION_FIELDS as $default) {
+            $row = $byKey[$default['key']] ?? [];
+            $parent = $default['parent'] ?? null;
+
+            $actif = (bool) ($row['actif'] ?? $default['actif']);
+            // Un sous-niveau de rattachement n'a de sens que si son parent est saisi.
+            if ($parent !== null && ! ($result[$parent]['actif'] ?? true)) {
+                $actif = false;
+            }
+            $required = $actif && (bool) ($row['required'] ?? $default['required']);
+
+            $result[$default['key']] = [
+                'key' => $default['key'],
+                'label' => $default['label'],
+                'group' => $default['group'],
+                'parent' => $parent,
+                'actif' => $actif,
+                'required' => $required,
+            ];
+        }
+
+        return array_values($result);
     }
 
     public function ageMaxEnfant(): int
@@ -701,6 +805,207 @@ class PlatformSettingsService
         )));
 
         $this->set('contact_recipients', $valid);
+    }
+
+    /**
+     * Couleurs d'origine du thème (jeton => hexadécimal). Doit rester aligné avec
+     * DEFAULT_TOKENS dans resources/js/Utils/siteTheme.js, qui calcule les déclinaisons.
+     */
+    public const THEME_DEFAULTS = [
+        'primary' => '#9e001f', 'primary-container' => '#c8102e', 'on-primary' => '#ffffff',
+        'on-primary-container' => '#ffdad8', 'primary-fixed' => '#ffdad8', 'primary-fixed-dim' => '#ffb3b1',
+        'inverse-primary' => '#ffb3b1', 'on-primary-fixed' => '#410007', 'on-primary-fixed-variant' => '#92001c',
+        'surface-tint' => '#bf0229',
+        'secondary' => '#006e27', 'on-secondary' => '#ffffff', 'secondary-container' => '#7ff98d',
+        'on-secondary-container' => '#007329', 'secondary-fixed' => '#81fc90', 'secondary-fixed-dim' => '#65df76',
+        'on-secondary-fixed' => '#002107', 'on-secondary-fixed-variant' => '#00531c',
+        'tertiary' => '#745b00', 'on-tertiary' => '#ffffff', 'tertiary-container' => '#d0a600',
+        'on-tertiary-container' => '#4f3d00', 'tertiary-fixed' => '#ffe08a', 'tertiary-fixed-dim' => '#f1c100',
+        'on-tertiary-fixed' => '#241a00', 'on-tertiary-fixed-variant' => '#574400',
+        'background' => '#fbf9f8', 'surface' => '#fbf9f8', 'surface-bright' => '#fbf9f8',
+        'surface-container-low' => '#f6f3f2', 'surface-container' => '#f0eded', 'surface-container-high' => '#eae7e7',
+        'surface-container-highest' => '#e4e2e1', 'surface-variant' => '#e4e2e1', 'surface-dim' => '#dcd9d9',
+        'inverse-on-surface' => '#f3f0f0', 'surface-container-lowest' => '#ffffff',
+        'on-background' => '#1b1c1c', 'on-surface' => '#1b1c1c', 'inverse-surface' => '#303030',
+        'on-surface-variant' => '#5c403f', 'outline' => '#906f6e', 'outline-variant' => '#e5bdbb',
+        'error' => '#ba1a1a', 'on-error' => '#ffffff', 'error-container' => '#ffdad6', 'on-error-container' => '#93000a',
+    ];
+
+    public const THEME_BASE_KEYS = ['primary', 'secondary', 'tertiary', 'background', 'card', 'text', 'textMuted', 'border'];
+
+    /**
+     * Thème enregistré : les 8 couleurs choisies et la palette complète qui en découle.
+     *
+     * @return array{base: array<string, string>|null, tokens: array<string, string>, custom: bool}
+     */
+    public function theme(): array
+    {
+        return Cache::rememberForever('site_identity.theme', function () {
+            $stored = $this->get('site_theme');
+            $tokens = is_array($stored['tokens'] ?? null) ? $stored['tokens'] : [];
+
+            return [
+                'base' => is_array($stored['base'] ?? null) ? $stored['base'] : null,
+                'tokens' => array_merge(self::THEME_DEFAULTS, array_intersect_key($tokens, self::THEME_DEFAULTS)),
+                'custom' => $tokens !== [],
+            ];
+        });
+    }
+
+    public function themeHex(string $token): string
+    {
+        return $this->theme()['tokens'][$token] ?? self::THEME_DEFAULTS[$token] ?? '#000000';
+    }
+
+    /**
+     * Variables CSS du thème personnalisé, injectées dans app.blade.php (null = couleurs d'origine).
+     */
+    public function themeCss(): ?string
+    {
+        $theme = $this->theme();
+        if (! $theme['custom']) {
+            return null;
+        }
+
+        $variables = collect($theme['tokens'])
+            ->map(fn (string $hex, string $name) => '--c-'.$name.':'.implode(' ', sscanf($hex, '#%02x%02x%02x')))
+            ->implode(';');
+
+        // :root:root l'emporte sur les valeurs par défaut quel que soit l'ordre de chargement du CSS.
+        return ":root:root{{$variables}}";
+    }
+
+    /**
+     * Remplace les couleurs d'origine par celles du thème dans un HTML qui ne peut pas
+     * utiliser de variables CSS (e-mails).
+     */
+    public function applyThemeToHtml(string $html): string
+    {
+        $theme = $this->theme();
+        if (! $theme['custom']) {
+            return $html;
+        }
+
+        // Seulement les teintes propres au thème : le blanc, par exemple, sert à plusieurs jetons
+        // (fond des cartes, texte sur le rouge…) et ne doit pas être remplacé à l'aveugle.
+        $tokens = ['primary', 'primary-container', 'secondary', 'tertiary', 'background', 'surface-container-low',
+            'surface-container', 'on-surface', 'on-surface-variant', 'outline-variant'];
+
+        $map = [];
+        foreach ($tokens as $token) {
+            $map[self::THEME_DEFAULTS[$token]] = $theme['tokens'][$token];
+        }
+
+        return str_ireplace(array_keys($map), array_values($map), $html);
+    }
+
+    /**
+     * @param  array<string, string>  $base
+     * @param  array<string, string>  $tokens
+     */
+    public function updateTheme(array $base, array $tokens): void
+    {
+        $this->set('site_theme', [
+            'base' => array_intersect_key($base, array_flip(self::THEME_BASE_KEYS)),
+            'tokens' => array_intersect_key(array_map('strtolower', $tokens), self::THEME_DEFAULTS),
+        ]);
+        Cache::forget('site_identity.theme');
+    }
+
+    public function resetTheme(): void
+    {
+        PlatformSetting::query()->whereKey('site_theme')->delete();
+        Cache::forget('site_identity.theme');
+    }
+
+    public const DEFAULT_LOGO = '/images/logo_cama.png';
+
+    /**
+     * Logo du site (en-têtes, pied de page, back-office, e-mails). Retombe sur le logo
+     * d'origine si aucun logo n'a été envoyé ou si le fichier a disparu.
+     */
+    public function siteLogo(): string
+    {
+        return Cache::rememberForever('site_identity.logo', function () {
+            $stored = $this->get('site_identity');
+            $path = is_array($stored) ? ($stored['logo'] ?? null) : null;
+
+            return ($path && is_file(public_path(ltrim($path, '/')))) ? $path : self::DEFAULT_LOGO;
+        });
+    }
+
+    public function updateSiteLogo(?string $path): void
+    {
+        $this->set('site_identity', ['logo' => $path]);
+        Cache::forget('site_identity.logo');
+    }
+
+    /**
+     * Mentions légales (module dédié du studio de contenu). Tant que rien n'a été enregistré,
+     * le texte d'origine (CmsPageService::LEGAL_PAGE_DEFAULTS) s'applique.
+     *
+     * @return array{title: string, intro: string, articles: list<array{anchor: string, icon: string, title: string, body: string}>, custom: bool, updatedAt: ?string}
+     */
+    public function legalNotice(): array
+    {
+        $defaults = CmsPageService::LEGAL_PAGE_DEFAULTS;
+        $stored = $this->get('legal_notice');
+
+        if (! is_array($stored)) {
+            return [...$defaults, 'custom' => false, 'updatedAt' => null];
+        }
+
+        return [
+            'title' => (string) ($stored['title'] ?? $defaults['title']),
+            'intro' => (string) ($stored['intro'] ?? ''),
+            'articles' => is_array($stored['articles'] ?? null) ? array_values($stored['articles']) : $defaults['articles'],
+            'custom' => true,
+            'updatedAt' => $stored['updatedAt'] ?? null,
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $data  données validées par LegalNoticeController
+     */
+    public function updateLegalNotice(array $data): void
+    {
+        $used = [];
+        $articles = [];
+
+        foreach ($data['articles'] ?? [] as $article) {
+            $title = trim((string) ($article['title'] ?? ''));
+            $body = trim(str_replace("\r\n", "\n", (string) ($article['body'] ?? '')));
+            if ($title === '' && $body === '') {
+                continue;
+            }
+
+            // Ancre de l'adresse (/mention_legales#rgpd) : propre, et unique sur la page.
+            $anchor = Str::slug((string) ($article['anchor'] ?? '')) ?: Str::slug($title) ?: 'rubrique';
+            for ($base = $anchor, $n = 2; in_array($anchor, $used, true); $n++) {
+                $anchor = "{$base}-{$n}";
+            }
+            $used[] = $anchor;
+
+            $articles[] = [
+                'anchor' => $anchor,
+                'icon' => trim((string) ($article['icon'] ?? '')) ?: 'article',
+                'title' => $title,
+                'body' => $body,
+            ];
+        }
+
+        $this->set('legal_notice', [
+            'title' => trim((string) ($data['title'] ?? '')),
+            'intro' => trim((string) ($data['intro'] ?? '')),
+            'articles' => $articles,
+            'updatedAt' => now()->toIso8601String(),
+        ]);
+    }
+
+    /** Retour au texte d'origine. */
+    public function resetLegalNotice(): void
+    {
+        PlatformSetting::query()->whereKey('legal_notice')->delete();
     }
 
     public function get(string $key, mixed $default = null): mixed

@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\AdminRole;
 use App\Models\AdminUser;
+use App\Support\AdminPermissions;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -36,6 +38,7 @@ class AdminUserService
         $role = AdminRole::from($data['role']);
 
         $this->assertCanManageRole($actor, $role);
+        $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? []);
 
         $user = AdminUser::query()->create([
             'nom' => strtoupper(trim($data['nom'])),
@@ -44,7 +47,7 @@ class AdminUserService
             'email' => strtolower(trim($data['email'])),
             'password' => Hash::make(Str::password(24)),
             'role' => $role,
-            'permissions' => \App\Support\AdminPermissions::sanitize($data['permissions'] ?? []),
+            'permissions' => $permissions,
             'matricule_interne' => $data['matricule_interne'] ?? null,
             'actif' => true,
             'invited_at' => now(),
@@ -67,6 +70,7 @@ class AdminUserService
 
         $role = AdminRole::from($data['role']);
         $this->assertCanManageRole($actor, $role);
+        $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? [], $user);
 
         $user->fill([
             'nom' => strtoupper(trim($data['nom'])),
@@ -74,7 +78,7 @@ class AdminUserService
             'grade' => $data['grade'] ?? null,
             'email' => strtolower(trim($data['email'])),
             'role' => $role,
-            'permissions' => \App\Support\AdminPermissions::sanitize($data['permissions'] ?? []),
+            'permissions' => $permissions,
             'matricule_interne' => $data['matricule_interne'] ?? $user->matricule_interne,
         ])->save();
 
@@ -91,7 +95,14 @@ class AdminUserService
 
         $this->assertCanManage($actor, $user);
 
-        $user->update(['actif' => ! $user->actif]);
+        $attributes = ['actif' => ! $user->actif];
+
+        if ($user->actif) {
+            // Désactivation : on révoque aussi les cookies « Se souvenir de moi » du compte.
+            $attributes['remember_token'] = Str::random(60);
+        }
+
+        $user->forceFill($attributes)->save();
 
         return $user->fresh();
     }
@@ -168,19 +179,28 @@ class AdminUserService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForActor(AdminUser $actor): array
+    /**
+     * Comptes internes paginés, avec ce que le compte connecté peut faire sur chacun.
+     */
+    public function paginateForActor(AdminUser $actor, ?string $search, int $perPage): LengthAwarePaginator
     {
         return AdminUser::query()
+            ->when($search, function ($query, string $search) {
+                $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $search).'%';
+                $query->where(fn ($q) => $q->where('nom', 'like', $like)
+                    ->orWhere('prenom', 'like', $like)
+                    ->orWhere('email', 'like', $like));
+            })
             ->orderBy('nom')
             ->orderBy('prenom')
-            ->get()
-            ->map(fn (AdminUser $user) => [
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (AdminUser $user) => [
                 ...$this->format($user),
                 'canManage' => $this->canManage($actor, $user),
                 'canResendInvitation' => $this->canManage($actor, $user) && ! $user->last_login_at,
                 'canDelete' => $this->canManage($actor, $user) && $user->id !== $actor->id,
-            ])
-            ->all();
+            ]);
     }
 
     public function canManage(AdminUser $actor, AdminUser $target): bool
@@ -201,6 +221,66 @@ class AdminUserService
         if (! $this->canManage($actor, $target)) {
             abort(403, 'Vous ne pouvez pas modifier ce compte interne.');
         }
+    }
+
+    /**
+     * Permissions que le compte connecté peut attribuer (pour les cases de la fiche).
+     *
+     * @return list<string>
+     */
+    public function grantableBy(AdminUser $actor): array
+    {
+        return AdminPermissions::grantableBy($actor->role, app(AdminPermissionService::class)->expanded($actor));
+    }
+
+    /**
+     * Contrôle des permissions demandées, contre l'élévation de privilèges :
+     *  - chaque permission doit être compatible avec le rôle (ex. gestion des comptes) ;
+     *  - un non-administrateur ne peut AJOUTER que des permissions qu'il possède lui-même
+     *    (celles que le compte avait déjà sont conservées, pour pouvoir le modifier) ;
+     *  - un non-administrateur ne peut pas changer ses propres droits ni son rôle.
+     *
+     * @param  array<int, mixed>  $requested
+     * @return list<string>
+     */
+    private function grantablePermissions(AdminUser $actor, AdminRole $role, array $requested, ?AdminUser $target = null): array
+    {
+        $permissions = AdminPermissions::sanitize($requested);
+        $current = $target?->effective_permissions ?? [];
+
+        foreach ($permissions as $key) {
+            if (! AdminPermissions::allowedForRole($key, $role)) {
+                throw ValidationException::withMessages([
+                    'permissions' => '« '.AdminPermissions::label($key).' » est réservé aux superviseurs et administrateurs.',
+                ]);
+            }
+        }
+
+        if ($actor->role === AdminRole::Administrateur) {
+            return $permissions;
+        }
+
+        if ($target && $target->id === $actor->id) {
+            $unchanged = $role === $target->role
+                && collect($permissions)->sort()->values()->all() === collect($current)->sort()->values()->all();
+            if (! $unchanged) {
+                throw ValidationException::withMessages([
+                    'permissions' => 'Vous ne pouvez pas modifier vos propres droits : demandez à un administrateur.',
+                ]);
+            }
+
+            return $permissions;
+        }
+
+        $refused = array_diff($permissions, $this->grantableBy($actor), $current);
+        if ($refused !== []) {
+            throw ValidationException::withMessages([
+                'permissions' => 'Vous ne pouvez attribuer que des permissions que vous possédez vous-même. Non autorisé : '
+                    .implode(', ', array_map(fn (string $key) => '« '.AdminPermissions::label($key).' »', $refused)).'.',
+            ]);
+        }
+
+        return $permissions;
     }
 
     private function assertCanManageRole(AdminUser $actor, AdminRole $role): void

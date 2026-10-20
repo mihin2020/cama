@@ -22,6 +22,8 @@ class AdminUser extends Authenticatable
         'permissions',
         'matricule_interne',
         'actif',
+        'deux_fa_active',
+        'deconnexion_auto_active',
         'invited_at',
         'last_login_at',
     ];
@@ -29,6 +31,7 @@ class AdminUser extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'login_2fa_code',
     ];
 
     protected function casts(): array
@@ -36,6 +39,10 @@ class AdminUser extends Authenticatable
         return [
             'password' => 'hashed',
             'actif' => 'boolean',
+            'deux_fa_active' => 'boolean',
+            'deconnexion_auto_active' => 'boolean',
+            'login_2fa_expires_at' => 'datetime',
+            'login_2fa_attempts' => 'integer',
             'role' => AdminRole::class,
             'permissions' => 'array',
             'invited_at' => 'datetime',

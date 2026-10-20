@@ -290,9 +290,9 @@ class CmsNewsletterCampaignService
             ? '<div style="display:none;max-height:0;overflow:hidden;">'.e($preheader).'</div>'
             : '';
 
-        $logoUrl = url('/images/logo_cama.png');
+        $logoUrl = url(app(PlatformSettingsService::class)->siteLogo());
 
-        return <<<HTML
+        $html = <<<HTML
 <!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -316,6 +316,9 @@ class CmsNewsletterCampaignService
 </body>
 </html>
 HTML;
+
+        // Les e-mails ne lisent pas les variables CSS : on y reporte les couleurs du thème.
+        return app(PlatformSettingsService::class)->applyThemeToHtml($html);
     }
 
     /**

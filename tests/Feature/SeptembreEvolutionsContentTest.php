@@ -42,12 +42,15 @@ class SeptembreEvolutionsContentTest extends TestCase
     public function test_legal_sections_omit_editeur_and_include_droits(): void
     {
         $sections = app(CmsPageService::class)->legalSystemSections();
-        $html = json_encode($sections, JSON_UNESCAPED_UNICODE);
+        $json = json_encode($sections, JSON_UNESCAPED_UNICODE);
+        $articles = collect($sections[0]['columns'][0]['widgets'][0]['content']['articles']);
 
-        $this->assertStringNotContainsString('Éditeur du Site', $html);
-        $this->assertStringNotContainsString('id=\"editeur\"', $html);
-        $this->assertStringNotContainsString('id=\"hebergeur\"', $html);
-        $this->assertStringContainsString('Droits d\'accès et de rectification', $html);
-        $this->assertStringContainsString('id=\"droits\"', $html);
+        // Contenu désormais structuré (widget legal_page) : même règle, vérifiée sur les données.
+        $this->assertStringNotContainsStringIgnoringCase('Éditeur du site', $json);
+        $this->assertStringNotContainsStringIgnoringCase('hébergeur', $json);
+        $this->assertNotContains('editeur', $articles->pluck('anchor')->all());
+        $this->assertNotContains('hebergeur', $articles->pluck('anchor')->all());
+        $this->assertContains('droits', $articles->pluck('anchor')->all());
+        $this->assertSame('Droits d\'accès et de rectification', $articles->firstWhere('anchor', 'droits')['title']);
     }
 }

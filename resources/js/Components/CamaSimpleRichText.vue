@@ -254,19 +254,19 @@ watch(
     width: 28px;
     height: 28px;
     border-radius: 6px;
-    color: #5c403f;
+    color: rgb(var(--c-on-surface-variant));
     transition: background-color 0.15s ease;
 }
 
 .rich-btn:hover,
 .rich-btn.is-active {
-    background-color: #f6f3f2;
-    color: #9e001f;
+    background-color: rgb(var(--c-surface-container-low));
+    color: rgb(var(--c-primary));
 }
 
 .rich-editor:empty::before {
     content: attr(data-placeholder);
-    color: #906f6e;
+    color: rgb(var(--c-outline));
     pointer-events: none;
 }
 

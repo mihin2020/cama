@@ -365,13 +365,13 @@ function displayValue(value) {
     transition: transform 0.2s;
 }
 .toggle-switch.on {
-    background-color: #006e27;
+    background-color: rgb(var(--c-secondary));
 }
 .toggle-switch.on .knob {
     transform: translateX(20px);
 }
 .toggle-switch.off {
-    background-color: #e4e2e1;
+    background-color: rgb(var(--c-surface-container-highest));
 }
 </style>
 

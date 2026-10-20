@@ -3,12 +3,15 @@ import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps({
     items: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
     statusFilters: Array,
     activeFilter: { type: String, default: 'Tous' },
     categoryList: Array,
@@ -113,17 +116,22 @@ function removeImage() {
     editorImageError.value = false;
 }
 
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.actualites',
+    params: () => ({
+        status: props.activeFilter !== 'Tous' ? props.activeFilter : undefined,
+        category: props.activeCategoryId || undefined,
+    }),
+    anchor: listTop,
+});
+
 function setFilter(status) {
-    router.get(route('admin.cms.actualites'), {
-        status,
-        ...(props.activeCategoryId ? { category: props.activeCategoryId } : {}),
-    }, { preserveState: true, preserveScroll: true });
+    reload({ status: status !== 'Tous' ? status : undefined });
 }
 
 function setCategoryFilter(categoryId) {
-    const params = { status: props.activeFilter };
-    if (categoryId) params.category = categoryId;
-    router.get(route('admin.cms.actualites'), params, { preserveState: true, preserveScroll: true });
+    reload({ category: categoryId || undefined });
 }
 
 function addCategory() {
@@ -342,7 +350,7 @@ function removeArticle(id) {
             </button>
         </div>
 
-        <div class="assure-card overflow-x-auto">
+        <div ref="listTop" class="assure-card overflow-x-auto scroll-mt-24">
             <table class="w-full text-xs">
                 <thead>
                     <tr class="border-b border-outline-variant text-left text-[10px] uppercase text-on-surface-variant">
@@ -401,6 +409,9 @@ function removeArticle(id) {
                     </tr>
                 </tbody>
             </table>
+            <div class="px-3 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="article(s)" @change="goToPage" @per-page="setPerPage" />
+            </div>
         </div>
     </CmsLayout>
 

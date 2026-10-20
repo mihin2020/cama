@@ -13,15 +13,38 @@ use Inertia\Response;
 
 class PartenaireController extends Controller
 {
-    public function index(Request $request, CmsPartnerService $partners): Response
+    public function index(Request $request, CmsPartnerService $partners): Response|RedirectResponse
     {
         $type = $request->string('type')->toString();
-        $activeType = in_array($type, CmsPartnerService::TYPES, true) ? $type : null;
+        $filters = [...CmsPartnerService::TYPES, CmsPartnerService::FILTER_NO_POSITION];
+        $activeType = in_array($type, $filters, true) ? $type : null;
+        $search = mb_substr(trim($request->string('q')->toString()), 0, 100) ?: null;
+        $perPage = in_array($request->integer('per_page'), CmsPartnerService::PER_PAGE_OPTIONS, true)
+            ? $request->integer('per_page')
+            : CmsPartnerService::PER_PAGE_OPTIONS[0];
+
+        $paginator = $partners->paginateForAdmin($activeType, $search, $perPage);
+
+        // Page demandée au-delà de la dernière (ex. après une suppression) : retour à la dernière page.
+        if ($paginator->isEmpty() && $paginator->currentPage() > 1) {
+            return redirect()->route('admin.cms.partenaires', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Partenaires/Index', [
-            'items' => $partners->listForAdmin($activeType),
+            'items' => $paginator->items(),
+            'pagination' => [
+                'currentPage' => $paginator->currentPage(),
+                'lastPage' => $paginator->lastPage(),
+                'perPage' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+            'perPageOptions' => CmsPartnerService::PER_PAGE_OPTIONS,
+            'mapPoints' => $partners->mapPointsForAdmin($activeType, $search),
             'types' => CmsPartnerService::TYPES,
             'activeType' => $activeType,
+            'search' => $search ?? '',
+            'counts' => $partners->countsForAdmin(),
+            'noPositionFilter' => CmsPartnerService::FILTER_NO_POSITION,
         ]);
     }
 
@@ -63,7 +86,7 @@ class PartenaireController extends Controller
             'horaires' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'image_url' => ['nullable', 'string', 'max:1000'],
-            'image_file' => ['nullable', 'image', 'max:2048'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
             'lon' => ['nullable', 'numeric', 'between:-180,180'],
             'mapsUrl' => ['nullable', 'string', 'max:1000', 'url'],

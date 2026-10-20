@@ -19,6 +19,7 @@ class RegistrationController extends Controller
         return Inertia::render('Public/Registration', [
             'orgStructure' => $settings->orgStructure(),
             'inscriptionDocuments' => $settings->activeInscriptionDocuments(),
+            'inscriptionFields' => $settings->inscriptionFieldsMap(),
         ]);
     }
 

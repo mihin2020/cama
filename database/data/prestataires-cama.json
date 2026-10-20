@@ -1,0 +1,2986 @@
+[
+ {
+  "name": "Centre médical militaire de Banfora",
+  "type": "Centre de santé",
+  "city": "Banfora",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   178
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Banfora",
+  "type": "Centre de santé",
+  "city": "Banfora",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   166
+  ],
+  "address": "Regional Hospital, Banfora",
+  "latitude": 10.6413362,
+  "longitude": -4.7447034,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Regional%20de%20Banfora&query_place_id=ChIJBwAAAFBKNQ4Rq1x0_oGRzr8",
+  "position": "google"
+ },
+ {
+  "name": "Diprovet",
+  "type": "Partenaire",
+  "city": "Banfora",
+  "description": "Prestataire CAMA",
+  "lines": [
+   144
+  ],
+  "address": "Banfora",
+  "latitude": 10.6446423,
+  "longitude": -4.7613522,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=DIPROVET%20Banfora%20Dr%20KONE&query_place_id=ChIJp-iCkJNLNQ4RC8VSh39S8rw",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire d'analyses Martha Touba",
+  "type": "Partenaire",
+  "city": "Banfora",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   17
+  ],
+  "address": "Banfora",
+  "latitude": 10.6478157,
+  "longitude": -4.749057,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20%26%20Laboratoire%20Ste%20Martha-Touba&query_place_id=ChIJyb5PxUFKNQ4R7vXOZ3-z_lM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de la Comoé",
+  "type": "Partenaire",
+  "city": "Banfora",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   13
+  ],
+  "address": "Banfora",
+  "latitude": 10.6378634,
+  "longitude": -4.7557944,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Como%C3%A9&query_place_id=ChIJYyvsBFtKNQ4R47_o13QIh1M",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Nadon Nouvelle",
+  "type": "Partenaire",
+  "city": "Banfora",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   16
+  ],
+  "address": "Secteur 1, Rue 144, Porte 355, Banfora",
+  "latitude": 10.641338,
+  "longitude": -4.7624216,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Nadon&query_place_id=ChIJY-9wP05KNQ4RVQHXok4wm4E",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Sainte Martha-Touba",
+  "type": "Partenaire",
+  "city": "Banfora",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   115
+  ],
+  "address": "Banfora",
+  "latitude": 10.6478157,
+  "longitude": -4.749057,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20%26%20Laboratoire%20Ste%20Martha-Touba&query_place_id=ChIJyb5PxUFKNQ4R7vXOZ3-z_lM",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Bobo-Dioulasso",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   177
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHUSS",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   165
+  ],
+  "address": "Sikasso Sira, Bobo-Dioulasso",
+  "latitude": 11.1700367,
+  "longitude": -4.301191,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CHUSS%20-%20Centre%20H%C3%B4spitalier%20Universitaire%20Sour%C3%B4%20Sanou&query_place_id=ChIJmS9RSHH7NA4Ri-_TKj4XVFg",
+  "position": "google"
+ },
+ {
+  "name": "CMM Bobo",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   189
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Espace médical de Sya",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   191
+  ],
+  "address": "Koko, Bobo-Dioulasso",
+  "latitude": 11.1728193,
+  "longitude": -4.2790067,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Espace%20M%C3%A9dical%20de%20Sya&query_place_id=ChIJ54TJ1qr9NA4RgmfKPY8hv04",
+  "position": "google"
+ },
+ {
+  "name": "Hôpital militaire Colonel Major Tanguet Ouattara",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   49
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Office national de santé des travailleurs",
+  "type": "Centre de santé",
+  "city": "Bobo-Dioulasso",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   128
+  ],
+  "address": "Secteur 5, Zone Residentielle B, Bobo-Dioulasso",
+  "latitude": 11.1709367,
+  "longitude": -4.2777911,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Office%20de%20Sant%C3%A9%20des%20Travailleurs&query_place_id=ChIJoXMQdiH7NA4Rc_o-FGtk2TI",
+  "position": "google"
+ },
+ {
+  "name": "Exalab",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   150
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Labo de Pharmacie du Houet",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   146
+  ],
+  "address": "1159 avenue William Ponty, Bobo-Dioulasso",
+  "latitude": 11.1755297,
+  "longitude": -4.30148,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Laboratoire%20du%20Houet&query_place_id=ChIJIz_qXwD7NA4RGbDba2ahQYU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Amine",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   42
+  ],
+  "address": "Yegueré, Bobo-Dioulasso",
+  "latitude": 11.198701,
+  "longitude": -4.3230995,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20AMINE&query_place_id=ChIJMyd81Qz8NA4RhN7FXdrJHZ4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Aoudi",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   138
+  ],
+  "address": "Ave Louveau, Bobo-Dioulasso",
+  "latitude": 11.1632556,
+  "longitude": -4.2923933,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Aoudi&query_place_id=ChIJAw_FwYf7NA4RvM-iFqPEmlU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Boyam SARL",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   30
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Colombe",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   50
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie de l'Entente",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   27
+  ],
+  "address": "Koko, Bobo-Dioulasso",
+  "latitude": 11.1727728,
+  "longitude": -4.2859692,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20L%27entente&query_place_id=ChIJFwRjfPn6NA4RBSd95alwEn8",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de l'Hôpital",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   104
+  ],
+  "address": "rue Famechon, Sikasso Sira, Bobo-Dioulasso",
+  "latitude": 11.1691161,
+  "longitude": -4.3030354,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20l%27H%C3%B4pital&query_place_id=ChIJyS3MTAn7NA4RpkaqjTfQjtI",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Houet",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   1
+  ],
+  "address": "Avenue Guillaume Ouedraogo, Bobo-Dioulasso",
+  "latitude": 11.1752687,
+  "longitude": -4.3014885,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20Houet&query_place_id=ChIJrT3MPXb7NA4RZi7gli2Lnm4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Harmonie",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   77
+  ],
+  "address": "3527, N 8 , rue 20.38 Porte 911, Lafiabougou, Bobo-Dioulasso",
+  "latitude": 11.1582768,
+  "longitude": -4.3200352,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20HARMONIE&query_place_id=ChIJ8TcOs578NA4RbhFlzlPVZ7Q",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Lafiabougou",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   38
+  ],
+  "address": "rue 20.45, Lafiabougou, Bobo-Dioulasso",
+  "latitude": 11.1490697,
+  "longitude": -4.3234983,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Lafiabougou&query_place_id=ChIJdVVEA-_9NA4R_-NL9JnBhq4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Lucien",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   113
+  ],
+  "address": "rue Ibrahim Cire Ba, Sarfalao, Bobo-Dioulasso",
+  "latitude": 11.160033,
+  "longitude": -4.2698943,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Lucien&query_place_id=ChIJ4fT74uP6NA4RIRpuNPbfMRc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Mah-Ta",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   35
+  ],
+  "address": "rue 21.138, Sonsoribougou, Bobo-Dioulasso",
+  "latitude": 11.1757429,
+  "longitude": -4.3276554,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20MAH-TA&query_place_id=ChIJ036LnAP9NA4RgcLEz8CuvFw",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Remedis",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   63
+  ],
+  "address": "Boulevard Chalone en Champagne, Sarfalao, Bobo-Dioulasso",
+  "latitude": 11.1649098,
+  "longitude": -4.2760222,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20REMEDIS&query_place_id=ChIJKybDrDL7NA4Rq0I1wkkKNpA",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Siyara",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   60
+  ],
+  "address": "Avenue du gouverneur William Ponty, Bobo-Dioulasso",
+  "latitude": 11.1766694,
+  "longitude": -4.3016652,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Siyara&query_place_id=ChIJj-C-jp37NA4RbcmM53xPbOQ",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Souligné",
+  "type": "Partenaire",
+  "city": "Bobo-Dioulasso",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   80
+  ],
+  "address": "Rue Pepin Malherbe, Bobo-Dioulasso",
+  "latitude": 11.173837,
+  "longitude": -4.299936,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Soulign%C3%A9&query_place_id=ChIJF_C0gHb7NA4R_sqsudUA60Y",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Ezra",
+  "type": "Partenaire",
+  "city": "Bogandé",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   108
+  ],
+  "address": "Bogandé",
+  "latitude": 12.9717124,
+  "longitude": -0.1456751,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20EZRA&query_place_id=ChIJOQHxZwAvKA4R4I9c11xsCBo",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Yanduanma",
+  "type": "Partenaire",
+  "city": "Bogandé",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   69
+  ],
+  "address": "Bogandé",
+  "latitude": 12.9789517,
+  "longitude": -0.14586,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20YANDUANMA&query_place_id=ChIJ1yMjUwAvKA4Rj49QOGMhrIE",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire El Schaddai Espérance",
+  "type": "Partenaire",
+  "city": "Boromo",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   154
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Dalwo",
+  "type": "Partenaire",
+  "city": "Boromo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   125
+  ],
+  "address": "Boromo",
+  "latitude": 11.7431481,
+  "longitude": -2.9324031,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Dalwo&query_place_id=ChIJURmYVdE5Mg4RCXIQsItda-4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Theobe",
+  "type": "Partenaire",
+  "city": "Boulsa",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   72
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Centre médical militaire de Dédougou",
+  "type": "Centre de santé",
+  "city": "Dédougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   180
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Dédougou",
+  "type": "Centre de santé",
+  "city": "Dédougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   167
+  ],
+  "address": "Dédougou",
+  "latitude": 12.4611022,
+  "longitude": -3.465111,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20R%C3%A9gional%20De%20D%C3%A9dougou&query_place_id=ChIJtx_TAgI_MQ4RNxmm5_y-ZHU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Bankuy",
+  "type": "Partenaire",
+  "city": "Dédougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   4
+  ],
+  "address": "Dédougou",
+  "latitude": 12.4644944,
+  "longitude": -3.4609729,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=12.4644944,-3.4609729",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Dandie",
+  "type": "Partenaire",
+  "city": "Dédougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   130
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Joviale",
+  "type": "Partenaire",
+  "city": "Dédougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   114
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Marguerite Marie",
+  "type": "Partenaire",
+  "city": "Dédougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   96
+  ],
+  "address": "Dédougou",
+  "latitude": 12.4604822,
+  "longitude": -3.4583116,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Marie%20MARGUERITE&query_place_id=ChIJXZEIwqo_MQ4RfoFLrdU4JpM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de Diapaga",
+  "type": "Partenaire",
+  "city": "Diapaga",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   105
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CMA Diébougou",
+  "type": "Centre de santé",
+  "city": "Diébougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   210
+  ],
+  "address": "Diébougou",
+  "latitude": 10.9637876,
+  "longitude": -3.2488367,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20de%20Diebougou&query_place_id=ChIJfwGS-QcYMw4RbRuIDZkQ5O4",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt pharmaceutique Communal",
+  "type": "Partenaire",
+  "city": "Diébougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   75
+  ],
+  "address": "Unnamed Road, XQG2+9VC, Diébougou",
+  "latitude": 10.9759381,
+  "longitude": -3.2478747,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Csps%20Communal&query_place_id=ChIJjSqBRYUZMw4RPKTgWGNB3pA",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt pharmaceutique Entente Diébougou",
+  "type": "Partenaire",
+  "city": "Diébougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   76
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Dissin",
+  "type": "Partenaire",
+  "city": "Dissin",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   20
+  ],
+  "address": "Unnamed Road, Dissin",
+  "latitude": 10.9410749,
+  "longitude": -2.92162,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20Dissin%20SARL&query_place_id=ChIJzYorigHDMg4RTwh0VLqidP4",
+  "position": "google"
+ },
+ {
+  "name": "CMA Djibo",
+  "type": "Centre de santé",
+  "city": "Djibo",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   171
+  ],
+  "address": "Djibo",
+  "latitude": 14.1008906,
+  "longitude": -1.6297182,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20M%C3%A9dical%20Avec%20Antenne%20Chirurgicale%20%28CMA%29&query_place_id=ChIJV8XGhoSwJQ4Rxtw6K5YfPVc",
+  "position": "google"
+ },
+ {
+  "name": "Infirmerie CMM de Djibo",
+  "type": "Centre de santé",
+  "city": "Djibo",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   185
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Dépôt pharmaceutique du Sud Djibo",
+  "type": "Partenaire",
+  "city": "Djibo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   132
+  ],
+  "address": "Djibo",
+  "latitude": 14.096361,
+  "longitude": -1.6281677,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20Sud&query_place_id=ChIJhykPxoKwJQ4R_s7mZ5f4VnE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Soum",
+  "type": "Partenaire",
+  "city": "Djibo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   93
+  ],
+  "address": "Djibo",
+  "latitude": 14.1001915,
+  "longitude": -1.6291261,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Du%20Soum&query_place_id=ChIJKTCWY4OwJQ4RL6LFSdpBhMs",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Sud Djibo",
+  "type": "Partenaire",
+  "city": "Djibo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   10
+  ],
+  "address": "Djibo",
+  "latitude": 14.096361,
+  "longitude": -1.6281677,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20Sud&query_place_id=ChIJhykPxoKwJQ4R_s7mZ5f4VnE",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Dori",
+  "type": "Centre de santé",
+  "city": "Dori",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   182
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Dori",
+  "type": "Centre de santé",
+  "city": "Dori",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   169
+  ],
+  "address": "Dori",
+  "latitude": 14.0349864,
+  "longitude": -0.034549,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20R%C3%A9gional%20de%20Dori&query_place_id=ChIJk3A5I6GJJw4Rz5cBnamgDR8",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt pharmaceutique Birabia",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   6
+  ],
+  "address": "Dori",
+  "latitude": 14.0313104,
+  "longitude": -0.0350179,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=D%C3%A9pot%20Pharmaceutique%20Birabia&query_place_id=ChIJ_dzPMqCJJw4R_2Tg4LBWl4w",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire Cellal",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   152
+  ],
+  "address": "R6, Dori",
+  "latitude": 14.0345011,
+  "longitude": -0.0372688,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Cellal&query_place_id=ChIJFcURnqCJJw4RLvlix09ccZE",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire du Centre médical militaire de Dori",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   159
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Barke",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   109
+  ],
+  "address": "Unnamed Road, Dori",
+  "latitude": 14.0325376,
+  "longitude": -0.0296332,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Bark%C3%A9&query_place_id=ChIJWb1WRN6JJw4RvJevtvKVAKU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Cellal",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   78
+  ],
+  "address": "R6, Dori",
+  "latitude": 14.0345011,
+  "longitude": -0.0372688,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Cellal&query_place_id=ChIJFcURnqCJJw4RLvlix09ccZE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Rond Point",
+  "type": "Partenaire",
+  "city": "Dori",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   81
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Centre hospitalier régional universitaire de Fada",
+  "type": "Centre de santé",
+  "city": "Fada N'Gourma",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   164
+  ],
+  "address": "Unnamed Road, Fada-Ngourma",
+  "latitude": 12.0595047,
+  "longitude": 0.3538212,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20R%C3%A9gional%20Universitaire%20de%20Fada%20N%E2%80%99Gourma&query_place_id=ChIJfT2B_Lnf1REREahf2nzlsy0",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Fada",
+  "type": "Centre de santé",
+  "city": "Fada N'Gourma",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   176
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Dépôt Liberté",
+  "type": "Partenaire",
+  "city": "Fada N'Gourma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   12
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Nungu",
+  "type": "Partenaire",
+  "city": "Fada N'Gourma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   22
+  ],
+  "address": "Fada N'Gourma",
+  "latitude": 12.0601693,
+  "longitude": 0.3549648,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=12.0601693,0.3549648",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Theresa",
+  "type": "Partenaire",
+  "city": "Fada N'Gourma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   95
+  ],
+  "address": "Fada-Ngourma",
+  "latitude": 12.0668803,
+  "longitude": 0.3508048,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Theresa&query_place_id=ChIJ01Fgv2Pf1RERm3ezpTVNjYs",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Yendabili",
+  "type": "Partenaire",
+  "city": "Fada N'Gourma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   137
+  ],
+  "address": "Fada-Ngourma",
+  "latitude": 12.0620615,
+  "longitude": 0.3612356,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Yendabli%20Fada&query_place_id=ChIJ5fbdbmHf1RER4O2Y1s9ho1I",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Zeli",
+  "type": "Partenaire",
+  "city": "Fada N'Gourma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   116
+  ],
+  "address": "Fada-Ngourma",
+  "latitude": 12.0602458,
+  "longitude": 0.3760772,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Zeli&query_place_id=ChIJ717OBfnZ1RERrMqIWtS9f_w",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Gaoua",
+  "type": "Centre de santé",
+  "city": "Gaoua",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   179
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Gaoua",
+  "type": "Centre de santé",
+  "city": "Gaoua",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   200
+  ],
+  "address": "10°19'17.0\"N 3°10'46., N 8, Gaoua",
+  "latitude": 10.3213594,
+  "longitude": -3.1792907,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CHR%20de%20Gaoua&query_place_id=ChIJlT78Fh3czA8R-27PBVypyD0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie des Collines",
+  "type": "Partenaire",
+  "city": "Gaoua",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   26
+  ],
+  "address": "Gaoua",
+  "latitude": 10.324234,
+  "longitude": -3.1783194,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20des%20Collines&query_place_id=ChIJFVtRrc7dzA8RqK_r4T2cJM4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Poni",
+  "type": "Partenaire",
+  "city": "Gaoua",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   2
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Philippe Kambou Tourtoute",
+  "type": "Partenaire",
+  "city": "Gaoua",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   3
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Shalom",
+  "type": "Partenaire",
+  "city": "Gaoua",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   99
+  ],
+  "address": "35500, Gaoua",
+  "latitude": 10.3300625,
+  "longitude": -3.1833906,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20LABORATOIRE%20SHALOM&query_place_id=ChIJf2EdBlrdzA8R9iMclFlImHo",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Gorom-Gorom",
+  "type": "Centre de santé",
+  "city": "Gorom-Gorom",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   183
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CMA Gorom-Gorom",
+  "type": "Centre de santé",
+  "city": "Gorom-Gorom",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   201
+  ],
+  "address": "Gorom-Gorom",
+  "latitude": 14.4396,
+  "longitude": -0.2335,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Gorom-Gorom%20Centre%20M%C3%A9dical%20Avec%20Antenne%20chirurgicale&query_place_id=ChIJNVRvLiVyJw4RsaVXbkkczPo",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Bani-Zoumba",
+  "type": "Partenaire",
+  "city": "Gorom-Gorom",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   8
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie de l'Oudalan",
+  "type": "Partenaire",
+  "city": "Gorom-Gorom",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   122
+  ],
+  "address": "Gorom-Gorom",
+  "latitude": 14.4382785,
+  "longitude": -0.2153112,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20oudalan&query_place_id=ChIJ21jVv2BxJw4R-PzYrR8hSGQ",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Traoré",
+  "type": "Partenaire",
+  "city": "Gorom-Gorom",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   7
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Divine",
+  "type": "Partenaire",
+  "city": "Houndé",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   53
+  ],
+  "address": "Houndé",
+  "latitude": 11.4927427,
+  "longitude": -3.5199168,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Divine&query_place_id=ChIJFVPwWA2aMw4RADQhkmz5m9k",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Kaya",
+  "type": "Centre de santé",
+  "city": "Kaya",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   181
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Kaya",
+  "type": "Centre de santé",
+  "city": "Kaya",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   168
+  ],
+  "address": "Centre Hospitalier Regional de Kaya, Kaya",
+  "latitude": 13.0859351,
+  "longitude": -1.1023326,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Regional%20de%20Kaya&query_place_id=ChIJD-vjmy7JKA4Re-s13twIwAY",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire Adonai",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   158
+  ],
+  "address": "Kaya",
+  "latitude": 13.0818577,
+  "longitude": -1.086013,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20ADONA%C3%8F&query_place_id=ChIJb2addgDJKA4RuOOljBB78ao",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Adonai",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   119
+  ],
+  "address": "Kaya",
+  "latitude": 13.0818577,
+  "longitude": -1.086013,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20ADONA%C3%8F&query_place_id=ChIJb2addgDJKA4RuOOljBB78ao",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Rond Point",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   14
+  ],
+  "address": "Kaya",
+  "latitude": 13.0862504,
+  "longitude": -1.0849815,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=13.0862504,-1.0849815",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Sanma",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   5
+  ],
+  "address": "Kaya",
+  "latitude": 13.0876801,
+  "longitude": -1.1031198,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=13.0876801,-1.1031198",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Tanko Kaya",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   102
+  ],
+  "address": "Kaya",
+  "latitude": 13.0871854,
+  "longitude": -1.0886681,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Tanko&query_place_id=ChIJKRiMaQDJKA4RAb6Gj0OqL_0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Wemtenga",
+  "type": "Partenaire",
+  "city": "Kaya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   110,
+   141
+  ],
+  "address": "Kaya",
+  "latitude": 13.0864283,
+  "longitude": -1.0786873,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Wentenga&query_place_id=ChIJqUzj6KbJKA4RoUMhQDlQKmw",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie la Grâce",
+  "type": "Partenaire",
+  "city": "Kongoussi",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   51
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Koudougou",
+  "type": "Centre de santé",
+  "city": "Koudougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   172
+  ],
+  "address": "Koudougou",
+  "latitude": 12.2622319,
+  "longitude": -2.3585387,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CHR%20de%20Koudougou&query_place_id=ChIJQWEC0j4bLg4REYjbubuX-qw",
+  "position": "google"
+ },
+ {
+  "name": "Infirmerie régimentaire Koudougou",
+  "type": "Centre de santé",
+  "city": "Koudougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   186
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Laboratoire Faag Yonre",
+  "type": "Partenaire",
+  "city": "Koudougou",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   153
+  ],
+  "address": "Koudougou",
+  "latitude": 12.2502335,
+  "longitude": -2.3625902,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Laboratoire%20Faag-Yonr%C3%A9&query_place_id=ChIJi1X2HkobLg4Rx_8YS_N3ftY",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Faag Yoore",
+  "type": "Partenaire",
+  "city": "Koudougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   11
+  ],
+  "address": "Koudougou",
+  "latitude": 12.2502335,
+  "longitude": -2.3625902,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Laboratoire%20Faag-Yonr%C3%A9&query_place_id=ChIJi1X2HkobLg4Rx_8YS_N3ftY",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Habib",
+  "type": "Partenaire",
+  "city": "Koudougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   62
+  ],
+  "address": "25440908, Koudougou",
+  "latitude": 12.2529398,
+  "longitude": -2.3564931,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Habib&query_place_id=ChIJhyH1NXkbLg4RZH9iMQiHv-w",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Kuilig-Noore",
+  "type": "Partenaire",
+  "city": "Koudougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   25
+  ],
+  "address": "Rte de Dedougou, Koudougou",
+  "latitude": 12.250977,
+  "longitude": -2.3743049,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Kuilg-noonr%C3%A9&query_place_id=ChIJ1QakcFEbLg4RTneQ3spt1Lg",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical St Camille de Koupéla",
+  "type": "Centre de santé",
+  "city": "Koupéla",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   187
+  ],
+  "address": "Koupéla",
+  "latitude": 12.1674273,
+  "longitude": -0.3648079,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20M%C3%A9dical%20Saint%20Camille&query_place_id=ChIJeR3GEQCNKQ4Reh_QyAUcRlc",
+  "position": "google"
+ },
+ {
+  "name": "CMA Koupéla",
+  "type": "Centre de santé",
+  "city": "Koupéla",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   212
+  ],
+  "address": "Koupéla",
+  "latitude": 12.1832819,
+  "longitude": -0.357717,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Koupela%20Centre%20M%C3%A9dical%20Avec%20Antenne%20chirurgicale&query_place_id=ChIJgdUwAxWMKQ4RlYYhj6adB-U",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Kourittenga",
+  "type": "Partenaire",
+  "city": "Koupéla",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   127
+  ],
+  "address": "Koupéla",
+  "latitude": 12.1826997,
+  "longitude": -0.3574875,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=12.1826997,-0.3574875",
+  "position": "osm"
+ },
+ {
+  "name": "CMA de Léo",
+  "type": "Centre de santé",
+  "city": "Léo",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   163
+  ],
+  "address": "Léo",
+  "latitude": 11.109184,
+  "longitude": -2.1046758,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=11.109184,-2.1046758",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Medicis",
+  "type": "Partenaire",
+  "city": "Léo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   126
+  ],
+  "address": "80, Léo",
+  "latitude": 11.0989656,
+  "longitude": -2.1029179,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20M%C3%89DICIS%20L%C3%89O&query_place_id=ChIJwX7MtKUTLQ4RJXV_M9tvy6Q",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Ste Lydia",
+  "type": "Partenaire",
+  "city": "Léo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   134
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR de Manga",
+  "type": "Centre de santé",
+  "city": "Manga",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   192
+  ],
+  "address": "Toédin",
+  "latitude": 11.6917174,
+  "longitude": -1.111656,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20R%C3%A9gional%20%28CHR%29%20de%20Manga&query_place_id=ChIJCYN-JwCNKw4RYeUL1EryZqg",
+  "position": "google"
+ },
+ {
+  "name": "CMA Manga",
+  "type": "Centre de santé",
+  "city": "Manga",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   204
+  ],
+  "address": "Manga",
+  "latitude": 11.6606555,
+  "longitude": -1.0748027,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20de%20Manga&query_place_id=ChIJowUyopKNKw4R0TM2pzhjTw0",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt pharmaceutique le Destin",
+  "type": "Partenaire",
+  "city": "Manga",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   74
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Benewende",
+  "type": "Partenaire",
+  "city": "Manga",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   101
+  ],
+  "address": "Manga",
+  "latitude": 11.6616851,
+  "longitude": -1.0731651,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Benewende&query_place_id=ChIJLziUPkKNKw4RkZlg8Uaa7nY",
+  "position": "google"
+ },
+ {
+  "name": "CMA de Nouna",
+  "type": "Centre de santé",
+  "city": "Nouna",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   194
+  ],
+  "address": "Nouna",
+  "latitude": 12.7312757,
+  "longitude": -3.8597226,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20M%C3%A9dical%20Avec%20Antenne%20Chirurgicale%20de%20Nouna&query_place_id=ChIJBQAAu_jWNg4Rf9OuLOt_Cco",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Azenby",
+  "type": "Partenaire",
+  "city": "Nouna",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   73
+  ],
+  "address": "Nouna",
+  "latitude": 12.7318677,
+  "longitude": -3.861081,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20AZENBY%20Sari&query_place_id=ChIJhVXkTFbWNg4RZKHL2q_0100",
+  "position": "google"
+ },
+ {
+  "name": "CMA Orodara",
+  "type": "Centre de santé",
+  "city": "Orodara",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   188
+  ],
+  "address": "Orodara",
+  "latitude": 10.980701,
+  "longitude": -4.922435,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Orodara%20Centre%20M%C3%A9dical%20Avec%20Antenne%20chirurgicale&query_place_id=ChIJm0PrKbJnNQ4Rxab-aZnQjBY",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Kénédougou",
+  "type": "Partenaire",
+  "city": "Orodara",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   94
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Centre d'imagerie médical de Ouagadougou",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   37
+  ],
+  "address": "Avenue Maurice Yameogo, Koulouba, Ouagadougou",
+  "latitude": 12.3691016,
+  "longitude": -1.5127582,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Imagerie%20M%C3%A9dicale%20de%20Ouagadougou&query_place_id=ChIJ-ac-OCO-Lg4REhOzNs22HS8",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire camp Général Bila Zagré",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   193
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.238333,
+  "longitude": -1.561593,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Camp%20g%C3%A9n%C3%A9ral%20zagre%20bila&query_place_id=ChIJjw3FSQCZLg4RHbNVsmEO3EQ",
+  "position": "camp"
+ },
+ {
+  "name": "Centre médical militaire de la base aérienne",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   196
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Centre médical militaire de Ouagadougou (CGO)",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   174
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Centre médical militaire principal de la BNSP",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   208
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHU Bogodogo",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   207
+  ],
+  "address": "Unnamed Road, Karpala, Ouagadougou",
+  "latitude": 12.3354817,
+  "longitude": -1.4936415,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Universitaire%20de%20Bogodogo%20%28CHUBOGODOGO%29&query_place_id=ChIJE_nBu0O9Lg4R4zOKlszx1SM",
+  "position": "google"
+ },
+ {
+  "name": "CHU Charles de Gaulle",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   203
+  ],
+  "address": "979 Boulevard des Tensoba, Dassasgo, Ouagadougou",
+  "latitude": 12.3742923,
+  "longitude": -1.4715684,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Universitaire%20P%C3%A9diatrique%20%E2%80%93%20Charles%20de%20Gaulle&query_place_id=ChIJrYxkyO--Lg4RrvhywEf6p7c",
+  "position": "google"
+ },
+ {
+  "name": "CHU de Tengandogo",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   211
+  ],
+  "address": "Sandogo, Ouagadougou",
+  "latitude": 12.2625943,
+  "longitude": -1.5384359,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Universitaire%20de%20Tingandogo&query_place_id=ChIJ1w3CZ-2XLg4RGcoLLN2XC5I",
+  "position": "google"
+ },
+ {
+  "name": "CHU Yalgado Ouédraogo",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   198
+  ],
+  "address": "01bp5234ouaga01, Ouagadougou",
+  "latitude": 12.3835886,
+  "longitude": -1.5064573,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20Universitaire%20Yalgado%20Ou%C3%A9draogo&query_place_id=ChIJ3TmOjDO-Lg4Rz0gMHVYe2Mc",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt du Centre médical militaire du camp Paspanga",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   190
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3679516,
+  "longitude": -1.5184418,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Camp%20paspanga&query_place_id=ChIJTet9ENy_Lg4RitRVnlkgme4",
+  "position": "camp"
+ },
+ {
+  "name": "Hôpital militaire Capitaine Halassane Coulibaly",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   161
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Hôpital Paul Vi",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   214
+  ],
+  "address": "Tampouy, Ouagadougou",
+  "latitude": 12.3999465,
+  "longitude": -1.5577945,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=H%C3%B4pital%20Paul%20VI&query_place_id=ChIJ90DfLR2VLg4R9DJ0upnaFy0",
+  "position": "google"
+ },
+ {
+  "name": "Hôpital protestant Schiphra",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   160
+  ],
+  "address": "Tangen, Ouagadougou",
+  "latitude": 12.3908476,
+  "longitude": -1.5180178,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20m%C3%A9dical%20protestant%20Schiphra&query_place_id=ChIJGbvRoNW_Lg4RYNc8s2oeWQ8",
+  "position": "google"
+ },
+ {
+  "name": "Hôpital Saint Camille de Ouagadougou",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   195
+  ],
+  "address": "Secteur 23, Centre de Santé Saint Camille, 23 Ave Babanguida, 1200 Logements, Ouagadougou",
+  "latitude": 12.3666089,
+  "longitude": -1.4952105,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=H%C3%B4pital%20Saint%20Camille%20de%20Ouagadougou%20%28HOSCO%29&query_place_id=ChIJVVVVRUi-Lg4RUbV7mTpK3ok",
+  "position": "google"
+ },
+ {
+  "name": "Office de santé des travailleurs",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   145
+  ],
+  "address": "Avenue du Capitaine Thomas Sankara, Koulouba, Ouagadougou",
+  "latitude": 12.3774778,
+  "longitude": -1.5113715,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Office%20de%20sant%C3%A9%20des%20travailleurs&query_place_id=ChIJb1Vliie_Lg4R8aPYPdkdrCc",
+  "position": "google"
+ },
+ {
+  "name": "Osteocare",
+  "type": "Centre de santé",
+  "city": "Ouagadougou",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   58
+  ],
+  "address": "13 BV30037, Somgandé, Ouagadougou",
+  "latitude": 12.4011514,
+  "longitude": -1.502142,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=OSTEOCARE%20Sarl&query_place_id=ChIJeQDfMIC_Lg4RT4aRt-qMGhA",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt Hôpital militaire Capitaine Halassane Coulibaly",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   107
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Laboratoire camp Guillaume Ouédraogo",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   155
+  ],
+  "address": "Camp Guillaume Ouédraogo, Ouagadougou",
+  "latitude": 12.37045,
+  "longitude": -1.5308605,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CAMP%20GAUME&query_place_id=ChIJBz6HPgCVLg4RkqHljZ8tXlU",
+  "position": "camp"
+ },
+ {
+  "name": "Laboratoire d'analyses médicales du Centre",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   148
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3661496,
+  "longitude": -1.5166453,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Laboratoire%20du%20Centre&query_place_id=ChIJBxcJ7iG-Lg4RNuXKeHil3m8",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire du Centre médical militaire du camp Paspanga",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   149
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3679516,
+  "longitude": -1.5184418,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Camp%20paspanga&query_place_id=ChIJTet9ENy_Lg4RitRVnlkgme4",
+  "position": "camp"
+ },
+ {
+  "name": "Laboratoire Kouritenga",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   157
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie 1200 Logements SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   43
+  ],
+  "address": "Ave Babanguida, Dagnoen, Ouagadougou",
+  "latitude": 12.3668563,
+  "longitude": -1.4938835,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%201200%20logements&query_place_id=ChIJQwx69EK-Lg4RXwsLZ8hV2iM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Agora Rood Wooko",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   39
+  ],
+  "address": "Rue Du Travail, Koulouba, Ouagadougou",
+  "latitude": 12.3694471,
+  "longitude": -1.5226207,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Rood-Wooko&query_place_id=ChIJQWEYOIqVLg4RMPDy8ZrDYBs",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Amitié",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   68
+  ],
+  "address": "1191, 11 11 BP, Cissin, Ouagadougou",
+  "latitude": 12.3341225,
+  "longitude": -1.5357419,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20AMITI%C3%89%20MIYOUGOU&query_place_id=ChIJ7VWAng6WLg4RX1g0VYAs88M",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Amitié Miyougou",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   140
+  ],
+  "address": "1191, 11 11 BP, Cissin, Ouagadougou",
+  "latitude": 12.3341225,
+  "longitude": -1.5357419,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20AMITI%C3%89%20MIYOUGOU&query_place_id=ChIJ7VWAng6WLg4RX1g0VYAs88M",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Ar-Rahma",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   29
+  ],
+  "address": "Ave Yatenga, Kilwin, Ouagadougou",
+  "latitude": 12.3895173,
+  "longitude": -1.5738866,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Ar-Rahma&query_place_id=ChIJs56oOPaULg4RlOp3n1vcvZg",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Augustine",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   24
+  ],
+  "address": "Patte d´oie, Ouagadougou",
+  "latitude": 12.325577,
+  "longitude": -1.5030942,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Augustine&query_place_id=ChIJWTJqQ8K9Lg4RhZcL1V3IfKU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Balkuy",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   143
+  ],
+  "address": "Ouaga 2000, Ouagadougou",
+  "latitude": 12.3095647,
+  "longitude": -1.4822765,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Balkuy&query_place_id=ChIJiW3zyrK9Lg4RZkUs9krpRd8",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Bethania",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   89
+  ],
+  "address": "Ave Oumarou Kanazoe, Bilbalogho, Ouagadougou",
+  "latitude": 12.3640405,
+  "longitude": -1.5336946,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Bethania&query_place_id=ChIJ5_DWx-yVLg4RHfQHScvK_kc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Bonheur",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   28
+  ],
+  "address": "Sandogo, Ouagadougou",
+  "latitude": 12.3139852,
+  "longitude": -1.5551909,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Bonheur&query_place_id=ChIJ-S8v11iXLg4R-csyDTmY8vE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Camille",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   82
+  ],
+  "address": "Dassasgo, Ouagadougou",
+  "latitude": 12.3757877,
+  "longitude": -1.4788303,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Camille&query_place_id=ChIJaVGeRfe-Lg4RQT45sZWmYBo",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de l'Hippodrome",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   33
+  ],
+  "address": "Nonsin, Ouagadougou",
+  "latitude": 12.3756732,
+  "longitude": -1.5575485,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20l%C2%B4Hippodrome%20Sarl&query_place_id=ChIJc6DBhbKVLg4R72Xio9kIxJw",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de l'Hôpital",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   133
+  ],
+  "address": "Avenue du Capitaine Thomas Sankara, Ouagadougou",
+  "latitude": 12.3821996,
+  "longitude": -1.5065921,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20l%27H%C3%B4pital&query_place_id=ChIJvzcv5DG-Lg4RjsDOGJVlF8E",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de l'Unité",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   87
+  ],
+  "address": "Boulevard Tensoba Wam Godi, Goughin, Ouagadougou",
+  "latitude": 12.3521445,
+  "longitude": -1.5563967,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20l%C2%B4unit%C3%A9&query_place_id=ChIJZUSvadKVLg4RozRTy2UESRU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de la Concorde",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   40
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3672097,
+  "longitude": -1.5191037,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20la%20Concorde&query_place_id=ChIJsx5FRSC-Lg4R0QoCp5oZr2A",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de la Jeunesse",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   52
+  ],
+  "address": "rue 10.61, Hamdalaye, Ouagadougou",
+  "latitude": 12.3719156,
+  "longitude": -1.5578295,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20la%20jeunesse&query_place_id=ChIJXySinbSVLg4R1YlN2y2maME",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de la Liberté",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   59
+  ],
+  "address": "Dapoya, Ouagadougou",
+  "latitude": 12.3776758,
+  "longitude": -1.5317193,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20la%20Libert%C3%A9&query_place_id=ChIJsURYvpqVLg4RQrnUEa0yiBc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de la Trypano",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   31
+  ],
+  "address": "Dapoya, Ouagadougou",
+  "latitude": 12.3807982,
+  "longitude": -1.5102194,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Trypano&query_place_id=ChIJT_4b_vW_Lg4RBijOKjNMajA",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Diawara",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   215
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3669059,
+  "longitude": -1.5241445,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Diawara&query_place_id=ChIJQ_hBob-VLg4RD3fD3MHLJHc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Carrefour",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   120
+  ],
+  "address": "Ave Kadiogo, Bilbalogho, Ouagadougou",
+  "latitude": 12.3677252,
+  "longitude": -1.5309476,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20Carrefour&query_place_id=ChIJ_aQbh5KVLg4ROl7-cJZ_IsA",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Sud",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   121
+  ],
+  "address": "Av. Pascal Zagré, Ouaga 2000, Ouagadougou",
+  "latitude": 12.3063322,
+  "longitude": -1.5267318,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Du%20Sud&query_place_id=ChIJedtLLO-XLg4RdZHpmaJRLU4",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Elite",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   45
+  ],
+  "address": "Tangen, Ouagadougou",
+  "latitude": 12.4016839,
+  "longitude": -1.5326877,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20elite&query_place_id=ChIJP0ymRQCVLg4RB1VTn2sGZys",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Kadiogo",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   88
+  ],
+  "address": "Koulouba, Ouagadougou",
+  "latitude": 12.3607101,
+  "longitude": -1.5175128,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Kadiogo&query_place_id=ChIJ5wvyRSC-Lg4ROcJ2rZm6090",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Kamboinsin",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   84
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.4386831,
+  "longitude": -1.5570351,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20KAMBOINSIN&query_place_id=ChIJ9Xz1KK7rLg4Rwrv6oFYhSGk",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Katra SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   36,
+   65
+  ],
+  "address": "10360, Kalgondin, Ouagadougou",
+  "latitude": 12.3470131,
+  "longitude": -1.5030533,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20KATRA&query_place_id=ChIJ3d_hKim_Lg4RrVC0GJr29_c",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Kilwin SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   44
+  ],
+  "address": "Avenue Yatenga, Kilwin, Ouagadougou",
+  "latitude": 12.3903226,
+  "longitude": -1.5804844,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Kilwin&query_place_id=ChIJt_D67HuVLg4RN9sMzjs5Su8",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Kossodo",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   46
+  ],
+  "address": "N3, Kossodo, Ouagadougou",
+  "latitude": 12.4172523,
+  "longitude": -1.4733789,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Kossodo&query_place_id=ChIJxzCr9nG_Lg4R_KAuFd4lw_0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Louis-Pasteur",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   34
+  ],
+  "address": "Nemnin, Ouagadougou",
+  "latitude": 12.3808796,
+  "longitude": -1.5279204,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Louis%20pasteur&query_place_id=ChIJB2yjFISVLg4RnQGXvaomu9c",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Loumbila",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   67
+  ],
+  "address": "Barbé",
+  "latitude": 12.4567951,
+  "longitude": -1.4307515,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=PHARMACIE%20LOUMBILA&query_place_id=ChIJP9rXUQDHLg4Rp7HtlYn0CJE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Meteba",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   41
+  ],
+  "address": "Somgandé, Ouagadougou",
+  "latitude": 12.3945076,
+  "longitude": -1.5154099,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Meteba&query_place_id=ChIJ6xbqTdG_Lg4RaNk6PmkS8jk",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Naab-Raga SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   32
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.3524179,
+  "longitude": -1.531649,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=12.3524179,-1.531649",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie Nagrin",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   57
+  ],
+  "address": "Sandogo, Ouagadougou",
+  "latitude": 12.2875001,
+  "longitude": -1.5344247,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20M%C3%A9dical%20De%20Nagrin&query_place_id=ChIJa6ckIc-XLg4R5iB8xCjSoCg",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Notre Dame de Fatima",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   19
+  ],
+  "address": "paroisse Saint François d'Assises, Ouagadougou",
+  "latitude": 12.3413846,
+  "longitude": -1.4709573,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20d%27accueil%20notre%20Dame%20de%20Fatima&query_place_id=ChIJu3Wj_52-Lg4RdYaQrzpTaFo",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Pissy",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   70
+  ],
+  "address": "Pissy, Ouagadougou",
+  "latitude": 12.3373385,
+  "longitude": -1.5643054,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20de%20Pissy&query_place_id=ChIJ3c1aT4GWLg4RyR23YrxHbiM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Renaissance",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   139
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Sainte Odile SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   83
+  ],
+  "address": "Karpala, Ouagadougou",
+  "latitude": 12.332715,
+  "longitude": -1.4633659,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20sainte%20Odile&query_place_id=ChIJJ-Z6NvO9Lg4R4ShMmof9ylE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Schifeyi",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   111
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Somketa",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   66
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.4512511,
+  "longitude": -1.5515485,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20SOMKETA&query_place_id=ChIJwyXsZZjrLg4RZudPIT3PWxc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Sondogo",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   142
+  ],
+  "address": "Sect 33, Sondogo BF, 1375, 09 09 BP, Sandogo, Ouagadougou",
+  "latitude": 12.3183373,
+  "longitude": -1.5973031,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Sondogo&query_place_id=ChIJ3XQgUzaRLg4R4xmsnDqvCAc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie St Lazare",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   86
+  ],
+  "address": "Nemnin, Ouagadougou",
+  "latitude": 12.3789474,
+  "longitude": -1.5283775,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Saint%20Lazarre&query_place_id=ChIJj52wBoWVLg4R2dU94OoSRHE",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Tanko",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   71
+  ],
+  "address": "N22, Tampouy, Ouagadougou",
+  "latitude": 12.3992142,
+  "longitude": -1.5555946,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Tanko&query_place_id=ChIJCbofRgOVLg4R66kLlRLVZh0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Tenedia",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   98
+  ],
+  "address": "Kadiogo",
+  "latitude": 12.464066,
+  "longitude": -1.5554549,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Tenedia&query_place_id=ChIJo42KkePqLg4R2ZtVz0PsCuM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Viel",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   124
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.4242615,
+  "longitude": -1.5511579,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Vi%C3%A8l&query_place_id=ChIJFxjIyS-VLg4ReVLsJ89Fjt0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Wayalghin",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   61
+  ],
+  "address": "Wayalguin, Ouagadougou",
+  "latitude": 12.3972311,
+  "longitude": -1.4787948,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Wayalghin&query_place_id=ChIJT3HkcBi_Lg4RNJoldNlMMV0",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Wend Yam SARL",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   47
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Yempabou",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   117
+  ],
+  "address": "Ouagadougou",
+  "latitude": 12.4365152,
+  "longitude": -1.4511678,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20yempabou&query_place_id=ChIJWU-HKC3BLg4RGQSctS5O1HM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Yentema",
+  "type": "Partenaire",
+  "city": "Ouagadougou",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   21
+  ],
+  "address": "La Résidence le Ouagadouxgouts, 10 BP 684, 10 BURKINA FASO, N 6, Sandogo, Ouagadougou",
+  "latitude": 12.2954179,
+  "longitude": -1.5295954,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20yentema&query_place_id=ChIJFZ3xOACXLg4RzMgTtMGjZUE",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Ouahigouya",
+  "type": "Centre de santé",
+  "city": "Ouahigouya",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   184
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Ouahigouya",
+  "type": "Centre de santé",
+  "city": "Ouahigouya",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   170
+  ],
+  "address": "Ouahigouya",
+  "latitude": 13.5779,
+  "longitude": -2.4128,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Ouahigouya%20Centre%20Hospitalier%20R%C3%A9gional&query_place_id=ChIJsULDMa1VJQ4RHbqaAC2yIIE",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire Nayolsba",
+  "type": "Partenaire",
+  "city": "Ouahigouya",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   156
+  ],
+  "address": "Secteur numero 11 en face de la nouvelle Gare routière côté ouest, Ouahigouya",
+  "latitude": 13.5668258,
+  "longitude": -2.4109908,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Nayolsba&query_place_id=ChIJzzp_qHJVJQ4RQLhA115hNgM",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Nord",
+  "type": "Partenaire",
+  "city": "Ouahigouya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   15
+  ],
+  "address": "Ouahigouya",
+  "latitude": 13.5823178,
+  "longitude": -2.4255266,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Du%20Nord&query_place_id=ChIJNyw0UNlVJQ4RcDLkXTdoipY",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Nayolsba",
+  "type": "Partenaire",
+  "city": "Ouahigouya",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   9
+  ],
+  "address": "Secteur numero 11 en face de la nouvelle Gare routière côté ouest, Ouahigouya",
+  "latitude": 13.5668258,
+  "longitude": -2.4109908,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Nayolsba&query_place_id=ChIJzzp_qHJVJQ4RQLhA115hNgM",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire du BIR 25 de Pama",
+  "type": "Centre de santé",
+  "city": "Pama",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   213
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CMA de Pama",
+  "type": "Centre de santé",
+  "city": "Pama",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   175
+  ],
+  "address": "Pama",
+  "latitude": 11.2423397,
+  "longitude": 0.7035283,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20DE%20PAMA&query_place_id=ChIJ50SB-Hf71BERfV94eVPHfyA",
+  "position": "google"
+ },
+ {
+  "name": "Dépôt CMA de Pama",
+  "type": "Partenaire",
+  "city": "Pama",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   92
+  ],
+  "address": "Pama",
+  "latitude": 11.2423397,
+  "longitude": 0.7035283,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20DE%20PAMA&query_place_id=ChIJ50SB-Hf71BERfV94eVPHfyA",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Pô",
+  "type": "Centre de santé",
+  "city": "Pô",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   173
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CMA de Pô",
+  "type": "Centre de santé",
+  "city": "Pô",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   162
+  ],
+  "address": "Pô",
+  "latitude": 11.1682616,
+  "longitude": -1.1367598,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20de%20P%C3%94&query_place_id=ChIJO--9Wgt9Kw4RgqoZ4tVLPr8",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire du Nahouri",
+  "type": "Partenaire",
+  "city": "Pô",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   151
+  ],
+  "address": "En face du CMA de, Pô",
+  "latitude": 11.164744,
+  "longitude": -1.1325688,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Laboratoire%20d%E2%80%99analyses%20biom%C3%A9dicales%20du%20Nahouri&query_place_id=ChIJWwqFMQB7Kw4RpbAnXdCnOtQ",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Adana",
+  "type": "Partenaire",
+  "city": "Pô",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   90
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie de l'Hôpital Pô",
+  "type": "Partenaire",
+  "city": "Pô",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   64
+  ],
+  "address": "Pô",
+  "latitude": 11.1680816,
+  "longitude": -1.136412,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=11.1680816,-1.136412",
+  "position": "osm"
+ },
+ {
+  "name": "Pharmacie de la Paix",
+  "type": "Partenaire",
+  "city": "Pô",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   91
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie du Nahouri",
+  "type": "Partenaire",
+  "city": "Pô",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   18
+  ],
+  "address": "N5, Pô",
+  "latitude": 11.1675777,
+  "longitude": -1.146064,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20NAHOURI&query_place_id=ChIJ4ew7lCd9Kw4RrgjgO1Gm5jU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie des Banwa",
+  "type": "Partenaire",
+  "city": "Solenzo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   118
+  ],
+  "address": "BP 100, Solenzo",
+  "latitude": 12.1803182,
+  "longitude": -4.0816224,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20des%20Banwa&query_place_id=ChIJQ87KBp-ZNg4R615nqt7kat4",
+  "position": "google"
+ },
+ {
+  "name": "Centre médical militaire de Tenkodogo",
+  "type": "Centre de santé",
+  "city": "Tenkodogo",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   202
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Tenkodogo",
+  "type": "Centre de santé",
+  "city": "Tenkodogo",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   199
+  ],
+  "address": "Ctre Hospitalier Régional de Tenkodogo, N16, Tenkodogo",
+  "latitude": 11.7816999,
+  "longitude": -0.3680682,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Centre%20Hospitalier%20R%C3%A9gional%20de%20Tenkodogo&query_place_id=ChIJ-V0ieLE-Kg4RRimqx0mNu98",
+  "position": "google"
+ },
+ {
+  "name": "Laboratoire d'analyses bio médicale Wend Pouire",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Laboratoire d'analyses — prestataire CAMA",
+  "lines": [
+   147
+  ],
+  "address": "N17, Tenkodogo",
+  "latitude": 11.7832446,
+  "longitude": -0.3751118,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20%26%20laboratoire%20Wend%20Puire&query_place_id=ChIJvc8Vkzk5Kg4RgRIIETmeUac",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie de l'Hôpital Tenkodogo",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   100
+  ],
+  "address": "Tenkodogo",
+  "latitude": 11.788219,
+  "longitude": -0.3897665,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20De%20L%27Hopital&query_place_id=ChIJDWTLUfA5Kg4RQ8BizK1HWao",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Mamsi",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   136
+  ],
+  "address": "N16, Tenkodogo",
+  "latitude": 11.7811988,
+  "longitude": -0.3669155,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20MAMSI&query_place_id=ChIJdd3azrA-Kg4R6NSMYyP2Kxw",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie St Emmanuel (Exkulbale)",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   131
+  ],
+  "address": "N17, Tenkodogo",
+  "latitude": 11.7907001,
+  "longitude": -0.3972498,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Saint%20Emmanuel&query_place_id=ChIJu7BPeTg5Kg4RwOnvyAKDZNg",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Tibo",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   112
+  ],
+  "address": "Tenkodogo",
+  "latitude": 11.786089,
+  "longitude": -0.3690132,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20TIBO&query_place_id=ChIJ3y3nJWQ_Kg4RMLx5qV2dWQQ",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Wend-Puyré",
+  "type": "Partenaire",
+  "city": "Tenkodogo",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   135
+  ],
+  "address": "N17, Tenkodogo",
+  "latitude": 11.7832446,
+  "longitude": -0.3751118,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20%26%20laboratoire%20Wend%20Puire&query_place_id=ChIJvc8Vkzk5Kg4RgRIIETmeUac",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Loroum",
+  "type": "Partenaire",
+  "city": "Titao",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   48
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie du Nayala",
+  "type": "Partenaire",
+  "city": "Toma",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   54
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CMA Tougan",
+  "type": "Centre de santé",
+  "city": "Tougan",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   197
+  ],
+  "address": "Tougan",
+  "latitude": 13.069503,
+  "longitude": -3.0626284,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20De%20la%20Ville%20De%20Tougan&query_place_id=ChIJj_OZpN5fMA4Rt4HbERKqvBU",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Sourou",
+  "type": "Partenaire",
+  "city": "Tougan",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   55
+  ],
+  "address": "Tougan",
+  "latitude": 13.0679414,
+  "longitude": -3.0681549,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20du%20Sourou&query_place_id=ChIJLWfZcjJfMA4RpmXbMWSpmHA",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Lafiaso",
+  "type": "Partenaire",
+  "city": "Tougan",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   79
+  ],
+  "address": "Tougan",
+  "latitude": 13.0690664,
+  "longitude": -3.0685462,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=13.0690664,-3.0685462",
+  "position": "osm"
+ },
+ {
+  "name": "Dépôt pharmaceutique de l'Espoir de Yako",
+  "type": "Partenaire",
+  "city": "Yako",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   23
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Dépôt pharmaceutique la Nouvelle de Yako",
+  "type": "Partenaire",
+  "city": "Yako",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   123
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Nazeengba",
+  "type": "Partenaire",
+  "city": "Yako",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   85
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie Riale Yako",
+  "type": "Partenaire",
+  "city": "Yako",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   97
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "CHR Ziniaré",
+  "type": "Centre de santé",
+  "city": "Ziniaré",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   209
+  ],
+  "address": "Ziniaré",
+  "latitude": 12.5908658,
+  "longitude": -1.2792347,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Administration%20du%20CHR%20Ziniare&query_place_id=ChIJHbklRtvNLg4Rv6987XsIlT4",
+  "position": "google"
+ },
+ {
+  "name": "CMA Ziniaré",
+  "type": "Centre de santé",
+  "city": "Ziniaré",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   205
+  ],
+  "address": "Ziniaré",
+  "latitude": 12.5871968,
+  "longitude": -1.2989502,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20DE%20ZINIARE&query_place_id=ChIJU_nAK27OLg4RVkZLkpbRv-U",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Cheick Amadou",
+  "type": "Partenaire",
+  "city": "Ziniaré",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   103
+  ],
+  "address": "9629, Ziniaré",
+  "latitude": 12.5922143,
+  "longitude": -1.2812451,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20cheick%20amadou&query_place_id=ChIJL61wy0bNLg4RljVcey1WnYc",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie Wendbenedo",
+  "type": "Partenaire",
+  "city": "Ziniaré",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   56
+  ],
+  "address": "Ziniaré",
+  "latitude": 12.58915,
+  "longitude": -1.286496,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Wend%20Benedo&query_place_id=ChIJp183UqzNLg4RPfsdiyzp794",
+  "position": "google"
+ },
+ {
+  "name": "CMA Zorgho",
+  "type": "Centre de santé",
+  "city": "Zorgho",
+  "description": "Structure de santé — prestataire CAMA",
+  "lines": [
+   206
+  ],
+  "address": "Zorgo",
+  "latitude": 12.2517028,
+  "longitude": -0.6310482,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=CMA%20De%20Zorgho&query_place_id=ChIJa3qUQup5KQ4RDwfZG_sNMto",
+  "position": "google"
+ },
+ {
+  "name": "Pharmacie du Ganzourgou",
+  "type": "Partenaire",
+  "city": "Zorgho",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   129
+  ],
+  "address": null,
+  "latitude": null,
+  "longitude": null,
+  "maps_url": null,
+  "position": "a_verifier"
+ },
+ {
+  "name": "Pharmacie les 6 Bons",
+  "type": "Partenaire",
+  "city": "Zorgho",
+  "description": "Pharmacie / dépôt pharmaceutique — prestataire CAMA",
+  "lines": [
+   106
+  ],
+  "address": "Zorgo",
+  "latitude": 12.2507472,
+  "longitude": -0.6309759,
+  "maps_url": "https://www.google.com/maps/search/?api=1&query=Pharmacie%20Les%206%20Bons%28%20Zorgho%29&query_place_id=ChIJH2kyZeN5KQ4Rpe3a1o93B7o",
+  "position": "google"
+ }
+]

@@ -3,8 +3,11 @@ import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
+
+const siteLogo = useSiteLogo();
 
 const props = defineProps({
     items: Array,
@@ -188,7 +191,7 @@ function onDrop(index) {
             <div class="border border-outline-variant rounded-xl overflow-hidden">
                 <div class="flex items-center justify-between px-5 py-3 bg-white border-b border-outline-variant">
                     <div class="flex items-center gap-2">
-                        <img src="/images/logo_cama.png" class="h-8 w-8 object-contain" alt="Logo CAMA" />
+                        <img :src="siteLogo" class="h-8 w-8 object-contain" alt="Logo CAMA" />
                         <span class="font-extrabold tracking-tight font-headline-lg">CAMA</span>
                     </div>
                     <nav class="hidden md:flex items-center gap-1">
@@ -242,17 +245,27 @@ function onDrop(index) {
                         <label
                             v-for="cmsPage in pages"
                             :key="cmsPage.id"
-                            class="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-surface-container-low cursor-pointer text-sm"
+                            class="flex items-center gap-2 px-2 py-1.5 rounded text-sm"
+                            :class="cmsPage.inMenu ? 'opacity-60 cursor-not-allowed' : 'hover:bg-surface-container-low cursor-pointer'"
+                            :title="cmsPage.inMenu ? 'Cette page est déjà dans le menu. Retirez-la du menu pour pouvoir l’ajouter à nouveau.' : ''"
                         >
                             <input
                                 v-model="selectedPageIds"
                                 :value="cmsPage.id"
                                 type="checkbox"
-                                class="rounded border-outline-variant text-primary focus:ring-primary"
+                                :disabled="cmsPage.inMenu"
+                                class="rounded border-outline-variant text-primary focus:ring-primary disabled:opacity-40"
                             />
                             <span class="flex-1 truncate">{{ cmsPage.title }}</span>
                             <span
-                                v-if="cmsPage.status !== 'published'"
+                                v-if="cmsPage.inMenu"
+                                class="inline-flex items-center gap-0.5 text-[9px] text-secondary font-bold"
+                            >
+                                <span class="material-symbols-outlined text-[12px]">check</span>
+                                Dans le menu
+                            </span>
+                            <span
+                                v-else-if="cmsPage.status !== 'published'"
                                 class="text-[9px] text-tertiary font-bold"
                             >
                                 {{ statusLabel(cmsPage.status) }}

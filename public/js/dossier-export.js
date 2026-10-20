@@ -48,14 +48,20 @@
             .replace(/^-+|-+$/g, '') || 'NA';
     }
 
+    // Les fichiers portent le numéro FIF de la famille (à défaut, le N° CAMA ou le matricule).
     function camaTag(assure) {
-        return sanitize(assure && (assure.numeroCama || assure.matricule) || 'CAMA');
+        return sanitize(assure && (assure.numeroFif || assure.numeroCama || assure.matricule) || 'CAMA');
     }
 
     function fileName(assure, membre, seq) {
         const n = String(seq || 1).padStart(2, '0');
         const who = sanitize(`${membre.prenom || ''}-${membre.nom || ''}`);
         return `${camaTag(assure)}_${n}_${who}.pdf`;
+    }
+
+    // « FIF-2026-K7M4Q9 » tel quel ; préfixe FIF_ pour les anciens profils sans numéro.
+    function fifTag(assure) {
+        return assure && assure.numeroFif ? sanitize(assure.numeroFif) : `FIF_${camaTag(assure)}`;
     }
 
     function zipName(assure) {
@@ -104,7 +110,7 @@
         };
         const prenoms = g('prenoms') || g('prenom');
         return [
-            { x: 410, y: 496, size: 9, text: (g('numeroCama') || g('matricule')), maxW: 180 }, // FIF N°
+            { x: 410, y: 496, size: 9, text: g('numeroFif'), maxW: 180 }, // FIF N° (propre à la famille)
             { x: 636, y: 496, size: 9, text: todayFr(), maxW: 78 }, // Date en-tête
 
             { x: 44, y: 456, text: g('nom'), maxW: 125 },
@@ -117,7 +123,7 @@
             { x: 238, y: 438, text: g('categorie'), maxW: 120 },
             { x: 372, y: 438, text: g('numeroCim'), maxW: 90 },
             { x: 536, y: 438, text: g('numeroCama'), maxW: 95 },
-            { x: 668, y: 438, text: g('numeroIup'), maxW: 150 },
+            { x: 680, y: 438, text: g('numeroIup'), maxW: 140 }, // après « N° IUP (3) : »
 
             { x: 190, y: 419, text: g('armee'), maxW: 30 },
             { x: 258, y: 419, text: g('region'), maxW: 52 },
@@ -279,7 +285,7 @@
         const { conjoints, enfants } = splitMembres(rows);
 
         const fullBytes = await buildFormulaireComplet(assure, conjoints, enfants);
-        zip.file(`FIF_${camaTag(assure)}_complet.pdf`, fullBytes);
+        zip.file(`${fifTag(assure)}_complet.pdf`, fullBytes);
 
         for (let i = 0; i < rows.length; i++) {
             const m = rows[i];
@@ -304,7 +310,7 @@
         const rows = (membres || []).map(membreToRow);
         const { conjoints, enfants } = splitMembres(rows);
         const bytes = await buildFormulaireComplet(assure, conjoints, enfants);
-        downloadBytes(bytes, `FIF_${camaTag(assure)}.pdf`);
+        downloadBytes(bytes, `${fifTag(assure)}.pdf`);
     }
 
     function exportDossierByRef(ref) {

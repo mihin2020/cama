@@ -21,7 +21,7 @@ class AssureRegistrationService
             ]);
         }
 
-        if (Assure::query()->where('matricule', $data['matricule'])->exists()) {
+        if (! empty($data['matricule']) && Assure::query()->where('matricule', $data['matricule'])->exists()) {
             throw ValidationException::withMessages([
                 'matricule' => 'Ce matricule militaire est déjà enregistré.',
             ]);
@@ -32,21 +32,21 @@ class AssureRegistrationService
         return Assure::query()->create([
             'nom' => $data['nom'],
             'prenom' => $data['prenom'],
-            'sexe' => $data['sexe'],
-            'matricule' => $data['matricule'],
+            'sexe' => $data['sexe'] ?? null,
+            'matricule' => $data['matricule'] ?? null,
             'numero_informatique' => $data['numero_informatique'] ?? null,
-            'grade' => $data['grade'],
-            'categorie' => $data['categorie'],
-            'numero_cim' => $data['numero_cim'],
-            'numero_cama' => $data['numero_cama'],
+            'grade' => $data['grade'] ?? null,
+            'categorie' => $data['categorie'] ?? null,
+            'numero_cim' => $data['numero_cim'] ?? '',
+            'numero_cama' => $data['numero_cama'] ?? '',
             'numero_iup' => $data['numero_iup'] ?? null,
-            'armee' => $data['armee'],
-            'region' => $data['region'],
+            'armee' => $data['armee'] ?? null,
+            'region' => $data['region'] ?? null,
             'corps' => $data['corps'] ?? null,
             'service' => $data['service'] ?? null,
             'section' => $data['section'] ?? null,
             'sous_section' => $data['sous_section'] ?? null,
-            'telephone' => $data['telephone'],
+            'telephone' => $data['telephone'] ?? null,
             'email' => $data['email'],
             'personne_a_prevenir' => $data['personne_a_prevenir'] ?? null,
             'tel_personne_a_prevenir' => $data['tel_personne_a_prevenir'] ?? null,

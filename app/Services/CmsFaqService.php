@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AdminUser;
 use App\Models\CmsFaq;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CmsFaqService
 {
@@ -23,18 +24,16 @@ class CmsFaqService
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function listForAdmin(?int $categoryId = null): array
+    public function paginateForAdmin(?int $categoryId, int $perPage): LengthAwarePaginator
     {
-        $query = CmsFaq::query()
+        return CmsFaq::query()
             ->with('category')
+            ->when($categoryId, fn ($query) => $query->where('category_id', $categoryId))
             ->orderBy('sort_order')
-            ->orderBy('id');
-
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
-        }
-
-        return $query->get()->map(fn (CmsFaq $faq) => $this->format($faq))->all();
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsFaq $faq) => $this->format($faq));
     }
 
     public function format(CmsFaq $faq): array

@@ -2,12 +2,15 @@
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     items: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
     filters: Object,
     statusOptions: Object,
 });
@@ -30,24 +33,14 @@ const form = useForm({
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 
-const filteredCountLabel = computed(() => `${props.items?.length ?? 0} page(s)`);
+const listTop = ref(null);
+const { reload: applyFilters, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.pages',
+    params: () => ({ q: search.value.trim(), status: activeStatus.value }),
+    anchor: listTop,
+});
 
-watch(activeStatus, applyFilters);
-
-function applyFilters() {
-    router.get(
-        route('admin.cms.pages'),
-        {
-            q: search.value || undefined,
-            status: activeStatus.value || undefined,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
-}
+watch(activeStatus, () => applyFilters());
 
 function onSearchInput() {
     clearTimeout(searchTimer);
@@ -159,7 +152,7 @@ function deletePage(item) {
             </button>
         </div>
 
-        <div class="assure-card overflow-hidden">
+        <div ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                     <thead>
@@ -237,8 +230,10 @@ function deletePage(item) {
                     </tbody>
                 </table>
             </div>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="page(s)" @change="goToPage" @per-page="setPerPage" />
+            </div>
         </div>
-        <p class="text-[11px] text-on-surface-variant">{{ filteredCountLabel }}</p>
     </CmsLayout>
 
     <div

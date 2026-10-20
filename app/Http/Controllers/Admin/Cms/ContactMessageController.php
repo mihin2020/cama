@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CmsContactMessage;
 use App\Services\PlatformSettingsService;
 use App\Services\PublicContactService;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,33 +16,30 @@ use Inertia\Response;
 
 class ContactMessageController extends Controller
 {
-    public function index(Request $request, PublicContactService $contacts): Response
+    public function index(Request $request, PublicContactService $contacts): Response|RedirectResponse
     {
         $status = $request->string('status')->toString();
         $query = $request->string('q')->toString();
         $archived = $request->boolean('archived');
-        $perPage = min(100, max(10, (int) $request->input('per_page', 50)));
 
         $paginator = $contacts->paginateForAdmin(
             status: $status ?: null,
             query: $query ?: null,
             archived: $archived,
-            perPage: $perPage,
+            perPage: Pagination::perPage($request),
         );
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.cms.contacts', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Cms/Contacts/Index', [
             'items' => $paginator->items(),
-            'pagination' => [
-                'currentPage' => $paginator->currentPage(),
-                'lastPage' => $paginator->lastPage(),
-                'perPage' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
+            'pagination' => Pagination::meta($paginator),
             'filters' => [
                 'status' => $status,
                 'q' => $query,
                 'archived' => $archived,
-                'per_page' => $perPage,
             ],
             'statusOptions' => PublicContactService::STATUSES,
             'recipients' => $contacts->storedRecipients(),

@@ -1,0 +1,9 @@
+# Images du site et images envoyées depuis l'admin : aucun script ne doit s'exécuter ici.
+<IfModule mod_authz_core.c>
+    <FilesMatch "\.(php[0-9]?|phtml|phar|pht|cgi|pl|py|sh|asp|aspx|jsp|html?|xhtml|js)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+</IfModule>

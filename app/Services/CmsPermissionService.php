@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\AdminRole;
 use App\Models\AdminUser;
 
 class CmsPermissionService
@@ -20,18 +19,19 @@ class CmsPermissionService
             return $this->emptyCapabilities();
         }
 
-        $canManage = $this->adminPermissions->allows($admin, 'cms.manage');
-        $canPages = $canManage || $this->adminPermissions->allows($admin, 'cms.pages');
-        $isAdmin = $admin->role === AdminRole::Administrateur;
+        // Uniquement les permissions cochées pour le compte (« Accès complet au studio » les couvre,
+        // sauf le HTML libre : cf. AdminPermissionService::allows).
+        $allows = fn (string $permission) => $this->adminPermissions->allows($admin, $permission);
+        $canPages = $allows('cms.pages');
+        $canPublish = $canPages && $allows('cms.publish');
 
         return [
-            'canPublishPages' => $canPages && ($isAdmin || $admin->role === AdminRole::Superviseur || $canManage),
-            'canDeleteMedia' => ($canManage || $this->adminPermissions->allows($admin, 'cms.media')) && $isAdmin,
-            'canRestoreVersions' => $canPages && $isAdmin,
-            'canDuplicateVersions' => $canPages && ($isAdmin || $admin->role === AdminRole::Superviseur || $canManage),
-            'canUseHtmlWidget' => $canPages && $isAdmin,
-            'canManageMenus' => ($canManage || $this->adminPermissions->allows($admin, 'cms.menus'))
-                && ($isAdmin || $admin->role === AdminRole::Superviseur || $canManage),
+            'canPublishPages' => $canPublish,
+            'canDeleteMedia' => $allows('cms.media'),
+            'canRestoreVersions' => $canPublish,
+            'canDuplicateVersions' => $canPublish,
+            'canUseHtmlWidget' => $canPages && $allows('cms.html'),
+            'canManageMenus' => $allows('cms.menus'),
         ];
     }
 

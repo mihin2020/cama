@@ -17,7 +17,7 @@ Route::get('/', HomeController::class)->name('home');
 
 Route::middleware('guest.assure')->group(function () {
     Route::get('/inscription-assure', [RegistrationController::class, 'create'])->name('registration.create');
-    Route::post('/inscription-assure', [RegistrationController::class, 'store'])->name('registration.store');
+    Route::post('/inscription-assure', [RegistrationController::class, 'store'])->middleware('throttle:public-forms')->name('registration.store');
 });
 
 Route::prefix('espace-assure')
@@ -32,8 +32,8 @@ Route::get('/actualites', [ArticleController::class, 'index'])->name('public.art
 Route::get('/actualites/{slug}', [ArticleController::class, 'show'])->name('public.articles.show');
 Route::get('/ressources', [ResourceController::class, 'index'])->name('public.resources.index');
 Route::get('/contact', [ContactController::class, 'index'])->name('public.contact');
-Route::post('/contact', [ContactController::class, 'submit'])->name('public.contact.submit');
-Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->name('public.newsletter.subscribe');
+Route::post('/contact', [ContactController::class, 'submit'])->middleware('throttle:public-forms')->name('public.contact.submit');
+Route::post('/newsletter/subscribe', [NewsletterController::class, 'subscribe'])->middleware('throttle:public-forms')->name('public.newsletter.subscribe');
 Route::get('/newsletter/unsubscribe/{token}', [NewsletterController::class, 'unsubscribe'])->name('public.newsletter.unsubscribe');
 Route::get('/newsletter/track/open/{token}', [NewsletterTrackingController::class, 'open'])->name('public.newsletter.track.open');
 Route::get('/newsletter/track/click/{token}', [NewsletterTrackingController::class, 'click'])->name('public.newsletter.track.click');
@@ -42,7 +42,6 @@ Route::redirect('/cartographie', '/contact#section-carte')->name('public.map');
 Route::get('/apropos', [InstitutionController::class, 'about'])->name('public.about');
 Route::get('/services', [InstitutionController::class, 'services'])->name('public.services');
 Route::get('/mention_legales', [LegalController::class, 'legal'])->name('public.legal');
-Route::get('/accessibilite', [LegalController::class, 'accessibility'])->name('public.accessibility');
 Route::get('/{slug}', [PageController::class, 'show'])
     ->where('slug', '[A-Za-z0-9_-]+')
     ->name('public.pages.show');

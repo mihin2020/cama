@@ -2,13 +2,16 @@
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useServerPagination } from '@/Composables/usePagination';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 24, total: 0, perPageOptions: [24, 48, 96] }) },
     options: { type: Object, default: () => ({}) },
     permissions: { type: Object, default: () => ({}) },
     filters: { type: Object, default: () => ({}) },
@@ -49,24 +52,23 @@ const metadataForm = useForm({
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 
-watch([activeType, activeFolder, activeCategory, activeExtension], applyFilters);
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.media',
+    params: () => ({
+        q: search.value.trim(),
+        type: activeType.value,
+        folder: activeFolder.value,
+        category: activeCategory.value,
+        extension: activeExtension.value,
+    }),
+    anchor: listTop,
+});
+
+watch([activeType, activeFolder, activeCategory, activeExtension], () => applyFilters());
 
 function applyFilters() {
-    router.get(
-        route('admin.cms.media'),
-        {
-            q: search.value || undefined,
-            type: activeType.value || undefined,
-            folder: activeFolder.value || undefined,
-            category: activeCategory.value || undefined,
-            extension: activeExtension.value || undefined,
-        },
-        {
-            preserveScroll: true,
-            preserveState: true,
-            replace: true,
-        },
-    );
+    reload();
 }
 
 function onSearchInput() {
@@ -235,10 +237,10 @@ function deleteMedia(item) {
                     <option v-for="extension in options.extensions ?? []" :key="extension" :value="extension">{{ extension.toUpperCase() }}</option>
                 </select>
             </div>
-            <p class="text-sm text-on-surface-variant">{{ items.length }} média{{ items.length > 1 ? 's' : '' }}</p>
+            <p class="text-sm text-on-surface-variant">{{ pagination.total }} média{{ pagination.total > 1 ? 's' : '' }}</p>
         </div>
 
-        <section v-if="items.length" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <section v-if="items.length" ref="listTop" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 scroll-mt-24">
             <article v-for="item in items" :key="item.id" class="assure-card overflow-hidden">
                 <div class="h-40 bg-surface-container-low border-b border-outline-variant flex items-center justify-center">
                     <img v-if="item.isImage" :src="item.url" :alt="item.originalName" class="w-full h-full object-cover" />
@@ -296,6 +298,7 @@ function deleteMedia(item) {
                 </div>
             </article>
         </section>
+        <CamaPagination v-if="items.length" v-bind="pagination" label="média(s)" @change="goToPage" @per-page="setPerPage" />
 
         <section v-else class="assure-card p-10 text-center">
             <span class="material-symbols-outlined text-5xl text-on-surface-variant">perm_media</span>

@@ -1,8 +1,15 @@
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import CamaPageSkeleton from '@/Components/CamaPageSkeleton.vue';
+import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
 import { NOTIF_ICONS } from '@/Utils/camaStatus';
+
+const { navigating } = usePageNavigation();
+
+const siteLogo = useSiteLogo();
 
 const props = defineProps({
     title: { type: String, default: 'Tableau de bord' },
@@ -44,7 +51,7 @@ const notifIconClass = (type) => {
 
     <aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
         <Link class="flex items-center gap-3 px-2 mb-6" href="/">
-            <img alt="Logo CAMA" class="h-10 w-10 object-contain" src="/images/logo_cama.png" />
+            <img alt="Logo CAMA" class="h-10 w-10 object-contain" :src="siteLogo" />
             <span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">
                 CAMA
                 <span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Espace Assuré</span>
@@ -160,7 +167,11 @@ const notifIconClass = (type) => {
         </header>
 
         <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
-            <slot />
+            <!-- Changement de page : silhouette du contenu, l'ancienne page reste montée (masquée). -->
+            <CamaPageSkeleton v-if="navigating" />
+            <div v-show="!navigating" class="contents">
+                <slot />
+            </div>
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">

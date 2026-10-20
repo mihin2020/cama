@@ -1,11 +1,18 @@
 <script setup>
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import CamaPageSkeleton from '@/Components/CamaPageSkeleton.vue';
+import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
 import AdminHeaderShortcuts from '@/Components/AdminHeaderShortcuts.vue';
-
 import { useAdminDossierBadge } from '@/Composables/useAdminDossierBadge';
+import { formatDuration, useAdminIdleSession } from '@/Composables/useAdminIdleSession';
+
+const { navigating } = usePageNavigation();
+
+const siteLogo = useSiteLogo();
 
 const props = defineProps({
     title: { type: String, default: 'Tableau de bord' },
@@ -22,6 +29,7 @@ const unreadNotifications = computed(() => page.props.app?.adminUnreadNotificati
 const { badgeCount: dossiersBadge } = useAdminDossierBadge();
 const { toggleSidebar, closeSidebar } = useShellSidebar();
 const { can, canSee, canAccessCms } = useAdminPermissions();
+const { showWarning: idleWarning, remainingSeconds: idleRemaining, stayConnected } = useAdminIdleSession();
 
 const headerSubtitle = computed(() => {
     const role = admin.value?.role ?? 'gestionnaire';
@@ -44,7 +52,7 @@ const logout = () => router.post(route('admin.logout'));
 
     <aside class="h-screen w-64 fixed left-0 top-0 flex flex-col py-6 px-3 gap-1 z-40" id="sidebar">
         <Link class="flex items-center gap-3 px-2 mb-4" href="/">
-            <img alt="Logo CAMA" class="h-10 w-10 object-contain" src="/images/logo_cama.png" />
+            <img alt="Logo CAMA" class="h-10 w-10 object-contain" :src="siteLogo" />
             <span class="sidebar-brand-title text-title-lg font-headline-lg font-extrabold tracking-tight leading-tight">
                 CAMA
                 <span class="sidebar-brand-sub block text-[9px] font-body-md font-normal tracking-wide normal-case">Back-office</span>
@@ -81,7 +89,7 @@ const logout = () => router.post(route('admin.logout'));
                 >{{ inscriptionsCount > 9 ? '9+' : inscriptionsCount }}</span>
             </Link>
             <Link
-                v-show="can('users.manage') && canSee('superviseur,administrateur')"
+                v-show="can('users.manage')"
                 :class="navClass('utilisateurs')"
                 :href="route('admin.utilisateurs')"
             >
@@ -157,7 +165,11 @@ const logout = () => router.post(route('admin.logout'));
         </header>
 
         <main class="flex-1 p-4 pb-24 md:p-8 md:pb-8 max-w-[1400px] w-full mx-auto">
-            <slot />
+            <!-- Changement de page : silhouette du contenu, l'ancienne page reste montée (masquée). -->
+            <CamaPageSkeleton v-if="navigating" />
+            <div v-show="!navigating" class="contents">
+                <slot />
+            </div>
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
@@ -196,4 +208,24 @@ const logout = () => router.post(route('admin.logout'));
             <span class="text-[10px] font-label-md">Profil</span>
         </Link>
     </nav>
+
+    <div
+        v-if="idleWarning"
+        class="fixed inset-x-4 bottom-20 md:bottom-6 md:left-auto md:right-6 md:max-w-sm z-50 rounded-xl border border-tertiary/40 bg-white shadow-xl p-4"
+        role="alertdialog"
+        aria-live="assertive"
+    >
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined text-tertiary">timer</span>
+            <div class="flex-1">
+                <p class="text-sm font-semibold text-on-surface">Session inactive</p>
+                <p class="text-xs text-on-surface-variant mt-0.5">
+                    Déconnexion automatique dans <strong>{{ formatDuration(idleRemaining) }}</strong>.
+                </p>
+                <button type="button" class="mt-3 px-3 py-1.5 rounded-lg bg-primary text-on-primary text-xs font-bold hover:opacity-90" @click="stayConnected">
+                    Rester connecté
+                </button>
+            </div>
+        </div>
+    </div>
 </template>

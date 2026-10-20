@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\Cms\ChiffresClesController;
 use App\Http\Controllers\Admin\Cms\BanniereController as CmsBanniereController;
 use App\Http\Controllers\Admin\Cms\DashboardController as CmsDashboardController;
 use App\Http\Controllers\Admin\Cms\FooterController as CmsFooterController;
+use App\Http\Controllers\Admin\Cms\IdentityController as CmsIdentityController;
+use App\Http\Controllers\Admin\Cms\LegalNoticeController as CmsLegalNoticeController;
 
 use App\Http\Controllers\Admin\Cms\FaqController as CmsFaqController;
 use App\Http\Controllers\Admin\Cms\ContactMessageController as CmsContactMessageController;
@@ -82,6 +84,14 @@ Route::prefix('cms')
 
         Route::get('/pied-de-page', [CmsFooterController::class, 'index'])->name('footer');
         Route::put('/pied-de-page', [CmsFooterController::class, 'update'])->name('footer.update');
+        Route::get('/mentions-legales', [CmsLegalNoticeController::class, 'index'])->name('legal');
+        Route::put('/mentions-legales', [CmsLegalNoticeController::class, 'update'])->name('legal.update');
+        Route::delete('/mentions-legales', [CmsLegalNoticeController::class, 'reset'])->name('legal.reset');
+        Route::get('/identite-visuelle', [CmsIdentityController::class, 'index'])->name('identity');
+        Route::post('/identite-visuelle/logo', [CmsIdentityController::class, 'updateLogo'])->name('identity.logo');
+        Route::delete('/identite-visuelle/logo', [CmsIdentityController::class, 'resetLogo'])->name('identity.logo.reset');
+        Route::put('/identite-visuelle/couleurs', [CmsIdentityController::class, 'updateTheme'])->name('identity.theme');
+        Route::delete('/identite-visuelle/couleurs', [CmsIdentityController::class, 'resetTheme'])->name('identity.theme.reset');
 
         Route::get('/menus', [CmsMenuController::class, 'index'])->name('menus');
         Route::post('/menus/pages', [CmsMenuController::class, 'addPages'])->name('menus.pages.store');
@@ -123,6 +133,7 @@ Route::prefix('cms')
         Route::delete('/newsletter/batches/{batch}', [CmsNewsletterController::class, 'destroyBatch'])->name('newsletter.batches.destroy');
 
         Route::get('/page-builder', [CmsPageController::class, 'builder'])->name('page_builder');
+        Route::get('/page-builder/{page}/apercu', [CmsPageController::class, 'preview'])->name('page_builder.preview');
         Route::put('/page-builder/{page}/sections', [CmsPageController::class, 'saveSections'])->name('page_builder.sections');
         Route::put('/page-builder/{page}/publish', [CmsPageController::class, 'publishFromBuilder'])->name('page_builder.publish');
         Route::post('/page-builder/{page}/versions/{version}/restore', [CmsPageController::class, 'restoreVersion'])->name('page_builder.versions.restore');

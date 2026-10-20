@@ -32,7 +32,7 @@ class ContactController extends Controller
 
     public function index(PublicSiteService $site, CmsPartnerService $partners): Response
     {
-        $locations = $partners->listForPublicMap();
+        $locations = $partners->listForPublic();
         $partnersOnly = array_values(array_filter(
             $locations,
             fn (array $location) => in_array($location['type'], ['centre', 'partenaire'], true),

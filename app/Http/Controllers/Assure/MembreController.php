@@ -7,6 +7,7 @@ use App\Models\Dossier;
 use App\Services\AssureDashboardService;
 use App\Services\DossierPieceStorageService;
 use App\Services\DossierService;
+use App\Services\FifProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -17,7 +18,7 @@ use Inertia\Response;
 
 class MembreController extends Controller
 {
-    public function index(DossierService $dossiers, AssureDashboardService $dashboard): Response
+    public function index(DossierService $dossiers, AssureDashboardService $dashboard, FifProfileService $fif): Response
     {
         $assure = auth('assure')->user();
         $data = $dashboard->stats($assure);
@@ -31,7 +32,7 @@ class MembreController extends Controller
             'membres' => $membres,
             'unreadCount' => $data['unreadCount'],
             'peutEnroler' => $assure->peutEnroler(),
-            'assureExport' => $this->formatAssureExport($assure),
+            'assureExport' => $fif->profile($assure),
         ]);
     }
 
@@ -90,7 +91,6 @@ class MembreController extends Controller
         return back()->with('success', 'Pièces complémentaires envoyées.');
     }
 
-
     private function complementFileForType(Request $request, string $type): ?UploadedFile
     {
         $files = $request->file('piece_files', []);
@@ -130,33 +130,5 @@ class MembreController extends Controller
         }
 
         return 'complement_'.Str::slug($type, '_');
-    }
-
-    private function formatAssureExport($assure): array
-    {
-        return [
-            'nom' => $assure->nom,
-            'prenom' => $assure->prenom,
-            'prenoms' => $assure->prenom,
-            'fullName' => $assure->full_name,
-            'sexe' => $assure->sexe,
-            'matricule' => $assure->matricule,
-            'numeroInformatique' => $assure->numero_informatique,
-            'grade' => $assure->grade,
-            'categorie' => $assure->categorie,
-            'numeroCim' => $assure->numero_cim,
-            'numeroCama' => $assure->numero_cama,
-            'numeroIup' => $assure->numero_iup,
-            'armee' => $assure->armee,
-            'region' => $assure->region,
-            'corps' => $assure->corps,
-            'service' => $assure->service,
-            'section' => $assure->section,
-            'sousSection' => $assure->sous_section,
-            'telephone' => $assure->telephone,
-            'email' => $assure->email,
-            'personneAPrevenir' => $assure->personne_a_prevenir,
-            'telPersonneAPrevenir' => $assure->tel_personne_a_prevenir,
-        ];
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\AdminRole;
 use App\Http\Controllers\Controller;
 use App\Models\Dossier;
 use App\Services\AdminDossierService;
@@ -18,6 +17,7 @@ class DossierController extends Controller
     public function index(AdminDossierService $service, PlatformSettingsService $settings): Response
     {
         $admin = auth('admin')->user();
+        $personal = $service->seesOnlyOwnDossiers($admin);
         $dossiers = $service->scopedDossiers($admin);
         $families = $service->groupFamilies($dossiers);
 
@@ -28,10 +28,12 @@ class DossierController extends Controller
             'validation2Niveaux' => $settings->validation2Niveaux(),
             'fifRequise' => $settings->fifSigneeRequise(),
             'affectationMode' => $settings->get('affectation_mode') ?? 'manuelle',
-            'mesStats' => $admin->role === AdminRole::Gestionnaire ? $service->statsPourGestionnaire($admin) : null,
+            // Vue personnelle : agent sans « Consulter tous les dossiers » (il ne voit que les siens).
+            'mesStats' => $personal ? $service->statsPourGestionnaire($admin) : null,
             'adminRole' => $admin->role->value,
-            'gestionnaireNom' => $admin->role === AdminRole::Gestionnaire ? $admin->display_name : null,
-            'isGestionnaire' => $admin->role === AdminRole::Gestionnaire,
+            'gestionnaireNom' => $personal ? $admin->display_name : null,
+            'isGestionnaire' => $personal,
+            'canSupervise' => $admin->hasPermission('dossiers.supervise'),
             'statutOptions' => config('cama.dossier_statuts'),
             'liensOptions' => config('cama.liens_famille'),
             'piecesRequetables' => array_values(array_unique([
@@ -83,7 +85,7 @@ class DossierController extends Controller
     public function reject(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
         $data = $request->validate(['motif' => ['required', 'string', 'max:500']]);
-        $service->refuse($dossier, $data['motif']);
+        $service->refuse($dossier, $data['motif'], auth('admin')->user());
 
         return back()->with('success', 'Dossier refusé.');
     }
@@ -113,14 +115,14 @@ class DossierController extends Controller
             ]);
         }
 
-        $service->requestComplement($dossier, $pieces, $message !== '' ? $message : null);
+        $service->requestComplement($dossier, $pieces, $message !== '' ? $message : null, auth('admin')->user());
 
         return back()->with('success', 'Demande de complément envoyée.');
     }
 
     public function enAttente(Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->setEnAttente($dossier);
+        $service->setEnAttente($dossier, auth('admin')->user());
 
         return back()->with('success', 'Dossier mis en attente de supervision.');
     }

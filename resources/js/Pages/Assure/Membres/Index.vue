@@ -300,6 +300,7 @@ function submitComplement(m) {
                 @click="exportFormulaire"
             >
                 <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> FIF familial
+                <span v-if="assureExport?.numeroFif" class="font-mono font-normal text-on-surface-variant">{{ assureExport.numeroFif }}</span>
             </button>
             <button
                 type="button"

@@ -1,6 +1,9 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip } from '@/Composables/useCamaExport';
+import { useAdminPermissions } from '@/Composables/useAdminPermissions';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -19,10 +22,9 @@ const toast = ref(null);
 const search = ref(props.filters.search ?? '');
 const statut = ref(props.filters.statut ?? 'tous');
 
-const canManage = computed(() => {
-    const role = page.props.auth?.admin?.role;
-    return ['gestionnaire', 'superviseur', 'administrateur'].includes(role);
-});
+// Activer / désactiver un compte : selon la permission cochée, pas selon le rôle.
+const { can } = useAdminPermissions();
+const canManage = computed(() => can('assures.manage'));
 
 const STATUS_COMPTE_STYLES = {
     Actif: 'bg-secondary text-on-secondary',
@@ -40,22 +42,20 @@ const STATUS_DOSSIER_STYLES = {
     Refusé: 'bg-error text-on-error',
 };
 
-watch([search, statut], () => {
-    router.get(
-        route('admin.assures'),
-        { search: search.value, statut: statut.value, page: 1 },
-        { preserveState: true, replace: true },
-    );
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.assures',
+    params: () => ({ search: search.value.trim(), statut: statut.value !== 'tous' ? statut.value : undefined }),
+    anchor: listTop,
 });
 
-function goToPage(page) {
-    if (page < 1 || page > props.pagination.lastPage) return;
-    router.get(
-        route('admin.assures'),
-        { search: search.value, statut: statut.value, page },
-        { preserveState: true, replace: true },
-    );
-}
+// Recherche lancée après une courte pause de frappe (pas une requête par lettre).
+let searchTimer = null;
+watch(search, () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(reload, 300);
+});
+watch(statut, () => reload());
 
 function openDetail(assure) {
     selected.value = assure;
@@ -139,7 +139,7 @@ async function exportZip() {
             </Link>
         </div>
 
-        <div class="assure-card overflow-hidden">
+        <div ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -177,22 +177,16 @@ async function exportZip() {
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <div v-if="pagination.lastPage > 1" class="px-1 py-4 flex items-center justify-between flex-wrap gap-3">
-            <p class="text-[11px] text-on-surface-variant">{{ pagination.total }} assuré(s) · page {{ pagination.currentPage }} / {{ pagination.lastPage }}</p>
-            <div class="flex gap-2">
-                <button type="button" class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage <= 1" @click="goToPage(pagination.currentPage - 1)">Précédent</button>
-                <button type="button" class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage >= pagination.lastPage" @click="goToPage(pagination.currentPage + 1)">Suivant</button>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="assuré(s)" @change="goToPage" @per-page="setPerPage" />
             </div>
         </div>
-        <p v-else-if="pagination.total" class="text-[11px] text-on-surface-variant px-1 py-2">{{ pagination.total }} assuré(s)</p>
 
         <div v-if="selected" class="fixed inset-0 bg-black/50 z-50 flex items-stretch justify-end" @click.self="closeDetail">
             <div class="bg-surface-container-low w-full sm:max-w-xl h-full overflow-y-auto shadow-2xl">
                 <div class="sticky top-0 bg-white border-b border-outline-variant px-5 py-4 flex items-center justify-between z-10">
                     <div>
-                        <p class="text-[11px] text-on-surface-variant">{{ selected.numeroCama || '—' }}</p>
+                        <p class="text-[11px] text-on-surface-variant">{{ selected.numeroCama || '—' }}<template v-if="selected.exportProfile?.numeroFif"> · FIF <span class="font-mono">{{ selected.exportProfile.numeroFif }}</span></template></p>
                         <h2 class="font-title-lg text-title-lg">{{ selected.nom }}</h2>
                     </div>
                     <button type="button" class="w-9 h-9 rounded-full hover:bg-surface-container-low flex items-center justify-center" @click="closeDetail">

@@ -7,15 +7,9 @@ export function useAdminPermissions() {
     const permissions = computed(() => page.props.auth?.admin?.permissions ?? []);
     const role = computed(() => page.props.auth?.admin?.role ?? 'gestionnaire');
 
+    // Liste déjà développée par le serveur (AdminPermissionService::expanded) : simple lecture.
     function can(permission) {
-        const perms = permissions.value;
-        if (perms.includes(permission)) {
-            return true;
-        }
-        if (permission.startsWith('cms.') && perms.includes('cms.manage')) {
-            return true;
-        }
-        return false;
+        return permissions.value.includes(permission);
     }
 
     function canAny(list) {
@@ -30,6 +24,7 @@ export function useAdminPermissions() {
         return can('cms.manage') || canAny([
             'cms.dashboard',
             'cms.pages',
+            'cms.publish',
             'cms.media',
             'cms.articles',
             'cms.faq',
@@ -39,6 +34,7 @@ export function useAdminPermissions() {
             'cms.partenaires',
             'cms.menus',
             'cms.footer',
+            'cms.legal',
             'cms.contacts',
             'cms.newsletter',
         ]);

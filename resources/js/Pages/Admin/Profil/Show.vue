@@ -1,10 +1,11 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import { formatDuration, useAdminIdleSession } from '@/Composables/useAdminIdleSession';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { onMounted, onUnmounted, ref } from 'vue';
+import { computed } from 'vue';
 
-defineProps({
+const props = defineProps({
     profile: Object,
 });
 
@@ -14,31 +15,45 @@ const pwdForm = useForm({
     password_confirmation: '',
 });
 
-const sessionSeconds = ref(0);
-let timer = null;
-
-onMounted(() => {
-    timer = setInterval(() => {
-        sessionSeconds.value++;
-    }, 1000);
+const twoFaForm = useForm({
+    active: false,
+    current_password: '',
 });
 
-onUnmounted(() => {
-    if (timer) clearInterval(timer);
+const devicesForm = useForm({
+    current_password: '',
 });
 
-const sessionTime = () => {
-    const m = String(Math.floor(sessionSeconds.value / 60)).padStart(2, '0');
-    const s = String(sessionSeconds.value % 60).padStart(2, '0');
-    return `${m}:${s}`;
-};
+function submitTwoFa() {
+    twoFaForm.active = !props.profile.deuxFa;
+    twoFaForm.patch(route('admin.profil.2fa'), {
+        preserveScroll: true,
+        onSuccess: () => twoFaForm.reset(),
+    });
+}
 
-const sessionRemaining = () => {
-    const remaining = Math.max(0, 900 - sessionSeconds.value);
-    const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-    const s = String(remaining % 60).padStart(2, '0');
-    return `${m}:${s}`;
-};
+const idleForm = useForm({
+    active: false,
+    current_password: '',
+});
+
+function submitIdle() {
+    idleForm.active = !props.profile.deconnexionAuto;
+    idleForm.patch(route('admin.profil.idle'), {
+        preserveScroll: true,
+        onSuccess: () => idleForm.reset(),
+    });
+}
+
+function submitDevices() {
+    devicesForm.post(route('admin.profil.devices'), {
+        preserveScroll: true,
+        onSuccess: () => devicesForm.reset(),
+    });
+}
+
+const { policy: sessionPolicy, elapsedSeconds, remainingSeconds } = useAdminIdleSession();
+const idleMinutes = computed(() => Math.round((sessionPolicy.value?.idleTimeout ?? 900) / 60));
 
 function submitPassword() {
     pwdForm.post(route('admin.profil.password'), {
@@ -104,12 +119,45 @@ function submitPassword() {
             </section>
 
             <section class="assure-card p-5 md:p-6">
-                <h2 class="text-base font-semibold mb-1">Sécurité de session</h2>
-                <p class="text-xs text-on-surface-variant mb-4">Conformément à la politique de sécurité du back-office : déconnexion automatique après 15 minutes d'inactivité.</p>
-                <div class="flex items-center gap-3 bg-tertiary/10 border border-tertiary/30 rounded-lg p-3 mb-5">
-                    <span class="material-symbols-outlined text-tertiary">timer</span>
-                    <p class="text-xs">Session active depuis <strong>{{ sessionTime() }}</strong> — expiration automatique dans <strong>{{ sessionRemaining() }}</strong>.</p>
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <h2 class="text-base font-semibold">Sécurité de session</h2>
+                    <span
+                        class="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                        :class="profile.deconnexionAuto ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-low text-on-surface-variant'"
+                    >Déconnexion auto {{ profile.deconnexionAuto ? 'activée' : 'désactivée' }}</span>
                 </div>
+                <p class="text-xs text-on-surface-variant mb-4">
+                    Option facultative : déconnexion automatique après {{ idleMinutes }} minutes d'inactivité (aucun clic, aucune frappe, aucun défilement).
+                    Recommandée sur un poste partagé.
+                </p>
+
+                <div v-if="!profile.deconnexionAuto" class="flex items-center gap-3 bg-surface-container-low border border-outline-variant rounded-lg p-3 mb-3">
+                    <span class="material-symbols-outlined text-on-surface-variant">timer_off</span>
+                    <p class="text-xs">Session active depuis <strong>{{ formatDuration(elapsedSeconds) }}</strong> — pas de déconnexion pour inactivité.</p>
+                </div>
+                <div v-else-if="sessionPolicy?.remembered" class="flex items-center gap-3 bg-primary/5 border border-primary/20 rounded-lg p-3 mb-3">
+                    <span class="material-symbols-outlined text-primary">devices</span>
+                    <p class="text-xs">
+                        Session active depuis <strong>{{ formatDuration(elapsedSeconds) }}</strong>.
+                        Cet appareil est mémorisé (« Se souvenir de moi ») : la déconnexion automatique ne s'y applique pas, mais une reconnexion
+                        est obligatoire au plus tard {{ sessionPolicy.rememberDays }} jour(s) après la connexion.
+                    </p>
+                </div>
+                <div v-else class="flex items-center gap-3 bg-tertiary/10 border border-tertiary/30 rounded-lg p-3 mb-3">
+                    <span class="material-symbols-outlined text-tertiary">timer</span>
+                    <p class="text-xs">Session active depuis <strong>{{ formatDuration(elapsedSeconds) }}</strong> — expiration automatique dans <strong>{{ formatDuration(remainingSeconds) }}</strong> sans activité.</p>
+                </div>
+
+                <form class="flex flex-col sm:flex-row sm:items-end gap-3 mb-5 pb-5 border-b border-outline-variant" @submit.prevent="submitIdle">
+                    <div v-if="profile.deconnexionAuto" class="flex-1">
+                        <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Mot de passe actuel</label>
+                        <input v-model="idleForm.current_password" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" type="password" autocomplete="current-password" />
+                        <p v-if="idleForm.errors.current_password" class="text-error text-xs mt-1">{{ idleForm.errors.current_password }}</p>
+                    </div>
+                    <CamaLoadingButton type="submit" :variant="profile.deconnexionAuto ? 'danger' : 'success'" :loading="idleForm.processing" loading-text="Enregistrement…">
+                        {{ profile.deconnexionAuto ? 'Désactiver la déconnexion auto' : 'Activer la déconnexion auto' }}
+                    </CamaLoadingButton>
+                </form>
                 <form class="grid grid-cols-1 md:grid-cols-2 gap-4" @submit.prevent="submitPassword">
                     <div class="md:col-span-2">
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Mot de passe actuel</label>
@@ -130,6 +178,46 @@ function submitPassword() {
                             Mettre à jour le mot de passe
                         </CamaLoadingButton>
                     </div>
+                </form>
+            </section>
+
+            <section class="assure-card p-5 md:p-6">
+                <div class="flex items-start justify-between gap-3 mb-1">
+                    <h2 class="text-base font-semibold">Vérification en deux étapes (2FA)</h2>
+                    <span
+                        class="shrink-0 px-2.5 py-0.5 rounded-full text-[11px] font-semibold"
+                        :class="profile.deuxFa ? 'bg-secondary/10 text-secondary' : 'bg-surface-container-low text-on-surface-variant'"
+                    >{{ profile.deuxFa ? 'Activée' : 'Désactivée' }}</span>
+                </div>
+                <p class="text-xs text-on-surface-variant mb-4">
+                    Option facultative. Une fois activée, un code à 6 chiffres est envoyé à {{ profile.email }} à chaque connexion par mot de passe.
+                </p>
+                <form class="flex flex-col sm:flex-row sm:items-end gap-3" @submit.prevent="submitTwoFa">
+                    <div class="flex-1">
+                        <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Mot de passe actuel</label>
+                        <input v-model="twoFaForm.current_password" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" type="password" autocomplete="current-password" />
+                        <p v-if="twoFaForm.errors.current_password" class="text-error text-xs mt-1">{{ twoFaForm.errors.current_password }}</p>
+                    </div>
+                    <CamaLoadingButton type="submit" :variant="profile.deuxFa ? 'danger' : 'success'" :loading="twoFaForm.processing" loading-text="Enregistrement…">
+                        {{ profile.deuxFa ? 'Désactiver la 2FA' : 'Activer la 2FA' }}
+                    </CamaLoadingButton>
+                </form>
+            </section>
+
+            <section class="assure-card p-5 md:p-6">
+                <h2 class="text-base font-semibold mb-1">Appareils connectés</h2>
+                <p class="text-xs text-on-surface-variant mb-4">
+                    Ferme les sessions ouvertes et annule les « Se souvenir de moi » sur tous vos autres navigateurs. Cet appareil reste connecté.
+                </p>
+                <form class="flex flex-col sm:flex-row sm:items-end gap-3" @submit.prevent="submitDevices">
+                    <div class="flex-1">
+                        <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Mot de passe actuel</label>
+                        <input v-model="devicesForm.current_password" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" type="password" autocomplete="current-password" />
+                        <p v-if="devicesForm.errors.current_password" class="text-error text-xs mt-1">{{ devicesForm.errors.current_password }}</p>
+                    </div>
+                    <CamaLoadingButton type="submit" :loading="devicesForm.processing" loading-text="Déconnexion…">
+                        Déconnecter mes autres appareils
+                    </CamaLoadingButton>
                 </form>
             </section>
         </div>

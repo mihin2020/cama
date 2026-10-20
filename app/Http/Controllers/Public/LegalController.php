@@ -12,15 +12,8 @@ class LegalController extends Controller
     public function legal(PublicSiteService $site): Response
     {
         return Inertia::render('Public/Legal', [
-            'pageSections' => $site->pageSections('mention_legales'),
-            'articles' => $site->publishedArticles(12),
-        ]);
-    }
-
-    public function accessibility(PublicSiteService $site): Response
-    {
-        return Inertia::render('Public/Accessibility', [
-            'pageSections' => $site->pageSections('accessibilite'),
+            // Contenu piloté par le module « Mentions légales » du studio de contenu.
+            'pageSections' => $site->legalSections(),
             'articles' => $site->publishedArticles(12),
         ]);
     }

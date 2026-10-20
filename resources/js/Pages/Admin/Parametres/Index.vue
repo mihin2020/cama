@@ -5,7 +5,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const props = defineProps({
     settings: Object,
@@ -84,12 +84,102 @@ const documentsForm = useForm({
     })),
 });
 
+const fieldsForm = useForm({
+    fields: (props.settings.inscriptionFields ?? []).map((f) => ({
+        key: f.key,
+        label: f.label,
+        group: f.group,
+        parent: f.parent,
+        actif: !!f.actif,
+        required: !!f.required,
+    })),
+});
+
+const LOCKED_FIELDS = ['Nom', 'Prénom(s)', 'E-mail', 'Mot de passe'];
+
+const FIELD_HINTS = {
+    matricule: "Si masqué, l'assuré sera identifié uniquement par son e-mail et ses numéros CAMA.",
+    numero_cim: 'Si masqué, le gestionnaire devra le saisir avant de valider l\'inscription.',
+    numero_cama: 'Si masqué, le gestionnaire devra le saisir avant de valider l\'inscription.',
+    corps: 'Exigé uniquement si la région choisie propose des corps.',
+    service: 'Exigé uniquement si le corps choisi propose des services.',
+    section: 'Exigé uniquement si le service choisi propose des sections.',
+    sous_section: 'Exigé uniquement si la section choisie propose des sous-sections.',
+};
+
+const fieldGroups = computed(() => {
+    const groups = [];
+    fieldsForm.fields.forEach((field) => {
+        let group = groups.find((g) => g.name === field.group);
+        if (!group) {
+            group = { name: field.group, fields: [] };
+            groups.push(group);
+        }
+        group.fields.push(field);
+    });
+    return groups;
+});
+
+const fieldsStats = computed(() => ({
+    shown: fieldsForm.fields.filter((f) => f.actif).length,
+    required: fieldsForm.fields.filter((f) => f.actif && f.required).length,
+    total: fieldsForm.fields.length,
+}));
+
+function fieldByKey(key) {
+    return fieldsForm.fields.find((f) => f.key === key);
+}
+
+// Un sous-niveau de rattachement n'est disponible que si son parent est affiché.
+function parentBlocked(field) {
+    return !!field.parent && !fieldByKey(field.parent)?.actif;
+}
+
+function setFieldActif(field, actif) {
+    field.actif = actif;
+    if (!actif) {
+        field.required = false;
+        fieldsForm.fields.forEach((f) => {
+            if (parentBlocked(f)) {
+                f.actif = false;
+                f.required = false;
+            }
+        });
+    }
+}
+
+function setFieldRequired(field, required) {
+    if (!field.actif) return;
+    field.required = required;
+}
+
+function setGroup(group, mode) {
+    group.fields.forEach((field) => {
+        if (mode === 'hide') {
+            setFieldActif(field, false);
+            return;
+        }
+        if (parentBlocked(field)) return;
+        field.actif = true;
+        field.required = mode === 'required';
+    });
+}
+
+function saveFields() {
+    fieldsForm
+        .transform((data) => ({
+            fields: data.fields.map((f) => ({ key: f.key, actif: f.actif, required: f.actif && f.required })),
+        }))
+        .post(route('admin.parametres.inscription-fields'), { preserveScroll: true });
+}
+
 const TABS = [
     { key: 'membres', label: 'Membres rattachés' },
     { key: 'fif', label: 'FIF signée' },
     { key: 'libelles', label: 'Libellés & modèles' },
     { key: 'affectation', label: "Règles d'affectation" },
     { key: 'structure', label: 'Structure militaire' },
+    { key: 'champs', label: "Champs d'inscription" },
     { key: 'documents', label: "Pièces d'inscription" },
 ];
 
@@ -649,6 +739,128 @@ function toggleValidation2N() {
                 </div>
             </div>
 
+            <!-- Champs d'inscription -->
+            <div v-show="activeTab === 'champs'">
+                <div class="assure-card p-4 mb-4 border border-primary/25 bg-primary/5 flex items-start gap-3 text-xs text-on-surface-variant">
+                    <span class="material-symbols-outlined text-primary text-[20px] shrink-0">info</span>
+                    <p>
+                        Choisissez les champs proposés sur le <a :href="route('registration.create')" target="_blank" rel="noopener" class="font-semibold text-primary hover:underline">formulaire d'inscription assuré</a>
+                        et ceux qui sont <strong class="text-on-surface">obligatoires</strong>. Un champ masqué n'apparaît plus et n'est pas enregistré.
+                        Une étape dont tous les champs sont masqués est automatiquement sautée.
+                    </p>
+                </div>
+
+                <div class="assure-card p-6 max-w-3xl">
+                    <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="font-title-lg text-title-lg mb-1">Champs du formulaire d'inscription</h3>
+                            <p class="text-xs text-on-surface-variant">
+                                {{ fieldsStats.shown }} champ(s) affiché(s) sur {{ fieldsStats.total }} · {{ fieldsStats.required }} obligatoire(s)
+                            </p>
+                        </div>
+                        <span v-if="fieldsForm.isDirty" class="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">Modifications non enregistrées</span>
+                    </div>
+
+                    <!-- Champs verrouillés -->
+                    <div class="border border-outline-variant rounded-lg p-4 mb-5 bg-surface-container-low/60">
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-2 flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-[16px]">lock</span> Toujours affichés et obligatoires
+                        </p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span v-for="label in LOCKED_FIELDS" :key="label" class="text-[11px] font-semibold px-2 py-1 rounded-full bg-white border border-outline-variant">{{ label }}</span>
+                        </div>
+                        <p class="text-[11px] text-on-surface-variant mt-2">Indispensables à la création du compte et à la vérification par e-mail.</p>
+                    </div>
+
+                    <div v-for="group in fieldGroups" :key="group.name" class="mb-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <h4 class="text-xs font-bold uppercase tracking-wide text-on-surface">{{ group.name }}</h4>
+                            <div class="flex items-center gap-1 text-[10px] font-semibold">
+                                <span class="text-on-surface-variant mr-1">Tout :</span>
+                                <button type="button" class="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-high" @click="setGroup(group, 'required')">Obligatoire</button>
+                                <button type="button" class="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-high" @click="setGroup(group, 'optional')">Facultatif</button>
+                                <button type="button" class="px-2 py-1 rounded border border-outline-variant hover:bg-surface-container-high" @click="setGroup(group, 'hide')">Masquer</button>
+                            </div>
+                        </div>
+
+                        <div class="border border-outline-variant rounded-lg divide-y divide-outline-variant overflow-hidden">
+                            <div
+                                v-for="field in group.fields"
+                                :key="field.key"
+                                class="p-3 flex flex-col sm:flex-row sm:items-center gap-3 transition-colors"
+                                :class="field.actif ? 'bg-white' : 'bg-surface-container-low/60'"
+                            >
+                                <button
+                                    type="button"
+                                    class="toggle-switch shrink-0"
+                                    :class="[field.actif ? 'on' : 'off', parentBlocked(field) ? 'opacity-40 cursor-not-allowed' : '']"
+                                    :disabled="parentBlocked(field)"
+                                    :aria-pressed="field.actif"
+                                    :aria-label="`Afficher le champ ${field.label}`"
+                                    @click="setFieldActif(field, !field.actif)"
+                                >
+                                    <span class="knob" />
+                                </button>
+
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold" :class="field.actif ? 'text-on-surface' : 'text-on-surface-variant line-through decoration-1'">
+                                        {{ field.label }}
+                                    </p>
+                                    <p v-if="parentBlocked(field)" class="text-[11px] text-on-surface-variant flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[14px]">link</span>
+                                        Activez d'abord « {{ fieldByKey(field.parent)?.label }} »
+                                    </p>
+                                    <p v-else-if="FIELD_HINTS[field.key] && ((field.key.startsWith('numero_') || field.key === 'matricule') ? !field.actif : field.required)" class="text-[11px] text-on-surface-variant">
+                                        {{ FIELD_HINTS[field.key] }}
+                                    </p>
+                                </div>
+
+                                <div
+                                    class="inline-flex rounded-lg border border-outline-variant overflow-hidden text-[11px] font-bold shrink-0"
+                                    :class="{ 'opacity-40 pointer-events-none': !field.actif }"
+                                    role="group"
+                                    :aria-label="`Statut du champ ${field.label}`"
+                                >
+                                    <button
+                                        type="button"
+                                        class="px-3 py-1.5 transition-colors"
+                                        :class="field.actif && field.required ? 'bg-primary text-on-primary' : 'bg-white text-on-surface-variant hover:bg-surface-container-high'"
+                                        :disabled="!field.actif"
+                                        @click="setFieldRequired(field, true)"
+                                    >
+                                        Obligatoire
+                                    </button>
+                                    <button
+                                        type="button"
+                                        class="px-3 py-1.5 border-l border-outline-variant transition-colors"
+                                        :class="field.actif && !field.required ? 'bg-secondary text-white' : 'bg-white text-on-surface-variant hover:bg-surface-container-high'"
+                                        :disabled="!field.actif"
+                                        @click="setFieldRequired(field, false)"
+                                    >
+                                        Facultatif
+                                    </button>
+                                </div>
+
+                                <span
+                                    class="text-[10px] font-bold px-2 py-1 rounded-full whitespace-nowrap shrink-0 sm:w-20 text-center"
+                                    :class="!field.actif ? 'bg-surface-container-high text-on-surface-variant' : (field.required ? 'bg-primary/15 text-primary' : 'bg-secondary/15 text-secondary')"
+                                >
+                                    {{ !field.actif ? 'Masqué' : (field.required ? 'Requis' : 'Optionnel') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p v-if="Object.keys(fieldsForm.errors).length" class="text-error text-xs mt-3">{{ Object.values(fieldsForm.errors)[0] }}</p>
+
+                    <div class="mt-4 pt-4 border-t border-outline-variant flex items-center gap-3 flex-wrap">
+                        <CamaLoadingButton type="button" :loading="fieldsForm.processing" @click="saveFields">Enregistrer les champs</CamaLoadingButton>
+                        <button v-if="fieldsForm.isDirty" type="button" class="text-xs font-semibold text-on-surface-variant hover:text-on-surface" @click="fieldsForm.reset()">Annuler les modifications</button>
+                        <span class="text-[11px] text-on-surface-variant">S'applique immédiatement aux nouvelles inscriptions</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Pièces d'inscription -->
             <div v-show="activeTab === 'documents'">
                 <div class="assure-card p-4 mb-4 border border-primary/25 bg-primary/5 flex items-start gap-3 text-xs text-on-surface-variant">
@@ -743,13 +955,13 @@ function toggleValidation2N() {
     transition: transform 0.2s;
 }
 .toggle-switch.on {
-    background-color: #006e27;
+    background-color: rgb(var(--c-secondary));
 }
 .toggle-switch.on .knob {
     transform: translateX(20px);
 }
 .toggle-switch.off {
-    background-color: #e4e2e1;
+    background-color: rgb(var(--c-surface-container-highest));
 }
 .org-guide-step {
     display: flex;
@@ -760,14 +972,14 @@ function toggleValidation2N() {
     padding: 10px 8px;
     border-radius: 0.5rem;
     background: #fff;
-    border: 1px solid #e5bdbb;
+    border: 1px solid rgb(var(--c-outline-variant));
     text-align: center;
 }
 .org-guide-step .step-num {
     width: 22px;
     height: 22px;
     border-radius: 9999px;
-    background: #9e001f;
+    background: rgb(var(--c-primary));
     color: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -776,7 +988,7 @@ function toggleValidation2N() {
     justify-content: center;
 }
 .org-guide-arrow {
-    color: #906f6e;
+    color: rgb(var(--c-outline));
     font-size: 18px;
     align-self: center;
     padding: 0 2px;

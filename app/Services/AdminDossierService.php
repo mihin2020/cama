@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
-use App\Enums\AdminRole;
-use App\Enums\AssureStatut;
 use App\Models\AdminUser;
 use App\Models\Dossier;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class AdminDossierService
@@ -43,8 +43,12 @@ class AdminDossierService
             ->get(['gestionnaire', 'journal', 'date_soumission'])
             ->groupBy('gestionnaire');
 
+        $assignables = $this->affectation->assignablePool();
+
         return collect($this->affectation->pool())->map(fn ($nom) => [
             'nom' => $nom,
+            // false = compte désactivé ou inexistant qui détient encore des dossiers en cours (à réaffecter).
+            'actif' => in_array($nom, $assignables, true),
             'assignes' => (int) ($assignes[$nom] ?? 0),
             'nonTraites' => (int) ($open[$nom] ?? 0),
             'enSupervision' => (int) ($supervision[$nom] ?? 0),
@@ -95,7 +99,7 @@ class AdminDossierService
             ->filter()
             ->sortByDesc(function (string $date) {
                 try {
-                    return \Carbon\Carbon::createFromFormat('d/m/Y H:i', $date)->getTimestamp();
+                    return Carbon::createFromFormat('d/m/Y H:i', $date)->getTimestamp();
                 } catch (\Throwable) {
                     return 0;
                 }
@@ -129,7 +133,7 @@ class AdminDossierService
             ->where('statut', '!=', 'Brouillon')
             ->orderByDesc('date_soumission');
 
-        if ($admin && $admin->role === AdminRole::Gestionnaire) {
+        if ($this->seesOnlyOwnDossiers($admin)) {
             $query->where('gestionnaire', $admin->display_name);
         }
 
@@ -147,7 +151,7 @@ class AdminDossierService
             ->where('statut', '!=', 'Brouillon')
             ->whereIn('statut', self::OPEN_STATUTS);
 
-        if ($admin && $admin->role === AdminRole::Gestionnaire) {
+        if ($this->seesOnlyOwnDossiers($admin)) {
             $query->where('gestionnaire', $admin->display_name);
         }
 
@@ -250,7 +254,13 @@ class AdminDossierService
 
     public function assignFamily(int $assureId, string $gestionnaire, ?AdminUser $admin = null): void
     {
-        $gestionnaire = $gestionnaire ?: 'Non affecté';
+        $gestionnaire = trim($gestionnaire) ?: DossierAffectationService::NON_AFFECTE;
+
+        if ($gestionnaire !== DossierAffectationService::NON_AFFECTE && ! $this->affectation->isAssignable($gestionnaire)) {
+            throw ValidationException::withMessages([
+                'gestionnaire' => "« {$gestionnaire} » n'est pas un gestionnaire actif : choisissez un compte actif dans la liste.",
+            ]);
+        }
 
         Dossier::query()
             ->where('assure_id', $assureId)
@@ -270,120 +280,124 @@ class AdminDossierService
 
     public function batchAssign(array $assureIds, string $gestionnaire, ?AdminUser $admin = null): int
     {
-        $count = 0;
-        foreach ($assureIds as $assureId) {
-            $this->assignFamily((int) $assureId, $gestionnaire, $admin);
-            $count++;
-        }
+        // Tout le lot ou rien : une erreur en cours de route n'en laisse pas une moitié affectée.
+        return DB::transaction(function () use ($assureIds, $gestionnaire, $admin) {
+            $count = 0;
+            foreach ($assureIds as $assureId) {
+                $this->assignFamily((int) $assureId, $gestionnaire, $admin);
+                $count++;
+            }
 
-        return $count;
+            return $count;
+        });
     }
 
     public function validate(Dossier $dossier, ?AdminUser $admin = null): Dossier
     {
-        if (in_array($dossier->statut, ['Validé', 'Refusé', 'Brouillon'], true)) {
-            throw ValidationException::withMessages(['statut' => 'Ce dossier ne peut plus être validé.']);
-        }
+        return $this->decide($dossier, $admin, 'valider', function (Dossier $dossier) use ($admin) {
+            if ($this->settings->fifSigneeRequise() && ! $this->dossiers->hasSignedLotFif($dossier)) {
+                throw ValidationException::withMessages([
+                    'fif' => 'La FIF signée du lot familial est absente : demandez un complément à l\'assuré avant de valider.',
+                ]);
+            }
 
-        if ($this->settings->fifSigneeRequise() && ! $this->dossiers->hasSignedLotFif($dossier)) {
-            throw ValidationException::withMessages([
-                'fif' => 'La FIF signée du lot familial est absente : demandez un complément à l\'assuré avant de valider.',
+            // Validation à deux niveaux : la validation du gestionnaire (niveau 1)
+            // transmet le dossier à la supervision au lieu de le valider définitivement.
+            if ($this->settings->validation2Niveaux() && $this->isGestionnaire($admin)) {
+                $dossier->update(['statut' => 'En attente supervision']);
+                $this->dossiers->appendJournal($dossier, "Validation niveau 1 par {$admin->display_name} — transmis à la supervision");
+
+                return;
+            }
+
+            $niveau2 = $dossier->statut === 'En attente supervision';
+
+            $dossier->update([
+                'statut' => 'Validé',
+                'date_decision' => now()->toDateString(),
             ]);
-        }
 
-        $deuxNiveaux = $this->settings->validation2Niveaux();
-        $estGestionnaire = $admin?->role === AdminRole::Gestionnaire;
+            $auteur = $admin?->display_name ?? 'le gestionnaire';
+            $this->dossiers->appendJournal(
+                $dossier,
+                $niveau2 ? "Validation finale (niveau 2) par {$auteur}" : "Dossier validé par {$auteur}"
+            );
 
-        if ($dossier->statut === 'En attente supervision' && $estGestionnaire) {
-            throw ValidationException::withMessages([
-                'statut' => 'Ce dossier attend la validation finale du superviseur : un gestionnaire ne peut pas le valider.',
-            ]);
-        }
-
-        // Validation à deux niveaux : la validation du gestionnaire (niveau 1)
-        // transmet le dossier à la supervision au lieu de le valider définitivement.
-        if ($deuxNiveaux && $estGestionnaire) {
-            $dossier->update(['statut' => 'En attente supervision']);
-            $this->dossiers->appendJournal($dossier, "Validation niveau 1 par {$admin->display_name} — transmis à la supervision");
-
-            return $dossier->fresh();
-        }
-
-        $niveau2 = $dossier->statut === 'En attente supervision';
-
-        $dossier->update([
-            'statut' => 'Validé',
-            'date_decision' => now()->toDateString(),
-        ]);
-
-        $auteur = $admin?->display_name ?? 'le gestionnaire';
-        $this->dossiers->appendJournal(
-            $dossier,
-            $niveau2 ? "Validation finale (niveau 2) par {$auteur}" : "Dossier validé par {$auteur}"
-        );
-
-        $this->notifyAssure(
-            $dossier,
-            'validation',
-            'Dossier validé',
-            $this->settings->renderEmailTemplate('validation', [
-                'ref' => $dossier->ref ?? (string) $dossier->id,
-                'beneficiaire' => $dossier->beneficiaire,
-            ]) ?: "Le dossier de {$dossier->beneficiaire} a été validé.",
-        );
-
-        return $dossier->fresh();
+            $this->notifyAssureAfterCommit(
+                $dossier,
+                'validation',
+                'Dossier validé',
+                $this->settings->renderEmailTemplate('validation', [
+                    'ref' => $dossier->ref ?? (string) $dossier->id,
+                    'beneficiaire' => $dossier->beneficiaire,
+                ]) ?: "Le dossier de {$dossier->beneficiaire} a été validé.",
+            );
+        });
     }
 
     /**
      * Retrait d'un membre par le gestionnaire / superviseur
      * (ex. devenu militaire → assuré à part entière).
      * Le membre passe en « Retiré » : il n'est plus couvert comme ayant droit.
+     * Possible aussi sur un dossier validé : c'est le cas d'usage principal.
      */
     public function withdraw(Dossier $dossier, string $motif, ?AdminUser $admin = null): Dossier
     {
         $motif = trim($motif) ?: 'Retrait';
 
-        $dossier->update([
-            'statut' => 'Retiré',
-            'date_decision' => now()->toDateString(),
-        ]);
+        return DB::transaction(function () use ($dossier, $motif, $admin) {
+            $dossier = $this->lockDossier($dossier);
 
-        $auteur = $admin?->display_name ?? 'le gestionnaire';
-        $this->dossiers->appendJournal($dossier, "Membre retiré par {$auteur} — {$motif}");
+            if (in_array($dossier->statut, ['Brouillon', 'Retiré'], true)) {
+                throw ValidationException::withMessages([
+                    'statut' => $dossier->statut === 'Retiré'
+                        ? 'Ce membre a déjà été retiré.'
+                        : 'Un brouillon ne peut pas être retiré : l\'assuré ne l\'a pas encore soumis.',
+                ]);
+            }
 
-        $this->notifyAssure(
-            $dossier,
-            'validation',
-            'Membre retiré',
-            "{$dossier->beneficiaire} a été retiré de votre dossier familial ({$motif}). Ce membre n'est plus couvert comme ayant droit.",
-        );
+            $dossier->update([
+                'statut' => 'Retiré',
+                'date_decision' => now()->toDateString(),
+            ]);
 
-        return $dossier->fresh();
+            $auteur = $admin?->display_name ?? 'le gestionnaire';
+            $this->dossiers->appendJournal($dossier, "Membre retiré par {$auteur} — {$motif}");
+
+            $this->notifyAssureAfterCommit(
+                $dossier,
+                'validation',
+                'Membre retiré',
+                "{$dossier->beneficiaire} a été retiré de votre dossier familial ({$motif}). Ce membre n'est plus couvert comme ayant droit.",
+            );
+
+            return $dossier->fresh();
+        });
     }
 
-    public function refuse(Dossier $dossier, string $motif): Dossier
+    public function refuse(Dossier $dossier, string $motif, ?AdminUser $admin = null): Dossier
     {
-        $dossier->update([
-            'statut' => 'Refusé',
-            'motif_refus' => $motif,
-            'date_decision' => now()->toDateString(),
-        ]);
+        return $this->decide($dossier, $admin, 'refuser', function (Dossier $dossier) use ($motif, $admin) {
+            $dossier->update([
+                'statut' => 'Refusé',
+                'motif_refus' => $motif,
+                'date_decision' => now()->toDateString(),
+            ]);
 
-        $this->dossiers->appendJournal($dossier, "Dossier refusé : {$motif}");
+            $par = $admin ? " par {$admin->display_name}" : '';
+            $this->dossiers->appendJournal($dossier, "Dossier refusé{$par} : {$motif}");
 
-        $contenu = $this->settings->renderEmailTemplate('refus', [
-            'ref' => $dossier->ref ?? (string) $dossier->id,
-            'beneficiaire' => $dossier->beneficiaire,
-            'motif' => $motif,
-        ]) ?: "Le dossier de {$dossier->beneficiaire} a été refusé : {$motif}";
+            $contenu = $this->settings->renderEmailTemplate('refus', [
+                'ref' => $dossier->ref ?? (string) $dossier->id,
+                'beneficiaire' => $dossier->beneficiaire,
+                'motif' => $motif,
+            ]) ?: "Le dossier de {$dossier->beneficiaire} a été refusé : {$motif}";
 
-        $this->notifyAssure($dossier, 'refus', 'Dossier refusé', $contenu);
-
-        return $dossier->fresh();
+            $this->notifyAssureAfterCommit($dossier, 'refus', 'Dossier refusé', $contenu);
+        });
     }
 
-    public function requestComplement(Dossier $dossier, array $pieceTypes, ?string $message = null): Dossier
+    public function requestComplement(Dossier $dossier, array $pieceTypes, ?string $message = null, ?AdminUser $admin = null): Dossier
     {
         $message = trim($message ?? '');
         $pieceTypes = array_values(array_filter($pieceTypes));
@@ -394,71 +408,147 @@ class AdminDossierService
             ]);
         }
 
-        $pieces = collect($dossier->pieces ?? []);
-        $updated = $pieces->map(function ($piece) use ($pieceTypes) {
-            if (in_array($piece['type'] ?? '', $pieceTypes, true)) {
-                $piece['statut'] = 'Manquante';
+        return $this->decide($dossier, $admin, 'compléter', function (Dossier $dossier) use ($pieceTypes, $message) {
+            $pieces = collect($dossier->pieces ?? []);
+            $updated = $pieces->map(function ($piece) use ($pieceTypes) {
+                if (in_array($piece['type'] ?? '', $pieceTypes, true)) {
+                    $piece['statut'] = 'Manquante';
+                }
+
+                return $piece;
+            });
+
+            foreach ($pieceTypes as $type) {
+                if (! $updated->contains(fn ($p) => ($p['type'] ?? '') === $type)) {
+                    $updated->push(['type' => $type, 'statut' => 'Manquante']);
+                }
             }
 
-            return $piece;
-        });
-
-        foreach ($pieceTypes as $type) {
-            if (! $updated->contains(fn ($p) => ($p['type'] ?? '') === $type)) {
-                $updated->push(['type' => $type, 'statut' => 'Manquante']);
-            }
-        }
-
-        $updateData = [
-            'statut' => 'Pièce manquante demandée',
-            'pieces' => $updated->values()->all(),
-        ];
-
-        if ($message !== '') {
-            $meta = $dossier->wizard_meta ?? [];
-            $messages = $meta['messages'] ?? [];
-            $messages[] = [
-                'auteur' => 'gestionnaire',
-                'texte' => $message,
-                'date' => now()->format('d/m/Y H:i'),
+            $updateData = [
+                'statut' => 'Pièce manquante demandée',
+                'pieces' => $updated->values()->all(),
             ];
-            $meta['messages'] = $messages;
-            $updateData['wizard_meta'] = $meta;
-        }
 
-        $dossier->update($updateData);
+            if ($message !== '') {
+                $meta = $dossier->wizard_meta ?? [];
+                $messages = $meta['messages'] ?? [];
+                $messages[] = [
+                    'auteur' => 'gestionnaire',
+                    'texte' => $message,
+                    'date' => now()->format('d/m/Y H:i'),
+                ];
+                $meta['messages'] = $messages;
+                $updateData['wizard_meta'] = $meta;
+            }
 
-        $libelle = $pieceTypes
-            ? 'Pièce complémentaire demandée : '.implode(', ', $pieceTypes)
-            : 'Demande de complément';
-        if ($message !== '') {
-            $libelle .= $pieceTypes ? " — {$message}" : " : {$message}";
-        }
-        $this->dossiers->appendJournal($dossier, $libelle);
+            $dossier->update($updateData);
 
-        $piecesLabel = $pieceTypes ? implode(', ', $pieceTypes) : 'complément';
-        $contenu = $message ?: $this->settings->renderEmailTemplate('complement', [
-            'ref' => $dossier->ref ?? (string) $dossier->id,
-            'piece' => $piecesLabel,
-            'beneficiaire' => $dossier->beneficiaire,
-        ]);
+            $libelle = $pieceTypes
+                ? 'Pièce complémentaire demandée : '.implode(', ', $pieceTypes)
+                : 'Demande de complément';
+            if ($message !== '') {
+                $libelle .= $pieceTypes ? " — {$message}" : " : {$message}";
+            }
+            $this->dossiers->appendJournal($dossier, $libelle);
 
-        $this->notifyAssure(
-            $dossier,
-            'complement',
-            'Pièce complémentaire demandée',
-            $contenu ?: "Complément demandé pour {$dossier->beneficiaire} : {$piecesLabel}"
-        );
+            $piecesLabel = $pieceTypes ? implode(', ', $pieceTypes) : 'complément';
+            $contenu = $message ?: $this->settings->renderEmailTemplate('complement', [
+                'ref' => $dossier->ref ?? (string) $dossier->id,
+                'piece' => $piecesLabel,
+                'beneficiaire' => $dossier->beneficiaire,
+            ]);
 
-        return $dossier->fresh();
+            $this->notifyAssureAfterCommit(
+                $dossier,
+                'complement',
+                'Pièce complémentaire demandée',
+                $contenu ?: "Complément demandé pour {$dossier->beneficiaire} : {$piecesLabel}"
+            );
+        });
     }
 
-    public function setEnAttente(Dossier $dossier): Dossier
+    public function setEnAttente(Dossier $dossier, ?AdminUser $admin = null): Dossier
     {
-        $dossier->update(['statut' => 'En attente supervision']);
-        $this->dossiers->appendJournal($dossier, 'Passage en attente de supervision');
+        return $this->decide($dossier, $admin, 'mettre en attente', function (Dossier $dossier) {
+            if ($dossier->statut === 'En attente supervision') {
+                throw ValidationException::withMessages(['statut' => 'Ce dossier est déjà en attente de supervision.']);
+            }
 
-        return $dossier->fresh();
+            $dossier->update(['statut' => 'En attente supervision']);
+            $this->dossiers->appendJournal($dossier, 'Passage en attente de supervision');
+        });
+    }
+
+    /**
+     * Cadre commun des décisions sur un dossier : la ligne est verrouillée le temps de la
+     * décision (deux agents ne peuvent pas trancher en même temps), puis le statut est
+     * revérifié une fois le verrou obtenu, car il a pu changer entre-temps.
+     *
+     * @param  callable(Dossier): void  $apply
+     */
+    private function decide(Dossier $dossier, ?AdminUser $admin, string $action, callable $apply): Dossier
+    {
+        return DB::transaction(function () use ($dossier, $admin, $action, $apply) {
+            $dossier = $this->lockDossier($dossier);
+            $this->assertCanDecide($dossier, $admin, $action);
+            $apply($dossier);
+
+            return $dossier->fresh();
+        });
+    }
+
+    private function lockDossier(Dossier $dossier): Dossier
+    {
+        return Dossier::query()->lockForUpdate()->findOrFail($dossier->id);
+    }
+
+    /**
+     * Un dossier clos (validé, refusé, retiré) ou non soumis ne se rouvre pas par une
+     * nouvelle décision ; un dossier en attente de supervision est réservé au superviseur
+     * ou à l'administrateur.
+     */
+    private function assertCanDecide(Dossier $dossier, ?AdminUser $admin, string $action): void
+    {
+        $messages = [
+            'Brouillon' => "Ce dossier n'a pas encore été soumis par l'assuré : impossible de le {$action}.",
+            'Validé' => "Ce dossier est déjà validé : impossible de le {$action}.",
+            'Refusé' => "Ce dossier est déjà refusé : impossible de le {$action}.",
+            'Retiré' => "Ce membre a été retiré : impossible de {$action} son dossier.",
+        ];
+
+        if (isset($messages[$dossier->statut])) {
+            throw ValidationException::withMessages(['statut' => $messages[$dossier->statut]]);
+        }
+
+        if ($dossier->statut === 'En attente supervision' && $this->isGestionnaire($admin)) {
+            throw ValidationException::withMessages([
+                'statut' => 'Ce dossier attend la décision du superviseur : un gestionnaire ne peut plus le modifier.',
+            ]);
+        }
+    }
+
+    /**
+     * Sans la permission « Valider en second niveau », la validation d'un agent passe par la
+     * supervision (si elle est activée) et il ne peut plus toucher un dossier en attente de supervision.
+     */
+    private function isGestionnaire(?AdminUser $admin): bool
+    {
+        return $admin !== null && ! $admin->hasPermission('dossiers.supervise');
+    }
+
+    /** Sans « Consulter tous les dossiers », un agent ne voit que les dossiers qui lui sont affectés. */
+    public function seesOnlyOwnDossiers(?AdminUser $admin): bool
+    {
+        return $admin !== null && ! $admin->hasPermission('dossiers.view_all');
+    }
+
+    /**
+     * Notification (et e-mail) envoyée une fois la décision enregistrée : rien n'est
+     * envoyé si la transaction échoue, et l'envoi ne prolonge pas le verrou.
+     */
+    private function notifyAssureAfterCommit(Dossier $dossier, string $event, string $titre, string $contenu, ?string $lien = null): void
+    {
+        DB::afterCommit(fn () => $this->notifyAssure($dossier, $event, $titre, $contenu, $lien));
     }
 
     public function sendMessage(Dossier $dossier, string $text, string $auteur = 'gestionnaire'): Dossier
@@ -494,7 +584,7 @@ class AdminDossierService
 
     private function canValidate(Dossier $dossier): bool
     {
-        return ! in_array($dossier->statut, ['Validé', 'Refusé', 'Brouillon', 'En attente supervision'], true);
+        return ! in_array($dossier->statut, ['Validé', 'Refusé', 'Brouillon', 'Retiré', 'En attente supervision'], true);
     }
 
     private function formatDossierRow(Dossier $dossier): array

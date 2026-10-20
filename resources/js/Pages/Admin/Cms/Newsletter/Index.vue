@@ -1,11 +1,14 @@
 <script setup>
 import CmsLayout from '@/Layouts/CmsLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useClientPagination, useServerPagination } from '@/Composables/usePagination';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     tab: { type: String, default: 'overview' },
     items: { type: Array, default: () => [] },
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
     batches: { type: Array, default: () => [] },
     campaigns: { type: Array, default: () => [] },
     templates: { type: Array, default: () => [] },
@@ -37,7 +40,24 @@ const tabs = [
     { key: 'templates', label: 'Modèles', icon: 'dashboard_customize' },
 ];
 
-watch([status, segment], applyFilters);
+// Abonnés : paginés par le serveur (la sélection cochée est conservée d'une page à l'autre).
+const subscribersTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.newsletter',
+    params: () => ({ tab: activeTab.value, q: search.value.trim(), status: status.value, segment: segment.value }),
+    anchor: subscribersTop,
+});
+
+// Campagnes : liste courte, découpée dans le navigateur.
+const campaignsTop = ref(null);
+const {
+    pagination: campaignsPagination,
+    paged: pagedCampaigns,
+    goToPage: goToCampaignPage,
+    setPerPage: setCampaignsPerPage,
+} = useClientPagination(() => props.campaigns, { perPageOptions: [10, 25, 50], anchor: campaignsTop });
+
+watch([status, segment], () => applyFilters());
 
 watch(
     () => props.tab,
@@ -48,16 +68,16 @@ watch(
 
 function switchTab(key) {
     activeTab.value = key;
-    router.get(route('admin.cms.newsletter'), { tab: key, q: search.value || undefined, status: status.value || undefined, segment: segment.value || undefined }, { preserveState: true, replace: true });
+    reload({ tab: key });
 }
 
 function onSearch() {
     clearTimeout(timer);
-    timer = setTimeout(applyFilters, 250);
+    timer = setTimeout(() => applyFilters(), 300);
 }
 
 function applyFilters() {
-    router.get(route('admin.cms.newsletter'), { tab: activeTab.value, q: search.value || undefined, status: status.value || undefined, segment: segment.value || undefined }, { preserveState: true, preserveScroll: true, replace: true });
+    reload();
 }
 
 function toggleSelect(item) {
@@ -230,7 +250,7 @@ function inBatch(item) {
                 </div>
             </section>
 
-            <section class="assure-card overflow-hidden">
+            <section ref="subscribersTop" class="assure-card overflow-hidden scroll-mt-24">
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant text-xs">
@@ -278,15 +298,19 @@ function inBatch(item) {
                                     </template>
                                 </td>
                             </tr>
+                            <tr v-if="!items.length"><td colspan="8" class="px-4 py-8 text-center text-on-surface-variant">Aucun abonné ne correspond.</td></tr>
                         </tbody>
                     </table>
+                </div>
+                <div class="px-4 border-t border-outline-variant">
+                    <CamaPagination v-bind="pagination" label="abonné(s)" @change="goToPage" @per-page="setPerPage" />
                 </div>
             </section>
         </div>
 
         <!-- Campagnes -->
         <div v-else-if="activeTab === 'campaigns'" class="space-y-4">
-            <section class="assure-card overflow-hidden">
+            <section ref="campaignsTop" class="assure-card overflow-hidden scroll-mt-24">
                 <table class="w-full text-sm">
                     <thead class="bg-surface-container-low border-b border-outline-variant text-on-surface-variant text-xs">
                         <tr>
@@ -302,7 +326,7 @@ function inBatch(item) {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="campaign in campaigns" :key="campaign.id" class="border-b border-outline-variant">
+                        <tr v-for="campaign in pagedCampaigns" :key="campaign.id" class="border-b border-outline-variant">
                             <td class="px-4 py-3 font-bold">{{ campaign.name }}</td>
                             <td class="px-4 py-3 text-on-surface-variant">{{ campaign.subject }}</td>
                             <td class="px-4 py-3"><span class="text-[10px] px-2 py-0.5 rounded-full font-bold" :class="campaign.status === 'sent' ? 'bg-secondary/10 text-secondary' : 'bg-tertiary-container/40 text-tertiary'">{{ campaign.statusLabel }}</span></td>
@@ -319,6 +343,9 @@ function inBatch(item) {
                         <tr v-if="!campaigns.length"><td colspan="9" class="px-4 py-8 text-center text-on-surface-variant">Aucune campagne.</td></tr>
                     </tbody>
                 </table>
+                <div class="px-4 border-t border-outline-variant">
+                    <CamaPagination v-bind="campaignsPagination" label="campagne(s)" @change="goToCampaignPage" @per-page="setCampaignsPerPage" />
+                </div>
             </section>
         </div>
 

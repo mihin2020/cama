@@ -28,6 +28,8 @@ class CmsMenuService
      */
     public function availablePages(): array
     {
+        $inMenu = $this->pageIdsInMenu();
+
         return CmsPage::query()
             ->orderByRaw("case when status = 'published' then 0 else 1 end")
             ->orderBy('title')
@@ -38,8 +40,36 @@ class CmsMenuService
                 'slug' => $page->slug,
                 'status' => $page->status,
                 'statusLabel' => $page->status === 'published' ? 'Publié' : 'brouillon',
+                // Déjà présente : affichée mais non sélectionnable, pour éviter les doublons dans le header.
+                'inMenu' => in_array($page->id, $inMenu, true),
             ])
+            ->sortBy(fn (array $page) => $page['inMenu'] ? 1 : 0)
+            ->values()
             ->all();
+    }
+
+    /**
+     * Pages déjà dans le menu, qu'elles y soient comme page ou comme lien personnalisé vers leur adresse.
+     *
+     * @return array<int>
+     */
+    public function pageIdsInMenu(): array
+    {
+        $items = CmsMenuItem::query()->get(['type', 'page_id', 'url']);
+
+        $linkedIds = $items->where('type', self::TYPE_PAGE)->pluck('page_id')->filter()->map(fn ($id) => (int) $id);
+
+        $customUrls = $items->where('type', self::TYPE_CUSTOM)
+            ->pluck('url')
+            ->filter()
+            ->map(fn (string $url) => '/'.trim((string) parse_url($url, PHP_URL_PATH), '/'))
+            ->all();
+
+        $byUrl = CmsPage::query()->get(['id', 'slug'])
+            ->filter(fn (CmsPage $page) => in_array($page->slug === 'accueil' ? '/' : '/'.$page->slug, $customUrls, true))
+            ->pluck('id');
+
+        return $linkedIds->merge($byUrl)->unique()->values()->all();
     }
 
     /**
@@ -53,6 +83,7 @@ class CmsMenuService
 
         CmsPage::query()
             ->whereIn('id', $pageIds)
+            ->whereNotIn('id', $this->pageIdsInMenu())
             ->get()
             ->sortBy(fn (CmsPage $page) => $order[$page->id] ?? PHP_INT_MAX)
             ->each(function (CmsPage $page) use (&$nextOrder) {

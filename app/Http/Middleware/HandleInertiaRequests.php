@@ -8,6 +8,8 @@ use App\Models\CmsContactMessage;
 use App\Models\CmsNewsletterSubscriber;
 use App\Services\AdminDossierService;
 use App\Services\AdminNotificationService;
+use App\Services\AdminPermissionService;
+use App\Services\PlatformSettingsService;
 use App\Services\PublicSiteService;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -48,9 +50,11 @@ class HandleInertiaRequests extends Middleware
                     'role' => $admin->role->value,
                     'roleLabel' => $admin->role->label(),
                     'initiales' => $admin->initiales,
-                    'permissions' => $admin->effective_permissions,
+                    'permissions' => app(AdminPermissionService::class)->expanded($admin),
                 ] : null,
             ],
+            // Closure : évaluée au rendu, donc après le middleware admin.idle.
+            'adminSession' => fn () => $admin ? EnforceAdminIdleTimeout::clientState($request) : null,
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'warning' => fn () => $request->session()->get('warning'),
@@ -60,22 +64,23 @@ class HandleInertiaRequests extends Middleware
             ],
             'app' => [
                 'name' => config('app.name'),
-                'inscriptionsEnAttente' => fn () => Assure::query()
-                    ->where('statut', AssureStatut::EnAttenteValidation)
-                    ->count(),
+                // Compteurs du back-office : calculés seulement pour les comptes qui les voient.
+                'inscriptionsEnAttente' => fn () => $admin?->hasPermission('inscriptions.view')
+                    ? Assure::query()->where('statut', AssureStatut::EnAttenteValidation)->count()
+                    : 0,
                 'adminUnreadNotifications' => fn () => $admin
                     ? app(AdminNotificationService::class)->unreadCount($admin)
                     : 0,
-                'cmsNewContactCount' => fn () => $admin
+                'cmsNewContactCount' => fn () => $admin?->hasPermission('cms.contacts')
                     ? CmsContactMessage::query()
                         ->whereNull('archived_at')
                         ->where('status', 'new')
                         ->count()
                     : 0,
-                'cmsActiveNewsletterCount' => fn () => $admin
+                'cmsActiveNewsletterCount' => fn () => $admin?->hasPermission('cms.newsletter')
                     ? CmsNewsletterSubscriber::query()->whereNull('unsubscribed_at')->count()
                     : 0,
-                'adminPendingDossierFamilies' => fn () => $admin
+                'adminPendingDossierFamilies' => fn () => $admin?->hasPermission('dossiers.view')
                     ? app(AdminDossierService::class)->pendingFamilyAssureIds($admin)
                     : [],
                 'assureUnreadNotifications' => fn () => $assure
@@ -99,7 +104,26 @@ class HandleInertiaRequests extends Middleware
                     : [],
                 'googleMapsApiKey' => config('services.google.maps_key'),
             ],
-            'publicSite' => fn () => app(PublicSiteService::class)->shared(),
+            // Menu, bandeau et pied de page du site public : inutiles dans le back-office
+            // (sauf l'aperçu du page builder) et dans l'espace assuré connecté.
+            'publicSite' => fn () => $this->needsPublicSite($request)
+                ? app(PublicSiteService::class)->shared()
+                : null,
+            // Logo modifiable dans CMS > Identité & pied de page (lu par useSiteLogo).
+            'branding' => fn () => ['logoUrl' => app(PlatformSettingsService::class)->siteLogo()],
         ];
+    }
+
+    private function needsPublicSite(Request $request): bool
+    {
+        if ($request->routeIs('admin.cms.page_builder.preview')) {
+            return true;
+        }
+
+        if ($request->is('admin', 'admin/*')) {
+            return false;
+        }
+
+        return ! ($request->is('espace-assure/*') && $request->user('assure'));
     }
 }

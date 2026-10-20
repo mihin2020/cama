@@ -9,7 +9,10 @@ use App\Models\CmsPage;
 use App\Models\CmsPartner;
 use App\Models\CmsResource;
 use App\Models\CmsSlide;
+use App\Support\SafeUpload;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Str;
 
 class CmsMediaService
@@ -18,6 +21,23 @@ class CmsMediaService
      * @return array<int, array<string, mixed>>
      */
     public function list(?string $query = null, ?string $type = null, ?string $folder = null, ?string $category = null, ?string $extension = null): array
+    {
+        return $this->filteredQuery($query, $type, $folder, $category, $extension)
+            ->get()
+            ->map(fn (CmsMedia $media) => $this->format($media))
+            ->all();
+    }
+
+    /** Médiathèque paginée (grille de vignettes de la page Médiathèque). */
+    public function paginateForAdmin(int $perPage, ?string $query = null, ?string $type = null, ?string $folder = null, ?string $category = null, ?string $extension = null): LengthAwarePaginator
+    {
+        return $this->filteredQuery($query, $type, $folder, $category, $extension)
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (CmsMedia $media) => $this->format($media));
+    }
+
+    private function filteredQuery(?string $query, ?string $type, ?string $folder, ?string $category, ?string $extension): Builder
     {
         return CmsMedia::query()
             ->with('uploader')
@@ -36,9 +56,7 @@ class CmsMediaService
             ->when($category, fn ($builder) => $builder->where('category', $category))
             ->when($extension, fn ($builder) => $builder->where('extension', strtolower($extension)))
             ->latest()
-            ->get()
-            ->map(fn (CmsMedia $media) => $this->format($media))
-            ->all();
+            ->orderByDesc('id');
     }
 
     /**
@@ -52,7 +70,7 @@ class CmsMediaService
             mkdir($directory, 0755, true);
         }
 
-        $extension = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'bin');
+        $extension = SafeUpload::extension($file, [...SafeUpload::IMAGES, ...SafeUpload::DOCUMENTS]);
         $filename = Str::uuid().'.'.$extension;
         $size = $file->getSize() ?: 0;
         $mime = $file->getMimeType();

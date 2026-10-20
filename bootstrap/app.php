@@ -17,9 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // Railway (et autres PaaS) placent l'app derrière un reverse proxy qui
         // termine le TLS. On fait confiance au proxy pour lire X-Forwarded-Proto
         // afin que Laravel génère des URLs en https et évite le contenu mixte.
-        $middleware->trustProxies(at: '*');
+        // Sur un hébergement mutualisé sans proxy, mettre TRUSTED_PROXIES=none : sinon un visiteur
+        // peut falsifier son IP (X-Forwarded-For) et contourner les limites de tentatives.
+        $proxies = (string) env('TRUSTED_PROXIES', '*');
+        if (! in_array(strtolower($proxies), ['', 'none', 'false'], true)) {
+            $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
+        }
 
         $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
         ]);
@@ -27,6 +33,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'guest.assure' => RedirectIfAssureAuthenticated::class,
             'guest.admin' => RedirectIfAdminAuthenticated::class,
+            'admin.active' => \App\Http\Middleware\EnsureAdminActive::class,
+            'admin.idle' => \App\Http\Middleware\EnforceAdminIdleTimeout::class,
             'admin.role' => \App\Http\Middleware\EnsureAdminRole::class,
             'admin.permission' => \App\Http\Middleware\EnsureAdminPermission::class,
             'assure.verified' => \App\Http\Middleware\EnsureAssureEmailVerified::class,

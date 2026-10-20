@@ -6,6 +6,7 @@ use App\Enums\AssureStatut;
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
 use App\Services\AssureRegistrationService;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,7 +16,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class InscriptionController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): Response|RedirectResponse
     {
         $search = $request->string('search')->trim()->toString();
         $statutFilter = $request->string('statut')->toString() ?: AssureStatut::EnAttenteValidation->value;
@@ -45,19 +46,19 @@ class InscriptionController extends Controller
             $query->whereDate('created_at', '<=', $dateTo);
         }
 
-        $paginator = $query->paginate(20)->withQueryString();
+        $paginator = $query->paginate(Pagination::perPage($request))->withQueryString();
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.inscriptions', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
+
         $registrations = collect($paginator->items())->map(fn (Assure $a) => $this->formatRegistration($a));
 
         $service = app(AssureRegistrationService::class);
 
         return Inertia::render('Admin/Inscriptions/Index', [
             'registrations' => $registrations->values()->all(),
-            'pagination' => [
-                'currentPage' => $paginator->currentPage(),
-                'lastPage' => $paginator->lastPage(),
-                'perPage' => $paginator->perPage(),
-                'total' => $paginator->total(),
-            ],
+            'pagination' => Pagination::meta($paginator),
             'stats' => $service->registrationStats(),
             'filters' => [
                 'search' => $search,

@@ -2,8 +2,11 @@
 import CamaAnchorTop from '@/Components/CamaAnchorTop.vue';
 import CamaCookieBar from '@/Components/CamaCookieBar.vue';
 import { socialIcon, socialLabel } from '@/Data/socialNetworks.js';
+import { useSiteLogo } from '@/Composables/useSiteLogo';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
+
+const siteLogo = useSiteLogo();
 
 const page = usePage();
 const menuOpen = ref(false);
@@ -80,7 +83,7 @@ function toggleSearch() {
                         <span class="material-symbols-outlined">{{ menuOpen ? 'close' : 'menu' }}</span>
                     </button>
                     <Link class="flex items-center gap-2 md:gap-3 min-w-0" href="/">
-                        <img alt="Logo CAMA" class="h-10 w-10 md:h-12 md:w-12 object-contain shrink-0" src="/images/logo_cama.png" />
+                        <img alt="Logo CAMA" class="h-10 w-10 md:h-12 md:w-12 object-contain shrink-0" :src="siteLogo" />
                         <span class="text-base md:text-title-lg font-headline-lg font-extrabold text-primary tracking-tight leading-tight truncate">
                             CAMA
                             <span class="hidden sm:block text-[10px] font-body-md font-normal text-on-surface-variant tracking-wide normal-case">
@@ -202,7 +205,7 @@ function toggleSearch() {
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12 mb-12">
                     <div class="col-span-1">
                         <div class="flex items-center gap-3 mb-5">
-                            <img alt="Logo CAMA" class="h-11 w-11 object-contain bg-white rounded-full p-0.5" src="/images/logo_cama.png" />
+                            <img alt="Logo CAMA" class="h-11 w-11 object-contain bg-white rounded-full p-0.5" :src="siteLogo" />
                             <span class="text-xl font-bold text-white font-headline-lg">CAMA</span>
                         </div>
                         <p v-if="footer.tagline" class="text-surface-variant text-sm mb-5 opacity-85 leading-relaxed">
@@ -261,7 +264,6 @@ function toggleSearch() {
                         <ul class="space-y-3 text-sm">
                             <li><Link class="text-surface-variant hover:text-white transition-colors" href="/mention_legales">Mentions légales</Link></li>
                             <li><Link class="text-surface-variant hover:text-white transition-colors" href="/mention_legales#rgpd">Confidentialité</Link></li>
-                            <li><Link class="text-surface-variant hover:text-white transition-colors" href="/accessibilite">Accessibilité</Link></li>
                             <li><Link class="text-surface-variant hover:text-white transition-colors" href="/mention_legales#cookies">Cookies</Link></li>
                         </ul>
                         <div v-if="footerSocials.length" class="flex flex-wrap gap-3 mt-6">

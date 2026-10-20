@@ -315,11 +315,6 @@ function cancel2fa() {
                                     </div>
                                 </template>
                             </div>
-
-                            <p v-if="!is2fa" class="mt-4 text-center text-xs text-on-surface-variant">
-                    Personnel CAMA ?
-                    <Link :href="route('admin.login')" class="text-primary font-semibold hover:underline">Connexion back-office</Link>
-                </p>
                         </div>
                     </div>
             </div>

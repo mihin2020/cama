@@ -1,5 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -36,24 +38,25 @@ const STATUS_LABELS = {
     desactive: 'Désactivée',
 };
 
-function queryParams(page = 1) {
-    return {
-        search: search.value,
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.inscriptions',
+    params: () => ({
+        search: search.value.trim(),
         statut: statut.value,
         date_from: dateFrom.value || undefined,
         date_to: dateTo.value || undefined,
-        page,
-    };
-}
-
-watch([search, statut, dateFrom, dateTo], () => {
-    router.get(route('admin.inscriptions'), queryParams(1), { preserveState: true, replace: true });
+    }),
+    anchor: listTop,
 });
 
-function goToPage(page) {
-    if (page < 1 || page > props.pagination.lastPage) return;
-    router.get(route('admin.inscriptions'), queryParams(page), { preserveState: true, replace: true });
-}
+// Recherche lancée après une courte pause de frappe (pas une requête par lettre).
+let searchTimer = null;
+watch(search, () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(reload, 300);
+});
+watch([statut, dateFrom, dateTo], () => reload());
 
 function filterByStatut(value) {
     statut.value = value;
@@ -205,7 +208,7 @@ function infoValue(value) {
             </div>
         </div>
 
-        <div class="assure-card overflow-hidden">
+        <div ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -238,16 +241,10 @@ function infoValue(value) {
                     </tbody>
                 </table>
             </div>
-        </div>
-
-        <div v-if="pagination.lastPage > 1" class="px-1 py-4 flex items-center justify-between flex-wrap gap-3">
-            <p class="text-[11px] text-on-surface-variant">{{ pagination.total }} inscription(s) · page {{ pagination.currentPage }} / {{ pagination.lastPage }}</p>
-            <div class="flex gap-2">
-                <button type="button" class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage <= 1" @click="goToPage(pagination.currentPage - 1)">Précédent</button>
-                <button type="button" class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold disabled:opacity-50" :disabled="pagination.currentPage >= pagination.lastPage" @click="goToPage(pagination.currentPage + 1)">Suivant</button>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="inscription(s)" @change="goToPage" @per-page="setPerPage" />
             </div>
         </div>
-        <p v-else-if="pagination.total" class="text-[11px] text-on-surface-variant px-1 py-2">{{ pagination.total }} inscription(s)</p>
 
         <div v-if="selected" class="fixed inset-0 bg-black/50 z-50 flex items-stretch justify-end" @click.self="closeDetail">
             <div class="bg-surface-container-low w-full sm:max-w-xl h-full overflow-y-auto shadow-2xl">
