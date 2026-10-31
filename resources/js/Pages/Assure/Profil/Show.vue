@@ -29,7 +29,7 @@ const pwdForm = useForm({
 
 const deuxFa = ref(props.profil.deuxFa);
 const pwdError = ref('');
-const toast = ref({ show: false, html: '' });
+const toast = ref({ show: false, icon: '', text: '' });
 
 // Champs gérés par la CAMA (lecture seule).
 const militaireRows = [
@@ -95,22 +95,23 @@ watch(() => rattachementForm.section, () => { if (rattachReady) { rattachementFo
 // active la réinitialisation en cascade seulement après le montage initial
 setTimeout(() => { rattachReady = true; }, 0);
 
-function showToast(html) {
-    toast.value = { show: true, html };
+// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
+function showToast(icon, text) {
+    toast.value = { show: true, icon, text };
     setTimeout(() => { toast.value.show = false; }, 3000);
 }
 
 function saveContact() {
     contactForm.patch(route('assure.profil.update'), {
         preserveScroll: true,
-        onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Coordonnées mises à jour.'),
+        onSuccess: () => showToast('check_circle', 'Coordonnées mises à jour.'),
     });
 }
 
 function saveRattachement() {
     rattachementForm.patch(route('assure.profil.rattachement'), {
         preserveScroll: true,
-        onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Situation militaire mise à jour.'),
+        onSuccess: () => showToast('check_circle', 'Situation militaire mise à jour.'),
     });
 }
 
@@ -128,7 +129,7 @@ function savePassword() {
         preserveScroll: true,
         onSuccess: () => {
             pwdForm.reset();
-            showToast('<span class="material-symbols-outlined">check_circle</span> Mot de passe mis à jour.');
+            showToast('check_circle', 'Mot de passe mis à jour.');
         },
         onError: (errors) => {
             pwdError.value = errors.current_password || errors.password || 'Erreur lors de la mise à jour.';
@@ -140,7 +141,7 @@ function toggle2fa() {
     deuxFa.value = !deuxFa.value;
     router.patch(route('assure.profil.2fa'), { active: deuxFa.value }, {
         preserveScroll: true,
-        onSuccess: () => showToast(`<span class="material-symbols-outlined">verified_user</span> 2FA ${deuxFa.value ? 'activée' : 'désactivée'}.`),
+        onSuccess: () => showToast('verified_user', `2FA ${deuxFa.value ? 'activée' : 'désactivée'}.`),
         onError: () => { deuxFa.value = !deuxFa.value; },
     });
 }
@@ -340,7 +341,7 @@ function displayValue(value) {
     </AssureLayout>
 
     <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" v-html="toast.html" />
+        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
     </div>
 </template>
 

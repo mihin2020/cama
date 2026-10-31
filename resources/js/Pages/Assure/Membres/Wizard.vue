@@ -61,7 +61,7 @@ const showWarning = ref(false);
 const submitting = ref(false);
 const submitted = ref(false);
 const submittedCount = ref(0);
-const toast = ref({ show: false, html: '' });
+const toast = ref({ show: false, icon: '', text: '' });
 const pieceErrors = reactive({});
 const fifSignee = ref(null);
 const fifError = ref('');
@@ -117,8 +117,9 @@ const sortedEnfants = computed(() =>
     [...state.enfants].sort((a, b) => (a.dateNaissance || '9999').localeCompare(b.dateNaissance || '9999')),
 );
 
-function showToast(html) {
-    toast.value = { show: true, html };
+// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
+function showToast(icon, text) {
+    toast.value = { show: true, icon, text };
     setTimeout(() => { toast.value.show = false; }, 3000);
 }
 
@@ -189,13 +190,13 @@ function saveDraft() {
     router.post(route('assure.dossiers.draft'), payload(), {
         preserveScroll: true,
         forceFormData: true,
-        onSuccess: () => showToast('<span class="material-symbols-outlined">save</span> Brouillon enregistré.'),
+        onSuccess: () => showToast('save', 'Brouillon enregistré.'),
     });
 }
 
 function openSubmit() {
     if (!props.peutEnroler) {
-        showToast('<span class="material-symbols-outlined">error</span> Votre compte doit être validé avant toute soumission.');
+        showToast('error', 'Votre compte doit être validé avant toute soumission.');
         return;
     }
     const problems = validateFamille(state, {
@@ -204,7 +205,7 @@ function openSubmit() {
         requireFif: props.fifSigneeRequise,
     });
     if (problems.length) {
-        showToast(`<span class="material-symbols-outlined">error</span> ${problems[0]}`);
+        showToast('error', `${problems[0]}`);
         return;
     }
     showWarning.value = true;
@@ -213,7 +214,7 @@ function openSubmit() {
 async function generateFif() {
     const problems = validateFamille(state, validationOptions.value);
     if (problems.length) {
-        showToast(`<span class="material-symbols-outlined">error</span> Complétez d'abord les informations des membres : ${problems[0]}`);
+        showToast('error', `Complétez d'abord les informations des membres : ${problems[0]}`);
         return;
     }
     generatingFif.value = true;
@@ -221,9 +222,9 @@ async function generateFif() {
         const membres = buildExportMembresFromState(state);
         await exportFamilleFif(membres, props.assureExport);
         fifGenerated.value = true;
-        showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF générée — imprimez-la et faites-la signer par le chef de corps et le GRH.');
+        showToast('picture_as_pdf', 'FIF générée — imprimez-la et faites-la signer par le chef de corps et le GRH.');
     } catch {
-        showToast('<span class="material-symbols-outlined">error</span> Impossible de générer la FIF.');
+        showToast('error', 'Impossible de générer la FIF.');
     } finally {
         generatingFif.value = false;
     }
@@ -871,7 +872,7 @@ watch(() => props.initialRows, () => {
     </div>
 
     <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm font-medium" v-html="toast.html" />
+        <div class="bg-on-background text-white px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm font-medium"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
     </div>
 
     <CamaConfirmModal

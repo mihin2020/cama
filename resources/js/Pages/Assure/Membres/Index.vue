@@ -27,7 +27,7 @@ const filters = [
     { value: 'Refusé', label: 'Refusé' },
 ];
 
-const toast = ref({ show: false, html: '' });
+const toast = ref({ show: false, icon: '', text: '' });
 const exportingZip = ref(false);
 const complementFiles = ref({});
 const complementSubmitting = ref({});
@@ -111,8 +111,9 @@ const parentLabel = computed(() =>
     props.assureExport?.sexe === 'Féminin' ? 'Nom et prénoms du père' : 'Nom et prénoms de la mère',
 );
 
-function showToast(html) {
-    toast.value = { show: true, html };
+// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
+function showToast(icon, text) {
+    toast.value = { show: true, icon, text };
     setTimeout(() => {
         toast.value.show = false;
     }, 3000);
@@ -155,23 +156,23 @@ function canModify(m) {
 async function exportDossier(m, index) {
     try {
         await exportMembreFif(m, props.assureExport, index + 1);
-        showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF généré.');
+        showToast('picture_as_pdf', 'FIF généré.');
     } catch {
-        showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+        showToast('error', 'Export indisponible (librairie non chargée).');
     }
 }
 
 async function exportAllZip() {
     if (!props.membres.length) {
-        showToast('<span class="material-symbols-outlined">info</span> Aucun dossier à exporter.');
+        showToast('info', 'Aucun dossier à exporter.');
         return;
     }
     exportingZip.value = true;
     try {
         await exportFamilleZip(props.membres, props.assureExport);
-        showToast(`<span class="material-symbols-outlined">folder_zip</span> Archive ZIP de ${props.membres.length} dossier(s) générée.`);
+        showToast('folder_zip', `Archive ZIP de ${props.membres.length} dossier(s) générée.`);
     } catch {
-        showToast('<span class="material-symbols-outlined">error</span> Export ZIP indisponible (librairie non chargée).');
+        showToast('error', 'Export ZIP indisponible (librairie non chargée).');
     } finally {
         exportingZip.value = false;
     }
@@ -180,9 +181,9 @@ async function exportAllZip() {
 async function exportFormulaire() {
     try {
         await exportFamilleFif(props.membres, props.assureExport);
-        showToast('<span class="material-symbols-outlined">picture_as_pdf</span> FIF familial généré.');
+        showToast('picture_as_pdf', 'FIF familial généré.');
     } catch {
-        showToast('<span class="material-symbols-outlined">error</span> Export indisponible (librairie non chargée).');
+        showToast('error', 'Export indisponible (librairie non chargée).');
     }
 }
 
@@ -194,7 +195,7 @@ function deleteMembre(id) {
         variant: 'danger',
         onConfirm: () => router.delete(route('assure.dossiers.destroy', id), {
             preserveScroll: true,
-            onSuccess: () => showToast('<span class="material-symbols-outlined">check_circle</span> Membre supprimé.'),
+            onSuccess: () => showToast('check_circle', 'Membre supprimé.'),
         }),
     });
 }
@@ -245,16 +246,16 @@ function submitComplement(m) {
     if (missing.length) {
         for (const piece of missing) {
             if (!files[piece.type]) {
-                showToast(`<span class="material-symbols-outlined">warning</span> Joignez le fichier : ${piece.type}.`);
+                showToast('warning', `Joignez le fichier : ${piece.type}.`);
                 return;
             }
             if (errors[piece.type]) {
-                showToast(`<span class="material-symbols-outlined">error</span> ${errors[piece.type]}`);
+                showToast('error', `${errors[piece.type]}`);
                 return;
             }
         }
     } else if (!files.__generic) {
-        showToast('<span class="material-symbols-outlined">warning</span> Sélectionnez un fichier à envoyer.');
+        showToast('warning', 'Sélectionnez un fichier à envoyer.');
         return;
     }
 
@@ -276,11 +277,11 @@ function submitComplement(m) {
         onSuccess: () => {
             delete complementFiles.value[m.id];
             delete complementErrors.value[m.id];
-            showToast('<span class="material-symbols-outlined">check_circle</span> Pièces complémentaires envoyées.');
+            showToast('check_circle', 'Pièces complémentaires envoyées.');
         },
         onError: (errs) => {
             const first = Object.values(errs)[0];
-            showToast(`<span class="material-symbols-outlined">error</span> ${Array.isArray(first) ? first[0] : first || 'Envoi impossible.'}`);
+            showToast('error', `${Array.isArray(first) ? first[0] : first || 'Envoi impossible.'}`);
         },
         onFinish: () => {
             complementSubmitting.value[m.id] = false;
@@ -627,7 +628,7 @@ function submitComplement(m) {
     </AssureLayout>
 
     <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md" v-html="toast.html" />
+        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
     </div>
 
     <CamaConfirmModal
