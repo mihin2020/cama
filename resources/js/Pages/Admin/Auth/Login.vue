@@ -174,6 +174,10 @@ function cancel2fa() {
                                 <p class="mt-1 ml-6 text-[11px] text-on-surface-variant">À ne pas cocher sur un poste partagé ou public.</p>
                             </div>
 
+                            <p class="text-right">
+                                <Link :href="route('admin.password.request')" class="text-xs font-bold text-primary hover:underline">Mot de passe oublié ?</Link>
+                            </p>
+
                             <CamaLoadingButton
                                 type="submit"
                                 variant="success"

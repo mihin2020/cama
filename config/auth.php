@@ -58,7 +58,7 @@ return [
         ],
         'assures' => [
             'provider' => 'assures',
-            'table' => 'password_reset_tokens',
+            'table' => 'assure_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

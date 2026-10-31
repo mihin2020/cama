@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AssureController;
 use App\Http\Controllers\Admin\Auth\InvitationController;
 use App\Http\Controllers\Admin\Auth\LoginController as AdminLoginController;
+use App\Http\Controllers\Admin\Auth\PasswordResetController as AdminPasswordResetController;
 use App\Http\Controllers\Admin\Auth\TwoFactorController as AdminTwoFactorController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DossierController;
@@ -29,6 +30,15 @@ Route::middleware('guest.admin')->group(function () {
     Route::post('/connexion/2fa/annuler', [AdminTwoFactorController::class, 'destroy'])->name('login.2fa.cancel');
     Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
     Route::post('/invitation', [InvitationController::class, 'store'])->name('invitation.store');
+
+    Route::get('/mot-de-passe-oublie', [AdminPasswordResetController::class, 'create'])->name('password.request');
+    Route::post('/mot-de-passe-oublie', [AdminPasswordResetController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+    Route::get('/reinitialisation/{token}', [AdminPasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/reinitialisation', [AdminPasswordResetController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('password.update');
 });
 
 // auth.session : un changement de mot de passe (ou « déconnecter mes autres appareils »)

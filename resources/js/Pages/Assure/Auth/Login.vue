@@ -292,6 +292,7 @@ function cancel2fa() {
                                                     <Checkbox v-model:checked="loginForm.remember" name="remember" />
                         Se souvenir de moi
                     </label>
+                                        <Link :href="route('assure.password.request')" class="text-sm font-bold text-primary hover:underline">Mot de passe oublié ?</Link>
                                             </div>
 
                     <CamaLoadingButton

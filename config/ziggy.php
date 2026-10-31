@@ -11,7 +11,7 @@ return [
         'site' => ['home', 'public.*', 'registration.*', 'assure.*'],
 
         // Pages de connexion / invitation du back-office (agent non connecté).
-        'admin-guest' => ['home', 'public.*', 'admin.login*', 'admin.invitation.*'],
+        'admin-guest' => ['home', 'public.*', 'admin.login*', 'admin.invitation.*', 'admin.password.*'],
 
         // Agent connecté : back-office complet (le page builder affiche aussi des pages publiques).
         'admin' => ['*', '!sanctum.*', '!storage.*'],

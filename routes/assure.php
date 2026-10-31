@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Assure\Auth\EmailVerificationController;
 use App\Http\Controllers\Assure\Auth\LoginController as AssureLoginController;
+use App\Http\Controllers\Assure\Auth\PasswordResetController as AssurePasswordResetController;
 use App\Http\Controllers\Assure\Auth\TwoFactorController;
 use App\Http\Controllers\Assure\DashboardController as AssureDashboardController;
 use App\Http\Controllers\Assure\DossierWizardController;
@@ -24,6 +25,15 @@ Route::middleware('guest.assure')->group(function () {
         ->middleware('throttle:5,1')
         ->name('login.2fa.resend');
     Route::post('/connexion/2fa/annuler', [TwoFactorController::class, 'destroy'])->name('login.2fa.cancel');
+
+    Route::get('/mot-de-passe-oublie', [AssurePasswordResetController::class, 'create'])->name('password.request');
+    Route::post('/mot-de-passe-oublie', [AssurePasswordResetController::class, 'store'])
+        ->middleware('throttle:5,1')
+        ->name('password.email');
+    Route::get('/reinitialisation/{token}', [AssurePasswordResetController::class, 'edit'])->name('password.reset');
+    Route::post('/reinitialisation', [AssurePasswordResetController::class, 'update'])
+        ->middleware('throttle:10,1')
+        ->name('password.update');
 });
 
 Route::middleware('auth:assure')->group(function () {
