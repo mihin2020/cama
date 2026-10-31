@@ -93,7 +93,11 @@ class UploadAndPieceSecurityTest extends TestCase
         $this->flushSession();
         $this->app['auth']->forgetGuards();
 
-        $response = $this->actingAs($this->admin(['dossiers.view'], 'gestion@cama.bf'), 'admin')->get($url)->assertOk();
+        // Sans « Consulter tous les dossiers », seulement un dossier affecté à l'agent.
+        $agent = $this->admin(['dossiers.view'], 'gestion@cama.bf');
+        $dossier->update(['gestionnaire' => $agent->display_name]);
+
+        $response = $this->actingAs($agent, 'admin')->get($url)->assertOk();
         $this->assertStringStartsWith('attachment;', $response->headers->get('content-disposition'));
         $this->assertSame('nosniff', $response->headers->get('x-content-type-options'));
     }

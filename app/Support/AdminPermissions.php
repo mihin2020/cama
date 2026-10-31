@@ -236,11 +236,24 @@ class AdminPermissions
      */
     public static function permissionForRoute(?string $routeName): ?string
     {
-        if (! $routeName) {
-            return null;
-        }
+        return self::routeMap()[$routeName ?? ''] ?? null;
+    }
 
-        $map = [
+    /**
+     * La route figure-t-elle dans la table ? Une route absente est refusée : oublier de la
+     * déclarer ne doit jamais l'ouvrir à tous les comptes connectés.
+     */
+    public static function isMappedRoute(?string $routeName): bool
+    {
+        return $routeName !== null && array_key_exists($routeName, self::routeMap());
+    }
+
+    /**
+     * @return array<string, string|null>
+     */
+    private static function routeMap(): array
+    {
+        return [
             'admin.dashboard' => null,
             'admin.logout' => null,
             'admin.session.ping' => null,
@@ -288,6 +301,7 @@ class AdminPermissions
             'admin.parametres.structure' => 'settings.manage',
             'admin.parametres.structure.reset' => 'settings.manage',
             'admin.parametres.inscription-documents' => 'settings.manage',
+            'admin.parametres.inscription-fields' => 'settings.manage',
 
             'admin.utilisateurs' => 'users.manage',
             'admin.utilisateurs.store' => 'users.manage',
@@ -381,8 +395,6 @@ class AdminPermissions
             'admin.cms.newsletter.batches.store' => 'cms.newsletter',
             'admin.cms.newsletter.batches.destroy' => 'cms.newsletter',
         ];
-
-        return $map[$routeName] ?? null;
     }
 
     /**

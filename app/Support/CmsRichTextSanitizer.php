@@ -84,7 +84,8 @@ class CmsRichTextSanitizer
             $src = trim($element->getAttribute('src'));
             $alt = $element->getAttribute('alt');
 
-            if (! preg_match('#^(https?://|/)[^\s"\'<>]*$#i', $src)) {
+            // « / » seul = chemin local ; « // » ou « /\ » désigneraient un autre site (URL sans protocole).
+            if (! preg_match('#^(https?://|/(?![/\\\\]))[^\s"\'<>]*$#i', $src)) {
                 $element->parentNode?->removeChild($element);
 
                 return;

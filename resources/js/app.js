@@ -9,7 +9,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 const rawAppName = import.meta.env.VITE_APP_NAME;
 // Ignore une valeur non résolue au build (ex. "${APP_NAME}" laissé littéral
-// par Vite/Railway) : on retombe alors sur « CAMA ».
+// par Vite) : on retombe alors sur « CAMA ».
 const appName = rawAppName && !rawAppName.includes('$') ? rawAppName : 'CAMA';
 
 createInertiaApp({

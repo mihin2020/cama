@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AdminUser;
 use App\Models\CmsPartner;
 use App\Support\Pagination;
+use App\Support\SqlLike;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -76,7 +77,7 @@ class CmsPartnerService
         }
 
         if ($search = trim((string) $search)) {
-            $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $search).'%';
+            $like = SqlLike::contains($search);
             $query->where(fn ($q) => $q->where('name', 'like', $like)
                 ->orWhere('city', 'like', $like)
                 ->orWhere('address', 'like', $like));

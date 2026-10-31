@@ -21,6 +21,12 @@ class EnforceAdminIdleTimeout
 {
     public const SESSION_KEY = 'admin_session';
 
+    /**
+     * En-tête du rechargement envoyé par le front à l'échéance : simple vérification,
+     * qui ne compte pas comme une activité (sinon la session se prolongerait toute seule).
+     */
+    public const CHECK_HEADER = 'X-Admin-Idle-Check';
+
     public function handle(Request $request, Closure $next): Response
     {
         $admin = $request->user('admin');
@@ -34,7 +40,7 @@ class EnforceAdminIdleTimeout
         $now = time();
         $last = $state['last_activity'] ?? null;
 
-        if (self::applies($admin, $state) && $last && $now - $last > self::timeoutSeconds()) {
+        if (self::applies($admin, $state) && $last && $now - $last >= self::timeoutSeconds()) {
             Log::info('Session back-office fermée pour inactivité', ['admin_id' => $admin->id]);
 
             // logoutCurrentDevice : ne révoque pas les cookies des autres appareils.
@@ -51,9 +57,11 @@ class EnforceAdminIdleTimeout
             return redirect()->route('admin.login')->with('warning', $message);
         }
 
-        $state['started_at'] ??= $now;
-        $state['last_activity'] = $now;
-        $session->put(self::SESSION_KEY, $state);
+        if (! $request->hasHeader(self::CHECK_HEADER)) {
+            $state['started_at'] ??= $now;
+            $state['last_activity'] = $now;
+            $session->put(self::SESSION_KEY, $state);
+        }
 
         return $next($request);
     }

@@ -159,7 +159,7 @@ class DatabaseSeeder extends Seeder
 
         // Compte de démonstration à connexion directe : actif, e-mail déjà
         // vérifié et SANS 2FA -> aucune saisie de code requise (utile quand
-        // l'envoi d'e-mails n'est pas disponible, ex. plan gratuit Railway).
+        // l'envoi d'e-mails n'est pas disponible).
         $demo = Assure::query()->updateOrCreate(
             ['email' => 'demo@cama.bf'],
             [

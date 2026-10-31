@@ -6,22 +6,16 @@ use App\Enums\AssureStatut;
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
 use App\Services\AssureLogin2faService;
+use App\Support\LoginThrottle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LoginController extends Controller
 {
-    /** Essais autorisés par adresse e-mail et par IP avant blocage temporaire. */
-    private const MAX_ATTEMPTS = 5;
-
-    private const LOCKOUT_SECONDS = 300;
-
     public function create(Request $request): Response
     {
         if ($request->session()->has('assure_2fa_pending')) {
@@ -41,25 +35,18 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = 'assure-login|'.Str::transliterate(Str::lower($credentials['email'])).'|'.$request->ip();
-
-        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
-            $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
-
-            throw ValidationException::withMessages([
-                'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
-            ]);
-        }
+        $throttle = LoginThrottle::for('assure-login', $request, $credentials['email']);
+        $throttle->ensureNotLocked();
 
         if (! Auth::guard('assure')->attempt($credentials, $request->boolean('remember'))) {
-            RateLimiter::hit($throttleKey, self::LOCKOUT_SECONDS);
+            $throttle->hit();
 
             throw ValidationException::withMessages([
                 'email' => 'Adresse e-mail ou mot de passe incorrect.',
             ]);
         }
 
-        RateLimiter::clear($throttleKey);
+        $throttle->clear();
 
         /** @var Assure $assure */
         $assure = Auth::guard('assure')->user();

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\AdminRole;
 use App\Models\AdminUser;
 use App\Support\AdminPermissions;
+use App\Support\SqlLike;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -186,7 +187,7 @@ class AdminUserService
     {
         return AdminUser::query()
             ->when($search, function ($query, string $search) {
-                $like = '%'.str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $search).'%';
+                $like = SqlLike::contains($search);
                 $query->where(fn ($q) => $q->where('nom', 'like', $like)
                     ->orWhere('prenom', 'like', $like)
                     ->orWhere('email', 'like', $like));

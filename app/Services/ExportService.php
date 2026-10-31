@@ -8,6 +8,7 @@ use App\Models\ExportLog;
 use App\Support\ExportCatalog;
 use App\Support\Exports\XlsxWriter;
 use Generator;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -61,7 +62,7 @@ class ExportService
                 'group' => $dataset['group'],
                 'label' => $dataset['label'],
                 'description' => $dataset['description'],
-                'count' => DB::table($dataset['table'])->count(),
+                'count' => $this->scoped(DB::table($dataset['table']), $dataset)->count(),
                 'hasDate' => isset($dataset['date']),
                 'columns' => collect($this->selectableColumns($dataset))
                     ->map(fn (string $column) => ['key' => $column, 'label' => $this->label($dataset, $column)])
@@ -114,9 +115,11 @@ class ExportService
         };
     }
 
-    public function dossierForPdf(string $ref): ?array
+    public function dossierForPdf(AdminUser $admin, string $ref): ?array
     {
-        $dossier = Dossier::query()->with('assure')->where('ref', $ref)->first();
+        $dossier = Dossier::query()->with('assure')->where('ref', $ref)
+            ->when($this->seesOnlyOwnRows($admin), fn ($q) => $q->where('gestionnaire', $admin->display_name))
+            ->first();
         if (! $dossier) {
             return null;
         }
@@ -148,7 +151,26 @@ class ExportService
         return collect(ExportCatalog::datasets())
             ->filter(fn (array $dataset) => $this->permissions->allows($admin, $dataset['permission'])
                 && Schema::hasTable($dataset['table']))
+            // Sans « Consulter tous les dossiers », l'export se limite aux lignes affectées au compte,
+            // comme la liste des dossiers.
+            ->map(fn (array $dataset) => isset($dataset['owner']) && $this->seesOnlyOwnRows($admin)
+                ? [...$dataset, 'scope' => [$dataset['owner'] => $admin->display_name]]
+                : $dataset)
             ->all();
+    }
+
+    private function seesOnlyOwnRows(AdminUser $admin): bool
+    {
+        return ! $this->permissions->allows($admin, 'dossiers.view_all');
+    }
+
+    private function scoped(Builder $query, array $dataset): Builder
+    {
+        foreach ($dataset['scope'] ?? [] as $column => $value) {
+            $query->where("{$dataset['table']}.{$column}", $value);
+        }
+
+        return $query;
     }
 
     /**
@@ -268,7 +290,7 @@ class ExportService
     {
         $table = $dataset['table'];
         $tableColumns = $this->tableColumns($table);
-        $query = DB::table($table);
+        $query = $this->scoped(DB::table($table), $dataset);
         $select = [];
         $joined = [];
 

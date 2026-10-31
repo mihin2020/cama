@@ -14,12 +14,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Railway (et autres PaaS) placent l'app derrière un reverse proxy qui
-        // termine le TLS. On fait confiance au proxy pour lire X-Forwarded-Proto
-        // afin que Laravel génère des URLs en https et évite le contenu mixte.
-        // Sur un hébergement mutualisé sans proxy, mettre TRUSTED_PROXIES=none : sinon un visiteur
-        // peut falsifier son IP (X-Forwarded-For) et contourner les limites de tentatives.
-        $proxies = (string) env('TRUSTED_PROXIES', '*');
+        // Aucun proxy de confiance par défaut : sinon un visiteur peut falsifier son IP
+        // (X-Forwarded-For). Derrière un reverse proxy qui termine le TLS, indiquer son
+        // adresse (ou *) dans TRUSTED_PROXIES pour lire X-Forwarded-Proto / -For.
+        $proxies = (string) env('TRUSTED_PROXIES', 'none');
         if (! in_array(strtolower($proxies), ['', 'none', 'false'], true)) {
             $middleware->trustProxies(at: $proxies === '*' ? '*' : array_map('trim', explode(',', $proxies)));
         }

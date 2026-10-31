@@ -5,21 +5,16 @@ namespace App\Http\Controllers\Admin\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\AdminUser;
 use App\Services\AdminLogin2faService;
+use App\Support\LoginThrottle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class LoginController extends Controller
 {
-    private const MAX_ATTEMPTS = 5;
-
-    private const LOCKOUT_SECONDS = 300;
-
     public function create(): Response
     {
         return Inertia::render('Admin/Auth/Login', [
@@ -36,29 +31,22 @@ class LoginController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $throttleKey = 'admin-login|'.Str::transliterate(Str::lower($credentials['email'])).'|'.$request->ip();
-
-        if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
-            $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
-
-            throw ValidationException::withMessages([
-                'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
-            ]);
-        }
+        $throttle = LoginThrottle::for('admin-login', $request, $credentials['email']);
+        $throttle->ensureNotLocked();
 
         $guard = Auth::guard('admin');
 
         // validate() vérifie les identifiants sans ouvrir de session : rien n'est
         // accordé (ni session, ni cookie « Se souvenir de moi ») avant la 2FA.
         if (! $guard->validate($credentials)) {
-            RateLimiter::hit($throttleKey, self::LOCKOUT_SECONDS);
+            $throttle->hit();
 
             throw ValidationException::withMessages([
                 'email' => 'Identifiants incorrects.',
             ]);
         }
 
-        RateLimiter::clear($throttleKey);
+        $throttle->clear();
 
         /** @var AdminUser $admin */
         $admin = $guard->getLastAttempted();

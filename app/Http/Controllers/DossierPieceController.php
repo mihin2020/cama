@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Dossier;
+use App\Services\AdminDossierService;
 use App\Services\DossierPieceStorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -48,10 +49,12 @@ class DossierPieceController extends Controller
 
     private function authorizePieceAccess(Request $request, Dossier $dossier): void
     {
-        // Route admin : un agent ayant la permission de consulter les dossiers (pas un compte réservé au site, par exemple).
+        // Route admin : un agent ayant la permission de consulter les dossiers (pas un compte réservé au site, par exemple),
+        // et, sans « Consulter tous les dossiers », uniquement pour un dossier qui lui est affecté.
         if ($request->routeIs('admin.*')) {
             $admin = $request->user('admin');
             abort_unless($admin?->hasPermission('dossiers.view'), 403, 'Accès non autorisé pour vos permissions.');
+            app(AdminDossierService::class)->authorizeAccess($admin, $dossier);
 
             return;
         }

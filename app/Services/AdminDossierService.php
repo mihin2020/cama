@@ -347,6 +347,7 @@ class AdminDossierService
 
         return DB::transaction(function () use ($dossier, $motif, $admin) {
             $dossier = $this->lockDossier($dossier);
+            $this->assertNotAwaitingSupervision($dossier, $admin);
 
             if (in_array($dossier->statut, ['Brouillon', 'Retiré'], true)) {
                 throw ValidationException::withMessages([
@@ -520,6 +521,12 @@ class AdminDossierService
             throw ValidationException::withMessages(['statut' => $messages[$dossier->statut]]);
         }
 
+        $this->assertNotAwaitingSupervision($dossier, $admin);
+    }
+
+    /** Un dossier en attente de supervision n'est plus modifiable par un simple gestionnaire (retrait compris). */
+    private function assertNotAwaitingSupervision(Dossier $dossier, ?AdminUser $admin): void
+    {
         if ($dossier->statut === 'En attente supervision' && $this->isGestionnaire($admin)) {
             throw ValidationException::withMessages([
                 'statut' => 'Ce dossier attend la décision du superviseur : un gestionnaire ne peut plus le modifier.',
@@ -540,6 +547,19 @@ class AdminDossierService
     public function seesOnlyOwnDossiers(?AdminUser $admin): bool
     {
         return $admin !== null && ! $admin->hasPermission('dossiers.view_all');
+    }
+
+    /**
+     * Même règle que les listes, appliquée à chaque dossier ouvert par son identifiant
+     * (décisions, messages, pièces) : sans « Consulter tous les dossiers », seulement les siens.
+     */
+    public function authorizeAccess(?AdminUser $admin, Dossier $dossier): void
+    {
+        abort_unless(
+            $admin !== null && (! $this->seesOnlyOwnDossiers($admin) || $dossier->gestionnaire === $admin->display_name),
+            403,
+            "Ce dossier n'est pas affecté à votre compte.",
+        );
     }
 
     /**

@@ -63,7 +63,7 @@ class ExportController extends Controller
     public function dossierPdf(Request $request, ExportService $service): JsonResponse
     {
         $data = $request->validate(['ref' => ['required', 'string', 'max:50']]);
-        $payload = $service->dossierForPdf($data['ref']);
+        $payload = $service->dossierForPdf(auth('admin')->user(), $data['ref']);
 
         if (! $payload) {
             return response()->json(['error' => 'Aucun dossier ne correspond à cette référence.'], 404);

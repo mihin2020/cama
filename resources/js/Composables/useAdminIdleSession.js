@@ -71,10 +71,11 @@ function tick() {
     }
 
     // Échéance atteinte : le serveur tranche (déconnexion, ou session prolongée
-    // si l'admin est resté actif dans un autre onglet).
+    // si l'admin est resté actif dans un autre onglet). L'en-tête signale une simple
+    // vérification : ce rechargement ne doit pas compter comme une activité.
     if (remainingSeconds.value <= 0 && !expiring) {
         expiring = true;
-        router.reload();
+        router.reload({ headers: { 'X-Admin-Idle-Check': '1' } });
     }
 }
 

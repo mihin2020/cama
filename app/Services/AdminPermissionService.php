@@ -52,6 +52,10 @@ class AdminPermissionService
 
     public function authorizeRoute(?AdminUser $admin, ?string $routeName): void
     {
+        if (! AdminPermissions::isMappedRoute($routeName)) {
+            abort(403, 'Action non autorisée pour vos permissions.');
+        }
+
         $permission = AdminPermissions::permissionForRoute($routeName);
 
         if ($permission === null) {

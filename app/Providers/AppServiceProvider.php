@@ -38,7 +38,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Vite::prefetch(concurrency: 3);
 
-        // En production (derrière le proxy HTTPS de Railway), on force la
+        // En production (servie en HTTPS), on force la
         // génération d'URLs en https pour éviter le contenu mixte bloqué
         // par le navigateur (assets JS/CSS chargés en http -> page blanche).
         if ($this->app->environment('production')) {

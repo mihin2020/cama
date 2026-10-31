@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Assure;
 use App\Models\PlatformSetting;
 use App\Support\NumeroFif;
+use App\Support\SqlLike;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -94,7 +95,7 @@ class FifProfileService
     private function lastRank(string $prefix): int
     {
         return Assure::query()
-            ->where('numero_fif', 'like', str_replace(['%', '_'], ['\%', '\_'], $prefix).'%')
+            ->where('numero_fif', 'like', SqlLike::escape($prefix).'%')
             ->pluck('numero_fif')
             ->map(fn (string $numero) => NumeroFif::rank($prefix, $numero))
             ->filter()

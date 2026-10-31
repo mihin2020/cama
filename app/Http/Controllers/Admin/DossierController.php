@@ -75,6 +75,7 @@ class DossierController extends Controller
 
     public function validate(Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $updated = $service->validate($dossier, auth('admin')->user());
 
         return back()->with('success', $updated->statut === 'En attente supervision'
@@ -84,6 +85,7 @@ class DossierController extends Controller
 
     public function reject(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['motif' => ['required', 'string', 'max:500']]);
         $service->refuse($dossier, $data['motif'], auth('admin')->user());
 
@@ -92,6 +94,7 @@ class DossierController extends Controller
 
     public function confirmWithdrawal(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['motif' => ['required', 'string', 'max:200']]);
         $service->withdraw($dossier, $data['motif'], auth('admin')->user());
 
@@ -100,6 +103,7 @@ class DossierController extends Controller
 
     public function complement(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate([
             'pieces' => ['nullable', 'array'],
             'pieces.*' => ['string', 'max:150'],
@@ -122,6 +126,7 @@ class DossierController extends Controller
 
     public function enAttente(Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $service->setEnAttente($dossier, auth('admin')->user());
 
         return back()->with('success', 'Dossier mis en attente de supervision.');
@@ -129,6 +134,7 @@ class DossierController extends Controller
 
     public function message(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
+        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['texte' => ['required', 'string', 'max:1000']]);
         $service->sendMessage($dossier, $data['texte']);
 

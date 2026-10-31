@@ -43,7 +43,7 @@ class ExportCatalog
 
         return [
             'assures' => ['group' => $assures, 'label' => 'Assurés', 'description' => 'Comptes des membres principaux : identité, unité, contacts, statut.', 'table' => 'assures', 'permission' => 'assures.view', 'date' => 'created_at'],
-            'dossiers' => ['group' => $assures, 'label' => 'Dossiers d\'enrôlement', 'description' => 'Membres déclarés, statut, gestionnaire, décisions (période : date de soumission).', 'table' => 'dossiers', 'permission' => 'dossiers.view', 'date' => 'date_soumission', 'extras' => $assureExtras, 'labels' => ['lien' => 'Lien de parenté', 'nom' => 'Nom du membre', 'prenom' => 'Prénom du membre']],
+            'dossiers' => ['group' => $assures, 'label' => 'Dossiers d\'enrôlement', 'description' => 'Membres déclarés, statut, gestionnaire, décisions (période : date de soumission).', 'table' => 'dossiers', 'permission' => 'dossiers.view', 'owner' => 'gestionnaire', 'date' => 'date_soumission', 'extras' => $assureExtras, 'labels' => ['lien' => 'Lien de parenté', 'nom' => 'Nom du membre', 'prenom' => 'Prénom du membre']],
             'assure_notifications' => ['group' => $assures, 'label' => 'Notifications des assurés', 'description' => 'Messages envoyés dans l\'espace assuré.', 'table' => 'assure_notifications', 'permission' => 'assures.view', 'date' => 'created_at', 'extras' => $assureExtras],
 
             'admin_users' => ['group' => $comptes, 'label' => 'Comptes internes', 'description' => 'Agents CAMA : rôle, permissions, état du compte, dernière connexion.', 'table' => 'admin_users', 'permission' => 'users.manage', 'date' => 'created_at'],
