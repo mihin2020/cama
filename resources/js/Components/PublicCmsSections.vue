@@ -7,6 +7,8 @@ import ElementorTabs from '@/Components/PublicWidgets/ElementorTabs.vue';
 import { pbPreview, postToBuilder } from '@/Components/PageBuilder/pageBuilderPreview';
 import { legalAnchor, legalBlocks } from '@/Utils/legalText';
 import CamaPagination from '@/Components/CamaPagination.vue';
+import SmartLink from '@/Components/SmartLink.vue';
+import { handleInternalLinkClick } from '@/Utils/internalLink';
 import { useClientPagination } from '@/Composables/usePagination';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
@@ -852,12 +854,12 @@ function faqMeta(category) {
                     <h1 class="font-headline-lg text-headline-lg md:text-[40px] md:leading-[1.15] leading-tight">{{ systemWidget(section).content?.title }}</h1>
                     <p class="font-body-lg text-body-lg text-white/90 max-w-lg">{{ systemWidget(section).content?.text }}</p>
                     <div class="flex flex-wrap gap-4 pt-2">
-                        <a class="bg-primary-container text-on-primary-container px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md flex items-center gap-2 hover:bg-primary transition-all shadow-lg active:scale-95" :href="systemWidget(section).content?.primaryHref || '#coverage'">
+                        <SmartLink class="bg-primary-container text-on-primary-container px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md flex items-center gap-2 hover:bg-primary transition-all shadow-lg active:scale-95" :href="systemWidget(section).content?.primaryHref || '#coverage'">
                             {{ systemWidget(section).content?.primaryLabel || 'Voir le détail' }} <span class="material-symbols-outlined">arrow_downward</span>
-                        </a>
-                        <a class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md hover:bg-white/20 transition-all active:scale-95" :href="systemWidget(section).content?.secondaryHref || '#faq'">
+                        </SmartLink>
+                        <SmartLink class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-lg font-bold font-label-md text-label-md hover:bg-white/20 transition-all active:scale-95" :href="systemWidget(section).content?.secondaryHref || '#faq'">
                             {{ systemWidget(section).content?.secondaryLabel || 'Foire aux questions' }}
-                        </a>
+                        </SmartLink>
                     </div>
                 </div>
             </div>
@@ -1375,7 +1377,7 @@ function faqMeta(category) {
                             <div class="space-y-1.5"><label class="text-sm font-medium text-on-surface-variant" for="contact-phone">Téléphone</label><input id="contact-phone" v-model="contactForm.phone" class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none" placeholder="+226 …" type="tel" /></div>
                             <div class="md:col-span-2 space-y-1.5"><label class="text-sm font-medium text-on-surface-variant" for="contact-subject">Objet</label><select id="contact-subject" v-model="contactForm.subject" class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none bg-white"><option>Nouvel enrôlement</option><option>Demande de remboursement</option><option>Problème technique portail</option><option>Mise à jour ayant-droit</option><option>Autre</option></select></div>
                             <div class="md:col-span-2 space-y-1.5"><label class="text-sm font-medium text-on-surface-variant" for="contact-message">Message</label><textarea id="contact-message" v-model="contactForm.message" class="w-full px-4 py-3 text-sm border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary outline-none resize-none" placeholder="Décrivez votre demande…" rows="5" required /></div>
-                            <div class="md:col-span-2 flex items-start gap-3"><input id="contact-consent" v-model="contactForm.consent" class="w-4 h-4 mt-1 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox" required /><label class="text-caption text-on-surface-variant" for="contact-consent">Je consens au traitement de mes données conformément à la <a class="text-primary underline" href="/mention_legales#rgpd">politique de confidentialité</a>.</label></div>
+                            <div class="md:col-span-2 flex items-start gap-3"><input id="contact-consent" v-model="contactForm.consent" class="w-4 h-4 mt-1 text-primary border-outline-variant rounded focus:ring-primary" type="checkbox" required /><label class="text-caption text-on-surface-variant" for="contact-consent">Je consens au traitement de mes données conformément à la <Link class="text-primary underline" href="/mention_legales#rgpd">politique de confidentialité</Link>.</label></div>
                             <div v-if="contactError || contactForm.errors.full_name || contactForm.errors.message || contactForm.errors.consent" class="md:col-span-2 text-xs text-error">
                                 {{ contactError || contactForm.errors.full_name || contactForm.errors.message || contactForm.errors.consent }}
                             </div>
@@ -1581,6 +1583,7 @@ function faqMeta(category) {
                             <div
                                 v-else-if="widget.type?.startsWith('elementor_')"
                                 v-html="renderElementorWidgetHtml(widget)"
+                                @click="handleInternalLinkClick"
                             />
 
                             <div
@@ -1588,13 +1591,14 @@ function faqMeta(category) {
                                 :class="[alignClass(widget.style), widget.style?.size || 'text-base', 'leading-relaxed']"
                                 :style="styleBox(widget.style)"
                                 v-html="widget.content?.html"
+                                @click="handleInternalLinkClick"
                             />
 
                             <div v-else-if="widget.type === 'button'" :class="alignClass(widget.style)" :style="styleBox(widget.style)">
-                                <a :href="widget.content?.href || '#'" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm" :style="{ backgroundColor: colorValue(widget.style?.bgColor || 'primary'), color: colorValue(widget.style?.textColor || 'white') }">
+                                <SmartLink :href="widget.content?.href || '#'" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm" :style="{ backgroundColor: colorValue(widget.style?.bgColor || 'primary'), color: colorValue(widget.style?.textColor || 'white') }">
                                     <span v-if="widget.content?.icon" class="material-symbols-outlined text-[18px]">{{ widget.content.icon }}</span>
                                     {{ widget.content?.text || 'Bouton' }}
-                                </a>
+                                </SmartLink>
                             </div>
 
                             <div v-else-if="widget.type === 'image'" :class="alignClass(widget.style)" :style="styleBox(widget.style)">
@@ -1637,10 +1641,10 @@ function faqMeta(category) {
                             <div v-else-if="widget.type === 'cta'" :class="[alignClass(widget.style), 'rounded-xl p-8']" :style="styleBox(widget.style)">
                                 <h3 class="text-2xl font-bold mb-2">{{ widget.content?.title }}</h3>
                                 <p class="opacity-90 mb-5">{{ widget.content?.text }}</p>
-                                <a :href="widget.content?.href || '#'" class="inline-block bg-white text-primary px-6 py-3 rounded-lg font-bold text-sm">{{ widget.content?.button || 'Action' }}</a>
+                                <SmartLink :href="widget.content?.href || '#'" class="inline-block bg-white text-primary px-6 py-3 rounded-lg font-bold text-sm">{{ widget.content?.button || 'Action' }}</SmartLink>
                             </div>
 
-                            <div v-else-if="widget.type === 'html'" v-html="widget.content?.html" />
+                            <div v-else-if="widget.type === 'html'" v-html="widget.content?.html" @click="handleInternalLinkClick" />
                         </div>
                     </div>
                 </div>

@@ -1,9 +1,11 @@
 <script setup>
 import CamaAnchorTop from '@/Components/CamaAnchorTop.vue';
 import CamaCookieBar from '@/Components/CamaCookieBar.vue';
+import SmartLink from '@/Components/SmartLink.vue';
 import { socialIcon, socialLabel } from '@/Data/socialNetworks.js';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
-import { Link, usePage } from '@inertiajs/vue3';
+import { handleInternalLinkClick } from '@/Utils/internalLink';
+import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const siteLogo = useSiteLogo();
@@ -11,6 +13,7 @@ const siteLogo = useSiteLogo();
 const page = usePage();
 const menuOpen = ref(false);
 const searchOpen = ref(false);
+const searchQuery = ref('');
 const assureOpen = ref(false);
 const currentYear = new Date().getFullYear();
 
@@ -71,6 +74,13 @@ function toggleSearch() {
         menuOpen.value = false;
     }
 }
+
+// Recherche sans rechargement de page ; le formulaire garde action="/recherche" si JavaScript échoue.
+function submitSearch() {
+    const q = searchQuery.value.trim();
+    searchOpen.value = false;
+    router.get('/recherche', q ? { q } : {});
+}
 </script>
 
 <template>
@@ -87,14 +97,14 @@ function toggleSearch() {
                     <span class="material-symbols-outlined text-[18px] shrink-0">{{ banner.type === 'warning' ? 'warning' : 'campaign' }}</span>
                     <div v-if="banner.scrolling" class="banner-marquee min-w-0 flex-1">
                         <div class="banner-marquee-track" :style="{ animationDuration: `${banner.scroll_speed || 25}s` }">
-                            <p v-html="banner.message" />
-                            <p aria-hidden="true" v-html="banner.message" />
+                            <p v-html="banner.message" @click="handleInternalLinkClick" />
+                            <p aria-hidden="true" v-html="banner.message" @click="handleInternalLinkClick" />
                         </div>
                     </div>
-                    <p v-else class="truncate md:whitespace-normal" v-html="banner.message" />
-                    <a v-if="banner.link_url" :href="banner.link_url" class="hidden sm:inline-flex shrink-0 underline font-semibold ml-2">
+                    <p v-else class="truncate md:whitespace-normal" v-html="banner.message" @click="handleInternalLinkClick" />
+                    <SmartLink v-if="banner.link_url" :href="banner.link_url" class="hidden sm:inline-flex shrink-0 underline font-semibold ml-2">
                         {{ banner.link_label || 'En savoir plus' }}
-                    </a>
+                    </SmartLink>
                 </div>
                 <button v-if="banner.dismissible !== false" type="button" class="banner-close shrink-0 p-1 rounded" aria-label="Fermer le bandeau" @click="closeBanner">
                     <span class="material-symbols-outlined text-[18px]">close</span>
@@ -199,9 +209,9 @@ function toggleSearch() {
             </nav>
 
             <div id="site-search-bar" :class="{ 'is-open': searchOpen }">
-                <form class="max-w-container-max-width mx-auto px-4 md:px-8 flex gap-2" role="search" action="/recherche">
+                <form class="max-w-container-max-width mx-auto px-4 md:px-8 flex gap-2" role="search" action="/recherche" @submit.prevent="submitSearch">
                     <label for="site-search-input" class="sr-only">Recherche globale</label>
-                    <input id="site-search-input" type="search" name="q" class="flex-1 px-4 py-2.5 text-sm border border-outline-variant rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Rechercher une page, actualité ou ressource…" autocomplete="off" />
+                    <input id="site-search-input" v-model="searchQuery" type="search" name="q" class="flex-1 px-4 py-2.5 text-sm border border-outline-variant rounded-lg bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none" placeholder="Rechercher une page, actualité ou ressource…" autocomplete="off" />
                     <button type="submit" class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-sm font-bold shrink-0">Rechercher</button>
                 </form>
             </div>

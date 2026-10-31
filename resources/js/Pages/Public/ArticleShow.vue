@@ -1,6 +1,7 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { socialIcon } from '@/Data/socialNetworks.js';
+import { handleInternalLinkClick } from '@/Utils/internalLink';
 import { Head, Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
@@ -69,7 +70,7 @@ async function copyLink() {
                         <img alt="" class="w-full max-h-[420px] object-cover" :src="article.imageSrc" />
                     </div>
                     <p v-if="article.excerpt" class="font-body-lg text-body-lg text-on-surface-variant mb-8 border-l-4 border-primary pl-4">{{ article.excerpt }}</p>
-                    <div class="prose-article font-body-md text-body-md text-on-surface space-y-4 leading-relaxed" v-html="article.bodyHtml" />
+                    <div class="prose-article font-body-md text-body-md text-on-surface space-y-4 leading-relaxed" v-html="article.bodyHtml" @click="handleInternalLinkClick" />
                     <div class="mt-10 pt-8 border-t border-outline-variant flex flex-wrap items-center gap-3">
                         <span class="text-sm font-semibold text-on-surface-variant mr-1">Partager :</span>
                         <a

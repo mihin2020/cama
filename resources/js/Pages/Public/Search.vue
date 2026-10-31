@@ -1,5 +1,6 @@
 <script setup>
 import PublicLayout from '@/Layouts/PublicLayout.vue';
+import SmartLink from '@/Components/SmartLink.vue';
 import { Head } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -30,26 +31,26 @@ const total = (props.results.pages?.length ?? 0) + (props.results.articles?.leng
 
             <section v-if="results.pages?.length" class="space-y-3">
                 <h2 class="text-xl font-bold">Pages</h2>
-                <a v-for="item in results.pages" :key="`p-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
+                <SmartLink v-for="item in results.pages" :key="`p-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
                     <p class="font-bold text-on-surface">{{ item.title }}</p>
                     <p class="text-sm text-on-surface-variant">{{ item.excerpt }}</p>
-                </a>
+                </SmartLink>
             </section>
 
             <section v-if="results.articles?.length" class="space-y-3">
                 <h2 class="text-xl font-bold">Actualités</h2>
-                <a v-for="item in results.articles" :key="`a-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
+                <SmartLink v-for="item in results.articles" :key="`a-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
                     <p class="font-bold text-on-surface">{{ item.title }}</p>
                     <p class="text-sm text-on-surface-variant">{{ item.excerpt }}</p>
-                </a>
+                </SmartLink>
             </section>
 
             <section v-if="results.resources?.length" class="space-y-3">
                 <h2 class="text-xl font-bold">Ressources</h2>
-                <a v-for="item in results.resources" :key="`r-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
+                <SmartLink v-for="item in results.resources" :key="`r-${item.id}`" :href="item.href" class="block bg-white border border-outline-variant rounded-xl p-4 hover:border-primary transition-colors">
                     <p class="font-bold text-on-surface">{{ item.title }}</p>
                     <p class="text-sm text-on-surface-variant">{{ item.excerpt }}</p>
-                </a>
+                </SmartLink>
             </section>
         </main>
     </PublicLayout>

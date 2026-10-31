@@ -292,6 +292,11 @@ function guardUnsaved(label, run) {
     unsavedGuard.value = { label, run };
 }
 
+/** Quitte l'éditeur sans rechargement, après confirmation s'il reste des modifications. */
+function leaveTo(url, label) {
+    guardUnsaved(label, () => router.visit(url));
+}
+
 function resolveUnsavedGuard(choice) {
     const guard = unsavedGuard.value;
     unsavedGuard.value = null;
@@ -955,9 +960,9 @@ async function copyExport() {
         <header class="border-b border-outline-variant bg-white shrink-0 z-30">
             <!-- Ligne 1 : navigation page + actions principales -->
             <div class="flex flex-wrap items-center gap-2 px-3 py-2 min-h-[52px]">
-                <a class="flex items-center justify-center w-9 h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-low shrink-0" :href="route('admin.cms.dashboard')" title="Retour au studio CMS">
+                <button type="button" class="flex items-center justify-center w-9 h-9 rounded-lg text-on-surface-variant hover:bg-surface-container-low shrink-0" title="Retour au studio CMS" @click="leaveTo(route('admin.cms.dashboard'), 'revenir au studio')">
                     <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-                </a>
+                </button>
 
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <select v-model="pageId" class="text-sm font-bold border border-outline-variant rounded-lg px-2.5 py-2 bg-white min-w-[140px] max-w-[220px]" title="Page en cours d'édition" @change="changePage">
@@ -1006,8 +1011,8 @@ async function copyExport() {
                 <span class="w-px h-5 bg-outline-variant mx-0.5" />
 
                 <button class="pb-tool-btn" type="button" title="Nouvelle page" @click="newPage"><span class="material-symbols-outlined text-[18px]">add_circle</span></button>
-                <a class="pb-tool-btn" :href="route('admin.cms.pages')" title="Toutes les pages"><span class="material-symbols-outlined text-[18px]">description</span></a>
-                <a class="pb-tool-btn" :href="route('admin.cms.menus')" title="Menus"><span class="material-symbols-outlined text-[18px]">menu</span></a>
+                <button class="pb-tool-btn" type="button" title="Toutes les pages" @click="leaveTo(route('admin.cms.pages'), 'afficher toutes les pages')"><span class="material-symbols-outlined text-[18px]">description</span></button>
+                <button class="pb-tool-btn" type="button" title="Menus" @click="leaveTo(route('admin.cms.menus'), 'ouvrir les menus')"><span class="material-symbols-outlined text-[18px]">menu</span></button>
                 <span class="w-px h-5 bg-outline-variant mx-0.5" />
 
                 <button class="pb-action-btn" type="button" @click="openBlockPreview"><span class="material-symbols-outlined text-[16px]">visibility</span><span class="hidden md:inline">Aperçu</span></button>

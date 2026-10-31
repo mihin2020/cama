@@ -5,7 +5,7 @@ import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -167,7 +167,7 @@ function deletePage(item) {
                     <tbody>
                         <tr v-for="item in items" :key="item.id" class="border-b border-outline-variant last:border-0 hover:bg-surface-container-low">
                             <td class="px-4 py-3">
-                                <a :href="item.builderUrl" class="font-bold text-on-surface hover:text-primary">{{ item.title }}</a>
+                                <Link :href="item.builderUrl" class="font-bold text-on-surface hover:text-primary">{{ item.title }}</Link>
                                 <p class="text-[11px] text-on-surface-variant mt-0.5">
                                     {{ item.sectionCount }} section{{ item.sectionCount > 1 ? 's' : '' }}
                                 </p>
@@ -182,13 +182,13 @@ function deletePage(item) {
                             <td class="px-4 py-3 hidden lg:table-cell text-on-surface-variant text-[12px]">{{ item.updatedAt || '—' }}</td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-end gap-1">
-                                    <a
+                                    <Link
                                         :href="item.builderUrl"
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-primary/10 hover:text-primary"
                                         title="Modifier dans l'éditeur"
                                     >
                                         <span class="material-symbols-outlined text-[18px]">edit</span>
-                                    </a>
+                                    </Link>
                                     <button
                                         class="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant hover:bg-surface-container"
                                         type="button"

@@ -1,4 +1,5 @@
 <script setup>
+import SmartLink from '@/Components/SmartLink.vue';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
@@ -197,13 +198,13 @@ function onDrop(index) {
                     <nav class="hidden md:flex items-center gap-1">
                         <template v-if="menuGroups.length">
                             <div v-for="group in menuGroups" :key="group.item.id" class="relative group">
-                                <a
+                                <SmartLink
                                     v-if="!group.children.length"
                                     :href="group.item.href"
                                     class="px-3 py-2 text-sm font-semibold text-on-surface hover:text-primary"
                                 >
                                     {{ group.item.label }}
-                                </a>
+                                </SmartLink>
                                 <button
                                     v-else
                                     type="button"
@@ -216,14 +217,14 @@ function onDrop(index) {
                                     v-if="group.children.length"
                                     class="absolute left-0 top-full hidden group-hover:block bg-white border border-outline-variant rounded-lg shadow-lg py-1 min-w-[180px] z-10"
                                 >
-                                    <a
+                                    <SmartLink
                                         v-for="child in group.children"
                                         :key="child.id"
                                         :href="child.href"
                                         class="block px-4 py-2 text-sm text-on-surface hover:bg-surface-container-low hover:text-primary"
                                     >
                                         {{ child.label }}
-                                    </a>
+                                    </SmartLink>
                                 </div>
                             </div>
                         </template>

@@ -6,7 +6,7 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -352,7 +352,7 @@ function deleteMedia(item) {
                     <div class="md:col-span-2 rounded-xl border border-outline-variant bg-surface-container-low p-3">
                         <p class="text-xs font-bold text-on-surface mb-2">Utilisations détectées</p>
                         <div v-if="editingItem.usages.length" class="space-y-1">
-                            <a
+                            <Link
                                 v-for="usage in editingItem.usages"
                                 :key="`${usage.module}-${usage.label}`"
                                 :href="usage.url"
@@ -360,7 +360,7 @@ function deleteMedia(item) {
                             >
                                 <span><strong>{{ usage.module }}</strong> · {{ usage.label }}</span>
                                 <span class="material-symbols-outlined text-[16px]">open_in_new</span>
-                            </a>
+                            </Link>
                         </div>
                         <p v-else class="text-xs text-on-surface-variant">Aucun usage détecté dans les pages, actualités, slides, partenaires ou ressources.</p>
                     </div>

@@ -5,7 +5,7 @@ import CamaIconPicker from '@/Components/CamaIconPicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { legalAnchor, legalBlocks } from '@/Utils/legalText';
-import { Head, router, useForm } from '@inertiajs/vue3';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
 import { computed, nextTick, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -267,9 +267,9 @@ function resetToOriginal() {
                         <li v-for="phone in coordinates.phones" :key="phone" class="flex gap-2"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">call</span>{{ phone }}</li>
                         <li v-for="email in coordinates.emails" :key="email" class="flex gap-2"><span class="material-symbols-outlined text-[16px] text-on-surface-variant">mail</span>{{ email }}</li>
                     </ul>
-                    <a :href="route('admin.cms.footer')" class="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1">
+                    <Link :href="route('admin.cms.footer')" class="text-xs font-bold text-primary hover:underline inline-flex items-center gap-1">
                         Modifier dans « Pied de page » <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
-                    </a>
+                    </Link>
                 </section>
             </form>
 
