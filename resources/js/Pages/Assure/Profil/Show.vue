@@ -316,6 +316,7 @@ function displayValue(value) {
             <section class="assure-card p-5 md:p-6">
                 <h2 class="text-base font-semibold text-on-surface mb-4">Dernières connexions</h2>
                 <div class="space-y-3">
+                    <p v-if="!securityLog.length" class="text-sm text-on-surface-variant">Aucune connexion enregistrée pour le moment.</p>
                     <div
                         v-for="(s, i) in securityLog"
                         :key="i"
@@ -328,7 +329,7 @@ function displayValue(value) {
                                 {{ s.appareil }}
                                 <span v-if="s.suspect" class="text-error text-xs font-medium">(connexion inhabituelle)</span>
                             </p>
-                            <p class="text-xs text-on-surface-variant mt-0.5">{{ s.date }} · {{ s.lieu }}</p>
+                            <p class="text-xs text-on-surface-variant mt-0.5">{{ s.date }}<template v-if="s.ip"> · IP {{ s.ip }}</template></p>
                         </div>
                     </div>
                 </div>

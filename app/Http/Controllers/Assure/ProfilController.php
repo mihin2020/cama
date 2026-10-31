@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Assure;
 
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
+use App\Models\AssureConnexion;
 use App\Services\AssureDashboardService;
 use App\Services\PlatformSettingsService;
 use Illuminate\Http\RedirectResponse;
@@ -25,7 +26,7 @@ class ProfilController extends Controller
 
             'profil' => $this->formatProfil($assure),
 
-            'securityLog' => $this->securityLog(),
+            'securityLog' => $this->securityLog($assure),
 
             'orgStructure' => app(PlatformSettingsService::class)->orgStructure(),
 
@@ -215,24 +216,26 @@ class ProfilController extends Controller
 
             'dateCreation' => $assure->created_at->format('d/m/Y'),
 
-            'derniereConnexion' => $assure->updated_at->format('d/m/Y H:i'),
+            'derniereConnexion' => AssureConnexion::query()->where('assure_id', $assure->id)->latest('id')->first()?->created_at->format('d/m/Y H:i') ?? '—',
 
         ];
 
     }
 
-    private function securityLog(): array
+    /** Dernières connexions réelles à l'espace assuré (voir RecordAssureLogin). */
+    private function securityLog(Assure $assure): array
     {
-
-        return [
-
-            ['date' => '18/06/2026 09:14', 'lieu' => 'Ouagadougou, BF', 'appareil' => 'Chrome / Windows', 'suspect' => true],
-
-            ['date' => '10/06/2026 07:50', 'lieu' => 'Ouagadougou, BF', 'appareil' => 'Safari / iPhone', 'suspect' => false],
-
-            ['date' => '02/06/2026 18:22', 'lieu' => 'Bobo-Dioulasso, BF', 'appareil' => 'Chrome / Windows', 'suspect' => false],
-
-        ];
-
+        return AssureConnexion::query()
+            ->where('assure_id', $assure->id)
+            ->latest('id')
+            ->limit(5)
+            ->get()
+            ->map(fn (AssureConnexion $c) => [
+                'date' => $c->created_at->format('d/m/Y H:i'),
+                'ip' => $c->ip,
+                'appareil' => $c->appareil,
+                'suspect' => $c->inhabituelle,
+            ])
+            ->all();
     }
 }
