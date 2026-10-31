@@ -2,6 +2,7 @@
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useToast } from '@/Composables/useToast';
 import { exportFamilleFif, exportFamilleZip, exportMembreFif } from '@/Composables/useCamaExport';
 import { pieceBadgeClass, statusBadgeClass } from '@/Utils/camaStatus';
 import { ACCEPTED_TYPES, MAX_FILE_SIZE } from '@/Utils/familleWizard';
@@ -27,7 +28,7 @@ const filters = [
     { value: 'Refusé', label: 'Refusé' },
 ];
 
-const toast = ref({ show: false, icon: '', text: '' });
+const { toast, showToast } = useToast();
 const exportingZip = ref(false);
 const complementFiles = ref({});
 const complementSubmitting = ref({});
@@ -111,13 +112,6 @@ const parentLabel = computed(() =>
     props.assureExport?.sexe === 'Féminin' ? 'Nom et prénoms du père' : 'Nom et prénoms de la mère',
 );
 
-// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
-function showToast(icon, text) {
-    toast.value = { show: true, icon, text };
-    setTimeout(() => {
-        toast.value.show = false;
-    }, 3000);
-}
 
 function memberInfoRows(m) {
     const rows = [
@@ -250,7 +244,7 @@ function submitComplement(m) {
                 return;
             }
             if (errors[piece.type]) {
-                showToast('error', `${errors[piece.type]}`);
+                showToast('error', errors[piece.type]);
                 return;
             }
         }
@@ -281,7 +275,7 @@ function submitComplement(m) {
         },
         onError: (errs) => {
             const first = Object.values(errs)[0];
-            showToast('error', `${Array.isArray(first) ? first[0] : first || 'Envoi impossible.'}`);
+            showToast('error', Array.isArray(first) ? first[0] : first || 'Envoi impossible.');
         },
         onFinish: () => {
             complementSubmitting.value[m.id] = false;

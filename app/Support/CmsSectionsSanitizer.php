@@ -24,9 +24,6 @@ class CmsSectionsSanitizer
 
     private const HEADING_TAGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'div', 'span'];
 
-    /** Champs de contenu insérés comme HTML par le site public. */
-    private const HTML_KEYS = ['html'];
-
     /** Champs de contenu insérés dans un attribut style. */
     private const CSS_KEYS = ['direction', 'gap'];
 
@@ -100,7 +97,7 @@ class CmsSectionsSanitizer
             }
 
             $content[$key] = match (true) {
-                in_array($key, self::HTML_KEYS, true), $heading && $key === 'title' => self::html($value),
+                $key === 'html', $heading && $key === 'title' => self::html($value),
                 $heading && $key === 'tag' => in_array(strtolower($value), self::HEADING_TAGS, true) ? strtolower($value) : 'h2',
                 in_array($key, self::CSS_KEYS, true) => self::css($value),
                 self::isUrlKey($key) => self::url($value),
@@ -128,12 +125,10 @@ class CmsSectionsSanitizer
         return $styles;
     }
 
+    /** url, href, src, et leurs variantes (link_url, primaryHref…). */
     private static function isUrlKey(string $key): bool
     {
-        $key = strtolower($key);
-
-        return in_array($key, ['url', 'href', 'src'], true)
-            || str_ends_with($key, 'url') || str_ends_with($key, 'href') || str_ends_with($key, 'src');
+        return (bool) preg_match('/(url|href|src)$/i', $key);
     }
 
     /** Valeur CSS sans moyen de sortir de l'attribut style ni de charger quoi que ce soit. */
@@ -163,24 +158,8 @@ class CmsSectionsSanitizer
             return $html;
         }
 
-        $document = new \DOMDocument('1.0', 'UTF-8');
-        libxml_use_internal_errors(true);
-        $document->loadHTML('<?xml encoding="UTF-8"><div>'.$html.'</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-        libxml_clear_errors();
-
-        $container = $document->getElementsByTagName('div')->item(0);
-        if (! $container) {
-            return htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
-        }
-
-        self::clean($container);
-
-        $output = '';
-        foreach ($container->childNodes as $child) {
-            $output .= $document->saveHTML($child);
-        }
-
-        return $output;
+        return HtmlFragment::transform($html, fn (\DOMElement $container) => self::clean($container))
+            ?? htmlspecialchars($html, ENT_QUOTES, 'UTF-8');
     }
 
     private static function clean(\DOMElement $element): void

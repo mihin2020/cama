@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -43,6 +44,17 @@ class Dossier extends Model
     public function assure(): BelongsTo
     {
         return $this->belongsTo(Assure::class);
+    }
+
+    /** Dossiers que l'agent peut consulter : tous, ou seulement les siens (cf. AdminUser::seesOnlyOwnDossiers). */
+    public function scopeVisibleTo(Builder $query, ?AdminUser $admin): Builder
+    {
+        return $query->when($admin?->seesOnlyOwnDossiers(), fn (Builder $q) => $q->where($q->qualifyColumn('gestionnaire'), $admin->display_name));
+    }
+
+    public function isVisibleTo(?AdminUser $admin): bool
+    {
+        return $admin !== null && (! $admin->seesOnlyOwnDossiers() || $this->gestionnaire === $admin->display_name);
     }
 
     public function getBeneficiaireAttribute(): string

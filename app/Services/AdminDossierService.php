@@ -131,11 +131,8 @@ class AdminDossierService
         $query = Dossier::query()
             ->with('assure')
             ->where('statut', '!=', 'Brouillon')
+            ->visibleTo($admin)
             ->orderByDesc('date_soumission');
-
-        if ($this->seesOnlyOwnDossiers($admin)) {
-            $query->where('gestionnaire', $admin->display_name);
-        }
 
         return $query->get();
     }
@@ -149,11 +146,8 @@ class AdminDossierService
     {
         $query = Dossier::query()
             ->where('statut', '!=', 'Brouillon')
-            ->whereIn('statut', self::OPEN_STATUTS);
-
-        if ($this->seesOnlyOwnDossiers($admin)) {
-            $query->where('gestionnaire', $admin->display_name);
-        }
+            ->whereIn('statut', self::OPEN_STATUTS)
+            ->visibleTo($admin);
 
         return $query->distinct()
             ->pluck('assure_id')
@@ -543,10 +537,9 @@ class AdminDossierService
         return $admin !== null && ! $admin->hasPermission('dossiers.supervise');
     }
 
-    /** Sans « Consulter tous les dossiers », un agent ne voit que les dossiers qui lui sont affectés. */
     public function seesOnlyOwnDossiers(?AdminUser $admin): bool
     {
-        return $admin !== null && ! $admin->hasPermission('dossiers.view_all');
+        return (bool) $admin?->seesOnlyOwnDossiers();
     }
 
     /**
@@ -555,11 +548,7 @@ class AdminDossierService
      */
     public function authorizeAccess(?AdminUser $admin, Dossier $dossier): void
     {
-        abort_unless(
-            $admin !== null && (! $this->seesOnlyOwnDossiers($admin) || $dossier->gestionnaire === $admin->display_name),
-            403,
-            "Ce dossier n'est pas affecté à votre compte.",
-        );
+        abort_unless($dossier->isVisibleTo($admin), 403, "Ce dossier n'est pas affecté à votre compte.");
     }
 
     /**

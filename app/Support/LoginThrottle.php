@@ -20,44 +20,45 @@ class LoginThrottle
 
     private const LOCKOUT_SECONDS = 300;
 
-    private function __construct(
-        private string $ipKey,
-        private string $accountKey,
-    ) {}
+    /**
+     * @param  array<string, int>  $limits  clé du compteur => essais autorisés
+     */
+    private function __construct(private array $limits) {}
 
     public static function for(string $scope, Request $request, string $email): self
     {
         $account = $scope.'|'.Str::transliterate(Str::lower($email));
 
-        return new self($account.'|'.$request->ip(), $account);
+        return new self([
+            $account.'|'.$request->ip() => self::MAX_ATTEMPTS,
+            $account => self::MAX_ATTEMPTS_PER_ACCOUNT,
+        ]);
     }
 
     public function ensureNotLocked(): void
     {
-        $locked = match (true) {
-            RateLimiter::tooManyAttempts($this->ipKey, self::MAX_ATTEMPTS) => $this->ipKey,
-            RateLimiter::tooManyAttempts($this->accountKey, self::MAX_ATTEMPTS_PER_ACCOUNT) => $this->accountKey,
-            default => null,
-        };
+        foreach ($this->limits as $key => $max) {
+            if (RateLimiter::tooManyAttempts($key, $max)) {
+                $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
 
-        if ($locked !== null) {
-            $minutes = (int) ceil(RateLimiter::availableIn($locked) / 60);
-
-            throw ValidationException::withMessages([
-                'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
-            ]);
+                throw ValidationException::withMessages([
+                    'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
+                ]);
+            }
         }
     }
 
     public function hit(): void
     {
-        RateLimiter::hit($this->ipKey, self::LOCKOUT_SECONDS);
-        RateLimiter::hit($this->accountKey, self::LOCKOUT_SECONDS);
+        foreach (array_keys($this->limits) as $key) {
+            RateLimiter::hit($key, self::LOCKOUT_SECONDS);
+        }
     }
 
     public function clear(): void
     {
-        RateLimiter::clear($this->ipKey);
-        RateLimiter::clear($this->accountKey);
+        foreach (array_keys($this->limits) as $key) {
+            RateLimiter::clear($key);
+        }
     }
 }

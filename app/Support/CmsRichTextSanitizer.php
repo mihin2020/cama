@@ -26,29 +26,7 @@ class CmsRichTextSanitizer
 
         $html = strip_tags($html, $allowedTags);
 
-        $document = new \DOMDocument('1.0', 'UTF-8');
-        libxml_use_internal_errors(true);
-        $document->loadHTML(
-            '<?xml encoding="UTF-8"><div>'.$html.'</div>',
-            LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD,
-        );
-        libxml_clear_errors();
-
-        $container = $document->getElementsByTagName('div')->item(0);
-
-        if (! $container) {
-            return trim($html);
-        }
-
-        self::sanitizeNode($container);
-
-        $output = '';
-
-        foreach ($container->childNodes as $child) {
-            $output .= $document->saveHTML($child);
-        }
-
-        return trim($output);
+        return trim(HtmlFragment::transform($html, fn (\DOMElement $container) => self::sanitizeNode($container)) ?? $html);
     }
 
     private static function sanitizeNode(\DOMNode $node): void

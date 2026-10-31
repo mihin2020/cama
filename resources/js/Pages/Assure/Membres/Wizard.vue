@@ -4,6 +4,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaCountrySelect from '@/Components/CamaCountrySelect.vue';
 import CamaPhoneInput from '@/Components/CamaPhoneInput.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { useToast } from '@/Composables/useToast';
 import {
     ACCEPTED_TYPES,
     MAX_FILE_SIZE,
@@ -61,7 +62,7 @@ const showWarning = ref(false);
 const submitting = ref(false);
 const submitted = ref(false);
 const submittedCount = ref(0);
-const toast = ref({ show: false, icon: '', text: '' });
+const { toast, showToast } = useToast();
 const pieceErrors = reactive({});
 const fifSignee = ref(null);
 const fifError = ref('');
@@ -117,11 +118,6 @@ const sortedEnfants = computed(() =>
     [...state.enfants].sort((a, b) => (a.dateNaissance || '9999').localeCompare(b.dateNaissance || '9999')),
 );
 
-// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
-function showToast(icon, text) {
-    toast.value = { show: true, icon, text };
-    setTimeout(() => { toast.value.show = false; }, 3000);
-}
 
 function mapServerRow(row, list) {
     const base = list === 'conjoints' ? newConjoint() : newEnfant();
@@ -205,7 +201,7 @@ function openSubmit() {
         requireFif: props.fifSigneeRequise,
     });
     if (problems.length) {
-        showToast('error', `${problems[0]}`);
+        showToast('error', problems[0]);
         return;
     }
     showWarning.value = true;

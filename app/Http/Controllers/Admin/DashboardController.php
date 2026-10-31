@@ -14,7 +14,7 @@ class DashboardController extends Controller
         $admin = auth('admin')->user();
 
         // Sans « Consulter tous les dossiers », le tableau de bord se limite aux dossiers de l'agent.
-        $filtre = $admin && ! $admin->hasPermission('dossiers.view_all') ? $admin->display_name : null;
+        $filtre = $admin?->seesOnlyOwnDossiers() ? $admin->display_name : null;
 
         return Inertia::render('Admin/Dashboard', [
             'stats' => $dashboard->stats($filtre),

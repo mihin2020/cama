@@ -6,14 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\Dossier;
 use App\Services\AdminDossierService;
 use App\Services\PlatformSettingsService;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
-class DossierController extends Controller
+class DossierController extends Controller implements HasMiddleware
 {
+    /**
+     * Toute action sur un {dossier} précis vérifie d'abord qu'il est visible par l'agent
+     * (une nouvelle action en hérite sans rien ajouter).
+     */
+    public static function middleware(): array
+    {
+        return [
+            function (Request $request, Closure $next) {
+                if ($dossier = $request->route('dossier')) {
+                    app(AdminDossierService::class)->authorizeAccess($request->user('admin'), $dossier);
+                }
+
+                return $next($request);
+            },
+        ];
+    }
+
     public function index(AdminDossierService $service, PlatformSettingsService $settings): Response
     {
         $admin = auth('admin')->user();
@@ -75,7 +94,6 @@ class DossierController extends Controller
 
     public function validate(Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $updated = $service->validate($dossier, auth('admin')->user());
 
         return back()->with('success', $updated->statut === 'En attente supervision'
@@ -85,7 +103,6 @@ class DossierController extends Controller
 
     public function reject(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['motif' => ['required', 'string', 'max:500']]);
         $service->refuse($dossier, $data['motif'], auth('admin')->user());
 
@@ -94,7 +111,6 @@ class DossierController extends Controller
 
     public function confirmWithdrawal(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['motif' => ['required', 'string', 'max:200']]);
         $service->withdraw($dossier, $data['motif'], auth('admin')->user());
 
@@ -103,7 +119,6 @@ class DossierController extends Controller
 
     public function complement(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate([
             'pieces' => ['nullable', 'array'],
             'pieces.*' => ['string', 'max:150'],
@@ -126,7 +141,6 @@ class DossierController extends Controller
 
     public function enAttente(Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $service->setEnAttente($dossier, auth('admin')->user());
 
         return back()->with('success', 'Dossier mis en attente de supervision.');
@@ -134,7 +148,6 @@ class DossierController extends Controller
 
     public function message(Request $request, Dossier $dossier, AdminDossierService $service): RedirectResponse
     {
-        $service->authorizeAccess(auth('admin')->user(), $dossier);
         $data = $request->validate(['texte' => ['required', 'string', 'max:1000']]);
         $service->sendMessage($dossier, $data['texte']);
 

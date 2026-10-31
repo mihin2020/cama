@@ -102,4 +102,10 @@ class AdminUser extends Authenticatable
     {
         return app(\App\Services\AdminPermissionService::class)->allows($this, $permission);
     }
+
+    /** Sans « Consulter tous les dossiers », l'agent ne voit que les dossiers qui lui sont affectés. */
+    public function seesOnlyOwnDossiers(): bool
+    {
+        return ! $this->hasPermission('dossiers.view_all');
+    }
 }

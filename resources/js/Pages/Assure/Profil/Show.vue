@@ -1,6 +1,7 @@
 <script setup>
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
+import { useToast } from '@/Composables/useToast';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -29,7 +30,7 @@ const pwdForm = useForm({
 
 const deuxFa = ref(props.profil.deuxFa);
 const pwdError = ref('');
-const toast = ref({ show: false, icon: '', text: '' });
+const { toast, showToast } = useToast();
 
 // Champs gérés par la CAMA (lecture seule).
 const militaireRows = [
@@ -95,11 +96,6 @@ watch(() => rattachementForm.section, () => { if (rattachReady) { rattachementFo
 // active la réinitialisation en cascade seulement après le montage initial
 setTimeout(() => { rattachReady = true; }, 0);
 
-// Texte affiché tel quel (interpolation Vue) : un nom de pièce ou un message ne peut pas injecter de HTML.
-function showToast(icon, text) {
-    toast.value = { show: true, icon, text };
-    setTimeout(() => { toast.value.show = false; }, 3000);
-}
 
 function saveContact() {
     contactForm.patch(route('assure.profil.update'), {

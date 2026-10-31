@@ -117,9 +117,7 @@ class ExportService
 
     public function dossierForPdf(AdminUser $admin, string $ref): ?array
     {
-        $dossier = Dossier::query()->with('assure')->where('ref', $ref)
-            ->when($this->seesOnlyOwnRows($admin), fn ($q) => $q->where('gestionnaire', $admin->display_name))
-            ->first();
+        $dossier = Dossier::query()->with('assure')->where('ref', $ref)->visibleTo($admin)->first();
         if (! $dossier) {
             return null;
         }
@@ -148,20 +146,17 @@ class ExportService
      */
     private function allowedDatasets(AdminUser $admin): array
     {
+        $ownOnly = $admin->seesOnlyOwnDossiers();
+
         return collect(ExportCatalog::datasets())
             ->filter(fn (array $dataset) => $this->permissions->allows($admin, $dataset['permission'])
                 && Schema::hasTable($dataset['table']))
             // Sans « Consulter tous les dossiers », l'export se limite aux lignes affectées au compte,
             // comme la liste des dossiers.
-            ->map(fn (array $dataset) => isset($dataset['owner']) && $this->seesOnlyOwnRows($admin)
+            ->map(fn (array $dataset) => isset($dataset['owner']) && $ownOnly
                 ? [...$dataset, 'scope' => [$dataset['owner'] => $admin->display_name]]
                 : $dataset)
             ->all();
-    }
-
-    private function seesOnlyOwnRows(AdminUser $admin): bool
-    {
-        return ! $this->permissions->allows($admin, 'dossiers.view_all');
     }
 
     private function scoped(Builder $query, array $dataset): Builder
