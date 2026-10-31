@@ -26,10 +26,17 @@ class BanniereController extends Controller
         $data = $request->validate([
             'active' => ['boolean'],
             'type' => ['required', 'in:info,warning'],
+            'dismissible' => ['boolean'],
+            'scrolling' => ['boolean'],
+            'scroll_speed' => ['required', 'integer', 'min:5', 'max:120'],
+            'bg_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
+            'text_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'message' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $data['active'] = $request->boolean('active');
+        $data['dismissible'] = $request->boolean('dismissible');
+        $data['scrolling'] = $request->boolean('scrolling');
 
         $banner->update($data, $request->user('admin'));
 

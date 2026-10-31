@@ -466,3 +466,68 @@
         max-width: 100% !important;
     }
 }
+
+/* Boutons d'action du site public (liens « Voir tout », « Lire la suite », etc.) */
+.cama-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid transparent;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+}
+.cama-btn:active { transform: scale(0.97); }
+.cama-btn:focus-visible { outline: 2px solid rgb(var(--c-primary)); outline-offset: 2px; }
+.cama-btn .material-symbols-outlined { font-size: 18px; transition: transform 0.15s; }
+.cama-btn:hover .material-symbols-outlined { transform: translateX(2px); }
+.cama-btn:hover .cama-btn-icon-back { transform: translateX(-2px); }
+.cama-btn:hover .cama-btn-icon-static { transform: none; }
+
+.cama-btn-sm { min-height: 36px; padding: 0.4rem 0.875rem; font-size: 0.8125rem; }
+.cama-btn-sm .material-symbols-outlined { font-size: 16px; }
+
+.cama-btn-primary { background: rgb(var(--c-primary)); color: #fff; box-shadow: 0 1px 2px rgb(0 0 0 / 0.08); }
+.cama-btn-primary:hover { background: rgb(var(--c-primary) / 0.88); box-shadow: 0 4px 12px rgb(var(--c-primary) / 0.25); }
+
+.cama-btn-outline { background: #fff; color: rgb(var(--c-primary)); border-color: rgb(var(--c-primary) / 0.35); }
+.cama-btn-outline:hover { background: rgb(var(--c-primary) / 0.06); border-color: rgb(var(--c-primary)); }
+
+.cama-btn-light { background: #fff; color: rgb(var(--c-primary)); }
+.cama-btn-light:hover { background: rgb(255 255 255 / 0.88); }
+
+/* Bandeau d'information défilant (option du back-office) */
+.banner-marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0, #000 24px, #000 calc(100% - 24px), transparent 100%);
+}
+.banner-marquee-track {
+    display: flex;
+    width: max-content;
+    animation: camaBannerMarquee 25s linear infinite;
+}
+.banner-marquee-track > p {
+    white-space: nowrap;
+    padding-right: 4rem;
+}
+.banner-marquee:hover .banner-marquee-track,
+.banner-marquee:focus-within .banner-marquee-track {
+    animation-play-state: paused;
+}
+@keyframes camaBannerMarquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .banner-marquee { mask-image: none; }
+    .banner-marquee-track { animation: none; width: auto; }
+    .banner-marquee-track > p { white-space: normal; padding-right: 0; }
+    .banner-marquee-track > p[aria-hidden] { display: none; }
+}

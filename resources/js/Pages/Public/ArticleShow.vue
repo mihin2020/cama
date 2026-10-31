@@ -56,8 +56,8 @@ async function copyLink() {
         <main class="flex-grow py-stack-lg">
             <div class="max-w-container-max-width mx-auto px-4 md:px-margin-desktop">
                 <article class="max-w-3xl mx-auto">
-                    <Link class="inline-flex items-center gap-1 text-sm font-semibold text-primary mb-6 hover:underline" href="/actualites">
-                        <span class="material-symbols-outlined text-[18px]">arrow_back</span> Toutes les actualités
+                    <Link class="cama-btn cama-btn-outline cama-btn-sm mb-6" href="/actualites">
+                        <span class="material-symbols-outlined cama-btn-icon-back">arrow_back</span> Toutes les actualités
                     </Link>
                     <div class="flex flex-wrap items-center gap-3 mb-4">
                         <span class="bg-primary text-on-primary px-3 py-1 rounded text-caption font-bold uppercase tracking-wider">{{ article.category }}</span>

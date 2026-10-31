@@ -18,6 +18,11 @@ class CmsInfoBannerService
         return [
             'active' => $banner->active,
             'type' => $banner->type,
+            'dismissible' => $banner->dismissible,
+            'scrolling' => $banner->scrolling,
+            'scroll_speed' => $banner->scroll_speed,
+            'bg_color' => $banner->bg_color,
+            'text_color' => $banner->text_color,
             'message' => $this->messageForAdmin($banner),
         ];
     }

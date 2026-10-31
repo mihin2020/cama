@@ -24,8 +24,29 @@ const selectedFileName = ref('');
 const bannerForm = useForm({
     active: props.banner.active,
     type: props.banner.type,
+    dismissible: props.banner.dismissible ?? true,
+    scrolling: props.banner.scrolling ?? false,
+    scroll_speed: props.banner.scroll_speed ?? 25,
+    bg_color: props.banner.bg_color ?? '',
+    text_color: props.banner.text_color ?? '',
     message: props.banner.message,
 });
+
+// Vitesse de défilement : durée d'un passage complet du texte (plus court = plus rapide).
+const SCROLL_SPEEDS = [
+    { value: 40, label: 'Lente' },
+    { value: 25, label: 'Normale' },
+    { value: 15, label: 'Rapide' },
+];
+// Couleurs du thème utilisées quand aucune couleur n'est choisie (pastilles des sélecteurs).
+const DEFAULT_BANNER_COLORS = {
+    info: { bg: 'rgb(var(--c-primary))', text: '#ffffff' },
+    warning: { bg: 'rgb(var(--c-tertiary))', text: '#241a00' },
+};
+const bannerPreviewStyle = computed(() => ({
+    ...(bannerForm.bg_color ? { background: bannerForm.bg_color } : {}),
+    ...(bannerForm.text_color ? { color: bannerForm.text_color } : {}),
+}));
 
 const slideForm = useForm({
     title: '',
@@ -179,6 +200,56 @@ function removeSlide(id) {
                 <p v-if="bannerForm.errors.message" class="text-error text-[10px] mt-1">{{ bannerForm.errors.message }}</p>
             </div>
 
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-3">
+                    <p class="text-[11px] font-bold uppercase text-on-surface-variant">Comportement</p>
+                    <label class="flex items-start gap-2 text-xs">
+                        <input v-model="bannerForm.dismissible" class="rounded border-outline-variant text-primary mt-0.5" type="checkbox" />
+                        <span>
+                            <span class="font-semibold text-on-surface block">Le visiteur peut fermer le bandeau</span>
+                            <span class="text-on-surface-variant">Une fois fermé, il ne réapparaît plus sur les autres pages, jusqu'à la prochaine publication.</span>
+                        </span>
+                    </label>
+                    <label class="flex items-start gap-2 text-xs">
+                        <input v-model="bannerForm.scrolling" class="rounded border-outline-variant text-primary mt-0.5" type="checkbox" />
+                        <span>
+                            <span class="font-semibold text-on-surface block">Faire défiler le texte</span>
+                            <span class="text-on-surface-variant">Le message défile de droite à gauche (pause au survol).</span>
+                        </span>
+                    </label>
+                    <div v-if="bannerForm.scrolling" class="pl-6">
+                        <span class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Vitesse de défilement</span>
+                        <div class="inline-flex rounded-lg border border-outline-variant overflow-hidden">
+                            <button
+                                v-for="speed in SCROLL_SPEEDS"
+                                :key="speed.value"
+                                type="button"
+                                class="px-3 py-1.5 text-xs font-semibold transition-colors"
+                                :class="bannerForm.scroll_speed === speed.value ? 'bg-primary text-on-primary' : 'bg-white text-on-surface-variant hover:bg-surface-container-low'"
+                                @click="bannerForm.scroll_speed = speed.value"
+                            >
+                                {{ speed.label }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <p class="text-[11px] font-bold uppercase text-on-surface-variant">Couleurs</p>
+                    <div v-for="field in [{ key: 'bg_color', label: 'Fond', fallback: 'bg' }, { key: 'text_color', label: 'Texte', fallback: 'text' }]" :key="field.key" class="flex items-center gap-3 text-xs">
+                        <label class="relative w-9 h-9 rounded-lg border border-outline-variant overflow-hidden shrink-0 cursor-pointer" :style="{ background: bannerForm[field.key] || DEFAULT_BANNER_COLORS[bannerForm.type][field.fallback] }">
+                            <input v-model="bannerForm[field.key]" class="absolute inset-0 opacity-0 cursor-pointer" type="color" :aria-label="`Couleur du ${field.label.toLowerCase()}`" />
+                        </label>
+                        <span class="flex-1">
+                            <span class="font-semibold text-on-surface block">{{ field.label }}</span>
+                            <span class="text-on-surface-variant font-mono">{{ bannerForm[field.key] || 'Couleur du thème' }}</span>
+                        </span>
+                        <button v-if="bannerForm[field.key]" type="button" class="text-[11px] font-semibold text-primary hover:underline" @click="bannerForm[field.key] = ''">Par défaut</button>
+                    </div>
+                    <p v-if="bannerForm.errors.bg_color || bannerForm.errors.text_color" class="text-error text-[10px]">{{ bannerForm.errors.bg_color || bannerForm.errors.text_color }}</p>
+                </div>
+            </div>
+
             <div v-if="bannerForm.message" class="rounded-lg border border-outline-variant overflow-hidden">
                 <p class="text-[10px] uppercase font-bold text-on-surface-variant px-3 py-1.5 bg-surface-container-low/60 border-b border-outline-variant">
                     Aperçu sur le site
@@ -186,11 +257,19 @@ function removeSlide(id) {
                 <div
                     class="px-4 py-2.5 text-xs flex items-center gap-2"
                     :class="bannerForm.type === 'warning' ? 'bg-tertiary text-white' : 'bg-primary text-on-primary'"
+                    :style="bannerPreviewStyle"
                 >
                     <span class="material-symbols-outlined text-[18px] shrink-0">
                         {{ bannerForm.type === 'warning' ? 'warning' : 'campaign' }}
                     </span>
-                    <div class="banner-preview min-w-0 flex-1" v-html="bannerForm.message" />
+                    <div v-if="bannerForm.scrolling" class="banner-marquee min-w-0 flex-1">
+                        <div class="banner-marquee-track" :style="{ animationDuration: `${bannerForm.scroll_speed}s` }">
+                            <p class="banner-preview" v-html="bannerForm.message" />
+                            <p class="banner-preview" aria-hidden="true" v-html="bannerForm.message" />
+                        </div>
+                    </div>
+                    <div v-else class="banner-preview min-w-0 flex-1" v-html="bannerForm.message" />
+                    <span v-if="bannerForm.dismissible" class="material-symbols-outlined text-[18px] shrink-0 opacity-75">close</span>
                 </div>
             </div>
 

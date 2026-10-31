@@ -60,9 +60,9 @@ function articleCategory(article) {
                         </div>
                         <h4 class="font-bold text-on-surface leading-snug group-hover:text-primary transition-colors">{{ article.title }}</h4>
                         <p v-if="article.excerpt" class="text-sm text-on-surface-variant mt-2 line-clamp-2">{{ article.excerpt }}</p>
-                        <span class="inline-flex items-center gap-1 text-primary text-xs font-bold mt-3">
+                        <span class="cama-btn cama-btn-outline cama-btn-sm mt-4">
                             Lire la suite
-                            <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
                         </span>
                     </div>
                 </Link>

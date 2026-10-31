@@ -166,7 +166,14 @@ class PublicSiteService
         }
 
         return [
+            // Change à chaque publication : un bandeau fermé par le visiteur réapparaît s'il est republié.
+            'version' => (string) ($banner->updated_at?->timestamp ?? $banner->id),
             'type' => $banner->type,
+            'dismissible' => $banner->dismissible,
+            'scrolling' => $banner->scrolling,
+            'scroll_speed' => $banner->scroll_speed,
+            'bg_color' => $banner->bg_color,
+            'text_color' => $banner->text_color,
             'message' => $this->normalizeHtmlLinks($banner->message ?? ''),
             'link_url' => $banner->link_url ? $this->publicHref($banner->link_url) : null,
             'link_label' => $banner->link_label,

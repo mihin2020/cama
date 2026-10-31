@@ -242,9 +242,9 @@ class CmsPageService
                 'title' => 'Détail des prestations couvertes',
                 'items' => [
                     ['icon' => 'medical_services', 'title' => 'Consultations & Visites', 'text' => 'Médecine générale, spécialités médicales et urgences militaires auprès des prestataires conventionnés.', 'rate' => '80%', 'tone' => 'primary'],
-                    ['icon' => 'biotech', 'title' => 'Biologie', 'text' => 'Analyses de sang, urines et prélèvements biologiques dans les laboratoires agréés.', 'rate' => '70 - 80%', 'tone' => 'tertiary'],
-                    ['icon' => 'radiology', 'title' => 'Radiologie', 'text' => 'Imagerie médicale, scanners, IRM et échographies prescrits par un médecin.', 'rate' => '75%', 'tone' => 'secondary'],
-                    ['icon' => 'local_hospital', 'title' => 'Actes Médico-Chirurgicaux', 'text' => 'Hospitalisation, interventions chirurgicales et pharmacie hospitalière, en tiers-payant chez les établissements conventionnés.', 'rate' => '90%', 'tone' => 'dark'],
+                    ['icon' => 'biotech', 'title' => 'Biologie', 'text' => 'Analyses de sang, urines et prélèvements biologiques dans les laboratoires agréés.', 'rate' => '80%', 'tone' => 'tertiary'],
+                    ['icon' => 'radiology', 'title' => 'Radiologie', 'text' => 'Imagerie médicale, scanners, IRM et échographies prescrits par un médecin.', 'rate' => '80%', 'tone' => 'secondary'],
+                    ['icon' => 'local_hospital', 'title' => 'Actes Médico-Chirurgicaux', 'text' => 'Hospitalisation, interventions chirurgicales et pharmacie hospitalière, en tiers-payant chez les établissements conventionnés.', 'rate' => '80%', 'tone' => 'dark'],
                 ],
             ]),
             $this->systemSection('services_steps', [
@@ -276,7 +276,7 @@ class CmsPageService
                 'text' => 'Notre équipe administrative est disponible pour vous accompagner dans vos démarches de remboursement.',
                 'primaryLabel' => 'Nous contacter',
                 'primaryHref' => '/contact',
-                'secondaryLabel' => 'Urgence : 112',
+                'secondaryLabel' => 'Urgence',
                 'secondaryHref' => 'tel:112',
             ]),
         ];

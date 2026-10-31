@@ -12,6 +12,11 @@ class CmsInfoBanner extends Model
     protected $fillable = [
         'active',
         'type',
+        'dismissible',
+        'scrolling',
+        'scroll_speed',
+        'bg_color',
+        'text_color',
         'message',
         'link_url',
         'link_label',
@@ -21,6 +26,9 @@ class CmsInfoBanner extends Model
     {
         return [
             'active' => 'boolean',
+            'dismissible' => 'boolean',
+            'scrolling' => 'boolean',
+            'scroll_speed' => 'integer',
         ];
     }
 

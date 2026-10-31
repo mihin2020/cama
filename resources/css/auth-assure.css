@@ -1,5 +1,6 @@
 .reg-label { display:block; font-family: Inter, sans-serif; font-size: 13px; font-weight: 600; color: rgb(var(--c-on-surface-variant)); margin-left: 4px; }
 .reg-input { width:100%; padding: 10px 14px; border:1px solid rgb(var(--c-outline-variant)); border-radius: 0.5rem; outline:none; font-size:14px; background:#fff; transition: all .15s ease; }
+.reg-input::placeholder { color: rgb(var(--c-on-surface-variant) / .55); }
 .reg-input:focus { border-color:rgb(var(--c-primary)); box-shadow: 0 0 0 2px rgb(var(--c-primary) / .25); }
 .reg-input.is-invalid { border-color:rgb(var(--c-error)); box-shadow: 0 0 0 2px rgba(186,26,26,.2); }
 #pw-rules li.ok, #forgot-pw-rules li.ok { color:rgb(var(--c-secondary)); }

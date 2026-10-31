@@ -7,6 +7,8 @@ import { useShellSidebar } from '@/Composables/useShellSidebar';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
 import { NOTIF_ICONS } from '@/Utils/camaStatus';
 
+const currentYear = new Date().getFullYear();
+
 const { navigating } = usePageNavigation();
 
 const siteLogo = useSiteLogo();
@@ -175,7 +177,7 @@ const notifIconClass = (type) => {
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
-            © 2026 CAMA — Caisse d'Assurance Maladie des Armées. Tous droits réservés.
+            © {{ currentYear }} Caisse d'Assurance Maladie des Armées (CAMA). Tous droits réservés.
         </footer>
     </div>
 

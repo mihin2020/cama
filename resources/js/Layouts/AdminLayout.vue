@@ -10,6 +10,8 @@ import AdminHeaderShortcuts from '@/Components/AdminHeaderShortcuts.vue';
 import { useAdminDossierBadge } from '@/Composables/useAdminDossierBadge';
 import { formatDuration, useAdminIdleSession } from '@/Composables/useAdminIdleSession';
 
+const currentYear = new Date().getFullYear();
+
 const { navigating } = usePageNavigation();
 
 const siteLogo = useSiteLogo();
@@ -173,7 +175,7 @@ const logout = () => router.post(route('admin.logout'));
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
-            © 2026 CAMA — Back-office institutionnel. Accès restreint et tracé.
+            © {{ currentYear }} CAMA — Back-office institutionnel. Accès restreint et tracé.
         </footer>
     </div>
 

@@ -8,6 +8,8 @@ import { useShellSidebar } from '@/Composables/useShellSidebar';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
 import AdminHeaderShortcuts from '@/Components/AdminHeaderShortcuts.vue';
 
+const currentYear = new Date().getFullYear();
+
 const { navigating } = usePageNavigation();
 
 const siteLogo = useSiteLogo();
@@ -137,7 +139,7 @@ const badgeValue = (item) => (item.badge ? Number(app.value?.[item.badge] ?? 0) 
         </main>
 
         <footer class="px-4 md:px-8 py-6 text-caption text-on-surface-variant border-t border-outline-variant">
-            © 2026 CAMA — Studio de contenu, module indépendant du back-office.
+            © {{ currentYear }} CAMA — Studio de contenu, module indépendant du back-office.
         </footer>
     </div>
 </template>

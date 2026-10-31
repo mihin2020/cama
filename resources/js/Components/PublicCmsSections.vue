@@ -647,6 +647,18 @@ function scrollServicesCoverage(event, direction) {
     track?.scrollBy({ left: direction * amount, behavior: 'smooth' });
 }
 
+// Boutons d'appel (À propos, Services) : numéros repris du pied de page (Admin › Pied de page).
+const footerPhones = computed(() => (page.props.publicSite?.footer?.phones ?? []).filter(Boolean));
+
+function phoneCta(content, index, fallbackLabel = '') {
+    const number = footerPhones.value[index] ?? footerPhones.value[0]
+        ?? String(content?.secondaryHref ?? '').replace(/^tel:/, '');
+    // « Urgence : 112 » → « Urgence » : le numéro affiché est celui du pied de page.
+    const label = String(content?.secondaryLabel || fallbackLabel).replace(/\s*:\s*[+\d\s]+$/, '');
+
+    return { number, label, href: number ? 'tel:' + number.replace(/[^+0-9]/g, '') : '#' };
+}
+
 function faqMeta(category) {
     return {
         Prestations: { icon: 'receipt_long', class: 'text-primary bg-primary/10' },
@@ -679,7 +691,6 @@ function faqMeta(category) {
                         <div class="flex flex-wrap gap-3">
                             <Link :href="slide.link_url || systemWidget(section).content?.primaryHref || fallbackSlide.link_url" class="inline-flex items-center gap-2 bg-primary-container text-on-primary px-6 py-3.5 rounded-lg font-bold hover:bg-primary transition-all shadow-lg">
                                 {{ slide.link_label || systemWidget(section).content?.primaryLabel || fallbackSlide.link_label }}
-                                <span class="material-symbols-outlined">arrow_forward</span>
                             </Link>
                             <Link v-if="systemWidget(section).content?.secondaryLabel !== ''" :href="systemWidget(section).content?.secondaryHref || '/espace-assure/connexion'" class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/30 text-white px-6 py-3.5 rounded-lg font-bold hover:bg-white/20 transition-all">
                                 {{ systemWidget(section).content?.secondaryLabel || 'Espace assuré' }}
@@ -793,8 +804,8 @@ function faqMeta(category) {
                         <span class="text-primary font-label-md uppercase tracking-widest">{{ systemWidget(section).content?.eyebrow || 'Informations' }}</span>
                         <h2 class="font-headline-lg text-headline-lg">{{ systemWidget(section).content?.title || 'Dernières Actualités' }}</h2>
                     </div>
-                    <Link class="text-primary font-bold flex items-center gap-2 hover:underline group" :href="systemWidget(section).content?.linkHref || '/actualites'">
-                        {{ systemWidget(section).content?.linkLabel || 'Voir tout le flux' }} <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <Link class="cama-btn cama-btn-outline shrink-0" :href="systemWidget(section).content?.linkHref || '/actualites'">
+                        {{ systemWidget(section).content?.linkLabel || 'Voir tout le flux' }} <span class="material-symbols-outlined">arrow_forward</span>
                     </Link>
                 </div>
 
@@ -808,8 +819,8 @@ function faqMeta(category) {
                                 <span class="text-sm font-label-md text-white/80 mb-2 block">{{ homeFeaturedArticle.published_at }}</span>
                                 <h3 class="font-headline-md text-headline-md mb-3 max-w-xl">{{ homeFeaturedArticle.title }}</h3>
                                 <p class="text-white/85 font-body-md mb-5 max-w-xl line-clamp-2 hidden md:block">{{ homeFeaturedArticle.excerpt }}</p>
-                                <Link class="inline-flex items-center gap-2 font-bold text-white group/btn" :href="homeFeaturedArticle.href">
-                                    Lire la suite <span class="material-symbols-outlined text-[18px] group-hover/btn:translate-x-1 transition-transform">arrow_forward</span>
+                                <Link class="cama-btn cama-btn-light" :href="homeFeaturedArticle.href">
+                                    Lire la suite <span class="material-symbols-outlined">arrow_forward</span>
                                 </Link>
                             </div>
                         </div>
@@ -823,8 +834,8 @@ function faqMeta(category) {
                                 <span class="text-xs font-label-md text-tertiary uppercase tracking-wide mb-1">{{ article.published_at }}</span>
                                 <h3 class="font-title-lg text-title-lg leading-snug mb-2 line-clamp-2 group-hover:text-primary transition-colors">{{ article.title }}</h3>
                                 <p class="text-on-surface-variant text-sm font-body-md mb-3 line-clamp-2">{{ article.excerpt }}</p>
-                                <Link class="mt-auto text-primary text-sm font-bold flex items-center gap-1 group/btn" :href="article.href">
-                                    Lire la suite <span class="material-symbols-outlined text-[16px] group-hover/btn:translate-x-1 transition-transform">chevron_right</span>
+                                <Link class="cama-btn cama-btn-outline cama-btn-sm mt-auto self-start" :href="article.href">
+                                    Lire la suite <span class="material-symbols-outlined">arrow_forward</span>
                                 </Link>
                             </div>
                         </article>
@@ -1000,8 +1011,8 @@ function faqMeta(category) {
                                 <div>
                                     <p class="font-title-lg text-title-lg mb-1">{{ systemWidget(section).content?.cardTitle }}</p>
                                     <p class="text-on-surface-variant text-body-md text-sm mb-3">{{ systemWidget(section).content?.cardText }}</p>
-                                    <Link class="text-primary font-bold text-sm inline-flex items-center gap-1 hover:underline" :href="systemWidget(section).content?.linkHref || '/contact'">
-                                        {{ systemWidget(section).content?.linkLabel || 'Nous contacter' }} <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+                                    <Link class="cama-btn cama-btn-primary cama-btn-sm" :href="systemWidget(section).content?.linkHref || '/contact'">
+                                        {{ systemWidget(section).content?.linkLabel || 'Nous contacter' }} <span class="material-symbols-outlined">arrow_forward</span>
                                     </Link>
                                 </div>
                             </div>
@@ -1030,10 +1041,14 @@ function faqMeta(category) {
                     <h3 class="font-headline-lg text-headline-lg mb-2">{{ systemWidget(section).content?.title }}</h3>
                     <p class="font-body-md text-body-md opacity-90">{{ systemWidget(section).content?.text }}</p>
                 </div>
-                <div class="flex gap-4 w-full md:w-auto">
-                    <Link class="bg-white text-primary px-8 py-4 rounded-xl font-bold flex-1 md:flex-none text-center hover:bg-surface-variant transition-colors" :href="systemWidget(section).content?.primaryHref || '/contact'">{{ systemWidget(section).content?.primaryLabel || 'Nous contacter' }}</Link>
-                    <a class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-4 rounded-xl font-bold flex-1 md:flex-none flex items-center justify-center gap-2 hover:bg-white/20 transition-colors" :href="systemWidget(section).content?.secondaryHref || 'tel:112'">
-                        <span class="material-symbols-outlined">call</span> {{ systemWidget(section).content?.secondaryLabel || 'Urgence : 112' }}
+                <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+                    <Link class="bg-white text-primary px-8 py-4 rounded-xl font-bold flex-1 md:flex-none flex items-center justify-center hover:bg-surface-variant transition-colors" :href="systemWidget(section).content?.primaryHref || '/contact'">{{ systemWidget(section).content?.primaryLabel || 'Nous contacter' }}</Link>
+                    <a class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-6 py-3 rounded-xl flex-1 md:flex-none flex items-center justify-center gap-3 hover:bg-white/20 transition-colors" :href="phoneCta(systemWidget(section).content, 1).href">
+                        <span class="material-symbols-outlined">call</span>
+                        <span class="flex flex-col leading-tight text-left">
+                            <span class="text-xs font-semibold opacity-85">{{ phoneCta(systemWidget(section).content, 1, 'Urgence').label }}</span>
+                            <span class="font-bold tabular-nums">{{ phoneCta(systemWidget(section).content, 1).number }}</span>
+                        </span>
                     </a>
                 </div>
             </div>
@@ -1092,10 +1107,12 @@ function faqMeta(category) {
                                 </div>
                             </div>
                         </div>
-                        <Link class="inline-flex items-center gap-2 text-primary font-bold hover:underline group pt-2" :href="systemWidget(section).content?.linkHref || '/contact'">
-                            {{ systemWidget(section).content?.linkLabel }}
-                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </Link>
+                        <div class="pt-2">
+                            <Link class="cama-btn cama-btn-primary" :href="systemWidget(section).content?.linkHref || '/contact'">
+                                <span class="material-symbols-outlined cama-btn-icon-static">mail</span>
+                                {{ systemWidget(section).content?.linkLabel || 'Contacter la Direction Générale' }}
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1142,9 +1159,9 @@ function faqMeta(category) {
                         <h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">{{ systemWidget(section).content?.title }}</h2>
                         <p class="font-body-md text-body-md text-on-surface-variant">{{ systemWidget(section).content?.text }}</p>
                     </div>
-                    <Link class="flex items-center gap-2 text-primary font-bold group" :href="systemWidget(section).content?.linkHref || '/ressources'">
-                        {{ systemWidget(section).content?.linkLabel }}
-                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    <Link class="cama-btn cama-btn-outline shrink-0" :href="systemWidget(section).content?.linkHref || '/ressources'">
+                        <span class="material-symbols-outlined cama-btn-icon-static">gavel</span>
+                        {{ systemWidget(section).content?.linkLabel || 'Consulter les textes officiels' }}
                     </Link>
                 </div>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-stack-lg">
@@ -1168,13 +1185,16 @@ function faqMeta(category) {
                     <h3 class="font-headline-lg text-headline-lg mb-2">{{ systemWidget(section).content?.title }}</h3>
                     <p class="font-body-md text-body-md text-on-surface-variant">{{ systemWidget(section).content?.text }}</p>
                 </div>
-                <div class="flex gap-4 relative z-10 w-full md:w-auto">
-                    <Link class="bg-on-background text-surface px-8 py-4 rounded-xl font-bold flex-1 md:flex-none text-center hover:opacity-90 transition-opacity" :href="systemWidget(section).content?.primaryHref || '/ressources'">
+                <div class="flex flex-col sm:flex-row gap-4 relative z-10 w-full md:w-auto">
+                    <Link class="bg-on-background text-surface px-8 py-4 rounded-xl font-bold flex-1 md:flex-none flex items-center justify-center hover:opacity-90 transition-opacity" :href="systemWidget(section).content?.primaryHref || '/ressources'">
                         {{ systemWidget(section).content?.primaryLabel || "Guide de l'assuré" }}
                     </Link>
-                    <a class="bg-secondary text-on-secondary px-8 py-4 rounded-xl font-bold flex-1 md:flex-none flex items-center justify-center gap-2 hover:opacity-90 transition-opacity" :href="systemWidget(section).content?.secondaryHref || 'tel:+22625308103'">
+                    <a class="bg-secondary text-on-secondary px-6 py-3 rounded-xl flex-1 md:flex-none flex items-center justify-center gap-3 hover:opacity-90 transition-opacity" :href="phoneCta(systemWidget(section).content, 0).href">
                         <span class="material-symbols-outlined">call</span>
-                        {{ systemWidget(section).content?.secondaryLabel || 'Nous appeler' }}
+                        <span class="flex flex-col leading-tight text-left">
+                            <span class="text-xs font-semibold opacity-85">{{ phoneCta(systemWidget(section).content, 0, 'Nous appeler').label }}</span>
+                            <span class="font-bold tabular-nums">{{ phoneCta(systemWidget(section).content, 0).number }}</span>
+                        </span>
                     </a>
                 </div>
             </div>
@@ -1288,7 +1308,7 @@ function faqMeta(category) {
                             </div>
                             <h2 class="font-headline-md text-headline-md mb-4 text-on-surface group-hover:text-primary transition-colors">{{ featuredNews.title }}</h2>
                             <p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-3">{{ featuredNews.excerpt }}</p>
-                            <Link class="inline-flex items-center gap-2 text-primary font-bold hover:underline" :href="featuredNews.href">
+                            <Link class="cama-btn cama-btn-primary" :href="featuredNews.href">
                                 {{ systemWidget(section).content?.readLabel || 'Lire la suite' }} <span class="material-symbols-outlined">arrow_forward</span>
                             </Link>
                         </div>
@@ -1302,8 +1322,8 @@ function faqMeta(category) {
                             <span class="text-on-surface-variant font-label-md text-label-md mb-2 block">{{ article.date }}</span>
                             <h3 class="font-title-lg text-title-lg mb-3 text-on-surface">{{ article.title }}</h3>
                             <p class="font-body-md text-body-md text-on-surface-variant mb-6 line-clamp-2">{{ article.excerpt }}</p>
-                            <Link class="text-primary font-bold flex items-center gap-2 group" :href="article.href">
-                                {{ systemWidget(section).content?.cardReadLabel || "Lire l'article" }} <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                            <Link class="cama-btn cama-btn-outline cama-btn-sm" :href="article.href">
+                                {{ systemWidget(section).content?.cardReadLabel || "Lire l'article" }} <span class="material-symbols-outlined">arrow_forward</span>
                             </Link>
                         </div>
                     </article>

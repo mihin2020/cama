@@ -12,11 +12,37 @@ const page = usePage();
 const menuOpen = ref(false);
 const searchOpen = ref(false);
 const assureOpen = ref(false);
-const bannerVisible = ref(true);
+const currentYear = new Date().getFullYear();
 
 const site = computed(() => page.props.publicSite ?? {});
 const menu = computed(() => site.value.menu ?? []);
 const banner = computed(() => site.value.banner ?? null);
+
+// Bandeau fermé : mémorisé dans le navigateur pour cette version du bandeau
+// (il ne revient pas en changeant de page, mais réapparaît s'il est republié).
+const BANNER_DISMISS_KEY = 'cama_banner_dismissed';
+function readDismissedBanner() {
+    try {
+        return localStorage.getItem(BANNER_DISMISS_KEY);
+    } catch (e) {
+        return null;
+    }
+}
+const dismissedBanner = ref(readDismissedBanner());
+const bannerVisible = computed(() => !!banner.value
+    && (banner.value.dismissible === false || dismissedBanner.value !== banner.value.version));
+const bannerStyle = computed(() => ({
+    ...(banner.value?.bg_color ? { background: banner.value.bg_color } : {}),
+    ...(banner.value?.text_color ? { color: banner.value.text_color } : {}),
+}));
+function closeBanner() {
+    dismissedBanner.value = banner.value?.version ?? '';
+    try {
+        localStorage.setItem(BANNER_DISMISS_KEY, dismissedBanner.value);
+    } catch (e) {
+        // stockage indisponible (navigation privée…) : fermé pour cette page seulement
+    }
+}
 const footer = computed(() => site.value.footer ?? {});
 const footerPhones = computed(() => (footer.value.phones ?? []).filter(Boolean));
 const footerEmails = computed(() => (footer.value.emails ?? []).filter(Boolean));
@@ -51,19 +77,26 @@ function toggleSearch() {
     <div class="min-h-screen flex flex-col bg-background text-on-background">
         <a id="top" href="#top" class="cama-top-anchor" tabindex="-1" aria-hidden="true" />
         <div
-            v-if="banner && bannerVisible"
+            v-if="bannerVisible"
             id="site-info-banner"
             :class="{ 'is-warning': banner.type === 'warning' }"
+            :style="bannerStyle"
         >
             <div class="max-w-container-max-width mx-auto px-4 md:px-8 py-2 flex items-center justify-between gap-3">
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <span class="material-symbols-outlined text-[18px] shrink-0">{{ banner.type === 'warning' ? 'warning' : 'campaign' }}</span>
-                    <p class="truncate md:whitespace-normal" v-html="banner.message" />
+                    <div v-if="banner.scrolling" class="banner-marquee min-w-0 flex-1">
+                        <div class="banner-marquee-track" :style="{ animationDuration: `${banner.scroll_speed || 25}s` }">
+                            <p v-html="banner.message" />
+                            <p aria-hidden="true" v-html="banner.message" />
+                        </div>
+                    </div>
+                    <p v-else class="truncate md:whitespace-normal" v-html="banner.message" />
                     <a v-if="banner.link_url" :href="banner.link_url" class="hidden sm:inline-flex shrink-0 underline font-semibold ml-2">
                         {{ banner.link_label || 'En savoir plus' }}
                     </a>
                 </div>
-                <button type="button" class="banner-close shrink-0 p-1 rounded" aria-label="Fermer le bandeau" @click="bannerVisible = false">
+                <button v-if="banner.dismissible !== false" type="button" class="banner-close shrink-0 p-1 rounded" aria-label="Fermer le bandeau" @click="closeBanner">
                     <span class="material-symbols-outlined text-[18px]">close</span>
                 </button>
             </div>
@@ -274,11 +307,8 @@ function toggleSearch() {
                     </div>
                 </div>
                 <div class="pt-6 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-3 text-surface-variant text-xs">
-                    <p>© {{ new Date().getFullYear() }} CAMA — Caisse d'Assurance Maladie des Armées. Tous droits réservés.</p>
-                    <div class="flex gap-5">
-                        <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span> Burkina Faso</span>
-                        <span>Depuis 2020</span>
-                    </div>
+                    <p>© {{ currentYear }} Caisse d'Assurance Maladie des Armées (CAMA). Tous droits réservés.</p>
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-secondary"></span> Burkina Faso</span>
                 </div>
             </div>
         </footer>
