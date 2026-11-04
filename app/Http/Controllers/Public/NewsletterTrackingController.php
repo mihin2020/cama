@@ -23,14 +23,10 @@ class NewsletterTrackingController extends Controller
 
     public function click(string $token, CmsNewsletterCampaignService $campaigns)
     {
-        $encoded = request()->string('u')->toString();
-        $url = $encoded ? base64_decode($encoded) : '/';
+        // Seuls les liens générés par la plateforme (signés) sont suivis : jamais d'adresse libre.
+        $url = $campaigns->verifiedClickTarget($token, request()->query('u'), request()->query('s'));
 
-        if (! filter_var($url, FILTER_VALIDATE_URL) && ! str_starts_with($url, '/')) {
-            $url = '/';
-        }
-
-        $target = $campaigns->recordClick($token, $url) ? $url : '/';
+        $target = $url !== null && $campaigns->recordClick($token, $url) ? $url : '/';
 
         return redirect()->away($target);
     }

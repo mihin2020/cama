@@ -367,6 +367,31 @@ HTML;
         ];
     }
 
+    /** Signature (HMAC) liant un lien de destination au jeton d'un envoi précis. */
+    public function signTrackedUrl(string $trackingToken, string $url): string
+    {
+        return hash_hmac('sha256', $trackingToken.'|'.$url, (string) config('app.key'));
+    }
+
+    /**
+     * Destination d'un clic, ou null si le lien n'a pas été généré par la plateforme
+     * (signature absente ou fausse) ou pointe vers un schéma dangereux (javascript:, data:…).
+     */
+    public function verifiedClickTarget(string $trackingToken, ?string $encodedUrl, ?string $signature): ?string
+    {
+        $url = $encodedUrl ? base64_decode($encodedUrl, true) : false;
+
+        if ($url === false || $url === '' || ! is_string($signature)
+            || ! hash_equals($this->signTrackedUrl($trackingToken, $url), $signature)) {
+            return null;
+        }
+
+        $scheme = strtolower((string) parse_url($url, PHP_URL_SCHEME));
+        $relative = str_starts_with($url, '/') && ! str_starts_with($url, '//') && ! str_starts_with($url, '/\\');
+
+        return $relative || in_array($scheme, ['http', 'https', 'mailto', 'tel'], true) ? $url : null;
+    }
+
     private function rewriteLinksForTracking(string $html, string $trackingToken): string
     {
         return preg_replace_callback(
@@ -376,9 +401,12 @@ HTML;
                 if (str_starts_with($url, '#') || str_starts_with($url, '{{')) {
                     return $matches[0];
                 }
+                // Le lien de destination est signé : sans cela, n'importe quel abonné (l'inscription est
+                // publique) pourrait fabriquer un lien du site qui redirige vers une adresse de son choix.
                 $tracked = route('public.newsletter.track.click', [
                     'token' => $trackingToken,
                     'u' => base64_encode($url),
+                    's' => $this->signTrackedUrl($trackingToken, $url),
                 ]);
 
                 return 'href="'.e($tracked).'"';
