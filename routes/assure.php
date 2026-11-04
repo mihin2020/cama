@@ -36,7 +36,9 @@ Route::middleware('guest.assure')->group(function () {
         ->name('password.update');
 });
 
-Route::middleware('auth:assure')->group(function () {
+// auth.session : un changement ou une réinitialisation de mot de passe (ou « déconnecter mes autres
+// appareils ») invalide les autres sessions et les cookies « Se souvenir de moi » déjà émis.
+Route::middleware(['auth:assure', 'auth.session'])->group(function () {
     Route::post('/deconnexion', [AssureLoginController::class, 'destroy'])->name('logout');
 
     Route::get('/verification-email', [EmailVerificationController::class, 'show'])->name('verification.notice');
@@ -46,7 +48,7 @@ Route::middleware('auth:assure')->group(function () {
         ->name('verification.resend');
 });
 
-Route::middleware(['auth:assure', 'assure.verified'])->group(function () {
+Route::middleware(['auth:assure', 'auth.session', 'assure.verified'])->group(function () {
     Route::get('/tableau-de-bord', AssureDashboardController::class)->name('dashboard');
 
     Route::get('/ma-famille', [MembreController::class, 'index'])->name('membres');

@@ -12,6 +12,7 @@ use App\Services\AssureLogin2faService;
 use App\Services\PlatformSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -170,6 +171,9 @@ class ProfilController extends Controller
         }
 
         $assure->update(['password' => $data['password']]);
+
+        // Les autres appareils (et un éventuel intrus) sont déconnectés ; cette session reste valide.
+        Auth::guard('assure')->logoutOtherDevices($data['password']);
 
         return back()->with('success', 'Mot de passe mis à jour.');
 
