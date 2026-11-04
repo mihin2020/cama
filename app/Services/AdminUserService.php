@@ -8,6 +8,7 @@ use App\Support\AdminPermissions;
 use App\Support\SqlLike;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -73,11 +74,19 @@ class AdminUserService
         $this->assertCanManageRole($actor, $role);
         $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? [], $user);
 
+        $email = strtolower(trim($data['email']));
+        $emailChanged = $email !== strtolower($user->email);
+        if ($emailChanged) {
+            $this->assertCanChangeEmail($actor, $user);
+            // Un lien de réinitialisation demandé avant le changement ne doit pas survivre.
+            Password::broker('admin_users')->deleteToken($user);
+        }
+
         $user->fill([
             'nom' => strtoupper(trim($data['nom'])),
             'prenom' => trim($data['prenom']),
             'grade' => $data['grade'] ?? null,
-            'email' => strtolower(trim($data['email'])),
+            'email' => $email,
             'role' => $role,
             'permissions' => $permissions,
             'matricule_interne' => $data['matricule_interne'] ?? $user->matricule_interne,
@@ -282,6 +291,31 @@ class AdminUserService
         }
 
         return $permissions;
+    }
+
+    /**
+     * L'adresse e-mail d'un compte déjà utilisé sert à récupérer son mot de passe : la changer
+     * reviendrait à en prendre le contrôle (« mot de passe oublié »). Réservé à un administrateur,
+     * jamais sur son propre compte. Un compte invité qui ne s'est jamais connecté reste corrigeable
+     * (faute de frappe dans l'invitation).
+     */
+    private function assertCanChangeEmail(AdminUser $actor, AdminUser $target): void
+    {
+        if (! $target->last_login_at) {
+            return;
+        }
+
+        if ($actor->id === $target->id) {
+            throw ValidationException::withMessages([
+                'email' => 'Vous ne pouvez pas modifier votre propre adresse e-mail : demandez à un autre administrateur.',
+            ]);
+        }
+
+        if ($actor->role !== AdminRole::Administrateur) {
+            throw ValidationException::withMessages([
+                'email' => "Seul un administrateur peut modifier l'adresse e-mail d'un compte déjà actif.",
+            ]);
+        }
     }
 
     private function assertCanManageRole(AdminUser $actor, AdminRole $role): void

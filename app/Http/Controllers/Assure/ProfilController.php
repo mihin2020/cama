@@ -3,13 +3,18 @@
 namespace App\Http\Controllers\Assure;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AssureEmailChangedMail;
 use App\Models\Assure;
 use App\Models\AssureConnexion;
 use App\Services\AssureDashboardService;
+use App\Services\AssureEmailVerificationService;
+use App\Services\AssureLogin2faService;
 use App\Services\PlatformSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -76,44 +81,74 @@ class ProfilController extends Controller
 
     public function update(Request $request): RedirectResponse
     {
-
         $assure = auth('assure')->user();
 
         $data = $request->validate([
-
             'email' => ['required', 'email', 'max:255'],
-
             'telephone' => ['required', 'string', 'max:80'],
-
             'personne_a_prevenir' => ['nullable', 'string', 'max:200'],
-
             'tel_personne_a_prevenir' => ['nullable', 'string', 'max:80'],
-
             'numero_cama' => ['nullable', 'string', 'max:50'],
-
         ]);
 
-        if ($data['email'] !== $assure->email && Assure::query()->where('email', $data['email'])->where('id', '!=', $assure->id)->exists()) {
+        $oldEmail = $assure->email;
+        $emailChanged = strcasecmp(trim($data['email']), $oldEmail) !== 0;
 
-            throw ValidationException::withMessages(['email' => 'Cette adresse e-mail est déjà utilisée.']);
+        if ($emailChanged) {
+            // L'adresse sert à récupérer le compte (« mot de passe oublié ») : sans mot de passe,
+            // une session volée suffirait à s'en emparer.
+            if (! Hash::check((string) $request->input('current_password'), $assure->password)) {
+                throw ValidationException::withMessages([
+                    'current_password' => "Saisissez votre mot de passe actuel pour changer d'adresse e-mail.",
+                ]);
+            }
+
+            if (Assure::query()->where('email', $data['email'])->where('id', '!=', $assure->id)->exists()) {
+                throw ValidationException::withMessages(['email' => 'Cette adresse e-mail est déjà utilisée.']);
+            }
+
+            // Un lien de réinitialisation demandé avant le changement ne doit pas survivre.
+            \Illuminate\Support\Facades\Password::broker('assures')->deleteToken($assure);
         }
 
         $assure->update([
-
             'email' => $data['email'],
-
             'telephone' => $data['telephone'],
-
             'personne_a_prevenir' => $data['personne_a_prevenir'],
-
             'tel_personne_a_prevenir' => $data['tel_personne_a_prevenir'],
-
             'numero_cama' => $data['numero_cama'] ?: $assure->numero_cama,
-
         ]);
 
-        return back()->with('success', 'Coordonnées mises à jour.');
+        if (! $emailChanged) {
+            return back()->with('success', 'Coordonnées mises à jour.');
+        }
 
+        // La nouvelle adresse doit prouver qu'elle est bien à l'assuré avant de rouvrir l'espace.
+        $journal = $assure->journal ?? [];
+        $journal[] = ['date' => now()->format('d/m/Y H:i'), 'libelle' => 'Adresse e-mail modifiée (à revérifier)'];
+
+        $assure->forceFill([
+            'email_verified_at' => null,
+            'email_verification_code' => null,
+            'email_verification_expires_at' => null,
+            'journal' => $journal,
+        ])->save();
+
+        app(AssureEmailVerificationService::class)->sendCode($assure);
+        $this->notifyOldAddress($assure, $oldEmail);
+
+        return redirect()->route('assure.verification.notice')
+            ->with('success', "Adresse e-mail modifiée. Un code de vérification a été envoyé à {$assure->email}.");
+    }
+
+    /** Prévient l'ancienne adresse : si le changement n'est pas le sien, il peut réagir. */
+    private function notifyOldAddress(Assure $assure, string $oldEmail): void
+    {
+        try {
+            Mail::to($oldEmail)->send(new AssureEmailChangedMail($assure, app(AssureLogin2faService::class)->maskEmail($assure->email)));
+        } catch (\Throwable $e) {
+            Log::warning("Prévenance de l'ancienne adresse impossible", ['assure_id' => $assure->id, 'error' => $e->getMessage()]);
+        }
     }
 
     public function updatePassword(Request $request): RedirectResponse

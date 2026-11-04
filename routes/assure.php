@@ -63,7 +63,7 @@ Route::middleware(['auth:assure', 'assure.verified'])->group(function () {
     Route::post('/notifications/tout-lu', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
 
     Route::get('/profil', [ProfilController::class, 'show'])->name('profil');
-    Route::patch('/profil', [ProfilController::class, 'update'])->name('profil.update');
+    Route::patch('/profil', [ProfilController::class, 'update'])->middleware('throttle:10,1')->name('profil.update');
     Route::patch('/profil/rattachement', [ProfilController::class, 'updateRattachement'])->name('profil.rattachement');
     Route::patch('/profil/mot-de-passe', [ProfilController::class, 'updatePassword'])->name('profil.password');
     Route::patch('/profil/2fa', [ProfilController::class, 'toggle2fa'])->name('profil.2fa');

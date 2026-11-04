@@ -20,7 +20,10 @@ const contactForm = useForm({
     personne_a_prevenir: props.profil.personneAPrevenir ?? '',
     tel_personne_a_prevenir: props.profil.telPersonneAPrevenir ?? '',
     numero_cama: props.profil.numeroCama ?? '',
+    current_password: '',
 });
+
+const emailChanged = computed(() => contactForm.email.trim().toLowerCase() !== String(props.profil.email ?? '').toLowerCase());
 
 const pwdForm = useForm({
     current_password: '',
@@ -101,6 +104,7 @@ function saveContact() {
     contactForm.patch(route('assure.profil.update'), {
         preserveScroll: true,
         onSuccess: () => showToast('check_circle', 'Coordonnées mises à jour.'),
+        onFinish: () => contactForm.reset('current_password'),
     });
 }
 
@@ -247,6 +251,13 @@ function displayValue(value) {
                     <div class="space-y-1.5">
                         <label class="text-sm font-medium text-on-surface-variant ml-1">Adresse e-mail</label>
                         <input v-model="contactForm.email" :class="inputCls" type="email" required />
+                        <p v-if="contactForm.errors.email" class="text-xs text-error ml-1">{{ contactForm.errors.email }}</p>
+                    </div>
+                    <div v-if="emailChanged" class="space-y-1.5">
+                        <label class="text-sm font-medium text-on-surface-variant ml-1">Mot de passe actuel</label>
+                        <input v-model="contactForm.current_password" :class="inputCls" type="password" autocomplete="current-password" required />
+                        <p class="text-[11px] text-on-surface-variant ml-1">Requis pour changer d'adresse e-mail. Un code de vérification sera envoyé à la nouvelle adresse.</p>
+                        <p v-if="contactForm.errors.current_password" class="text-xs text-error ml-1">{{ contactForm.errors.current_password }}</p>
                     </div>
                     <div class="space-y-1.5 md:col-span-2">
                         <label class="text-sm font-medium text-on-surface-variant ml-1">Téléphone(s)</label>
