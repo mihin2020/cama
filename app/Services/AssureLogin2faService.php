@@ -16,6 +16,9 @@ class AssureLogin2faService
 
     private const MAX_USED_CODES = 500;
 
+    /** Codes incorrects tolérés avant d'annuler le code en cours (4 chiffres = 10 000 combinaisons). */
+    public const MAX_ATTEMPTS = 5;
+
     /**
      * @return string|null Code affiché uniquement si le mailer est « log » (dev sans SMTP)
      */
@@ -23,16 +26,13 @@ class AssureLogin2faService
     {
         $used = $this->usedCodes($assure);
 
-        if ($assure->login_2fa_code) {
-            $used->push($assure->login_2fa_code);
-        }
-
         $code = $this->generateUniqueCode($used);
-        $used->push($code);
+        $used->push($this->fingerprint($code));
 
         $assure->forceFill([
-            'login_2fa_code' => $code,
+            'login_2fa_code' => $this->fingerprint($code),
             'login_2fa_expires_at' => now()->addMinutes(self::EXPIRATION_MINUTES),
+            'login_2fa_attempts' => 0,
             'login_2fa_used_codes' => $used->unique()->take(self::MAX_USED_CODES)->values()->all(),
         ])->save();
 
@@ -63,9 +63,23 @@ class AssureLogin2faService
 
         $normalized = $this->normalizeCode($code);
 
-        if (! hash_equals($assure->login_2fa_code, $normalized)) {
+        if (! hash_equals($assure->login_2fa_code, $this->fingerprint($normalized))) {
+            $attempts = $assure->login_2fa_attempts + 1;
+            $remaining = self::MAX_ATTEMPTS - $attempts;
+
+            if ($remaining <= 0) {
+                // Le code en cours est annulé : il faut en demander un nouveau.
+                $this->clearCode($assure);
+
+                throw ValidationException::withMessages([
+                    'code' => 'Trop de codes incorrects. Ce code est annulé : cliquez sur « Renvoyer le code » pour en recevoir un nouveau.',
+                ]);
+            }
+
+            $assure->forceFill(['login_2fa_attempts' => $attempts])->save();
+
             throw ValidationException::withMessages([
-                'code' => 'Code incorrect. Vérifiez le code reçu par e-mail.',
+                'code' => "Code incorrect. {$remaining} tentative(s) restante(s).",
             ]);
         }
 
@@ -78,6 +92,7 @@ class AssureLogin2faService
         $assure->forceFill([
             'login_2fa_code' => null,
             'login_2fa_expires_at' => null,
+            'login_2fa_attempts' => 0,
             'login_2fa_used_codes' => $used->unique()->take(self::MAX_USED_CODES)->values()->all(),
             'journal' => $journal,
         ])->save();
@@ -88,6 +103,7 @@ class AssureLogin2faService
         $assure->forceFill([
             'login_2fa_code' => null,
             'login_2fa_expires_at' => null,
+            'login_2fa_attempts' => 0,
         ])->save();
     }
 
@@ -106,14 +122,14 @@ class AssureLogin2faService
 
     private function usedCodes(Assure $assure): Collection
     {
-        return collect($assure->login_2fa_used_codes ?? [])->map(fn ($c) => $this->normalizeCode((string) $c));
+        return collect($assure->login_2fa_used_codes ?? [])->map(fn ($c) => (string) $c);
     }
 
     private function generateUniqueCode(Collection $used): string
     {
         for ($attempt = 0; $attempt < 200; $attempt++) {
             $code = $this->normalizeCode((string) random_int(0, 9999));
-            if (! $used->contains($code)) {
+            if (! $used->contains($this->fingerprint($code))) {
                 return $code;
             }
         }
@@ -121,6 +137,12 @@ class AssureLogin2faService
         throw ValidationException::withMessages([
             'code' => 'Impossible de générer un nouveau code. Réessayez dans quelques instants.',
         ]);
+    }
+
+    /** Le code n'est jamais stocké en clair : une fuite de la base ne permet pas de le rejouer. */
+    public function fingerprint(string $code): string
+    {
+        return hash_hmac('sha256', $code, (string) config('app.key'));
     }
 
     private function normalizeCode(string $code): string

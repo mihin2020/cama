@@ -53,6 +53,7 @@ class Assure extends Authenticatable
             'email_verified_at' => 'datetime',
             'login_2fa_expires_at' => 'datetime',
             'login_2fa_used_codes' => 'array',
+            'login_2fa_attempts' => 'integer',
             'password' => 'hashed',
             'deux_fa_active' => 'boolean',
             'statut' => AssureStatut::class,

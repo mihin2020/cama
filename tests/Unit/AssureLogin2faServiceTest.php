@@ -28,7 +28,7 @@ class AssureLogin2faServiceTest extends TestCase
         ]);
 
         $assure->forceFill([
-            'login_2fa_code' => '1234',
+            'login_2fa_code' => app(AssureLogin2faService::class)->fingerprint('1234'),
             'login_2fa_expires_at' => now()->addMinutes(10),
         ])->save();
 
@@ -55,6 +55,48 @@ class AssureLogin2faServiceTest extends TestCase
 
         $this->expectException(ValidationException::class);
         $service->verify($assure, '9999');
+    }
+
+    public function test_code_is_cancelled_after_too_many_wrong_attempts(): void
+    {
+        $service = app(AssureLogin2faService::class);
+        $assure = $this->makeAssureWithCode('brute@example.bf');
+
+        for ($i = 1; $i < AssureLogin2faService::MAX_ATTEMPTS; $i++) {
+            try {
+                $service->verify($assure->fresh(), '0000');
+                $this->fail('Un code incorrect doit être refusé.');
+            } catch (ValidationException $e) {
+                $this->assertStringContainsString('restante', $e->errors()['code'][0]);
+            }
+        }
+
+        // Dernière tentative autorisée : le code est annulé.
+        try {
+            $service->verify($assure->fresh(), '0000');
+            $this->fail('Un code incorrect doit être refusé.');
+        } catch (ValidationException $e) {
+            $this->assertStringContainsString('annulé', $e->errors()['code'][0]);
+        }
+
+        $this->assertNull($assure->fresh()->login_2fa_code);
+
+        // Même le bon code ne passe plus : il faut en redemander un.
+        $this->expectException(ValidationException::class);
+        $service->verify($assure->fresh(), '1234');
+    }
+
+    public function test_code_is_never_stored_in_clear_and_attempts_reset_on_new_code(): void
+    {
+        $service = app(AssureLogin2faService::class);
+        $assure = $this->makeAssureWithCode('reset@example.bf');
+        $assure->forceFill(['login_2fa_attempts' => 3])->save();
+
+        $service->sendCode($assure->fresh());
+        $fresh = $assure->fresh();
+
+        $this->assertSame(0, $fresh->login_2fa_attempts);
+        $this->assertSame(64, strlen($fresh->login_2fa_code), 'Le code doit être stocké sous forme d\'empreinte.');
     }
 
     public function test_mask_email_hides_local_part(): void
