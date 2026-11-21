@@ -45,3 +45,8 @@ Route::get('/mention_legales', [LegalController::class, 'legal'])->name('public.
 Route::get('/{slug}', [PageController::class, 'show'])
     ->where('slug', '[A-Za-z0-9_-]+')
     ->name('public.pages.show');
+
+// Toute autre adresse : page 404 personnalisée. Passer par une route (et non directement par le
+// gestionnaire d'exceptions) fait tourner les middlewares web : session, utilisateur connecté,
+// logo et couleurs du site sont alors disponibles sur la page d'erreur.
+Route::fallback(fn () => abort(404));

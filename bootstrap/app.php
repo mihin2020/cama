@@ -66,4 +66,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        // Pages d'erreur personnalisées (403, 404, 419, 429, 500, 503) : voir App\Support\ErrorPage.
+        $exceptions->respond(
+            fn (\Symfony\Component\HttpFoundation\Response $response, \Throwable $e, Request $request) => \App\Support\ErrorPage::respond($response, $request),
+        );
     })->create();
