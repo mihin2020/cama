@@ -46,10 +46,9 @@ class TwoFactorController extends Controller
 
         $service->verify($admin, $data['code']);
 
-        $remember = (bool) $request->session()->pull('admin_2fa_remember', false);
         $request->session()->forget('admin_2fa_pending');
 
-        Auth::guard('admin')->login($admin, $remember);
+        Auth::guard('admin')->login($admin);
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard'));

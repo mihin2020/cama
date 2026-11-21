@@ -20,7 +20,6 @@ class LoginController extends Controller
         return Inertia::render('Admin/Auth/Login', [
             'step' => 'credentials',
             'status' => session('status'),
-            'rememberDays' => self::rememberDays(),
         ]);
     }
 
@@ -61,7 +60,6 @@ class LoginController extends Controller
         if ($admin->deux_fa_active) {
             $request->session()->regenerate();
             $request->session()->put('admin_2fa_pending', $admin->id);
-            $request->session()->put('admin_2fa_remember', $request->boolean('remember'));
 
             $devCode = $twoFactor->sendCode($admin);
 
@@ -70,7 +68,9 @@ class LoginController extends Controller
                 ->with('dev_2fa_code', $devCode);
         }
 
-        $guard->login($admin, $request->boolean('remember'));
+        // Pas de « Se souvenir de moi » dans l'administration : la session s'arrête à la fermeture
+        // du navigateur ou après l'inactivité prévue, jamais de connexion persistante.
+        $guard->login($admin);
         $request->session()->regenerate();
 
         return redirect()->intended(route('admin.dashboard'));

@@ -49,17 +49,15 @@ class AdminAuthSecurityTest extends TestCase
         $this->assertNotNull($admin->fresh()->last_login_at);
     }
 
-    public function test_remember_cookie_is_limited_to_configured_duration(): void
+    public function test_admin_login_never_creates_a_remember_me_cookie(): void
     {
         $this->makeAdmin();
 
+        // Même si l'option est envoyée à la main, aucune connexion persistante n'est créée.
         $response = $this->login(['remember' => true]);
 
-        $cookie = $response->getCookie(Auth::guard('admin')->getRecallerName(), false);
-        $this->assertNotNull($cookie);
-
-        $days = ($cookie->getExpiresTime() - time()) / 86400;
-        $this->assertEqualsWithDelta(3, $days, 0.1);
+        $this->assertNull($response->getCookie(Auth::guard('admin')->getRecallerName(), false));
+        $this->get(route('admin.login'))->assertDontSee('Se souvenir de moi');
     }
 
     private function idleState(int $secondsAgo, bool $remembered = false): array
@@ -159,7 +157,7 @@ class AdminAuthSecurityTest extends TestCase
 
         $this->login(['remember' => true]);
 
-        $this->assertTrue(session('admin_session.remembered'));
+        $this->assertFalse(session('admin_session.remembered'));
         $this->assertEqualsWithDelta(time(), session('admin_session.last_activity'), 2);
     }
 

@@ -1,6 +1,5 @@
 <script setup>
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
-import Checkbox from '@/Components/Checkbox.vue';
 import CamaLogo from '@/Components/CamaLogo.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
 import InputError from '@/Components/InputError.vue';
@@ -19,10 +18,6 @@ const props = defineProps({
         type: Number,
         default: 6,
     },
-    rememberDays: {
-        type: Number,
-        default: 7,
-    },
 });
 
 const page = usePage();
@@ -32,7 +27,6 @@ const dev2faCode = computed(() => page.props.flash?.dev_2fa_code ?? null);
 const form = useForm({
     email: '',
     password: '',
-    remember: false,
 });
 
 const twoFaForm = useForm({ code: '' });
@@ -164,14 +158,6 @@ function cancel2fa() {
                                     required
                                 />
                                 <InputError class="mt-1" :message="form.errors.password" />
-                            </div>
-
-                            <div>
-                                <label class="flex items-center gap-2 text-sm text-on-surface-variant">
-                                    <Checkbox v-model:checked="form.remember" name="remember" />
-                                    Se souvenir de moi ({{ rememberDays }} jours)
-                                </label>
-                                <p class="mt-1 ml-6 text-[11px] text-on-surface-variant">À ne pas cocher sur un poste partagé ou public.</p>
                             </div>
 
                             <p class="text-right">
