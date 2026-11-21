@@ -734,6 +734,7 @@ const detailLotFifPiece = computed(() => {
                         v-model="batchGestionnaire"
                         class="flex-1"
                         :options="assignOptions()"
+                        :panel-min-width="460"
                         placeholder="Choisir un gestionnaire…"
                         search-placeholder="Rechercher un gestionnaire…"
                     />
@@ -751,8 +752,9 @@ const detailLotFifPiece = computed(() => {
                 v-if="canBatchAssign"
                 v-model="filterGestionnaire"
                 button-class="px-3 py-3 sm:py-2 text-sm sm:text-xs"
-                class="filter-field"
+                class="filter-field sm:col-span-2 lg:w-96"
                 :options="filterOptions"
+                :panel-min-width="480"
                 placeholder="Tous les gestionnaires affectés"
                 search-placeholder="Rechercher un gestionnaire…"
             />
@@ -846,6 +848,7 @@ const detailLotFifPiece = computed(() => {
                                     class="max-w-[280px]"
                                     :model-value="family.gestionnaire"
                                     :options="assignOptions(family.gestionnaire)"
+                                    :panel-min-width="460"
                                     search-placeholder="Rechercher un gestionnaire…"
                                     @update:model-value="(name) => assignFamily(family.assureId, name)"
                                 />
@@ -966,6 +969,7 @@ const detailLotFifPiece = computed(() => {
                                 button-class="px-3 py-2 text-sm"
                                 :model-value="detailFamily.gestionnaire"
                                 :options="assignOptions(detailFamily.gestionnaire)"
+                                :panel-min-width="460"
                                 search-placeholder="Rechercher un gestionnaire…"
                                 @update:model-value="(name) => assignFamily(detailFamily.assureId, name)"
                             />

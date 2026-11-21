@@ -9,12 +9,11 @@ use App\Models\Dossier;
 use App\Models\PlatformSetting;
 use App\Services\AdminDossierService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 /**
- * Validation à deux niveaux : nul ne valide en second niveau un dossier qu'il a lui-même traité,
- * même s'il est superviseur et que le dossier lui a été affecté.
+ * Validation à deux niveaux : seule la validation d'un GESTIONNAIRE passe ensuite par un superviseur.
+ * Quand un superviseur valide (y compris un dossier qui lui est affecté), c'est définitif.
  */
 class DossierTwoLevelValidationTest extends TestCase
 {
@@ -54,29 +53,15 @@ class DossierTwoLevelValidationTest extends TestCase
         return app(AdminDossierService::class);
     }
 
-    public function test_a_supervisor_cannot_give_the_final_validation_to_a_dossier_he_processed_himself(): void
+    public function test_a_dossier_assigned_to_a_supervisor_is_validated_directly_by_him(): void
     {
         $this->twoLevels(true);
         $a = $this->account('Alpha', 'superviseur');
-        $b = $this->account('Bravo', 'superviseur');
         $dossier = $this->dossier($a->display_name);
 
-        // Son premier passage vaut validation de niveau 1 : le dossier part à la supervision.
+        // Aucun second contrôle : sa validation est définitive, même avec la double validation activée.
         $this->service()->validate($dossier, $a);
-        $this->assertSame('En attente supervision', $dossier->fresh()->statut);
-        $this->assertSame($a->id, $dossier->fresh()->wizard_meta['niveau1_par']);
 
-        // Il ne peut pas le valider une seconde fois lui-même.
-        try {
-            $this->service()->validate($dossier->fresh(), $a);
-            $this->fail('Le second niveau ne doit pas être donné par la même personne.');
-        } catch (ValidationException $e) {
-            $this->assertStringContainsString('autre superviseur', $e->errors()['statut'][0]);
-        }
-        $this->assertSame('En attente supervision', $dossier->fresh()->statut);
-
-        // Un autre superviseur donne la validation finale.
-        $this->service()->validate($dossier->fresh(), $b);
         $this->assertSame('Validé', $dossier->fresh()->statut);
     }
 

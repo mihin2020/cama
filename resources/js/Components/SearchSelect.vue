@@ -18,6 +18,9 @@ const props = defineProps({
     // Texte affiché quand la valeur courante n'est pas dans la liste (ex. compte inactif).
     fallbackLabel: { type: String, default: '' },
     buttonClass: { type: String, default: 'px-3 py-2 text-xs' },
+    // Largeur minimale de la liste (px) : elle peut être plus large que le champ pour que les noms,
+    // les rôles et les indications tiennent sur une ligne.
+    panelMinWidth: { type: Number, default: 260 },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -45,9 +48,11 @@ function place() {
     if (!rect) return;
     const below = window.innerHeight - rect.bottom;
     const height = 280;
+    const width = Math.min(Math.max(rect.width, props.panelMinWidth), window.innerWidth - 16);
     panelStyle.value = {
-        left: `${rect.left}px`,
-        width: `${Math.max(rect.width, 240)}px`,
+        // Jamais coupée par le bord droit de l'écran.
+        left: `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`,
+        width: `${width}px`,
         ...(below < height && rect.top > below
             ? { bottom: `${window.innerHeight - rect.top + 4}px` }
             : { top: `${rect.bottom + 4}px` }),

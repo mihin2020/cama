@@ -298,30 +298,17 @@ class AdminDossierService
                 ]);
             }
 
-            // Validation à deux niveaux : la validation de l'agent qui instruit le dossier (niveau 1)
-            // le transmet à la supervision au lieu de le valider définitivement. Instruit le dossier :
-            // un gestionnaire (sans « Valider en second niveau »), mais aussi un superviseur à qui il est
-            // affecté — nul ne valide en second niveau un dossier qu'il a lui-même traité.
-            $niveau1 = $this->isGestionnaire($admin)
-                || ($admin !== null && $dossier->statut !== 'En attente supervision' && $dossier->gestionnaire === $admin->display_name);
-
-            if ($this->settings->validation2Niveaux() && $niveau1) {
-                $dossier->update([
-                    'statut' => 'En attente supervision',
-                    'wizard_meta' => [...($dossier->wizard_meta ?? []), 'niveau1_par' => $admin->id],
-                ]);
+            // Validation à deux niveaux : seule la validation d'un gestionnaire (niveau 1) transmet le dossier
+            // à la supervision. Quand la validation est faite par un superviseur — y compris sur un dossier
+            // qui lui est affecté — elle est définitive : il n'y a rien à faire valider de nouveau.
+            if ($this->settings->validation2Niveaux() && $this->isGestionnaire($admin)) {
+                $dossier->update(['statut' => 'En attente supervision']);
                 $this->dossiers->appendJournal($dossier, "Validation niveau 1 par {$admin->display_name} — transmis à la supervision");
 
                 return;
             }
 
             $niveau2 = $dossier->statut === 'En attente supervision';
-
-            if ($niveau2 && $admin !== null && ($dossier->wizard_meta['niveau1_par'] ?? null) === $admin->id) {
-                throw ValidationException::withMessages([
-                    'statut' => 'Vous avez traité ce dossier au premier niveau : un autre superviseur doit le valider en second niveau.',
-                ]);
-            }
 
             $dossier->update([
                 'statut' => 'Validé',
