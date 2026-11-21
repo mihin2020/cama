@@ -155,7 +155,7 @@ function cancel2fa() {
                                         </div>
 
                                         <form @submit.prevent="submit2fa">
-                                            <p class="text-center text-sm font-label-md text-on-surface-variant mb-4">Code de 6 caractères (chiffres et lettres)</p>
+                                            <p class="text-center text-sm font-label-md text-on-surface-variant mb-4">Code de 6 caractères</p>
                                             <CamaCodeInput
                                                 ref="codeInput"
                                                 v-model="twoFaForm.code"

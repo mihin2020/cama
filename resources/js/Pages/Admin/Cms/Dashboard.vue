@@ -1,12 +1,23 @@
 <script setup>
+import CamaPagination from '@/Components/CamaPagination.vue';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     stats: Object,
     activity: Array,
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 15, total: 0, perPageOptions: [15, 30, 60] }) },
+});
+
+// Journal d'activité paginé par le serveur : seules ces données sont rechargées au changement de page.
+const activityTop = ref(null);
+const { goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.cms.dashboard',
+    only: ['activity', 'pagination'],
+    anchor: activityTop,
 });
 
 const { can } = useAdminPermissions();
@@ -86,7 +97,7 @@ const iconBg = (color) => {
             </Link>
         </div>
 
-        <div class="assure-card p-5">
+        <div ref="activityTop" class="assure-card p-5 scroll-mt-24">
             <h3 class="font-semibold text-sm mb-4">Activité récente du studio</h3>
             <div class="space-y-3">
                 <div
@@ -104,6 +115,13 @@ const iconBg = (color) => {
                 </div>
                 <p v-if="!activity.length" class="text-xs text-on-surface-variant text-center py-4">Aucune activité récente.</p>
             </div>
+            <CamaPagination
+                v-bind="pagination"
+                class="mt-3 border-t border-outline-variant"
+                label="événement(s)"
+                @change="goToPage"
+                @per-page="setPerPage"
+            />
         </div>
     </CmsLayout>
 </template>

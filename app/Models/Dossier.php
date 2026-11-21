@@ -25,6 +25,7 @@ class Dossier extends Model
         'journal',
         'pieces',
         'wizard_meta',
+        'fif_donnees',
         'lot_id',
         'lot_type',
     ];
@@ -38,6 +39,7 @@ class Dossier extends Model
             'journal' => 'array',
             'pieces' => 'array',
             'wizard_meta' => 'array',
+            'fif_donnees' => 'array',
         ];
     }
 

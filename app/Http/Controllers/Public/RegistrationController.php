@@ -21,6 +21,8 @@ class RegistrationController extends Controller
             'orgStructure' => $settings->orgStructure(),
             'inscriptionDocuments' => $settings->activeInscriptionDocuments(),
             'inscriptionFields' => $settings->inscriptionFieldsMap(),
+            // Sections et champs ajoutés par l'administration (étape « Informations complémentaires »).
+            'fifSchema' => app(\App\Services\FifSchemaService::class)->schema('assure'),
         ]);
     }
 
@@ -49,7 +51,7 @@ class RegistrationController extends Controller
         }
 
         return redirect()->route('assure.verification.notice')
-            ->with('success', "Votre demande d'inscription a été enregistrée. Un code de vérification de 6 caractères (chiffres et lettres) a été envoyé à {$assure->email}.");
+            ->with('success', "Votre demande d'inscription a été enregistrée. Un code de vérification de 6 caractères a été envoyé à {$assure->email}.");
     }
 
     /**

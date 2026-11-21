@@ -6,6 +6,7 @@ use App\Enums\AssureStatut;
 use App\Http\Controllers\Controller;
 use App\Models\Assure;
 use App\Services\AssureRegistrationService;
+use App\Support\StoredFileResponse;
 use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -122,12 +123,9 @@ class InscriptionController extends Controller
         );
         abort_unless(Storage::disk('local')->exists($path), 404);
 
-        // Téléchargé sous son nom normalisé (ASS_<N° FIF>_INSCR-…), jamais affiché dans le navigateur.
-        return response()->download(
-            Storage::disk('local')->path($path),
-            $document['filename'] ?? basename($path),
-            ['X-Content-Type-Options' => 'nosniff'],
-        );
+        // « Visualiser » (?inline=1) l'ouvre dans le navigateur ; sinon il est téléchargé sous son nom
+        // normalisé (ASS_<N° FIF>_INSCR-…).
+        return StoredFileResponse::make(Storage::disk('local')->path($path), $document['filename'] ?? null, $request->boolean('inline'));
     }
 
     private function formatRegistration(Assure $assure): array
@@ -155,6 +153,7 @@ class InscriptionController extends Controller
             'email' => $assure->email,
             'personneAPrevenir' => $assure->personne_a_prevenir,
             'telPersonneAPrevenir' => $assure->tel_personne_a_prevenir,
+            'fifSections' => app(\App\Services\FifSchemaService::class)->display('assure', $assure->fif_donnees),
             'statut' => $assure->statut->value,
             'statutLabel' => $assure->statut->label(),
             'motifRefus' => $assure->motif_refus,

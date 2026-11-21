@@ -114,15 +114,36 @@ class FifSchemaService
      *
      * @return array<string, list<mixed>>
      */
-    public function rules(string $cible, string $prefix = 'fif'): array
+    public function rules(string $cible, string $prefix = 'fif', bool $enforceRequired = true): array
     {
         $rules = [];
 
         foreach ($this->fields($cible) as $field) {
-            $rules["{$prefix}.{$field['code']}"] = $this->fieldRules($field);
+            // Brouillon : le type est contrôlé, mais rien n'est exigé (le membre peut être complété plus tard).
+            $rules["{$prefix}.{$field['code']}"] = $this->fieldRules($enforceRequired ? $field : [...$field, 'obligatoire' => false]);
         }
 
         return $rules;
+    }
+
+    /**
+     * Libellés des champs obligatoires non renseignés (soumission d'un membre).
+     *
+     * @param  array<string, mixed>|null  $values
+     * @return list<string>
+     */
+    public function missingRequired(string $cible, ?array $values): array
+    {
+        return collect($this->fields($cible))
+            ->filter(fn (array $field) => $field['obligatoire'])
+            ->filter(function (array $field) use ($values) {
+                $value = $values[$field['code']] ?? null;
+
+                return $field['type'] === 'checkbox' ? ! $value : ($value === null || (is_string($value) && trim($value) === ''));
+            })
+            ->pluck('libelle')
+            ->values()
+            ->all();
     }
 
     /** @param  array<string, mixed>  $field */

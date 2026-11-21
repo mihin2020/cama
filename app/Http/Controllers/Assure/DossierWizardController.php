@@ -70,6 +70,11 @@ class DossierWizardController extends Controller
             'certificatScolarite' => $settings->certificatScolarite(),
             'membrePhoto' => $settings->membrePhoto(),
             'fifSigneeRequise' => $settings->fifSigneeRequise(),
+            // Sections et champs ajoutés par l'administration pour chaque type de membre.
+            'fifSchema' => [
+                'conjoint' => app(\App\Services\FifSchemaService::class)->schema('conjoint'),
+                'enfant' => app(\App\Services\FifSchemaService::class)->schema('enfant'),
+            ],
             'hasValidatedMembers' => $hasValidatedMembers,
             'validatedMembers' => $validatedMembers,
             'lotType' => $lotType,
@@ -200,6 +205,7 @@ class DossierWizardController extends Controller
             'conjoints.*.removed_pieces.*' => ['string', 'max:150'],
             'conjoints.*.piece_files' => ['nullable', 'array'],
             'conjoints.*.piece_files.*' => [new MemberPieceFile],
+            'conjoints.*.fif' => ['nullable', 'array'],
             'enfants.*.id' => ['nullable', 'integer', 'exists:dossiers,id'],
             'enfants.*.nom' => ['nullable', 'string', 'max:100'],
             'enfants.*.prenom' => ['nullable', 'string', 'max:150'],
@@ -216,10 +222,15 @@ class DossierWizardController extends Controller
             'enfants.*.removed_pieces.*' => ['string', 'max:150'],
             'enfants.*.piece_files' => ['nullable', 'array'],
             'enfants.*.piece_files.*' => [new MemberPieceFile],
+            'enfants.*.fif' => ['nullable', 'array'],
+            // Champs ajoutés par l'administration : leur type est contrôlé ici ; leur caractère
+            // obligatoire l'est à la soumission, pour les membres réellement renseignés.
+            ...app(\App\Services\FifSchemaService::class)->rules('conjoint', 'conjoints.*.fif', false),
+            ...app(\App\Services\FifSchemaService::class)->rules('enfant', 'enfants.*.fif', false),
         ]);
 
-        $enfants = $validated['enfants'] ?? [];
-        $conjoints = $validated['conjoints'] ?? [];
+        $enfants = $this->withCleanFif($validated['enfants'] ?? [], 'enfant', 'enfants', $forSubmit);
+        $conjoints = $this->withCleanFif($validated['conjoints'] ?? [], 'conjoint', 'conjoints', $forSubmit);
 
         if ($forSubmit) {
             $this->assertRequiredPieces($conjoints, $enfants, $settings, $request);
@@ -229,6 +240,35 @@ class DossierWizardController extends Controller
             'conjoints' => $conjoints,
             'enfants' => $enfants,
         ];
+    }
+
+    /**
+     * Remplace « fif » (saisie) par « fif_donnees » (valeurs nettoyées, champs visibles seulement) et,
+     * à la soumission, exige les champs obligatoires des membres réellement renseignés.
+     *
+     * @param  array<int, array<string, mixed>>  $rows
+     * @return array<int, array<string, mixed>>
+     */
+    private function withCleanFif(array $rows, string $cible, string $list, bool $forSubmit): array
+    {
+        $fif = app(\App\Services\FifSchemaService::class);
+
+        foreach ($rows as $i => $row) {
+            $values = $fif->clean($cible, $row['fif'] ?? []);
+            unset($row['fif']);
+            $row['fif_donnees'] = $values;
+
+            $filled = trim($row['nom'] ?? '') !== '' || trim($row['prenom'] ?? '') !== '';
+            if ($forSubmit && $filled && ($missing = $fif->missingRequired($cible, $values)) !== []) {
+                throw ValidationException::withMessages([
+                    "{$list}.{$i}.fif" => 'Champ(s) obligatoire(s) manquant(s) : '.implode(', ', $missing).'.',
+                ]);
+            }
+
+            $rows[$i] = $row;
+        }
+
+        return $rows;
     }
 
     /**
@@ -320,6 +360,7 @@ class DossierWizardController extends Controller
             'ref_identite' => $d['refIdentite'] ?? $meta['ref_identite'] ?? null,
             'telephone' => $d['telephone'] ?? $meta['telephone'] ?? null,
             'pieces' => $d['pieces'] ?? [],
+            'fif' => $d['fifDonnees'] ?? [],
         ];
 
         if ($list === 'conjoints') {

@@ -78,7 +78,7 @@ class OneTimeCodeService
 
         if (strlen($code) !== self::LENGTH || strspn($code, self::ALPHABET) !== self::LENGTH) {
             throw ValidationException::withMessages([
-                $field => 'Le code comporte '.self::LENGTH.' caractères (chiffres et lettres), tel qu\'indiqué dans l\'e-mail.',
+                $field => 'Le code comporte '.self::LENGTH.' caractères, tel qu\'indiqué dans l\'e-mail.',
             ]);
         }
     }

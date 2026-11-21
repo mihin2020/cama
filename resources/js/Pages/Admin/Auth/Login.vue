@@ -82,7 +82,7 @@ function cancel2fa() {
                     <template v-if="is2fa">
                         <h1 class="font-headline text-xl font-bold text-on-surface mb-1">Vérification en deux étapes</h1>
                         <p class="text-sm text-on-surface-variant mb-4">
-                            Saisissez le code de {{ codeLength }} caractères (chiffres et lettres) envoyé à <strong>{{ maskedEmail }}</strong>.
+                            Saisissez le code de {{ codeLength }} caractères envoyé à <strong>{{ maskedEmail }}</strong>.
                         </p>
 
                         <FlashMessage />

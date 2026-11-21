@@ -1,6 +1,7 @@
 <script setup>
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import FifCustomFields from '@/Components/Fif/FifCustomFields.vue';
 import CamaCountrySelect from '@/Components/CamaCountrySelect.vue';
 import CamaPhoneInput from '@/Components/CamaPhoneInput.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
@@ -42,6 +43,8 @@ const props = defineProps({
     unreadCount: Number,
     peutEnroler: Boolean,
     initialRows: Object,
+    // Sections et champs ajoutés par l'administration : { conjoint: [...], enfant: [...] }.
+    fifSchema: { type: Object, default: () => ({ conjoint: [], enfant: [] }) },
     focusDraftId: { type: [Number, String], default: null },
     assureExport: Object,
     fifPieceType: { type: String, default: 'FIF signée' },
@@ -112,6 +115,7 @@ const validationOptions = computed(() => ({
     piecesMatrix: props.piecesMatrix,
     certificatScolarite: props.certificatScolarite,
     membrePhoto: props.membrePhoto,
+    fifSchema: props.fifSchema,
 }));
 
 const sortedEnfants = computed(() =>
@@ -134,6 +138,7 @@ function mapServerRow(row, list) {
         pieces: {},
         existing: Array.isArray(row.pieces) ? row.pieces : [],
         removedTypes: [],
+        fif: { ...(row.fif || {}) },
     });
     if (list === 'conjoints') {
         base.refActeMariage = row.ref_acte_mariage || '';
@@ -563,6 +568,9 @@ watch(() => props.initialRows, () => {
                             <div class="space-y-1"><label class="text-xs font-medium text-on-surface-variant">Nationalité</label><CamaCountrySelect v-model="row.nationalite" /></div>
                             <div class="space-y-1 md:col-span-2"><label class="text-xs font-medium text-on-surface-variant">Téléphone(s)</label><CamaPhoneInput v-model="row.telephone" :max="2" :input-class="inputCls" /></div>
                         </div>
+                        <div v-if="fifSchema.conjoint.length" class="mt-3 pt-3 border-t border-outline-variant">
+                            <FifCustomFields v-model="row.fif" :id-prefix="`fif-conjoint-${row.uid}`" :sections="fifSchema.conjoint" />
+                        </div>
                         <div class="mt-3 pt-3 border-t border-outline-variant">
                             <p class="text-xs font-semibold text-on-surface-variant mb-2">Pièces justificatives</p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -670,6 +678,9 @@ watch(() => props.initialRows, () => {
                                     <option v-for="opt in filiationOptions" :key="opt" :value="opt">{{ opt }}</option>
                                 </select>
                             </div>
+                        </div>
+                        <div v-if="fifSchema.enfant.length" class="mt-3 pt-3 border-t border-outline-variant">
+                            <FifCustomFields v-model="row.fif" :id-prefix="`fif-enfant-${row.uid}`" :sections="fifSchema.enfant" />
                         </div>
                         <div class="mt-3 pt-3 border-t border-outline-variant">
                             <p class="text-xs font-semibold text-on-surface-variant mb-2">Pièces justificatives</p>

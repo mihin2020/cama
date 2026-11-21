@@ -10,12 +10,14 @@ use App\Services\AssureDashboardService;
 use App\Services\AssureEmailVerificationService;
 use App\Services\AssureLogin2faService;
 use App\Services\PlatformSettingsService;
+use App\Support\StoredFileResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -195,6 +197,25 @@ class ProfilController extends Controller
 
     }
 
+    /**
+     * Une pièce d'inscription de l'assuré connecté : à visualiser (?inline=1) ou à télécharger.
+     * Seules ses propres pièces sont accessibles.
+     */
+    public function document(Request $request, string $key): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    {
+        $assure = $request->user('assure');
+
+        $document = collect($assure->documents_identite ?? [])->first(fn ($doc) => ($doc['key'] ?? '') === $key);
+        $path = (string) ($document['path'] ?? '');
+
+        abort_unless(
+            $path !== '' && (str_starts_with($path, 'assures/') || str_starts_with($path, 'inscriptions/')) && Storage::disk('local')->exists($path),
+            404,
+        );
+
+        return StoredFileResponse::make(Storage::disk('local')->path($path), $document['filename'] ?? null, $request->boolean('inline'));
+    }
+
     private function formatProfil($assure): array
     {
 
@@ -253,6 +274,13 @@ class ProfilController extends Controller
             'deuxFa' => $assure->deux_fa_active,
 
             'dateCreation' => $assure->created_at->format('d/m/Y'),
+
+            // Pièces d'inscription de l'assuré (sans chemin interne) : à visualiser et à télécharger.
+            'documents' => collect($assure->documents_identite ?? [])
+                ->filter(fn ($doc) => ! empty($doc['key']) && ! empty($doc['path']))
+                ->map(fn ($doc) => ['key' => $doc['key'], 'label' => $doc['label'] ?? 'Document', 'filename' => $doc['filename'] ?? null])
+                ->values()
+                ->all(),
 
             'derniereConnexion' => AssureConnexion::query()->where('assure_id', $assure->id)->latest('id')->first()?->created_at->format('d/m/Y H:i') ?? '—',
 

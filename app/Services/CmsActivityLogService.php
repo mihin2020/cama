@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AdminUser;
 use App\Models\CmsActivityLog;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class CmsActivityLogService
 {
@@ -18,21 +19,20 @@ class CmsActivityLogService
     }
 
     /**
-     * @return array<int, array{id: int, icon: string, text: string, author_name: string, date: string}>
+     * Journal d'activité du studio, du plus récent au plus ancien, paginé.
      */
-    public function recent(int $limit = 10): array
+    public function paginate(int $perPage): LengthAwarePaginator
     {
         return CmsActivityLog::query()
-            ->latest()
-            ->limit($limit)
-            ->get()
-            ->map(fn (CmsActivityLog $log) => [
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->paginate($perPage)
+            ->through(fn (CmsActivityLog $log) => [
                 'id' => $log->id,
                 'icon' => $log->icon,
                 'text' => $log->text,
                 'author_name' => $log->author_name,
                 'date' => $log->created_at?->format('d/m/Y H:i') ?? '',
-            ])
-            ->all();
+            ]);
     }
 }

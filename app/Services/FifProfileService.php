@@ -47,6 +47,8 @@ class FifProfileService
             'email' => $assure->email,
             'personneAPrevenir' => $assure->personne_a_prevenir,
             'telPersonneAPrevenir' => $assure->tel_personne_a_prevenir,
+            // Champs ajoutés par l'administration (voir FifSchemaService), prêts à afficher et à imprimer.
+            'fifSections' => app(\App\Services\FifSchemaService::class)->display('assure', $assure->fif_donnees),
         ];
     }
 

@@ -1,4 +1,6 @@
 <script setup>
+import FileLinkRow from '@/Components/FileLinkRow.vue';
+import FifSectionsView from '@/Components/Fif/FifSectionsView.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useServerPagination } from '@/Composables/usePagination';
@@ -314,25 +316,18 @@ function infoValue(value) {
                             <span class="material-symbols-outlined text-[16px] text-primary">badge</span> Pièces justificatives
                         </h3>
                         <div class="space-y-2">
-                            <a
+                            <FileLinkRow
                                 v-for="doc in selected.documents"
                                 :key="doc.key"
-                                :href="doc.url"
-                                target="_blank"
-                                rel="noopener"
-                                class="flex items-center justify-between gap-2 bg-white rounded-lg p-3 border border-outline-variant hover:border-primary transition-colors"
-                            >
-                                <span class="flex items-center gap-2 min-w-0">
-                                    <span class="material-symbols-outlined text-[18px] text-primary shrink-0">description</span>
-                                    <span class="min-w-0">
-                                        <span class="text-xs font-bold block">{{ doc.label }}</span>
-                                        <span class="text-[10px] text-on-surface-variant break-all">{{ doc.filename }}</span>
-                                    </span>
-                                </span>
-                                <span class="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">download</span>
-                            </a>
+                                :download-url="doc.url"
+                                :filename="doc.filename"
+                                :label="doc.label"
+                                :view-url="`${doc.url}?inline=1`"
+                            />
                         </div>
                     </div>
+
+                    <FifSectionsView :sections="selected.fifSections" />
 
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">

@@ -61,6 +61,7 @@ class DossierService
                 'date_naissance' => $data['date_naissance'] ?? null,
                 'membre_numero_cama' => $data['membre_numero_cama'] ?? null,
                 'pieces' => $data['pieces'] ?? [],
+                'fif_donnees' => $data['fif_donnees'] ?? $dossier->fif_donnees,
                 'wizard_meta' => $data,
                 'lot_id' => $data['lot_id'] ?? $dossier->lot_id,
                 'lot_type' => $data['lot_type'] ?? $dossier->lot_type ?? 'initial',
@@ -256,6 +257,8 @@ class DossierService
             'sexe' => $row['sexe'] ?? null,
             'date_naissance' => $row['date_naissance'] ?? null,
             'pieces' => $row['pieces'] ?? [],
+            // Champs ajoutés par l'administration (voir FifSchemaService) : {code: valeur}.
+            'fif_donnees' => $row['fif_donnees'] ?? null,
             'lot_id' => $row['lot_id'] ?? null,
             'lot_type' => $row['lot_type'] ?? null,
             ...$wizardMeta,
@@ -292,11 +295,19 @@ class DossierService
             'profession' => $meta['profession'] ?? null,
             'lieuResidence' => $meta['lieu_residence'] ?? $meta['lieuResidence'] ?? null,
             'nationalite' => $meta['nationalite'] ?? null,
+            'fifDonnees' => $dossier->fif_donnees ?? [],
+            // Champs ajoutés par l'administration, prêts à afficher et à imprimer (sections « libellé : valeur »).
+            'fifSections' => app(\App\Services\FifSchemaService::class)->display(
+                stripos((string) $dossier->lien, 'conjoint') !== false ? 'conjoint' : 'enfant',
+                $dossier->fif_donnees,
+            ),
             'lotId' => $dossier->lot_id,
             'lotType' => $dossier->lot_type ?? 'initial',
             'isComplementFamilial' => ($dossier->lot_type ?? 'initial') === 'complementaire',
+            // Le chemin interne du fichier n'est jamais transmis au navigateur : on indique seulement
+            // qu'un fichier existe (il se visualise et se télécharge par les routes protégées).
             'pieces' => collect($dossier->pieces ?? [])->map(function ($piece) {
-                return array_merge($piece, [
+                return array_merge(\Illuminate\Support\Arr::except($piece, ['path']), [
                     'hasFile' => ! empty($piece['path']),
                 ]);
             })->values()->all(),

@@ -57,7 +57,7 @@ function logout() {
                 </div>
                 <h1 class="font-headline text-2xl font-bold text-on-surface mb-1">Vérifiez votre e-mail</h1>
                 <p class="text-sm text-on-surface-variant mb-6">
-                    Un code de <strong class="text-on-surface">6 caractères</strong> (chiffres et lettres) a été envoyé à
+                    Un code de <strong class="text-on-surface">6 caractères</strong> a été envoyé à
                     <strong class="text-on-surface">{{ email }}</strong>. Saisissez-le pour confirmer votre adresse.
                 </p>
 

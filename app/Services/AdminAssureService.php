@@ -145,6 +145,7 @@ class AdminAssureService
             'journal' => $assure->journal ?? [],
             'initiales' => $assure->initiales,
             'exportProfile' => $this->fif->profile($assure),
+            'documents' => $this->identityDocuments($assure),
             'membresExport' => $assure->dossiers
                 ->map(fn (Dossier $d) => $this->dossierService->formatMembre($d))
                 ->values()
@@ -161,7 +162,26 @@ class AdminAssureService
             'id' => $assure->id,
             'statut' => $assure->statut->label(),
             'dateCreation' => $assure->created_at?->format('d/m/Y') ?? '',
-            'documentsIdentite' => $assure->documents_identite ?? [],
+            'documentsIdentite' => $this->identityDocuments($assure),
         ]);
+    }
+
+    /**
+     * Pièces d'inscription de l'assuré, sans leur chemin interne : elles se visualisent et se
+     * téléchargent par la route protégée « admin.inscriptions.document ».
+     *
+     * @return list<array{key: string, label: string, filename: ?string}>
+     */
+    public function identityDocuments(Assure $assure): array
+    {
+        return collect($assure->documents_identite ?? [])
+            ->filter(fn ($doc) => ! empty($doc['key']) && ! empty($doc['path']))
+            ->map(fn ($doc) => [
+                'key' => $doc['key'],
+                'label' => $doc['label'] ?? 'Document',
+                'filename' => $doc['filename'] ?? null,
+            ])
+            ->values()
+            ->all();
     }
 }

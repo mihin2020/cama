@@ -1,8 +1,10 @@
 <script setup>
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPhoneInput from '@/Components/CamaPhoneInput.vue';
+import FifCustomFields from '@/Components/Fif/FifCustomFields.vue';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
 import { formatPhonesDisplay } from '@/Utils/camaPhone';
+import { missingFifFields } from '@/Utils/fifForm';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, h, nextTick, onMounted, reactive, ref, watch } from 'vue';
 
@@ -10,6 +12,8 @@ const props = defineProps({
     orgStructure: Object,
     inscriptionDocuments: { type: Array, default: () => [] },
     inscriptionFields: { type: Object, default: () => ({}) },
+    // Sections et champs ajoutés par l'administration pour l'assuré (formulaire FIF configurable).
+    fifSchema: { type: Array, default: () => [] },
 });
 
 // --- Champs paramétrables (Admin › Paramètres › Champs d'inscription) ---
@@ -52,6 +56,8 @@ const STEPS = [
     { id: 'administratif', title: 'Situation administrative', short: 'Grade & catégorie', fields: ['grade', 'categorie', 'numero_informatique', 'numero_cim', 'numero_cama', 'numero_iup'] },
     { id: 'rattachement', title: 'Rattachement', short: 'Structure militaire', fields: ['armee', 'region', 'corps', 'service', 'section', 'sous_section'] },
     { id: 'coordonnees', title: 'Coordonnées', short: 'Contact', fields: ['telephone', 'email', 'personne_a_prevenir', 'tel_personne_a_prevenir'] },
+    // Étape ajoutée par l'administration (formulaire FIF configurable) : affichée seulement si elle a des champs.
+    { id: 'complements', title: 'Informations complémentaires', short: 'Compléments', fields: [] },
     { id: 'recap', title: 'Récapitulatif', short: 'Vérification', fields: ['cgu'] },
     { id: 'securite', title: 'Sécurité', short: 'Mot de passe', fields: ['password', 'password_confirmation'] },
 ];
@@ -59,6 +65,7 @@ const STEPS = [
 // Une étape dont tous les champs paramétrables sont masqués n'est pas affichée.
 const visibleSteps = computed(() => STEPS.filter((step) => {
     if (step.id === 'administratif' || step.id === 'rattachement') return step.fields.some(isOn);
+    if (step.id === 'complements') return props.fifSchema.length > 0;
     return true;
 }));
 
@@ -76,8 +83,17 @@ const form = useForm({
     armee: '', region: '', corps: '', service: '', section: '', sous_section: '',
     telephone: '', email: '', personne_a_prevenir: '', tel_personne_a_prevenir: '',
     documents: {},
+    // Champs ajoutés par l'administration : { code: valeur }.
+    fif: {},
     password: '', password_confirmation: '', cgu: false,
 });
+
+// Erreurs du serveur sur les champs ajoutés par l'administration : « fif.code » => message.
+const fifErrors = computed(() => Object.fromEntries(
+    Object.entries(form.errors)
+        .filter(([key]) => key.startsWith('fif.'))
+        .map(([key, message]) => [key.slice(4), message]),
+));
 
 const hasDocuments = computed(() => props.inscriptionDocuments.length > 0);
 
@@ -219,6 +235,15 @@ function validateStep(n) {
             return false;
         }
     }
+    if (id === 'complements') {
+        const missing = missingFifFields(props.fifSchema, form.fif);
+        if (missing.length) {
+            showBanner('error', missing.length === 1
+                ? `Le champ « ${missing[0]} » est obligatoire.`
+                : `Champs obligatoires manquants : ${missing.join(', ')}.`);
+            return false;
+        }
+    }
     if (id === 'recap' && !form.cgu) {
         showBanner('error', 'Veuillez accepter les CGU.');
         return false;
@@ -233,7 +258,7 @@ function nextStep() {
 // Après un refus du serveur, revenir à la première étape contenant une erreur.
 function goToFirstError(errors) {
     const keys = Object.keys(errors);
-    const index = visibleSteps.value.findIndex((step) => keys.some((k) => step.fields.includes(k)));
+    const index = visibleSteps.value.findIndex((step) => keys.some((k) => step.fields.includes(k) || (step.id === 'complements' && k.startsWith('fif.'))));
     if (index >= 0) currentStep.value = index + 1;
     showBanner('error', 'Certaines informations sont à corriger : ' + Object.values(errors)[0]);
 }
@@ -477,6 +502,11 @@ function submit() {
                                         <FieldError :msg="form.errors.tel_personne_a_prevenir" />
                                     </div>
                                 </div>
+                            </div>
+
+                            <div v-show="currentStepId === 'complements'" class="space-y-4">
+                                <h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">fact_check</span> Informations complémentaires</h2>
+                                <FifCustomFields v-model="form.fif" id-prefix="fif-assure" :errors="fifErrors" :sections="fifSchema" />
                             </div>
 
                             <div v-show="currentStepId === 'recap'" class="space-y-4">

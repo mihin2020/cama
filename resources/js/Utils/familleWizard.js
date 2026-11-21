@@ -1,3 +1,5 @@
+import { missingFifFields } from '@/Utils/fifForm';
+
 export const PIECE_LABELS = {
     acte_mariage: 'Acte de mariage',
     cnib_conjoint: 'Copie CNIB du conjoint',
@@ -48,6 +50,8 @@ export function newConjoint() {
         pieces: {},
         existing: [],
         removedTypes: [],
+        // Champs ajoutés par l'administration : { code: valeur }.
+        fif: {},
     };
 }
 
@@ -71,6 +75,7 @@ export function newEnfant() {
         pieces: {},
         existing: [],
         removedTypes: [],
+        fif: {},
     };
 }
 
@@ -165,6 +170,7 @@ export function rowToPayload(row, list) {
         telephone: row.telephone || null,
         piece_files: pieceFiles,
         removed_pieces: row.removedTypes || [],
+        fif: row.fif || {},
     };
 
     if (list === 'conjoints') {
@@ -193,6 +199,7 @@ export function validateFamille(state, {
     membrePhoto = { conjoint: { actif: true, required: false }, enfant: { actif: true, required: false } },
     fifSignee = null,
     requireFif = false,
+    fifSchema = { conjoint: [], enfant: [] },
 }) {
     const problems = [];
     const options = { ageMax, certificatScolarite };
@@ -206,6 +213,11 @@ export function validateFamille(state, {
         const label = `${list === 'conjoints' ? 'Conjoint' : 'Enfant'} ${i + 1}`;
         if (!row.nom?.trim() || !row.prenoms?.trim() || !row.dateNaissance || !row.sexe) {
             problems.push(`${label} : nom, prénoms, date de naissance et sexe sont obligatoires.`);
+        }
+
+        const missingFif = missingFifFields(fifSchema[list === 'conjoints' ? 'conjoint' : 'enfant'], row.fif);
+        if (missingFif.length) {
+            problems.push(`${label} : champ(s) obligatoire(s) manquant(s) (${missingFif.join(', ')}).`);
         }
 
         const photoCfg = photoSettingsForList(list, membrePhoto);

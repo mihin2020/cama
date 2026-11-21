@@ -1,4 +1,5 @@
 <script setup>
+import FifSectionsView from '@/Components/Fif/FifSectionsView.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip, exportMembreFif } from '@/Composables/useCamaExport';
@@ -353,6 +354,11 @@ function isImagePiece(p) {
 
 function identityDocumentUrl(assureId, key) {
     return route('admin.inscriptions.document', { assure: assureId, key });
+}
+
+// « Visualiser » ouvre la pièce dans le navigateur (PDF, image) ; l'adresse sans ?inline=1 la télécharge.
+function identityDocumentViewUrl(assureId, key) {
+    return `${identityDocumentUrl(assureId, key)}?inline=1`;
 }
 
 function memberExportIndex(dossier) {
@@ -1103,6 +1109,7 @@ const detailLotFifPiece = computed(() => {
                                 </div>
                                 <p v-if="!beneficiaireInfo(detailDossier).length" class="text-xs text-on-surface-variant italic col-span-2">Informations complémentaires non renseignées.</p>
                             </div>
+                            <FifSectionsView class="mt-3" :sections="detailDossier.fifSections" />
                         </div>
 
                         <div>
@@ -1233,6 +1240,7 @@ const detailLotFifPiece = computed(() => {
                             <p class="text-xs font-bold break-words">{{ value }}</p>
                         </div>
                     </div>
+                    <FifSectionsView :sections="detailFamily.assureProfile.fifSections" />
                     <div v-if="detailFamily.assureProfile.documentsIdentite?.length">
                         <h4 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
@@ -1247,7 +1255,7 @@ const detailLotFifPiece = computed(() => {
                                 <div v-if="doc.key" class="flex items-center gap-1 shrink-0">
                                     <a
                                         class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-primary"
-                                        :href="identityDocumentUrl(detailFamily.assureProfile.id, doc.key)"
+                                        :href="identityDocumentViewUrl(detailFamily.assureProfile.id, doc.key)"
                                         target="_blank"
                                         rel="noopener"
                                         title="Visualiser"

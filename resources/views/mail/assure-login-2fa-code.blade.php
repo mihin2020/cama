@@ -20,7 +20,7 @@
     </p>
 
     <p style="font-size: 13px; color: #666;">
-        Ce code de 6 caractères (chiffres et lettres) expire sous {{ \App\Services\AssureLogin2faService::EXPIRATION_MINUTES }} minutes et ne sert qu'une fois. Si vous n'êtes pas à l'origine de cette connexion, ignorez ce message et contactez la CAMA.
+        Ce code de 6 caractères expire sous {{ \App\Services\AssureLogin2faService::EXPIRATION_MINUTES }} minutes et ne sert qu'une fois. Si vous n'êtes pas à l'origine de cette connexion, ignorez ce message et contactez la CAMA.
     </p>
 </body>
 </html>

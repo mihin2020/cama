@@ -1,4 +1,6 @@
 <script setup>
+import FileLinkRow from '@/Components/FileLinkRow.vue';
+import FifSectionsView from '@/Components/Fif/FifSectionsView.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip } from '@/Composables/useCamaExport';
@@ -24,6 +26,14 @@ const statut = ref(props.filters.statut ?? 'tous');
 
 // Activer / désactiver un compte : selon la permission cochée, pas selon le rôle.
 const { can } = useAdminPermissions();
+
+// Fichiers envoyés par l'assuré : pièces d'inscription et pièces de chaque membre. Chaque fichier se
+// visualise (nouvel onglet) et se télécharge ; le serveur vérifie les droits de chaque route.
+const identityUrl = (key, inline = false) => `${route('admin.inscriptions.document', { assure: selected.value.id, key })}${inline ? '?inline=1' : ''}`;
+const pieceUrl = (dossierId, type, inline = false) => `${route('admin.dossiers.piece.download', { dossier: dossierId })}?type=${encodeURIComponent(type)}${inline ? '&inline=1' : ''}`;
+const memberFiles = computed(() => (selected.value?.membresExport ?? [])
+    .map((m) => ({ id: m.id, nom: m.beneficiaire || `${m.prenom ?? ''} ${m.nom ?? ''}`.trim(), lien: m.lien, pieces: (m.pieces ?? []).filter((p) => p.hasFile) }))
+    .filter((m) => m.pieces.length));
 const canManage = computed(() => can('assures.manage'));
 
 const STATUS_COMPTE_STYLES = {
@@ -207,6 +217,38 @@ async function exportZip() {
                         <div class="bg-white rounded-lg p-3 border border-outline-variant col-span-2">
                             <p class="text-[10px] text-on-surface-variant uppercase">Compte créé le</p>
                             <p class="text-xs font-bold">{{ selected.dateCreation }}</p>
+                        </div>
+                    </div>
+
+                    <FifSectionsView :sections="selected.exportProfile?.fifSections" />
+
+                    <div v-if="(can('inscriptions.view') && selected.documents?.length) || (can('dossiers.view') && memberFiles.length)">
+                        <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[16px] text-primary">folder_open</span> Fichiers envoyés par l'assuré
+                        </h3>
+                        <div v-if="can('inscriptions.view') && selected.documents?.length" class="space-y-2 mb-3">
+                            <p class="text-[11px] font-semibold text-on-surface-variant">Pièces d'inscription</p>
+                            <FileLinkRow
+                                v-for="doc in selected.documents"
+                                :key="doc.key"
+                                :download-url="identityUrl(doc.key)"
+                                :filename="doc.filename"
+                                :label="doc.label"
+                                :view-url="identityUrl(doc.key, true)"
+                            />
+                        </div>
+                        <div v-if="can('dossiers.view')" class="space-y-3">
+                            <div v-for="m in memberFiles" :key="m.id" class="space-y-2">
+                                <p class="text-[11px] font-semibold text-on-surface-variant">{{ m.nom }} <span v-if="m.lien" class="font-normal">({{ m.lien }})</span></p>
+                                <FileLinkRow
+                                    v-for="p in m.pieces"
+                                    :key="p.type"
+                                    :download-url="pieceUrl(m.id, p.type)"
+                                    :filename="p.filename"
+                                    :label="p.type"
+                                    :view-url="pieceUrl(m.id, p.type, true)"
+                                />
+                            </div>
                         </div>
                     </div>
 

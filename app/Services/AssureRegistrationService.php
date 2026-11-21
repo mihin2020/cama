@@ -52,6 +52,7 @@ class AssureRegistrationService
             'personne_a_prevenir' => $data['personne_a_prevenir'] ?? null,
             'tel_personne_a_prevenir' => $data['tel_personne_a_prevenir'] ?? null,
             'documents_identite' => $data['documents_identite'] ?? [],
+            'fif_donnees' => app(\App\Services\FifSchemaService::class)->clean('assure', $data['fif'] ?? []),
             'password' => $data['password'],
             'statut' => AssureStatut::EnAttenteValidation,
             'journal' => [

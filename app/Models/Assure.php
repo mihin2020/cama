@@ -34,6 +34,7 @@ class Assure extends Authenticatable
         'personne_a_prevenir',
         'tel_personne_a_prevenir',
         'documents_identite',
+        'fif_donnees',
         'password',
         'statut',
         'deux_fa_active',
@@ -61,6 +62,7 @@ class Assure extends Authenticatable
             'statut' => AssureStatut::class,
             'journal' => 'array',
             'documents_identite' => 'array',
+            'fif_donnees' => 'array',
         ];
     }
 

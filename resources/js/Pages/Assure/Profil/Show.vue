@@ -1,4 +1,5 @@
 <script setup>
+import FileLinkRow from '@/Components/FileLinkRow.vue';
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useToast } from '@/Composables/useToast';
@@ -281,6 +282,21 @@ function displayValue(value) {
                         </CamaLoadingButton>
                     </div>
                 </form>
+            </section>
+
+            <section v-if="profil.documents?.length" class="assure-card p-5 md:p-6">
+                <h2 class="text-base font-semibold text-on-surface mb-1">Mes pièces d'inscription</h2>
+                <p class="text-xs text-on-surface-variant mb-3">Les fichiers que vous avez envoyés lors de votre inscription. Vous pouvez les visualiser ou les télécharger.</p>
+                <div class="space-y-2">
+                    <FileLinkRow
+                        v-for="doc in profil.documents"
+                        :key="doc.key"
+                        :download-url="route('assure.profil.document', doc.key)"
+                        :filename="doc.filename"
+                        :label="doc.label"
+                        :view-url="`${route('assure.profil.document', doc.key)}?inline=1`"
+                    />
+                </div>
             </section>
 
             <section class="assure-card p-5 md:p-6">

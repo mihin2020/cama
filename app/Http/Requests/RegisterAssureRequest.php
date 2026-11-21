@@ -69,6 +69,10 @@ class RegisterAssureRequest extends FormRequest
             $rules[$key] = array_merge([$required ? 'required' : 'nullable'], $base[$key]);
         }
 
+        // Champs ajoutés par l'administration (voir FifSchemaService) : contrôlés comme les autres.
+        $rules['fif'] = ['nullable', 'array'];
+        $rules = array_merge($rules, app(\App\Services\FifSchemaService::class)->rules('assure', 'fif'));
+
         foreach ($settings->activeInscriptionDocuments() as $slot) {
             // Pièces d'inscription : PDF uniquement (contenu réel vérifié, 5 Mo maximum).
             $rules["documents.{$slot['key']}"] = ['required', new \App\Rules\PdfDocument];
