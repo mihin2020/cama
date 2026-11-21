@@ -5,8 +5,12 @@ Authentification **manuelle** avec deux guards séparés : `assure` et `admin`.
 
 ## Prérequis
 
-- PHP 8.3+
-- Composer
+- **PHP 8.3.37+ ou 8.4.28+** (versions corrigées des failles critiques CVSS 9.2 de 2026 :
+  PHP2Shell CVE-2026-109618/109619, phpAfterShell CVE-2026-126714, CVE-2026-129289…).
+  PHP 8.3.36 et antérieures, ainsi que 8.1 et plus anciennes, ne doivent plus être utilisées.
+  Extensions requises : `pdo_pgsql` (ou `pdo_mysql`), `fileinfo`, `mbstring`, `openssl`.
+  `composer install` refuse de s'exécuter (et l'application refuse de démarrer) si la version de PHP est trop ancienne.
+- Composer 2 (avec TLS activé : ne pas utiliser `disable-tls`)
 - Node.js 18+
 - **MySQL 8** (base `cama`)
 
