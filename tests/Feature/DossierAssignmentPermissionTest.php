@@ -65,6 +65,33 @@ class DossierAssignmentPermissionTest extends TestCase
         $this->assertSame([$charge->display_name], $this->pool());
     }
 
+    public function test_a_role_must_also_be_able_to_open_the_dossiers(): void
+    {
+        // Recevoir et traiter, mais pas consulter : il recevrait des dossiers qu'il ne peut pas ouvrir.
+        $this->role('sans-acces', ['dossiers.process', 'dossiers.receive']);
+        $this->account('Sansacces', 'sans-acces');
+
+        $this->assertSame([], $this->pool());
+    }
+
+    public function test_the_lists_show_each_account_with_its_role(): void
+    {
+        $chef = $this->account('Chef', 'superviseur');
+        $this->account('Alpha', 'gestionnaire');
+        $superviseur = Role::query()->where('slug', 'superviseur')->firstOrFail();
+        $superviseur->update(['permissions' => [...$superviseur->permissions, 'dossiers.receive']]);
+
+        $accounts = app(DossierAffectationService::class)->assignableAccounts();
+
+        $this->assertSame($chef->fresh()->role_label, $accounts[$chef->fresh()->display_name]);
+        $this->assertCount(2, array_unique($accounts));
+
+        $gestionnaires = app(\App\Services\AdminDossierService::class)->gestionnaires();
+        $row = collect($gestionnaires)->firstWhere('nom', $chef->fresh()->display_name);
+        $this->assertSame($chef->fresh()->role_label, $row['role']);
+        $this->assertTrue($row['actif']);
+    }
+
     public function test_giving_the_permission_to_the_supervisor_role_adds_the_supervisors(): void
     {
         $chef = $this->account('Chef', 'superviseur');

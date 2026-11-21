@@ -26,9 +26,9 @@ class DossierAffectationService
     public function __construct(private PlatformSettingsService $settings) {}
 
     /**
-     * Comptes pouvant recevoir des dossiers : les comptes internes actifs dont le rôle donne la
-     * permission « Recevoir des dossiers à traiter » ET « Traiter les dossiers » (recevoir un dossier
-     * qu'on ne peut pas traiter n'aurait aucun sens). Le critère est la permission, pas le nom du
+     * Comptes pouvant recevoir des dossiers : les comptes internes actifs dont le rôle donne les
+     * permissions « Recevoir des dossiers à traiter », « Traiter les dossiers » ET « Consulter les
+     * dossiers » (recevoir un dossier qu'on ne peut ni ouvrir ni traiter n'aurait aucun sens). Le critère est la permission, pas le nom du
      * rôle : un rôle créé par l'administration (ex. « Chargé de dossiers ») est donc inclus dès qu'on
      * coche ces permissions.
      *
@@ -40,6 +40,17 @@ class DossierAffectationService
      */
     public function assignablePool(): array
     {
+        return array_keys($this->assignableAccounts());
+    }
+
+    /**
+     * Les mêmes comptes, avec leur rôle : nom affiché => libellé du rôle (« Superviseur / Responsable »…).
+     * Les listes d'affectation l'affichent pour qu'on voie qui est gestionnaire, superviseur, etc.
+     *
+     * @return array<string, string>
+     */
+    public function assignableAccounts(): array
+    {
         return AdminUser::query()
             ->with('roleDefinition')
             ->where('actif', true)
@@ -48,9 +59,9 @@ class DossierAffectationService
             ->get()
             ->filter(fn (AdminUser $user) => $user->roleIsActive()
                 && $user->hasPermission('dossiers.receive')
-                && $user->hasPermission('dossiers.process'))
-            ->map(fn (AdminUser $user) => $user->display_name)
-            ->values()
+                && $user->hasPermission('dossiers.process')
+                && $user->hasPermission('dossiers.view'))
+            ->mapWithKeys(fn (AdminUser $user) => [$user->display_name => $user->role_label])
             ->all();
     }
 

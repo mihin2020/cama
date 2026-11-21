@@ -77,7 +77,7 @@ function assignOptions(current = null) {
         { value: 'Non affecté', label: 'Non affecté' },
         ...props.gestionnaires
             .filter((g) => g.actif !== false)
-            .map((g) => ({ value: g.nom, label: g.nom, hint: `${g.nonTraites ?? 0} en cours` })),
+            .map((g) => ({ value: g.nom, label: g.nom, hint: `${g.role ? `${g.role} · ` : ''}${g.nonTraites ?? 0} en cours` })),
     ];
     // Dossier détenu par un compte qui ne reçoit plus rien : visible, mais pas re-choisissable.
     if (current && !options.some((o) => o.value === current) && current !== 'Non affecté') {
@@ -90,7 +90,7 @@ function assignOptions(current = null) {
 const filterOptions = computed(() => [
     { value: 'Tous', label: 'Tous les gestionnaires affectés' },
     { value: 'Non affecté', label: 'Non affecté' },
-    ...props.gestionnaires.map((g) => ({ value: g.nom, label: g.nom, hint: `${g.assignes ?? 0} dossier(s)` })),
+    ...props.gestionnaires.map((g) => ({ value: g.nom, label: g.nom, hint: `${g.role ? `${g.role} · ` : ''}${g.assignes ?? 0} dossier(s)` })),
 ]);
 
 

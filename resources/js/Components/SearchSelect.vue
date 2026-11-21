@@ -33,7 +33,8 @@ const normalize = (text) => String(text ?? '').normalize('NFD').replace(/[\u0300
 
 const filtered = computed(() => {
     const needle = normalize(query.value).trim();
-    return needle ? props.options.filter((o) => normalize(o.label).includes(needle)) : props.options;
+    // On cherche dans le nom et dans l'indication (ex. le rôle « Superviseur »).
+    return needle ? props.options.filter((o) => normalize(`${o.label} ${o.hint ?? ''}`).includes(needle)) : props.options;
 });
 
 const currentLabel = computed(() => props.options.find((o) => o.value === props.modelValue)?.label

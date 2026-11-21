@@ -43,10 +43,13 @@ class AdminDossierService
             ->get(['gestionnaire', 'journal', 'date_soumission'])
             ->groupBy('gestionnaire');
 
-        $assignables = $this->affectation->assignablePool();
+        $accounts = $this->affectation->assignableAccounts();
+        $assignables = array_keys($accounts);
 
         return collect($this->affectation->pool())->map(fn ($nom) => [
             'nom' => $nom,
+            // Rôle du compte (null pour un nom sans compte actif qui détient encore des dossiers).
+            'role' => $accounts[$nom] ?? null,
             // false = compte désactivé ou inexistant qui détient encore des dossiers en cours (à réaffecter).
             'actif' => in_array($nom, $assignables, true),
             'assignes' => (int) ($assignes[$nom] ?? 0),
@@ -295,16 +298,30 @@ class AdminDossierService
                 ]);
             }
 
-            // Validation à deux niveaux : la validation du gestionnaire (niveau 1)
-            // transmet le dossier à la supervision au lieu de le valider définitivement.
-            if ($this->settings->validation2Niveaux() && $this->isGestionnaire($admin)) {
-                $dossier->update(['statut' => 'En attente supervision']);
+            // Validation à deux niveaux : la validation de l'agent qui instruit le dossier (niveau 1)
+            // le transmet à la supervision au lieu de le valider définitivement. Instruit le dossier :
+            // un gestionnaire (sans « Valider en second niveau »), mais aussi un superviseur à qui il est
+            // affecté — nul ne valide en second niveau un dossier qu'il a lui-même traité.
+            $niveau1 = $this->isGestionnaire($admin)
+                || ($admin !== null && $dossier->statut !== 'En attente supervision' && $dossier->gestionnaire === $admin->display_name);
+
+            if ($this->settings->validation2Niveaux() && $niveau1) {
+                $dossier->update([
+                    'statut' => 'En attente supervision',
+                    'wizard_meta' => [...($dossier->wizard_meta ?? []), 'niveau1_par' => $admin->id],
+                ]);
                 $this->dossiers->appendJournal($dossier, "Validation niveau 1 par {$admin->display_name} — transmis à la supervision");
 
                 return;
             }
 
             $niveau2 = $dossier->statut === 'En attente supervision';
+
+            if ($niveau2 && $admin !== null && ($dossier->wizard_meta['niveau1_par'] ?? null) === $admin->id) {
+                throw ValidationException::withMessages([
+                    'statut' => 'Vous avez traité ce dossier au premier niveau : un autre superviseur doit le valider en second niveau.',
+                ]);
+            }
 
             $dossier->update([
                 'statut' => 'Validé',
