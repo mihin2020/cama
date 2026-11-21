@@ -2,7 +2,6 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
-import FlashMessage from '@/Components/FlashMessage.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -66,9 +65,21 @@ const form = useForm({
 
 const isEditing = computed(() => editingUser.value !== null);
 
-function showToast(message) {
-    toast.value = message;
-    setTimeout(() => { toast.value = null; }, 3500);
+// Un seul message, en bas à droite (comme les autres écrans) : succès, avertissement ou erreur.
+let toastTimer = null;
+function showToast(message, icon = 'check_circle') {
+    if (!message) return;
+    toast.value = { message, icon };
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.value = null; }, 4500);
+}
+
+function toastFromFlash(page, fallback) {
+    if (page.props.flash?.warning) {
+        showToast(page.props.flash.warning, 'warning');
+        return;
+    }
+    showToast(page.props.flash?.success ?? fallback);
 }
 
 function openCreate() {
@@ -138,7 +149,7 @@ function saveUser() {
         preserveScroll: true,
         onSuccess: (page) => {
             closeForm();
-            showToast(page.props.flash?.success ?? page.props.flash?.warning ?? 'Invitation enregistrée.');
+            toastFromFlash(page, 'Invitation enregistrée.');
         },
     });
 }
@@ -146,7 +157,7 @@ function saveUser() {
 function confirmToggle(user) {
     if (!user.canManage) return;
     if (user.id === page.props.auth?.admin?.id) {
-        showToast('Vous ne pouvez pas désactiver votre propre compte.');
+        showToast('Vous ne pouvez pas désactiver votre propre compte.', 'info');
         return;
     }
     const activating = user.statut === 'Désactivé';
@@ -186,10 +197,10 @@ function executeResend(user) {
     router.post(route('admin.utilisateurs.resend-invitation', user.id), {}, {
         preserveScroll: true,
         onSuccess: (page) => {
-            showToast(page.props.flash?.success ?? page.props.flash?.warning ?? 'Invitation renvoyée.');
+            toastFromFlash(page, 'Invitation renvoyée.');
         },
         onError: (errors) => {
-            showToast(Object.values(errors)[0] ?? 'Impossible de renvoyer l\'invitation.');
+            showToast(Object.values(errors)[0] ?? 'Impossible de renvoyer l\'invitation.', 'error');
         },
         onFinish: () => {
             resendingId.value = null;
@@ -215,7 +226,7 @@ function executeDelete(user) {
             showToast(`Compte ${user.email} supprimé.`);
         },
         onError: (errors) => {
-            showToast(Object.values(errors)[0] ?? 'Suppression impossible.');
+            showToast(Object.values(errors)[0] ?? 'Suppression impossible.', 'error');
         },
     });
 }
@@ -225,7 +236,6 @@ function executeDelete(user) {
     <Head title="Comptes internes" />
 
     <AdminLayout active-nav="utilisateurs" title="Comptes internes" subtitle="Gestionnaires, superviseurs, administrateurs">
-        <FlashMessage />
 
         <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
             <div class="relative w-full sm:w-72">
@@ -411,7 +421,9 @@ function executeDelete(user) {
         />
 
         <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">{{ toast }}</div>
+            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold max-w-md">
+                <span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.message }}
+            </div>
         </div>
     </AdminLayout>
 </template>

@@ -102,6 +102,23 @@ class AdminRolesTest extends TestCase
         );
     }
 
+    public function test_invitation_failure_message_tells_smtp_apart_from_an_internal_error(): void
+    {
+        $admin = $this->administrateur();
+        $payload = fn (string $email) => ['prenom' => 'A', 'nom' => 'B', 'email' => $email, 'role' => 'gestionnaire'];
+
+        // Vraie panne du serveur d'e-mails : on parle de SMTP.
+        \Illuminate\Support\Facades\Mail::shouldReceive('to')->once()
+            ->andThrow(new \Symfony\Component\Mailer\Exception\TransportException('Connexion refusée'));
+        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), $payload('smtp-ko@cama.bf'))
+            ->assertSessionHas('warning', fn ($message) => str_contains($message, 'Vérifiez la configuration SMTP'));
+
+        // Erreur de l'application : on ne met pas en cause le SMTP.
+        \Illuminate\Support\Facades\Mail::shouldReceive('to')->once()->andThrow(new \RuntimeException('bug'));
+        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), $payload('bug@cama.bf'))
+            ->assertSessionHas('warning', fn ($message) => str_contains($message, 'erreur interne') && ! str_contains($message, 'SMTP'));
+    }
+
     public function test_webmaster_logs_in_lands_on_the_cms_and_gets_403_elsewhere(): void
     {
         $role = $this->createWebmasterRole($this->administrateur());

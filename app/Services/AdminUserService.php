@@ -33,7 +33,7 @@ class AdminUserService
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{user: AdminUser, invitationSent: bool}
+     * @return array{user: AdminUser, invitationError: ?string}
      */
     public function create(array $data, AdminUser $actor): array
     {
@@ -55,11 +55,11 @@ class AdminUserService
             'invited_at' => now(),
         ]);
 
-        $invitationSent = $this->invitation->send($user, $actor);
+        $invitationError = $this->invitation->send($user, $actor);
 
         return [
             'user' => $user,
-            'invitationSent' => $invitationSent,
+            'invitationError' => $invitationError,
         ];
     }
 
@@ -123,7 +123,8 @@ class AdminUserService
         return $user->fresh();
     }
 
-    public function resendInvitation(AdminUser $user, AdminUser $actor): bool
+    /** Renvoie null si l'invitation est partie, sinon la raison de l'échec. */
+    public function resendInvitation(AdminUser $user, AdminUser $actor): ?string
     {
         $this->assertCanManage($actor, $user);
 
@@ -138,9 +139,7 @@ class AdminUserService
             'actif' => true,
         ]);
 
-        $sent = $this->invitation->send($user->fresh(), $actor);
-
-        return $sent;
+        return $this->invitation->send($user->fresh(), $actor);
     }
 
     public function delete(AdminUser $user, AdminUser $actor): void

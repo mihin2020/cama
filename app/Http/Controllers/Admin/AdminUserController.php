@@ -53,11 +53,11 @@ class AdminUserController extends Controller
 
         $result = $service->create($request->validated(), $actor);
 
-        if ($result['invitationSent']) {
+        if ($result['invitationError'] === null) {
             return back()->with('success', "Invitation envoyée à {$result['user']->email}.");
         }
 
-        return back()->with('warning', "Compte créé pour {$result['user']->email}, mais l'e-mail n'a pas pu être envoyé. Vérifiez la configuration SMTP.");
+        return back()->with('warning', "Compte créé pour {$result['user']->email}, mais l'invitation n'est pas partie : {$result['invitationError']}");
     }
 
     public function update(UpdateAdminUserRequest $request, AdminUser $adminUser, AdminUserService $service): RedirectResponse
@@ -85,13 +85,13 @@ class AdminUserController extends Controller
         /** @var AdminUser $actor */
         $actor = $request->user('admin');
 
-        $sent = $service->resendInvitation($adminUser, $actor);
+        $error = $service->resendInvitation($adminUser, $actor);
 
-        if ($sent) {
+        if ($error === null) {
             return back()->with('success', "Invitation renvoyée à {$adminUser->email}.");
         }
 
-        return back()->with('warning', "L'invitation n'a pas pu être envoyée à {$adminUser->email}. Vérifiez la configuration SMTP.");
+        return back()->with('warning', "L'invitation n'a pas pu être envoyée à {$adminUser->email} : {$error}");
     }
 
     public function destroy(Request $request, AdminUser $adminUser, AdminUserService $service): RedirectResponse
