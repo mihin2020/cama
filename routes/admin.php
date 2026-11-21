@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\InscriptionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ParametresController;
 use App\Http\Controllers\Admin\ProfilController;
+use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SessionController as AdminSessionController;
 use App\Http\Controllers\DossierPieceController;
 use Illuminate\Support\Facades\Route;
@@ -76,6 +77,12 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::post('/utilisateurs-internes/{adminUser}/toggle', [AdminUserController::class, 'toggleActif'])->name('utilisateurs.toggle');
     Route::post('/utilisateurs-internes/{adminUser}/renvoyer-invitation', [AdminUserController::class, 'resendInvitation'])->name('utilisateurs.resend-invitation');
     Route::delete('/utilisateurs-internes/{adminUser}', [AdminUserController::class, 'destroy'])->name('utilisateurs.destroy');
+
+    Route::get('/roles', [RoleController::class, 'index'])->name('roles');
+    Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+    Route::put('/roles/{adminRole}', [RoleController::class, 'update'])->name('roles.update');
+    Route::post('/roles/{adminRole}/toggle', [RoleController::class, 'toggle'])->name('roles.toggle');
+    Route::delete('/roles/{adminRole}', [RoleController::class, 'destroy'])->name('roles.destroy');
 
     require base_path('routes/cms.php');
 

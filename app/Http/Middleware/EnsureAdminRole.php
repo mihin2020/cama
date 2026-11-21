@@ -12,7 +12,7 @@ class EnsureAdminRole
     {
         $admin = $request->user('admin');
 
-        if (! $admin || ! in_array($admin->role->value, $roles, true)) {
+        if (! $admin || ! in_array($admin->role, $roles, true)) {
             abort(403, 'Accès non autorisé pour votre rôle.');
         }
 

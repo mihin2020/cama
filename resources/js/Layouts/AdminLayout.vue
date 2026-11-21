@@ -97,6 +97,13 @@ const logout = () => router.post(route('admin.logout'));
             >
                 <span class="material-symbols-outlined text-[20px]">manage_accounts</span> Comptes internes
             </Link>
+            <Link
+                v-show="can('roles.manage')"
+                :class="navClass('roles')"
+                :href="route('admin.roles')"
+            >
+                <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span> Rôles et permissions
+            </Link>
             <Link v-show="can('exports.export')" :class="navClass('exports')" :href="route('admin.exports')">
                 <span class="material-symbols-outlined text-[20px]">file_download</span> Exports
             </Link>

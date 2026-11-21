@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Casts\AdminRoleSlug;
 use App\Enums\AdminRole;
 use App\Support\AdminPermissions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -43,7 +45,7 @@ class AdminUser extends Authenticatable
             'deconnexion_auto_active' => 'boolean',
             'login_2fa_expires_at' => 'datetime',
             'login_2fa_attempts' => 'integer',
-            'role' => AdminRole::class,
+            'role' => AdminRoleSlug::class,
             'permissions' => 'array',
             'invited_at' => 'datetime',
             'last_login_at' => 'datetime',
@@ -60,13 +62,66 @@ class AdminUser extends Authenticatable
         return strtoupper(substr($this->prenom, 0, 1).substr($this->nom, 0, 1));
     }
 
+    /** Rôle du compte (table admin_roles), via le slug stocké dans « role ». */
+    public function roleDefinition(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'role', 'slug');
+    }
+
+    /** Rôle chargé, rechargé si le slug a changé depuis le dernier accès. */
+    public function roleRecord(): ?Role
+    {
+        $loaded = $this->relationLoaded('roleDefinition') ? $this->getRelation('roleDefinition') : null;
+
+        if (! $loaded || $loaded->slug !== $this->role) {
+            $this->unsetRelation('roleDefinition');
+            $loaded = $this->roleDefinition;
+        }
+
+        return $loaded;
+    }
+
+    public function hasRole(AdminRole|string ...$roles): bool
+    {
+        foreach ($roles as $role) {
+            if ($this->role === ($role instanceof AdminRole ? $role->value : $role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isAdministrateur(): bool
+    {
+        return $this->hasRole(AdminRole::Administrateur);
+    }
+
+    public function getRoleLabelAttribute(): string
+    {
+        return $this->roleRecord()?->nom ?? (string) $this->role;
+    }
+
+    /** Rang hiérarchique du rôle (0 si le rôle est introuvable : aucun droit de gestion). */
+    public function getRoleRangAttribute(): int
+    {
+        return $this->roleRecord()?->rang ?? 0;
+    }
+
+    /** Le rôle du compte existe-t-il et est-il actif ? */
+    public function roleIsActive(): bool
+    {
+        return (bool) $this->roleRecord()?->actif;
+    }
+
     public function getDisplayNameAttribute(): string
     {
-        $prefix = match ($this->role) {
+        $prefix = match (AdminRole::tryFrom((string) $this->role)) {
             AdminRole::Gestionnaire => 'Lt. ',
             AdminRole::Superviseur => 'Cdt. ',
             AdminRole::Administrateur => 'Ing. ',
             AdminRole::Direction => 'Col-Maj. ',
+            default => '',
         };
 
         return $prefix.$this->full_name;
@@ -95,7 +150,7 @@ class AdminUser extends Authenticatable
      */
     public function getEffectivePermissionsAttribute(): array
     {
-        return AdminPermissions::effective($this->permissions, $this->role);
+        return AdminPermissions::effective($this->permissions, $this->roleRecord());
     }
 
     public function hasPermission(string $permission): bool

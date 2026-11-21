@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\AdminRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdminUserRequest;
 use App\Http\Requests\UpdateAdminUserRequest;
 use App\Models\AdminUser;
+use App\Models\Role;
 use App\Services\AdminUserService;
 use App\Support\AdminPermissions;
 use App\Support\Pagination;
@@ -28,16 +28,8 @@ class AdminUserController extends Controller
             return redirect()->route('admin.utilisateurs', [...$request->query(), 'page' => $paginator->lastPage()]);
         }
 
-        $assignableRoles = $actor->role === AdminRole::Administrateur
-            ? [
-                ['value' => AdminRole::Gestionnaire->value, 'label' => 'Gestionnaire'],
-                ['value' => AdminRole::Superviseur->value, 'label' => 'Superviseur'],
-                ['value' => AdminRole::Administrateur->value, 'label' => 'Administrateur'],
-            ]
-            : [
-                ['value' => AdminRole::Gestionnaire->value, 'label' => 'Gestionnaire'],
-                ['value' => AdminRole::Superviseur->value, 'label' => 'Superviseur'],
-            ];
+        $assignable = $service->assignableRoles($actor);
+        $allRoles = Role::query()->get();
 
         return Inertia::render('Admin/Utilisateurs/Index', [
             'users' => $paginator->items(),
@@ -47,18 +39,18 @@ class AdminUserController extends Controller
             // Cases que le compte connecté peut cocher (pas d'élévation de privilèges) et
             // permissions réservées à certains rôles.
             'grantablePermissions' => $service->grantableBy($actor),
-            'roleRestricted' => collect(AdminPermissions::ROLE_RESTRICTED)
-                ->map(fn (array $roles) => array_map(fn (AdminRole $role) => $role->value, $roles))
+            // Permission réservée => rôles (slugs) dont le rang l'autorise.
+            'roleRestricted' => collect(AdminPermissions::MIN_RANK)
+                ->map(fn (int $rank) => $allRoles->where('rang', '>=', $rank)->pluck('slug')->values()->all())
                 ->all(),
             'actorId' => $actor->id,
-            'actorIsAdmin' => $actor->role === AdminRole::Administrateur,
-            'rolePresets' => [
-                AdminRole::Gestionnaire->value => AdminPermissions::presetForRole(AdminRole::Gestionnaire),
-                AdminRole::Superviseur->value => AdminPermissions::presetForRole(AdminRole::Superviseur),
-                AdminRole::Administrateur->value => AdminPermissions::presetForRole(AdminRole::Administrateur),
-            ],
+            'actorIsAdmin' => $actor->isAdministrateur(),
+            // Permissions de chaque rôle : proposées à la création et via « Appliquer le rôle ».
+            'rolePresets' => $assignable->mapWithKeys(fn (Role $role) => [$role->slug => $role->permissionKeys()])->all(),
             'grades' => AdminPermissions::GRADES,
-            'assignableRoles' => $assignableRoles,
+            'assignableRoles' => $assignable
+                ->map(fn (Role $role) => ['value' => $role->slug, 'label' => $role->nom, 'description' => $role->description])
+                ->all(),
         ]);
     }
 

@@ -49,7 +49,7 @@ class DossierController extends Controller implements HasMiddleware
             'affectationMode' => $settings->get('affectation_mode') ?? 'manuelle',
             // Vue personnelle : agent sans « Consulter tous les dossiers » (il ne voit que les siens).
             'mesStats' => $personal ? $service->statsPourGestionnaire($admin) : null,
-            'adminRole' => $admin->role->value,
+            'adminRole' => $admin->role,
             'gestionnaireNom' => $personal ? $admin->display_name : null,
             'isGestionnaire' => $personal,
             'canSupervise' => $admin->hasPermission('dossiers.supervise'),

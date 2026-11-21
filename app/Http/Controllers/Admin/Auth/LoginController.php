@@ -51,9 +51,10 @@ class LoginController extends Controller
         /** @var AdminUser $admin */
         $admin = $guard->getLastAttempted();
 
-        if (! $admin->actif) {
+        // Compte désactivé, rôle supprimé ou désactivé, ou aucune permission : pas d'accès.
+        if ($refusal = \App\Support\AdminAccess::refusal($admin)) {
             throw ValidationException::withMessages([
-                'email' => 'Ce compte administrateur est désactivé.',
+                'email' => $refusal,
             ]);
         }
 

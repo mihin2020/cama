@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Enums\AdminRole;
 use App\Models\AdminUser;
+use App\Models\Role;
 use App\Support\AdminPermissions;
 use App\Support\SqlLike;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -37,7 +37,7 @@ class AdminUserService
      */
     public function create(array $data, AdminUser $actor): array
     {
-        $role = AdminRole::from($data['role']);
+        $role = $this->findRole($data['role']);
 
         $this->assertCanManageRole($actor, $role);
         $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? []);
@@ -48,7 +48,7 @@ class AdminUserService
             'grade' => $data['grade'] ?? null,
             'email' => strtolower(trim($data['email'])),
             'password' => Hash::make(Str::password(24)),
-            'role' => $role,
+            'role' => $role->slug,
             'permissions' => $permissions,
             'matricule_interne' => $data['matricule_interne'] ?? null,
             'actif' => true,
@@ -70,7 +70,7 @@ class AdminUserService
     {
         $this->assertCanManage($actor, $user);
 
-        $role = AdminRole::from($data['role']);
+        $role = $this->findRole($data['role']);
         $this->assertCanManageRole($actor, $role);
         $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? [], $user);
 
@@ -87,7 +87,7 @@ class AdminUserService
             'prenom' => trim($data['prenom']),
             'grade' => $data['grade'] ?? null,
             'email' => $email,
-            'role' => $role,
+            'role' => $role->slug,
             'permissions' => $permissions,
             'matricule_interne' => $data['matricule_interne'] ?? $user->matricule_interne,
         ])->save();
@@ -147,9 +147,9 @@ class AdminUserService
 
         $this->assertCanManage($actor, $user);
 
-        if ($user->role === AdminRole::Administrateur) {
+        if ($user->isAdministrateur()) {
             $adminCount = AdminUser::query()
-                ->where('role', AdminRole::Administrateur)
+                ->where('role', $user->role)
                 ->count();
 
             if ($adminCount <= 1) {
@@ -173,8 +173,10 @@ class AdminUserService
             'prenom' => $user->prenom,
             'nom' => $user->nom,
             'email' => $user->email,
-            'role' => $user->role->value,
-            'roleLabel' => $this->roleBadgeLabel($user->role),
+            'matriculeInterne' => $user->matricule_interne,
+            'role' => $user->role,
+            'roleLabel' => $user->role_label,
+            'roleSysteme' => (bool) $user->roleRecord()?->systeme,
             'statut' => $user->statut_label,
             'actif' => $user->actif,
             'permissions' => $user->effective_permissions,
@@ -195,6 +197,7 @@ class AdminUserService
     public function paginateForActor(AdminUser $actor, ?string $search, int $perPage): LengthAwarePaginator
     {
         return AdminUser::query()
+            ->with('roleDefinition')
             ->when($search, function ($query, string $search) {
                 $like = SqlLike::contains($search);
                 $query->where(fn ($q) => $q->where('nom', 'like', $like)
@@ -213,17 +216,48 @@ class AdminUserService
             ]);
     }
 
+    /**
+     * Hiérarchie : l'administrateur gère tous les comptes ; un compte qui a la permission de gérer
+     * les comptes ne gère que ceux d'un rang inférieur ou égal au sien (jamais un administrateur).
+     */
     public function canManage(AdminUser $actor, AdminUser $target): bool
     {
-        if ($actor->role === AdminRole::Administrateur) {
+        if ($actor->isAdministrateur()) {
             return true;
         }
 
-        if ($actor->role === AdminRole::Superviseur) {
-            return ! in_array($target->role, [AdminRole::Administrateur, AdminRole::Direction], true);
+        if (! $actor->hasPermission('users.manage') || $target->isAdministrateur()) {
+            return false;
         }
 
-        return false;
+        return $target->role_rang <= $actor->role_rang;
+    }
+
+    /**
+     * Rôles que le compte connecté peut attribuer (liste déroulante de la fiche).
+     *
+     * @return \Illuminate\Support\Collection<int, Role>
+     */
+    public function assignableRoles(AdminUser $actor)
+    {
+        return Role::query()
+            ->actifs()
+            ->orderBy('rang')
+            ->orderBy('nom')
+            ->get()
+            ->filter(fn (Role $role) => $this->canAssignRole($actor, $role))
+            ->values();
+    }
+
+    public function canAssignRole(AdminUser $actor, Role $role): bool
+    {
+        if ($actor->isAdministrateur()) {
+            return true;
+        }
+
+        return $actor->hasPermission('users.manage')
+            && ! $role->isAdministrateur()
+            && $role->rang <= $actor->role_rang;
     }
 
     private function assertCanManage(AdminUser $actor, AdminUser $target): void
@@ -240,7 +274,7 @@ class AdminUserService
      */
     public function grantableBy(AdminUser $actor): array
     {
-        return AdminPermissions::grantableBy($actor->role, app(AdminPermissionService::class)->expanded($actor));
+        return AdminPermissions::grantableBy($actor->isAdministrateur(), app(AdminPermissionService::class)->expanded($actor));
     }
 
     /**
@@ -253,7 +287,7 @@ class AdminUserService
      * @param  array<int, mixed>  $requested
      * @return list<string>
      */
-    private function grantablePermissions(AdminUser $actor, AdminRole $role, array $requested, ?AdminUser $target = null): array
+    private function grantablePermissions(AdminUser $actor, Role $role, array $requested, ?AdminUser $target = null): array
     {
         $permissions = AdminPermissions::sanitize($requested);
         $current = $target?->effective_permissions ?? [];
@@ -261,17 +295,17 @@ class AdminUserService
         foreach ($permissions as $key) {
             if (! AdminPermissions::allowedForRole($key, $role)) {
                 throw ValidationException::withMessages([
-                    'permissions' => '« '.AdminPermissions::label($key).' » est réservé aux superviseurs et administrateurs.',
+                    'permissions' => '« '.AdminPermissions::label($key).' » n\'est pas autorisé pour le rôle « '.$role->nom.' » (rang trop bas).',
                 ]);
             }
         }
 
-        if ($actor->role === AdminRole::Administrateur) {
+        if ($actor->isAdministrateur()) {
             return $permissions;
         }
 
         if ($target && $target->id === $actor->id) {
-            $unchanged = $role === $target->role
+            $unchanged = $role->slug === $target->role
                 && collect($permissions)->sort()->values()->all() === collect($current)->sort()->values()->all();
             if (! $unchanged) {
                 throw ValidationException::withMessages([
@@ -311,37 +345,36 @@ class AdminUserService
             ]);
         }
 
-        if ($actor->role !== AdminRole::Administrateur) {
+        if (! $actor->isAdministrateur()) {
             throw ValidationException::withMessages([
                 'email' => "Seul un administrateur peut modifier l'adresse e-mail d'un compte déjà actif.",
             ]);
         }
     }
 
-    private function assertCanManageRole(AdminUser $actor, AdminRole $role): void
+    private function findRole(string $slug): Role
     {
-        if ($actor->role === AdminRole::Administrateur) {
-            return;
+        $role = Role::query()->where('slug', $slug)->first();
+
+        if (! $role || ! $role->actif) {
+            throw ValidationException::withMessages(['role' => "Ce rôle n'existe pas ou est désactivé."]);
         }
 
-        if ($actor->role === AdminRole::Superviseur && ! in_array($role, [AdminRole::Gestionnaire, AdminRole::Superviseur], true)) {
-            throw ValidationException::withMessages([
-                'role' => 'Seul un administrateur technique peut créer ou promouvoir un administrateur.',
-            ]);
-        }
-
-        if ($actor->role !== AdminRole::Superviseur && $actor->role !== AdminRole::Administrateur) {
-            abort(403, 'Accès non autorisé.');
-        }
+        return $role;
     }
 
-    private function roleBadgeLabel(AdminRole $role): string
+    private function assertCanManageRole(AdminUser $actor, Role $role): void
     {
-        return match ($role) {
-            AdminRole::Gestionnaire => 'Gestionnaire',
-            AdminRole::Superviseur => 'Superviseur',
-            AdminRole::Administrateur => 'Administrateur',
-            AdminRole::Direction => 'Direction',
-        };
+        if (! $actor->isAdministrateur() && ! $actor->hasPermission('users.manage')) {
+            abort(403, 'Accès non autorisé.');
+        }
+
+        if (! $this->canAssignRole($actor, $role)) {
+            throw ValidationException::withMessages([
+                'role' => $role->isAdministrateur()
+                    ? 'Seul un administrateur technique peut créer ou promouvoir un administrateur.'
+                    : 'Vous ne pouvez attribuer que des rôles de niveau inférieur ou égal au vôtre.',
+            ]);
+        }
     }
 }

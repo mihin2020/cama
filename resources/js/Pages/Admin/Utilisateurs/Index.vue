@@ -42,12 +42,14 @@ const editingUser = ref(null);
 const resendingId = ref(null);
 const toast = ref(null);
 
+// Couleur du badge par rôle (slug) ; les rôles créés par l'administrateur ont un badge neutre.
 const ROLE_BADGE = {
-    Gestionnaire: 'bg-primary/10 text-primary',
-    Superviseur: 'bg-tertiary/10 text-tertiary',
-    Administrateur: 'bg-secondary/10 text-secondary',
-    Direction: 'bg-on-background/10 text-on-background',
+    gestionnaire: 'bg-primary/10 text-primary',
+    superviseur: 'bg-tertiary/10 text-tertiary',
+    administrateur: 'bg-secondary/10 text-secondary',
+    direction: 'bg-on-background/10 text-on-background',
 };
+const selectedRole = computed(() => props.assignableRoles.find((role) => role.value === form.role) ?? null);
 
 const STATUT_BADGE = {
     Actif: 'bg-secondary text-on-secondary',
@@ -76,7 +78,9 @@ function openCreate() {
     editingUser.value = null;
     form.reset();
     form.clearErrors();
-    form.role = 'gestionnaire';
+    form.role = props.assignableRoles.some((role) => role.value === 'gestionnaire')
+        ? 'gestionnaire'
+        : (props.assignableRoles[0]?.value ?? '');
     applyRolePreset();
     formOpen.value = true;
 }
@@ -90,7 +94,7 @@ function openEdit(user) {
     form.grade = user.grade ?? '';
     form.role = user.role;
     form.permissions = [...(user.permissions ?? [])];
-    form.matricule_interne = '';
+    form.matricule_interne = user.matriculeInterne ?? '';
     form.clearErrors();
     formOpen.value = true;
 }
@@ -119,7 +123,7 @@ function permissionState(key) {
         return { disabled: true, reason: 'Vos propres droits ne peuvent être modifiés que par un administrateur.' };
     }
     if (!allowedForRole(key)) {
-        return { disabled: true, reason: 'Réservé aux rôles superviseur et administrateur.' };
+        return { disabled: true, reason: 'Non autorisé pour ce rôle : son rang est trop bas.' };
     }
     if (impliedByCmsManage(key)) {
         return { disabled: true, reason: 'Déjà inclus dans « Accès complet au studio de contenu ».' };
@@ -295,7 +299,7 @@ function executeDelete(user) {
                             </td>
                             <td class="px-5 py-3 text-xs text-on-surface-variant hidden md:table-cell">{{ user.email }}</td>
                             <td class="px-5 py-3">
-                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold" :class="ROLE_BADGE[user.roleLabel] ?? ''">{{ user.roleLabel }}</span>
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold" :class="ROLE_BADGE[user.role] ?? 'bg-surface-container text-on-surface'">{{ user.roleLabel }}</span>
                             </td>
                             <td class="px-5 py-3 hidden lg:table-cell">
                                 <span class="px-2.5 py-1 rounded-full text-[11px] font-bold" :class="STATUT_BADGE[user.statut] ?? ''">{{ user.statut }}</span>
@@ -374,6 +378,8 @@ function executeDelete(user) {
                         <select v-model="form.role" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white">
                             <option v-for="role in assignableRoles" :key="role.value" :value="role.value">{{ role.label }}</option>
                         </select>
+                        <p v-if="selectedRole?.description" class="text-[10px] text-on-surface-variant mt-1">{{ selectedRole.description }}</p>
+                        <p v-if="form.errors.role" class="text-[10px] text-error mt-1">{{ form.errors.role }}</p>
                     </div>
                     <div>
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Prénom <span class="text-error">*</span></label>
@@ -385,10 +391,15 @@ function executeDelete(user) {
                         <input v-model="form.nom" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg uppercase" type="text" />
                         <p v-if="form.errors.nom" class="text-[10px] text-error mt-1">{{ form.errors.nom }}</p>
                     </div>
-                    <div class="sm:col-span-2">
+                    <div>
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Email <span class="text-error">*</span></label>
                         <input v-model="form.email" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" type="email" placeholder="prenom.nom@cama.bf" />
                         <p v-if="form.errors.email" class="text-[10px] text-error mt-1">{{ form.errors.email }}</p>
+                    </div>
+                    <div>
+                        <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Matricule interne</label>
+                        <input v-model="form.matricule_interne" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" maxlength="50" type="text" />
+                        <p v-if="form.errors.matricule_interne" class="text-[10px] text-error mt-1">{{ form.errors.matricule_interne }}</p>
                     </div>
                 </div>
 

@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Enums\AdminRole;
+use App\Models\Role;
 
 class AdminPermissions
 {
@@ -94,6 +95,7 @@ class AdminPermissions
                 'group' => 'Comptes internes',
                 'items' => [
                     ['key' => 'users.manage', 'label' => 'Gérer les comptes internes et permissions'],
+                    ['key' => 'roles.manage', 'label' => 'Créer et modifier les rôles et leurs permissions'],
                 ],
             ],
             [
@@ -135,13 +137,15 @@ class AdminPermissions
     }
 
     /**
-     * Permissions réservées à certains rôles : gérer les comptes internes n'a de sens que pour
-     * un superviseur ou un administrateur (un gestionnaire n'a aucun compte « en dessous » de lui).
+     * Permissions réservées aux rôles d'un rang minimal : gérer les comptes internes n'a de sens
+     * qu'à partir du rang superviseur (un gestionnaire n'a aucun compte « en dessous » de lui) ;
+     * créer des rôles, qui fixent les droits de tous, est réservé à l'administrateur.
      *
-     * @var array<string, list<AdminRole>>
+     * @var array<string, int>
      */
-    public const ROLE_RESTRICTED = [
-        'users.manage' => [AdminRole::Superviseur, AdminRole::Administrateur],
+    public const MIN_RANK = [
+        'users.manage' => 50,
+        'roles.manage' => 100,
     ];
 
     /**
@@ -162,9 +166,9 @@ class AdminPermissions
      *
      * @return list<string>
      */
-    public static function grantableBy(AdminRole $actorRole, array $actorPermissions): array
+    public static function grantableBy(bool $actorIsAdministrateur, array $actorPermissions): array
     {
-        if ($actorRole === AdminRole::Administrateur) {
+        if ($actorIsAdministrateur) {
             return self::allKeys();
         }
 
@@ -173,25 +177,38 @@ class AdminPermissions
             || (self::coveredByCmsManage($key) && in_array('cms.manage', $actorPermissions, true))));
     }
 
-    /** La permission peut-elle être donnée à un compte de ce rôle ? */
-    public static function allowedForRole(string $permission, AdminRole $role): bool
+    /** La permission peut-elle être donnée à un compte dont le rôle a ce rang ? */
+    public static function allowedForRank(string $permission, int $rank): bool
     {
-        return ! isset(self::ROLE_RESTRICTED[$permission]) || in_array($role, self::ROLE_RESTRICTED[$permission], true);
+        return $rank >= (self::MIN_RANK[$permission] ?? 0);
+    }
+
+    /** La permission peut-elle être donnée à un compte de ce rôle ? */
+    public static function allowedForRole(string $permission, ?Role $role): bool
+    {
+        return $role !== null && self::allowedForRank($permission, $role->rang);
     }
 
     /**
-     * Permissions effectives : stockées si définies, sinon preset du rôle (comptes legacy).
+     * Permissions effectives : celles du compte si elles sont définies, sinon celles de son rôle.
+     * Un compte sans rôle valide n'a aucune permission.
      *
      * @return list<string>
      */
-    public static function effective(?array $stored, AdminRole $role): array
+    public static function effective(?array $stored, ?Role $role): array
     {
-        $permissions = $stored !== null ? self::sanitize($stored) : self::presetForRole($role);
+        if ($role === null) {
+            return [];
+        }
+
+        $permissions = $stored !== null ? self::sanitize($stored) : $role->permissionKeys();
 
         return array_values(array_filter($permissions, fn (string $key) => self::allowedForRole($key, $role)));
     }
 
     /**
+     * Permissions d'origine des 4 rôles système (utilisées pour créer ces rôles en base).
+     *
      * @return list<string>
      */
     public static function presetForRole(AdminRole $role): array
@@ -295,6 +312,12 @@ class AdminPermissions
         'admin.utilisateurs.resend-invitation' => 'users.manage',
         'admin.utilisateurs.destroy' => 'users.manage',
 
+        'admin.roles' => 'roles.manage',
+        'admin.roles.store' => 'roles.manage',
+        'admin.roles.update' => 'roles.manage',
+        'admin.roles.toggle' => 'roles.manage',
+        'admin.roles.destroy' => 'roles.manage',
+
         'admin.cms.dashboard' => 'cms.dashboard',
         'admin.cms.pages' => 'cms.pages',
         'admin.cms.pages.store' => 'cms.pages',
@@ -389,19 +412,5 @@ class AdminPermissions
     public static function permissionForRoute(string $routeName): ?string
     {
         return self::ROUTE_PERMISSIONS[$routeName] ?? null;
-    }
-
-    /**
-     * @deprecated Utiliser sanitize() ou effective().
-     *
-     * @return list<string>
-     */
-    public static function normalize(?array $permissions, AdminRole $role): array
-    {
-        if ($permissions === null) {
-            return self::presetForRole($role);
-        }
-
-        return self::sanitize($permissions);
     }
 }

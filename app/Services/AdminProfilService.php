@@ -18,15 +18,15 @@ class AdminProfilService
     {
         return [
             'displayName' => $admin->display_name,
-            'roleLabel' => $admin->role->label(),
+            'roleLabel' => $admin->role_label,
             'matriculeInterne' => $admin->matricule_interne ?? '—',
             'email' => $admin->email,
             'lastLogin' => $admin->last_login_at?->format('d/m/Y H:i') ?? '—',
             'initiales' => $admin->initiales,
             'deuxFa' => (bool) $admin->deux_fa_active,
             'deconnexionAuto' => (bool) $admin->deconnexion_auto_active,
-            'isGestionnaire' => $admin->role === AdminRole::Gestionnaire,
-            'workload' => $admin->role === AdminRole::Gestionnaire
+            'isGestionnaire' => $admin->hasRole(AdminRole::Gestionnaire),
+            'workload' => $admin->hasRole(AdminRole::Gestionnaire)
                 ? $this->gestionnaireWorkload($admin)
                 : null,
         ];

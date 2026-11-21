@@ -62,7 +62,7 @@ class EmailChangeProtectionTest extends TestCase
     {
         return [
             'nom' => $user->nom, 'prenom' => $user->prenom, 'email' => $email,
-            'role' => $user->role->value, 'permissions' => $user->permissions,
+            'role' => $user->role, 'permissions' => $user->permissions,
         ];
     }
 

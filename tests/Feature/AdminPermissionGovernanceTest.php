@@ -32,7 +32,7 @@ class AdminPermissionGovernanceTest extends TestCase
     {
         return [
             'nom' => $user->nom, 'prenom' => $user->prenom, 'email' => $user->email,
-            'role' => ($role ?? $user->role)->value, 'permissions' => $permissions,
+            'role' => $role?->value ?? $user->role, 'permissions' => $permissions,
         ];
     }
 
