@@ -12,7 +12,7 @@
 
     <p>
         {{ $invitedBy }} vous a créé un accès au back-office CAMA
-        (rôle : <strong>{{ $user->role->label() }}</strong>).
+        (rôle : <strong>{{ $user->role_label }}</strong>).
     </p>
 
     <p>Cliquez sur le bouton ci-dessous pour définir votre mot de passe et activer votre compte :</p>

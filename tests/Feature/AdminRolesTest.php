@@ -83,6 +83,25 @@ class AdminRolesTest extends TestCase
         $this->assertFalse($webmaster->hasPermission('dossiers.view'));
     }
 
+    public function test_invitation_email_is_really_sent_and_shows_the_role(): void
+    {
+        \Illuminate\Support\Facades\Mail::fake();
+        $admin = $this->administrateur();
+        $this->createWebmasterRole($admin);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.utilisateurs.store'), [
+                'prenom' => 'Awa', 'nom' => 'Ouedraogo', 'email' => 'invite@cama.bf', 'role' => 'webmaster',
+            ])
+            ->assertSessionHas('success', 'Invitation envoyée à invite@cama.bf.');
+
+        \Illuminate\Support\Facades\Mail::assertSent(
+            \App\Mail\AdminUserInvitationMail::class,
+            // Le contenu est réellement généré : une erreur dans le modèle de l'e-mail ferait échouer ce test.
+            fn ($mail) => $mail->hasTo('invite@cama.bf') && str_contains($mail->render(), 'Webmaster'),
+        );
+    }
+
     public function test_webmaster_logs_in_lands_on_the_cms_and_gets_403_elsewhere(): void
     {
         $role = $this->createWebmasterRole($this->administrateur());
