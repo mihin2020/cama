@@ -46,7 +46,7 @@ class AdminUserController extends Controller
             'actorId' => $actor->id,
             'actorIsAdmin' => $actor->isAdministrateur(),
             // Permissions de chaque rôle : proposées à la création et via « Appliquer le rôle ».
-            'rolePresets' => $assignable->mapWithKeys(fn (Role $role) => [$role->slug => $role->permissionKeys()])->all(),
+            'rolePresets' => $assignable->mapWithKeys(fn (Role $role) => [$role->slug => AdminPermissions::expand($role->permissionKeys())])->all(),
             'grades' => AdminPermissions::GRADES,
             'assignableRoles' => $assignable
                 ->map(fn (Role $role) => ['value' => $role->slug, 'label' => $role->nom, 'description' => $role->description])

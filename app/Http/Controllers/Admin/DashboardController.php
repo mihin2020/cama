@@ -15,10 +15,9 @@ class DashboardController extends Controller
     {
         $admin = auth('admin')->user();
 
-        // Un compte sans accès aux dossiers (ex. webmaster) arrive directement sur son module.
-        $landing = AdminAccess::landingRoute($admin);
-        if ($landing !== 'admin.dashboard') {
-            return redirect()->route($landing);
+        // Sans accès aux dossiers (ex. webmaster), le compte arrive directement sur son premier module.
+        if (! AdminAccess::seesDashboard($admin)) {
+            return redirect()->route(AdminAccess::landingRoute($admin));
         }
 
         // Sans « Consulter tous les dossiers », le tableau de bord se limite aux dossiers de l'agent.

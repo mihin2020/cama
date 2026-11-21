@@ -49,7 +49,7 @@ class AdminUserService
             'email' => strtolower(trim($data['email'])),
             'password' => Hash::make(Str::password(24)),
             'role' => $role->slug,
-            'permissions' => $permissions,
+            'permissions' => $this->storedPermissions($role, $permissions),
             'matricule_interne' => $data['matricule_interne'] ?? null,
             'actif' => true,
             'invited_at' => now(),
@@ -88,7 +88,7 @@ class AdminUserService
             'grade' => $data['grade'] ?? null,
             'email' => $email,
             'role' => $role->slug,
-            'permissions' => $permissions,
+            'permissions' => $this->storedPermissions($role, $permissions),
             'matricule_interne' => $data['matricule_interne'] ?? $user->matricule_interne,
         ])->save();
 
@@ -179,8 +179,10 @@ class AdminUserService
             'roleSysteme' => (bool) $user->roleRecord()?->systeme,
             'statut' => $user->statut_label,
             'actif' => $user->actif,
-            'permissions' => $user->effective_permissions,
-            'permissionsCount' => count($user->effective_permissions),
+            'permissions' => AdminPermissions::expand($user->effective_permissions),
+            'permissionsCount' => count(AdminPermissions::expand($user->effective_permissions)),
+            // Le compte suit-il les permissions de son rôle (modifier le rôle le met à jour) ?
+            'followsRole' => $user->permissions === null,
             'displayName' => $user->display_name_with_grade,
             'initiales' => $user->initiales,
             'lastLoginAt' => $user->last_login_at?->format('d/m/Y H:i'),
@@ -307,7 +309,7 @@ class AdminUserService
 
         if ($target && $target->id === $actor->id) {
             $unchanged = $role->slug === $target->role
-                && collect($permissions)->sort()->values()->all() === collect($current)->sort()->values()->all();
+                && AdminPermissions::sameSet($permissions, $current);
             if (! $unchanged) {
                 throw ValidationException::withMessages([
                     'permissions' => 'Vous ne pouvez pas modifier vos propres droits : demandez à un administrateur.',
@@ -351,6 +353,22 @@ class AdminUserService
                 'email' => "Seul un administrateur peut modifier l'adresse e-mail d'un compte déjà actif.",
             ]);
         }
+    }
+
+    /**
+     * Ce qu'on enregistre sur le compte : rien (null) si les cases cochées sont celles du rôle —
+     * le compte suit alors le rôle et toute modification du rôle s'y applique —, sinon la liste.
+     *
+     * @param  list<string>  $permissions
+     * @return list<string>|null
+     */
+    private function storedPermissions(Role $role, array $permissions): ?array
+    {
+        if ($role->isAdministrateur()) {
+            return null;
+        }
+
+        return AdminPermissions::sameSet($permissions, $role->permissionKeys()) ? null : $permissions;
     }
 
     private function findRole(string $slug): Role

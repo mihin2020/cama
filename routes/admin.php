@@ -82,7 +82,7 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
     Route::put('/roles/{adminRole}', [RoleController::class, 'update'])->name('roles.update');
     Route::post('/roles/{adminRole}/toggle', [RoleController::class, 'toggle'])->name('roles.toggle');
-    Route::delete('/roles/{adminRole}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::delete('/roles/{adminRole}', [RoleController::class, 'destroy'])->middleware('throttle:5,1')->name('roles.destroy');
 
     require base_path('routes/cms.php');
 

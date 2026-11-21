@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import PermissionPicker from '@/Components/Admin/PermissionPicker.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -42,61 +43,11 @@ const isAdminRole = computed(() => editing.value?.administrateur === true);
 // Niveau interne du rôle édité (un rôle créé est au niveau d'un gestionnaire) : non affiché.
 const roleRank = computed(() => editing.value?.rang ?? props.customRank);
 
-const CMS_EXPLICIT_ONLY = ['cms.html'];
-
-function openCreate() {
-    editing.value = null;
-    form.reset();
-    form.clearErrors();
-    formOpen.value = true;
-}
-
-function openEdit(role) {
-    editing.value = role;
-    form.nom = role.nom;
-    form.description = role.description ?? '';
-    form.permissions = [...role.permissions];
-    form.apply_to_users = false;
-    form.clearErrors();
-    formOpen.value = true;
-}
-
-function closeForm() {
-    formOpen.value = false;
-    editing.value = null;
-}
-
-function impliedByCmsManage(key) {
-    return key !== 'cms.manage' && key.startsWith('cms.') && !CMS_EXPLICIT_ONLY.includes(key)
-        && form.permissions.includes('cms.manage');
-}
-
-function permissionState(key) {
-    if (isAdminRole.value) {
-        return { disabled: true, reason: "L'administrateur a toujours toutes les permissions." };
-    }
+function permissionReason(key) {
     const restriction = props.restrictions[key];
-    if (restriction && roleRank.value < restriction.minRank) {
-        return { disabled: true, reason: restriction.label };
-    }
-    if (impliedByCmsManage(key)) {
-        return { disabled: true, reason: 'Déjà inclus dans « Accès complet au studio de contenu ».' };
-    }
-    if (!props.grantablePermissions.includes(key)) {
-        return { disabled: true, reason: 'Vous ne possédez pas cette permission.' };
-    }
-    return { disabled: false, reason: '' };
-}
-
-function isChecked(key) {
-    return isAdminRole.value || form.permissions.includes(key) || impliedByCmsManage(key);
-}
-
-function togglePermission(key) {
-    if (permissionState(key).disabled) return;
-    form.permissions = form.permissions.includes(key)
-        ? form.permissions.filter((p) => p !== key)
-        : [...form.permissions, key];
+    if (restriction && roleRank.value < restriction.minRank) return restriction.label;
+    if (!props.grantablePermissions.includes(key)) return 'Vous ne possédez pas cette permission.';
+    return '';
 }
 
 function save() {
@@ -130,6 +81,52 @@ function confirmToggle(role) {
     });
 }
 
+// Suppression d'un rôle d'origine : fenêtre dédiée, avec le mot de passe actuel de l'administrateur.
+const deleting = ref(null);
+const deleteForm = useForm({ password: '' });
+
+function openSystemDelete(role) {
+    deleting.value = role;
+    deleteForm.reset();
+    deleteForm.clearErrors();
+}
+
+function closeSystemDelete() {
+    deleting.value = null;
+    deleteForm.reset();
+}
+
+function submitSystemDelete() {
+    deleteForm.delete(route('admin.roles.destroy', deleting.value.id), {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            closeSystemDelete();
+            toastFromFlash(page);
+        },
+        onError: (errors) => {
+            if (!errors.password) {
+                closeSystemDelete();
+                toastFromErrors(errors);
+            }
+        },
+        onFinish: () => deleteForm.reset('password'),
+    });
+}
+
+function deleteTitle(role) {
+    if (role.administrateur) return 'Le rôle Administrateur ne peut pas être supprimé';
+    if (role.usersCount > 0) return `Attribué à ${role.usersCount} compte(s) : changez d'abord leur rôle`;
+    return 'Supprimer';
+}
+
+function askDelete(role) {
+    if (role.systeme) {
+        openSystemDelete(role);
+        return;
+    }
+    confirmDelete(role);
+}
+
 function confirmDelete(role) {
     askConfirm({
         title: 'Supprimer ce rôle ?',
@@ -151,8 +148,8 @@ function confirmDelete(role) {
     <AdminLayout active-nav="roles" title="Rôles et permissions" subtitle="Créez des rôles (ex. webmaster) et choisissez leurs permissions">
         <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
             <p class="text-xs text-on-surface-variant max-w-2xl">
-                Créez un rôle, cochez ses permissions : elles seront cochées automatiquement quand vous créerez un compte avec ce rôle
-                (dans « Comptes internes »).
+                Créez un rôle et cochez ses permissions. Dans « Comptes internes », choisir ce rôle pré-coche ses permissions ;
+                les comptes qui gardent ces cases reçoivent automatiquement toute modification du rôle.
             </p>
             <button class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:opacity-90" type="button" @click="openCreate">
                 <span class="material-symbols-outlined text-[16px]">add</span> Nouveau rôle
@@ -204,9 +201,9 @@ function confirmDelete(role) {
                                 <button
                                     class="text-on-surface-variant hover:text-error disabled:opacity-30"
                                     type="button"
-                                    :disabled="role.systeme || role.usersCount > 0"
-                                    :title="role.systeme ? 'Rôle d’origine : non supprimable' : (role.usersCount > 0 ? 'Rôle attribué à des comptes' : 'Supprimer')"
-                                    @click="confirmDelete(role)"
+                                    :disabled="role.administrateur || role.usersCount > 0"
+                                    :title="deleteTitle(role)"
+                                    @click="askDelete(role)"
                                 >
                                     <span class="material-symbols-outlined text-[18px]">delete</span>
                                 </button>
@@ -238,39 +235,27 @@ function confirmDelete(role) {
 
                 <div class="mt-5">
                     <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-2">Permissions du rôle</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div v-for="group in permissionsCatalog" :key="group.group" class="border border-outline-variant rounded-lg p-3">
-                            <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-1.5">{{ group.group }}</p>
-                            <div class="space-y-1.5">
-                                <label
-                                    v-for="item in group.items"
-                                    :key="item.key"
-                                    class="flex items-start gap-2 text-xs"
-                                    :class="permissionState(item.key).disabled ? 'opacity-55 cursor-not-allowed' : 'cursor-pointer'"
-                                    :title="permissionState(item.key).reason"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        class="mt-0.5 rounded border-outline-variant text-primary disabled:cursor-not-allowed"
-                                        :checked="isChecked(item.key)"
-                                        :disabled="permissionState(item.key).disabled"
-                                        @change="togglePermission(item.key)"
-                                    />
-                                    <span>{{ item.label }}</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    <PermissionPicker
+                        v-model="form.permissions"
+                        :all-locked="isAdminRole"
+                        :catalog="permissionsCatalog"
+                        :disabled-reason="permissionReason"
+                    />
                     <p v-if="form.errors.permissions" class="text-[11px] text-error mt-2">{{ form.errors.permissions }}</p>
                 </div>
 
-                <label v-if="isEditing && !isAdminRole && editing.usersCount > 0" class="mt-4 flex items-start gap-2 text-xs cursor-pointer">
-                    <input v-model="form.apply_to_users" class="mt-0.5 rounded border-outline-variant text-primary" type="checkbox" />
-                    <span>
-                        Appliquer aussi ces permissions aux {{ editing.usersCount }} compte(s) existant(s) de ce rôle
-                        <span class="block text-[10px] text-on-surface-variant">Sinon, seuls les nouveaux comptes reçoivent les permissions modifiées.</span>
-                    </span>
-                </label>
+                <div v-if="isEditing && !isAdminRole && editing.usersCount > 0" class="mt-4 rounded-lg bg-surface-container-low p-3 text-xs">
+                    <p>
+                        <strong>{{ editing.usersCount - editing.customUsersCount }}</strong> compte(s) suivent ce rôle : ils recevront ces permissions dès l'enregistrement.
+                    </p>
+                    <label v-if="editing.customUsersCount > 0" class="mt-2 flex items-start gap-2 cursor-pointer">
+                        <input v-model="form.apply_to_users" class="mt-0.5 rounded border-outline-variant text-primary" type="checkbox" />
+                        <span>
+                            Appliquer aussi aux {{ editing.customUsersCount }} compte(s) aux permissions personnalisées
+                            <span class="block text-[10px] text-on-surface-variant">Leurs cases cochées à la main seront remplacées par celles du rôle.</span>
+                        </span>
+                    </label>
+                </div>
 
                 <div class="flex justify-end gap-2 mt-6">
                     <button class="px-4 py-2 text-xs rounded-lg border border-outline" type="button" @click="closeForm">Annuler</button>
@@ -279,6 +264,40 @@ function confirmDelete(role) {
                     </button>
                 </div>
             </div>
+        </div>
+
+        <div v-if="deleting" class="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" @click.self="closeSystemDelete">
+            <form class="bg-white rounded-xl w-full max-w-md p-6" @submit.prevent="submitSystemDelete">
+                <div class="flex items-start gap-3 mb-3">
+                    <span class="material-symbols-outlined text-error text-[28px]">warning</span>
+                    <div>
+                        <h3 class="font-title-lg text-title-lg">Supprimer le rôle « {{ deleting.nom }} » ?</h3>
+                        <p class="text-xs text-on-surface-variant mt-1">
+                            C'est un rôle d'origine de la plateforme. Sa suppression est définitive.
+                            Pour confirmer, saisissez <strong>votre mot de passe actuel</strong>.
+                        </p>
+                    </div>
+                </div>
+                <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1" for="role-delete-password">Mot de passe</label>
+                <input
+                    id="role-delete-password"
+                    v-model="deleteForm.password"
+                    autocomplete="current-password"
+                    autofocus
+                    class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg"
+                    required
+                    type="password"
+                />
+                <p v-if="deleteForm.errors.password" class="text-[10px] text-error mt-1">{{ deleteForm.errors.password }}</p>
+                <div class="flex justify-end gap-2 mt-6">
+                    <button class="px-4 py-2 text-xs rounded-lg border border-outline" type="button" @click="closeSystemDelete">Annuler</button>
+                    <button
+                        class="px-4 py-2 text-xs rounded-lg bg-error text-on-error font-bold disabled:opacity-60"
+                        type="submit"
+                        :disabled="deleteForm.processing || !deleteForm.password"
+                    >Supprimer définitivement</button>
+                </div>
+            </form>
         </div>
 
         <CamaConfirmModal

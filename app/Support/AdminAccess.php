@@ -11,13 +11,13 @@ final class AdminAccess
 {
     /**
      * Modules proposés comme page d'arrivée, dans l'ordre : permission requise => route.
-     * Le tableau de bord n'est utile qu'avec un accès aux dossiers, assurés, inscriptions ou exports.
+     * Le tableau de bord présente l'activité des dossiers : il est réservé aux comptes qui les consultent.
      */
     private const LANDINGS = [
         'dossiers.view' => 'admin.dashboard',
-        'assures.view' => 'admin.dashboard',
-        'inscriptions.view' => 'admin.dashboard',
-        'exports.export' => 'admin.dashboard',
+        'inscriptions.view' => 'admin.inscriptions',
+        'assures.view' => 'admin.assures',
+        'exports.export' => 'admin.exports',
         'cms.dashboard' => 'admin.cms.dashboard',
         'cms.pages' => 'admin.cms.pages',
         'cms.articles' => 'admin.cms.actualites',
@@ -72,6 +72,12 @@ final class AdminAccess
             }
         }
 
-        return 'admin.dashboard';
+        return 'admin.profil';
+    }
+
+    /** Le compte peut-il ouvrir le tableau de bord ? */
+    public static function seesDashboard(AdminUser $admin): bool
+    {
+        return $admin->hasPermission('dossiers.view');
     }
 }

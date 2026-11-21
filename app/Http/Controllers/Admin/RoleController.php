@@ -50,8 +50,8 @@ class RoleController extends Controller
         $updated = $service->update($adminRole, $data, $request->user('admin'));
 
         $message = "Rôle « {$adminRole->nom} » mis à jour.";
-        if (! empty($data['apply_to_users'])) {
-            $message .= " Permissions réappliquées à {$updated} compte(s).";
+        if ($updated > 0) {
+            $message .= " {$updated} compte(s) personnalisé(s) suivent de nouveau le rôle.";
         }
 
         return back()->with('success', $message);
@@ -64,10 +64,10 @@ class RoleController extends Controller
         return back()->with('success', $role->actif ? "Rôle « {$role->nom} » activé." : "Rôle « {$role->nom} » désactivé : ses comptes ne peuvent plus se connecter.");
     }
 
-    public function destroy(Role $adminRole, AdminRoleService $service): RedirectResponse
+    public function destroy(Request $request, Role $adminRole, AdminRoleService $service): RedirectResponse
     {
         $nom = $adminRole->nom;
-        $service->delete($adminRole);
+        $service->delete($adminRole, $request->user('admin'), $request->string('password')->toString());
 
         return back()->with('success', "Rôle « {$nom} » supprimé.");
     }

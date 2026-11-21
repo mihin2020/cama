@@ -6,6 +6,7 @@ use App\Models\AdminUser;
 use App\Models\Role;
 use App\Support\AdminPermissions;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -15,7 +16,10 @@ use Illuminate\Validation\ValidationException;
  * Règles :
  *  - le rôle Administrateur garde toujours toutes les permissions et ne peut être ni désactivé,
  *    ni supprimé ; seuls son nom et sa description se modifient ;
- *  - les rôles système (les 4 rôles d'origine) ne se suppriment pas ;
+ *  - les comptes qui « suivent » leur rôle (aucune permission propre) reçoivent aussitôt les
+ *    modifications du rôle ; les comptes personnalisés gardent leurs cases ;
+ *  - supprimer un rôle d'origine exige le mot de passe de l'administrateur ; le rôle
+ *    Administrateur, lui, ne se supprime jamais (sinon plus personne ne gère la plateforme) ;
  *  - un rôle créé est au niveau d'un gestionnaire : superviseurs et administrateurs gèrent ses
  *    comptes, et il ne peut pas recevoir « Gérer les comptes internes » ;
  *  - un rôle encore attribué à des comptes ne se supprime pas.
@@ -28,7 +32,7 @@ class AdminRoleService
     public function list(): array
     {
         return Role::query()
-            ->withCount('users')
+            ->withCount(['users', 'users as custom_users_count' => fn ($query) => $query->whereNotNull('permissions')])
             ->orderByDesc('rang')
             ->orderBy('nom')
             ->get()
@@ -50,8 +54,10 @@ class AdminRoleService
             'systeme' => $role->systeme,
             'actif' => $role->actif,
             'administrateur' => $role->isAdministrateur(),
-            'permissions' => $role->permissionKeys(),
+            'permissions' => AdminPermissions::expand($role->permissionKeys()),
             'usersCount' => (int) ($role->users_count ?? $role->users()->count()),
+            // Comptes de ce rôle aux permissions personnalisées (non mis à jour par le rôle).
+            'customUsersCount' => (int) ($role->custom_users_count ?? $role->users()->whereNotNull('permissions')->count()),
         ];
     }
 
@@ -75,7 +81,7 @@ class AdminRoleService
 
     /**
      * @param  array{nom: string, description?: ?string, permissions?: array<int, string>, apply_to_users?: bool}  $data
-     * @return int Nombre de comptes dont les permissions ont été réalignées sur le rôle.
+     * @return int Nombre de comptes personnalisés ramenés sur les permissions du rôle.
      */
     public function update(Role $role, array $data, AdminUser $actor): int
     {
@@ -95,8 +101,8 @@ class AdminRoleService
                 return 0;
             }
 
-            // Les comptes du rôle reprennent exactement ses permissions.
-            return $role->users()->update(['permissions' => json_encode($role->fresh()->permissionKeys())]);
+            // Les comptes personnalisés suivent de nouveau le rôle (les autres le suivent déjà).
+            return $role->users()->whereNotNull('permissions')->update(['permissions' => null]);
         });
     }
 
@@ -115,10 +121,15 @@ class AdminRoleService
         return $role;
     }
 
-    public function delete(Role $role): void
+    public function delete(Role $role, AdminUser $actor, ?string $password = null): void
     {
-        if ($role->systeme) {
-            throw ValidationException::withMessages(['role' => "Le rôle « {$role->nom} » fait partie des rôles d'origine : il ne peut pas être supprimé (vous pouvez le désactiver)."]);
+        if ($role->isAdministrateur()) {
+            throw ValidationException::withMessages(['role' => 'Le rôle Administrateur ne peut pas être supprimé : sans lui, plus personne ne pourrait gérer la plateforme.']);
+        }
+
+        // Rôle d'origine : on confirme l'identité de l'administrateur avec son mot de passe actuel.
+        if ($role->systeme && ! Hash::check((string) $password, $actor->password)) {
+            throw ValidationException::withMessages(['password' => 'Mot de passe incorrect.']);
         }
 
         $count = $role->users()->count();

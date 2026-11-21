@@ -202,13 +202,91 @@ class AdminRolesTest extends TestCase
         $webmaster = $this->createWebmasterRole($admin);
         $this->account($webmaster->slug, null, 'webmaster@cama.bf');
 
-        $this->actingAs($admin, 'admin')->delete(route('admin.roles.destroy', $gestionnaire))->assertSessionHasErrors('role');
+        // Rôle d'origine : sans le mot de passe de l'administrateur, rien n'est supprimé.
+        $this->actingAs($admin, 'admin')->delete(route('admin.roles.destroy', $gestionnaire))->assertSessionHasErrors('password');
         $this->actingAs($admin, 'admin')->delete(route('admin.roles.destroy', $webmaster))->assertSessionHasErrors('role');
         $this->actingAs($admin, 'admin')->post(route('admin.roles.toggle', $adminRole))->assertSessionHasErrors('role');
 
         $this->assertDatabaseHas('admin_roles', ['slug' => 'gestionnaire']);
         $this->assertDatabaseHas('admin_roles', ['slug' => 'webmaster']);
         $this->assertTrue($adminRole->fresh()->actif);
+    }
+
+    public function test_system_role_is_deleted_only_with_the_current_admin_password(): void
+    {
+        $admin = $this->administrateur();
+        $direction = Role::query()->where('slug', 'direction')->firstOrFail();
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.roles.destroy', $direction), ['password' => 'mauvais-mot-de-passe'])
+            ->assertSessionHasErrors(['password' => 'Mot de passe incorrect.']);
+        $this->assertDatabaseHas('admin_roles', ['slug' => 'direction']);
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.roles.destroy', $direction), ['password' => 'motdepasse-solide'])
+            ->assertSessionHasNoErrors();
+        $this->assertDatabaseMissing('admin_roles', ['slug' => 'direction']);
+    }
+
+    public function test_administrator_role_is_never_deleted_even_with_the_password(): void
+    {
+        $admin = $this->administrateur();
+        $adminRole = Role::query()->where('slug', 'administrateur')->firstOrFail();
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.roles.destroy', $adminRole), ['password' => 'motdepasse-solide'])
+            ->assertSessionHasErrors('role');
+        $this->assertDatabaseHas('admin_roles', ['slug' => 'administrateur']);
+    }
+
+    public function test_account_with_the_role_permissions_follows_later_changes_of_the_role(): void
+    {
+        Notification::fake();
+        $admin = $this->administrateur();
+        $role = $this->createWebmasterRole($admin);
+
+        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), [
+            'prenom' => 'Suit', 'nom' => 'Role', 'email' => 'suit@cama.bf', 'role' => 'webmaster', 'permissions' => self::WEBMASTER_PERMISSIONS,
+        ])->assertSessionHasNoErrors();
+        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), [
+            'prenom' => 'Perso', 'nom' => 'Role', 'email' => 'perso@cama.bf', 'role' => 'webmaster', 'permissions' => ['cms.pages'],
+        ])->assertSessionHasNoErrors();
+
+        $suit = AdminUser::query()->where('email', 'suit@cama.bf')->firstOrFail();
+        $perso = AdminUser::query()->where('email', 'perso@cama.bf')->firstOrFail();
+        $this->assertNull($suit->permissions);
+        $this->assertSame(['cms.pages'], $perso->permissions);
+
+        $this->actingAs($admin, 'admin')->put(route('admin.roles.update', $role), [
+            'nom' => 'Webmaster', 'permissions' => [...self::WEBMASTER_PERMISSIONS, 'cms.faq'],
+        ])->assertSessionHasNoErrors();
+
+        // Le compte qui suit le rôle reçoit la nouvelle case ; le compte personnalisé garde les siennes.
+        $this->assertTrue($suit->fresh()->hasPermission('cms.faq'));
+        $this->assertFalse($perso->fresh()->hasPermission('cms.faq'));
+        $this->assertFalse($perso->fresh()->hasPermission('cms.articles'));
+    }
+
+    public function test_full_studio_access_shown_with_every_studio_box_checked(): void
+    {
+        $superviseurRole = Role::query()->where('slug', 'superviseur')->firstOrFail();
+
+        $this->actingAs($this->administrateur(), 'admin')
+            ->get(route('admin.roles'))
+            ->assertInertia(fn (AssertableInertia $page) => $page->where('roles', fn ($roles) => collect(collect($roles)->firstWhere('id', $superviseurRole->id)['permissions'])
+                ->contains(fn ($key) => $key === 'cms.faq')));
+    }
+
+    public function test_each_account_lands_on_a_page_it_is_allowed_to_open(): void
+    {
+        $exports = $this->account(AdminRole::Gestionnaire, ['exports.export'], 'exports@cama.bf');
+        $inscriptions = $this->account(AdminRole::Gestionnaire, ['inscriptions.view'], 'inscriptions@cama.bf');
+        $pagesOnly = $this->account(AdminRole::Gestionnaire, ['cms.pages'], 'pages@cama.bf');
+
+        foreach ([[$exports, 'admin.exports'], [$inscriptions, 'admin.inscriptions'], [$pagesOnly, 'admin.cms.pages']] as [$account, $landing]) {
+            $this->flushSession();
+            $this->actingAs($account, 'admin')->get(route('admin.dashboard'))->assertRedirect(route($landing));
+        }
     }
 
     public function test_unused_custom_role_can_be_deleted(): void

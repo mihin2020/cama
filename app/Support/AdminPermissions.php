@@ -107,6 +107,34 @@ class AdminPermissions
         ];
     }
 
+    /**
+     * Liste développée : « Accès complet au studio » ajoute chaque permission du studio qu'il couvre.
+     *
+     * @param  array<int, string>  $permissions
+     * @return list<string>
+     */
+    public static function expand(array $permissions): array
+    {
+        $permissions = self::sanitize($permissions);
+
+        if (in_array('cms.manage', $permissions, true)) {
+            $permissions = array_merge($permissions, array_filter(self::allKeys(), fn (string $key) => self::coveredByCmsManage($key)));
+        }
+
+        return array_values(array_unique($permissions));
+    }
+
+    /** Deux listes donnent-elles exactement les mêmes droits ? */
+    public static function sameSet(array $a, array $b): bool
+    {
+        $a = self::expand($a);
+        $b = self::expand($b);
+        sort($a);
+        sort($b);
+
+        return $a === $b;
+    }
+
     /** Libellé lisible d'une permission (messages d'erreur). */
     public static function label(string $key): string
     {

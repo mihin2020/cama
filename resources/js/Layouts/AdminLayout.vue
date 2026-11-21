@@ -6,6 +6,7 @@ import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
+import { firstCmsRoute } from '@/Utils/cmsNav';
 import AdminHeaderShortcuts from '@/Components/AdminHeaderShortcuts.vue';
 import { useAdminDossierBadge } from '@/Composables/useAdminDossierBadge';
 import { formatDuration, useAdminIdleSession } from '@/Composables/useAdminIdleSession';
@@ -31,6 +32,8 @@ const unreadNotifications = computed(() => page.props.app?.adminUnreadNotificati
 const { badgeCount: dossiersBadge } = useAdminDossierBadge();
 const { toggleSidebar, closeSidebar } = useShellSidebar();
 const { can, canSee, canAccessCms } = useAdminPermissions();
+// Le studio s'ouvre sur la première rubrique autorisée (pas forcément la vue d'ensemble).
+const cmsHome = computed(() => firstCmsRoute(can));
 const { showWarning: idleWarning, remainingSeconds: idleRemaining, stayConnected } = useAdminIdleSession();
 
 const headerSubtitle = computed(() => {
@@ -62,7 +65,7 @@ const logout = () => router.post(route('admin.logout'));
         </Link>
 
         <nav class="flex flex-col gap-0.5 flex-1 overflow-y-auto no-scrollbar">
-            <Link :class="navClass('dashboard')" :href="route('admin.dashboard')" data-roles="gestionnaire,superviseur,administrateur,direction">
+            <Link v-show="can('dossiers.view')" :class="navClass('dashboard')" :href="route('admin.dashboard')">
                 <span class="material-symbols-outlined text-[20px]">dashboard</span> Tableau de bord
             </Link>
             <Link
@@ -114,11 +117,11 @@ const logout = () => router.post(route('admin.logout'));
             >
                 <span class="material-symbols-outlined text-[20px]">settings</span> Paramètres
             </Link>
-            <div v-show="canAccessCms()" class="h-px bg-white/10 my-2 mx-1" />
+            <div v-show="cmsHome" class="h-px bg-white/10 my-2 mx-1" />
             <Link
-                v-show="canAccessCms()"
+                v-if="cmsHome"
                 :class="navClass('cms')"
-                :href="route('admin.cms.dashboard')"
+                :href="route(cmsHome)"
             >
                 <span class="material-symbols-outlined text-[20px]">design_services</span> Studio de contenu
             </Link>

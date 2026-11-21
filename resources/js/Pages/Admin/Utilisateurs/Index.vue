@@ -3,6 +3,7 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
+import PermissionPicker from '@/Components/Admin/PermissionPicker.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -106,57 +107,40 @@ function closeForm() {
 
 /* Règles d'attribution (vérifiées aussi par le serveur) : on ne donne que ce qu'on possède,
    certaines permissions sont réservées à des rôles, et ses propres droits ne se modifient pas. */
-const CMS_EXPLICIT_ONLY = ['cms.html'];
 const isSelf = computed(() => isEditing.value && editingUser.value?.id === props.actorId);
+const selfLocked = computed(() => isSelf.value && !props.actorIsAdmin);
 
 function allowedForRole(key, role = form.role) {
     return !props.roleRestricted[key] || props.roleRestricted[key].includes(role);
 }
 
-function impliedByCmsManage(key) {
-    return key !== 'cms.manage' && key.startsWith('cms.') && !CMS_EXPLICIT_ONLY.includes(key)
-        && form.permissions.includes('cms.manage');
-}
-
-function permissionState(key) {
-    if (isSelf.value && !props.actorIsAdmin) {
-        return { disabled: true, reason: 'Vos propres droits ne peuvent être modifiés que par un administrateur.' };
-    }
-    if (!allowedForRole(key)) {
-        return { disabled: true, reason: 'Ce rôle ne peut pas recevoir cette permission (réservée aux rôles Superviseur et Administrateur).' };
-    }
-    if (impliedByCmsManage(key)) {
-        return { disabled: true, reason: 'Déjà inclus dans « Accès complet au studio de contenu ».' };
-    }
+function permissionReason(key) {
+    if (selfLocked.value) return 'Vos propres droits ne peuvent être modifiés que par un administrateur.';
+    if (!allowedForRole(key)) return 'Réservée aux rôles Superviseur et Administrateur.';
     const alreadyHad = isEditing.value && (editingUser.value?.permissions ?? []).includes(key);
     if (!props.grantablePermissions.includes(key) && !alreadyHad) {
-        return { disabled: true, reason: 'Vous ne possédez pas cette permission : vous ne pouvez pas l’attribuer.' };
+        return 'Vous ne possédez pas cette permission : vous ne pouvez pas l’attribuer.';
     }
-    return { disabled: false, reason: '' };
+    return '';
 }
+
+const rolePermissions = computed(() => (props.rolePresets[form.role] ?? [])
+    .filter((key) => allowedForRole(key) && props.grantablePermissions.includes(key)));
+
+function sameSet(a, b) {
+    return a.length === b.length && a.every((key) => b.includes(key));
+}
+
+// Les cases sont-elles celles du rôle ? Le compte suit alors le rôle (et ses futures modifications).
+const followsRole = computed(() => form.role === 'administrateur' || sameSet(form.permissions, rolePermissions.value));
 
 function applyRolePreset() {
-    form.permissions = (props.rolePresets[form.role] ?? [])
-        .filter((key) => allowedForRole(key) && props.grantablePermissions.includes(key));
+    form.permissions = [...rolePermissions.value];
 }
 
-watch(() => form.role, () => {
-    if (!formOpen.value) return;
-    if (!isEditing.value) {
-        applyRolePreset();
-    } else {
-        // Changement de rôle : on retire ce qui n'est pas permis pour le nouveau rôle.
-        form.permissions = form.permissions.filter((key) => allowedForRole(key));
-    }
-});
-
-function togglePermission(key) {
-    if (permissionState(key).disabled) return;
-    if (form.permissions.includes(key)) {
-        form.permissions = form.permissions.filter((p) => p !== key);
-    } else {
-        form.permissions = [...form.permissions, key];
-    }
+// Choisir un autre rôle dans la liste pré-coche ses permissions ; on peut ensuite les ajuster.
+function onRoleChosen() {
+    if (!selfLocked.value) applyRolePreset();
 }
 
 function saveUser() {
@@ -375,7 +359,7 @@ function executeDelete(user) {
                     </div>
                     <div>
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Rôle</label>
-                        <select v-model="form.role" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white">
+                        <select v-model="form.role" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" @change="onRoleChosen">
                             <option v-for="role in assignableRoles" :key="role.value" :value="role.value">{{ role.label }}</option>
                         </select>
                         <p v-if="selectedRole?.description" class="text-[10px] text-on-surface-variant mt-1">{{ selectedRole.description }}</p>
@@ -404,45 +388,38 @@ function executeDelete(user) {
                 </div>
 
                 <div class="mt-5">
-                    <div class="flex items-center justify-between mb-2">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Permissions sur la plateforme</p>
-                        <button class="text-[11px] font-bold text-primary hover:underline flex items-center gap-1" type="button" @click="applyRolePreset">
-                            <span class="material-symbols-outlined text-[14px]">restart_alt</span> Appliquer le rôle
-                        </button>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Permissions de ce compte</p>
+                        <span
+                            v-if="followsRole"
+                            class="text-[10px] font-bold px-2 py-1 rounded-full bg-secondary/10 text-secondary"
+                        >Identiques au rôle « {{ selectedRole?.label ?? form.role }} »</span>
+                        <span v-else class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-tertiary/10 text-tertiary">Personnalisées</span>
+                            <button
+                                v-if="!selfLocked"
+                                class="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
+                                type="button"
+                                @click="applyRolePreset"
+                            >
+                                <span class="material-symbols-outlined text-[14px]">restart_alt</span> Revenir aux permissions du rôle
+                            </button>
+                        </span>
                     </div>
-                    <p v-if="isSelf && !actorIsAdmin" class="mb-2 text-[11px] text-tertiary flex items-center gap-1">
+                    <p v-if="selfLocked" class="mb-2 text-[11px] text-tertiary flex items-center gap-1">
                         <span class="material-symbols-outlined text-[14px]">lock</span>
                         Vos propres droits ne peuvent être modifiés que par un administrateur.
                     </p>
-                    <p v-else-if="!actorIsAdmin" class="mb-2 text-[11px] text-on-surface-variant">
-                        Les cases grisées correspondent à des permissions que vous ne possédez pas vous-même : vous ne pouvez pas les attribuer.
+                    <p v-else class="mb-2 text-[11px] text-on-surface-variant">
+                        Les cases sont pré-cochées d'après le rôle : cochez ou décochez librement. Tant qu'elles restent identiques au rôle,
+                        le compte reçoit automatiquement les modifications faites sur le rôle.
                     </p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <div v-for="group in permissionsCatalog" :key="group.group" class="border border-outline-variant rounded-lg p-3">
-                            <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-1.5">{{ group.group }}</p>
-                            <div class="space-y-1.5">
-                                <label
-                                    v-for="item in group.items"
-                                    :key="item.key"
-                                    class="flex items-start gap-2 text-xs"
-                                    :class="permissionState(item.key).disabled ? 'opacity-55 cursor-not-allowed' : 'cursor-pointer'"
-                                    :title="permissionState(item.key).reason"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        class="mt-0.5 rounded border-outline-variant text-primary disabled:cursor-not-allowed"
-                                        :checked="form.permissions.includes(item.key) || impliedByCmsManage(item.key)"
-                                        :disabled="permissionState(item.key).disabled"
-                                        @change="togglePermission(item.key)"
-                                    />
-                                    <span>
-                                        {{ item.label }}
-                                        <span v-if="item.key === 'cms.manage'" class="block text-[10px] text-on-surface-variant">Inclut tout le studio, sauf le HTML libre.</span>
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                    <PermissionPicker
+                        v-model="form.permissions"
+                        :all-locked="form.role === 'administrateur'"
+                        :catalog="permissionsCatalog"
+                        :disabled-reason="permissionReason"
+                    />
                     <p v-if="form.errors.permissions" class="text-[11px] text-error mt-2">{{ form.errors.permissions }}</p>
                 </div>
 
