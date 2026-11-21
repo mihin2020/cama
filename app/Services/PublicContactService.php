@@ -182,18 +182,13 @@ class PublicContactService
             $adminUrl,
         ]);
 
-        try {
-            Mail::raw($body, function ($mail) use ($recipients, $subject, $message) {
-                $mail->to($recipients)
-                    ->subject($subject)
-                    ->replyTo($message->email ?: config('mail.from.address'));
-            });
-        } catch (\Throwable $e) {
-            Log::warning('Échec envoi email contact CAMA', [
-                'error' => $e->getMessage(),
-                'message_id' => $message->id,
-            ]);
-        }
+        $replyTo = $message->email ?: config('mail.from.address');
+
+        // Envoyé après la réponse : le visiteur voit tout de suite la confirmation de son message.
+        \App\Support\MailAfterResponse::send(
+            "alerte message de contact n°{$message->id}",
+            fn () => Mail::raw($body, fn ($mail) => $mail->to($recipients)->subject($subject)->replyTo($replyTo)),
+        );
     }
 
     /**

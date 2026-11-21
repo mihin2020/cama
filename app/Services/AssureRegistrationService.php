@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailAfterResponse;
 use App\Enums\AssureStatut;
 use App\Mail\AssurePlatformNotificationMail;
 use App\Models\Assure;
@@ -77,7 +78,8 @@ class AssureRegistrationService
             ]);
         }
 
-        return DB::transaction(function () use ($assure) {
+        // Pas de « return » ici : l'e-mail de validation doit partir après la transaction.
+        $fresh = DB::transaction(function () use ($assure) {
             $now = now()->format('d/m/Y H:i');
             $journal = $assure->journal ?? [];
             $journal[] = [
@@ -168,13 +170,7 @@ class AssureRegistrationService
         $lien = route('assure.login');
         $mailable = new AssurePlatformNotificationMail($assure, $titre, $contenu, $lien);
 
-        dispatch(function () use ($email, $mailable) {
-            try {
-                Mail::to($email)->send($mailable);
-            } catch (\Throwable $e) {
-                Log::warning('E-mail statut inscription échoué : '.$e->getMessage());
-            }
-        })->afterResponse();
+        MailAfterResponse::send("e-mail de statut d'inscription ({$email})", fn () => Mail::to($email)->send($mailable));
     }
 
     public function registrationStats(): array

@@ -100,8 +100,11 @@ class NewsletterController extends Controller
             maxRecipients: (int) ($data['max_recipients'] ?? 50),
         );
 
-        return redirect()->route('admin.cms.newsletter', ['tab' => 'campaigns'])
-            ->with('success', "Campagne envoyée. {$result['sent']} email(s), {$result['failed']} échec(s).");
+        $message = ! empty($data['test_email'])
+            ? "E-mail de test en cours d'envoi à {$data['test_email']}."
+            : "Campagne lancée : {$result['sent']} e-mail(s) en cours d'envoi. Le suivi de la campagne indique les envois réussis et les échecs.";
+
+        return redirect()->route('admin.cms.newsletter', ['tab' => 'campaigns'])->with('success', $message);
     }
 
     public function destroyCampaign(CmsNewsletterCampaign $campaign): RedirectResponse

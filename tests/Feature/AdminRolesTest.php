@@ -93,7 +93,7 @@ class AdminRolesTest extends TestCase
             ->post(route('admin.utilisateurs.store'), [
                 'prenom' => 'Awa', 'nom' => 'Ouedraogo', 'email' => 'invite@cama.bf', 'role' => 'webmaster',
             ])
-            ->assertSessionHas('success', 'Invitation envoyée à invite@cama.bf.');
+            ->assertSessionHas('success', fn ($message) => str_contains($message, "l'invitation part vers invite@cama.bf"));
 
         \Illuminate\Support\Facades\Mail::assertSent(
             \App\Mail\AdminUserInvitationMail::class,
@@ -102,21 +102,45 @@ class AdminRolesTest extends TestCase
         );
     }
 
-    public function test_invitation_failure_message_tells_smtp_apart_from_an_internal_error(): void
+    /** Serveur d'envoi de test qui échoue avec l'exception donnée. */
+    private function useFailingMailer(\Throwable $error): void
+    {
+        \Illuminate\Support\Facades\Mail::extend('echec', fn () => new class($error) implements \Symfony\Component\Mailer\Transport\TransportInterface
+        {
+            public function __construct(private \Throwable $error) {}
+
+            public function send(\Symfony\Component\Mime\RawMessage $message, ?\Symfony\Component\Mailer\Envelope $envelope = null): ?\Symfony\Component\Mailer\SentMessage
+            {
+                throw $this->error;
+            }
+
+            public function __toString(): string
+            {
+                return 'echec://';
+            }
+        });
+        config(['mail.mailers.echec' => ['transport' => 'echec'], 'mail.default' => 'echec']);
+        app('mail.manager')->forgetMailers();
+    }
+
+    public function test_failed_invitation_is_reported_to_the_inviter_with_the_real_cause(): void
     {
         $admin = $this->administrateur();
         $payload = fn (string $email) => ['prenom' => 'A', 'nom' => 'B', 'email' => $email, 'role' => 'gestionnaire'];
+        $notification = fn (string $email) => \App\Models\AdminNotification::query()
+            ->where('admin_user_id', $admin->id)->where('titre', "Invitation non envoyée à {$email}")->value('contenu');
 
-        // Vraie panne du serveur d'e-mails : on parle de SMTP.
-        \Illuminate\Support\Facades\Mail::shouldReceive('to')->once()
-            ->andThrow(new \Symfony\Component\Mailer\Exception\TransportException('Connexion refusée'));
+        // Vraie panne du serveur d'e-mails (après la réponse) : l'administrateur est prévenu, cause SMTP.
+        $this->useFailingMailer(new \Symfony\Component\Mailer\Exception\TransportException('Connexion refusée'));
         $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), $payload('smtp-ko@cama.bf'))
-            ->assertSessionHas('warning', fn ($message) => str_contains($message, 'Vérifiez la configuration SMTP'));
+            ->assertSessionHas('success');
+        $this->assertStringContainsString('Vérifiez la configuration SMTP', (string) $notification('smtp-ko@cama.bf'));
 
         // Erreur de l'application : on ne met pas en cause le SMTP.
-        \Illuminate\Support\Facades\Mail::shouldReceive('to')->once()->andThrow(new \RuntimeException('bug'));
-        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), $payload('bug@cama.bf'))
-            ->assertSessionHas('warning', fn ($message) => str_contains($message, 'erreur interne') && ! str_contains($message, 'SMTP'));
+        $this->useFailingMailer(new \RuntimeException('bug'));
+        $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), $payload('bug@cama.bf'));
+        $this->assertStringContainsString('erreur interne', (string) $notification('bug@cama.bf'));
+        $this->assertStringNotContainsString('SMTP', (string) $notification('bug@cama.bf'));
     }
 
     public function test_webmaster_logs_in_lands_on_the_cms_and_gets_403_elsewhere(): void

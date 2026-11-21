@@ -120,12 +120,15 @@ abstract class PasswordResetController extends Controller
     {
         $email = $user->getEmailForPasswordReset();
 
-        Mail::to($email)->send(new PasswordResetMail(
+        $mail = new PasswordResetMail(
             fullName: trim(($user->prenom ?? '').' '.($user->nom ?? '')),
             resetUrl: route($this->routePrefix().'.password.reset', ['token' => $token, 'email' => $email]),
             space: $this->spaceLabel(),
             expiresInMinutes: (int) config("auth.passwords.{$this->broker()}.expire"),
-        ));
+        );
+
+        // Envoyé après la réponse : la page de confirmation s'affiche sans attendre le serveur SMTP.
+        \App\Support\MailAfterResponse::send("lien de réinitialisation du mot de passe ({$email})", fn () => Mail::to($email)->send($mail));
 
         return Password::RESET_LINK_SENT;
     }

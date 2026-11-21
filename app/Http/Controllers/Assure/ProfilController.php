@@ -145,11 +145,10 @@ class ProfilController extends Controller
     /** Prévient l'ancienne adresse : si le changement n'est pas le sien, il peut réagir. */
     private function notifyOldAddress(Assure $assure, string $oldEmail): void
     {
-        try {
-            Mail::to($oldEmail)->send(new AssureEmailChangedMail($assure, app(AssureLogin2faService::class)->maskEmail($assure->email)));
-        } catch (\Throwable $e) {
-            Log::warning("Prévenance de l'ancienne adresse impossible", ['assure_id' => $assure->id, 'error' => $e->getMessage()]);
-        }
+        $mail = new AssureEmailChangedMail($assure, app(AssureLogin2faService::class)->maskEmail($assure->email));
+
+        // Envoyé après la réponse : la page s'affiche sans attendre le serveur SMTP.
+        \App\Support\MailAfterResponse::send("prévenance de l'ancienne adresse ({$oldEmail})", fn () => Mail::to($oldEmail)->send($mail));
     }
 
     public function updatePassword(Request $request): RedirectResponse

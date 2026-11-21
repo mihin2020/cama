@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailAfterResponse;
 use App\Mail\AdminLogin2faCodeMail;
 use App\Models\AdminUser;
 use App\Support\DevCodes;
@@ -106,32 +107,10 @@ class AdminLogin2faService
 
     private function dispatchLoginCodeMail(AdminUser $admin, string $code): void
     {
-        $adminId = $admin->id;
         $email = $admin->email;
+        $mail = new AdminLogin2faCodeMail($admin, $code);
 
-        $send = function () use ($adminId, $email, $code): void {
-            $fresh = AdminUser::query()->find($adminId);
-            if (! $fresh) {
-                return;
-            }
-
-            try {
-                Mail::to($email)->send(new AdminLogin2faCodeMail($fresh, $code));
-                Log::info('Code 2FA admin envoyé par e-mail', ['admin_id' => $adminId]);
-            } catch (\Throwable $e) {
-                Log::error('Envoi du code 2FA admin impossible', [
-                    'admin_id' => $adminId,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        };
-
-        if (config('mail.default') === 'log') {
-            $send();
-
-            return;
-        }
-
-        dispatch($send)->afterResponse();
+        // Envoyé après la réponse : la page du code s'affiche sans attendre le serveur SMTP.
+        MailAfterResponse::send("code 2FA administrateur ({$email})", fn () => Mail::to($email)->send($mail));
     }
 }

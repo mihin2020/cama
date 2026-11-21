@@ -54,7 +54,7 @@ class AdminUserController extends Controller
         $result = $service->create($request->validated(), $actor);
 
         if ($result['invitationError'] === null) {
-            return back()->with('success', "Invitation envoyée à {$result['user']->email}.");
+            return back()->with('success', "Compte créé : l'invitation part vers {$result['user']->email}. En cas d'échec d'envoi, vous serez prévenu dans vos notifications.");
         }
 
         return back()->with('warning', "Compte créé pour {$result['user']->email}, mais l'invitation n'est pas partie : {$result['invitationError']}");
@@ -88,7 +88,7 @@ class AdminUserController extends Controller
         $error = $service->resendInvitation($adminUser, $actor);
 
         if ($error === null) {
-            return back()->with('success', "Invitation renvoyée à {$adminUser->email}.");
+            return back()->with('success', "L'invitation repart vers {$adminUser->email}. En cas d'échec d'envoi, vous serez prévenu dans vos notifications.");
         }
 
         return back()->with('warning', "L'invitation n'a pas pu être envoyée à {$adminUser->email} : {$error}");

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailAfterResponse;
 use App\Mail\AssureLogin2faCodeMail;
 use App\Models\Assure;
 use App\Support\DevCodes;
@@ -116,36 +117,10 @@ class AssureLogin2faService
 
     private function dispatchLoginCodeMail(Assure $assure, string $code): void
     {
-        $assureId = $assure->id;
         $email = $assure->email;
+        $mail = new AssureLogin2faCodeMail($assure, $code);
 
-        $send = function () use ($assureId, $email, $code): void {
-            $fresh = Assure::query()->find($assureId);
-            if (! $fresh) {
-                return;
-            }
-
-            try {
-                Mail::to($email)->send(new AssureLogin2faCodeMail($fresh, $code));
-                Log::info('Code 2FA assuré envoyé par e-mail', [
-                    'assure_id' => $assureId,
-                    'email' => $email,
-                ]);
-            } catch (\Throwable $e) {
-                Log::error('Envoi du code 2FA assuré impossible', [
-                    'assure_id' => $assureId,
-                    'email' => $email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        };
-
-        if (config('mail.default') === 'log') {
-            $send();
-
-            return;
-        }
-
-        dispatch($send)->afterResponse();
+        // Envoyé après la réponse : la page du code s'affiche sans attendre le serveur SMTP.
+        MailAfterResponse::send("code 2FA assuré ({$email})", fn () => Mail::to($email)->send($mail));
     }
 }

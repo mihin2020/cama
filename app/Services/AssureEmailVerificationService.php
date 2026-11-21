@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailAfterResponse;
 use App\Mail\AssureVerificationCodeMail;
 use App\Models\Assure;
 use App\Support\DevCodes;
@@ -103,31 +104,10 @@ class AssureEmailVerificationService
 
     private function dispatchVerificationMail(Assure $assure, string $code): void
     {
-        $assureId = $assure->id;
         $email = $assure->email;
+        $mail = new AssureVerificationCodeMail($assure, $code);
 
-        $send = function () use ($assureId, $email, $code): void {
-            $fresh = Assure::query()->find($assureId);
-            if (! $fresh) {
-                return;
-            }
-
-            try {
-                Mail::to($email)->send(new AssureVerificationCodeMail($fresh, $code));
-            } catch (\Throwable $e) {
-                Log::error('Envoi du code de vérification assuré impossible', [
-                    'assure_id' => $assureId,
-                    'error' => $e->getMessage(),
-                ]);
-            }
-        };
-
-        if (config('mail.default') === 'log') {
-            $send();
-
-            return;
-        }
-
-        dispatch($send)->afterResponse();
+        // Envoyé après la réponse : la page s'affiche sans attendre le serveur SMTP.
+        MailAfterResponse::send("code de vérification d'e-mail ({$email})", fn () => Mail::to($email)->send($mail));
     }
 }

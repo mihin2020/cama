@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\MailAfterResponse;
 use App\Models\AdminUser;
 use App\Models\CmsNewsletterBatch;
 use App\Models\CmsNewsletterCampaign;
@@ -84,31 +85,29 @@ class CmsNewsletterCampaignService
     }
 
     /**
-     * @return array{sent:int, failed:int}
+     * Lance l'envoi d'une campagne. Les e-mails partent APRÈS la réponse (le serveur SMTP est
+     * lent) : la page s'affiche aussitôt, et le suivi de la campagne se remplit au fur et à
+     * mesure (envois réussis, échecs).
+     *
+     * @return array{sent:int, failed:int} « sent » = e-mails lancés (envoi en arrière-plan)
      */
     public function sendCampaign(CmsNewsletterCampaign $campaign, ?string $testEmail = null, int $maxRecipients = 50): array
     {
         if ($testEmail) {
-            $html = $this->personalize($campaign->html_body ?? '', [
+            $html = $this->wrapEmail($this->personalize($campaign->html_body ?? '', [
                 'prenom' => 'Test',
                 'nom' => 'Utilisateur Test',
                 'email' => $testEmail,
                 'lien_desinscription' => route('public.newsletter.unsubscribe', 'test-token'),
-            ]);
+            ]), $campaign->preheader);
+            $subject = '[TEST] '.$campaign->subject;
 
-            try {
-                Mail::send([], [], function ($message) use ($testEmail, $campaign, $html) {
-                    $message->to($testEmail)
-                        ->subject('[TEST] '.$campaign->subject)
-                        ->html($this->wrapEmail($html, $campaign->preheader));
-                });
+            MailAfterResponse::send(
+                "test de newsletter ({$testEmail})",
+                fn () => Mail::send([], [], fn ($message) => $message->to($testEmail)->subject($subject)->html($html)),
+            );
 
-                return ['sent' => 1, 'failed' => 0];
-            } catch (\Throwable $e) {
-                Log::warning('Échec envoi test newsletter', ['error' => $e->getMessage()]);
-
-                return ['sent' => 0, 'failed' => 1];
-            }
+            return ['sent' => 1, 'failed' => 0];
         }
 
         $subscribers = $this->resolveRecipients(
@@ -118,50 +117,57 @@ class CmsNewsletterCampaignService
             maxRecipients: $maxRecipients,
         );
 
-        $sent = 0;
-        $failed = 0;
-
+        // Préparation immédiate (rapide) : une ligne de suivi et le contenu de chaque e-mail.
+        $deliveries = [];
         foreach ($subscribers as $subscriber) {
-            $token = Str::random(48);
             $send = CmsNewsletterCampaignSend::query()->create([
                 'campaign_id' => $campaign->id,
                 'subscriber_id' => $subscriber->id,
-                'tracking_token' => $token,
+                'tracking_token' => Str::random(48),
                 'status' => 'pending',
             ]);
 
-            $vars = $this->subscriberVars($subscriber);
-            $subject = $this->personalize($campaign->subject, $vars);
-            $html = $this->buildTrackedHtml($campaign, $send, $subscriber);
-
-            try {
-                Mail::send([], [], function ($message) use ($subscriber, $subject, $html) {
-                    $message->to($subscriber->email, $subscriber->full_name)
-                        ->subject($subject)
-                        ->html($html);
-                });
-
-                $send->update(['status' => 'sent', 'sent_at' => now()]);
-                $subscriber->update(['last_sent_at' => now()]);
-                $sent += 1;
-            } catch (\Throwable $e) {
-                $send->update(['status' => 'failed']);
-                $failed += 1;
-                Log::warning('Échec envoi newsletter', [
-                    'email' => $subscriber->email,
-                    'error' => $e->getMessage(),
-                ]);
-            }
+            $deliveries[] = [
+                'send' => $send,
+                'subscriber' => $subscriber,
+                'subject' => $this->personalize($campaign->subject, $this->subscriberVars($subscriber)),
+                'html' => $this->buildTrackedHtml($campaign, $send, $subscriber),
+            ];
         }
 
         $campaign->update([
             'status' => 'sent',
             'sent_at' => now(),
-            'sent_count' => $sent,
-            'failed_count' => $failed,
+            'sent_count' => 0,
+            'failed_count' => 0,
         ]);
 
-        return ['sent' => $sent, 'failed' => $failed];
+        // Envoi après la réponse : chaque résultat est enregistré dès qu'il est connu.
+        MailAfterResponse::send("newsletter « {$campaign->subject} »", function () use ($deliveries, $campaign) {
+            foreach ($deliveries as $delivery) {
+                $subscriber = $delivery['subscriber'];
+
+                try {
+                    Mail::send([], [], fn ($message) => $message
+                        ->to($subscriber->email, $subscriber->full_name)
+                        ->subject($delivery['subject'])
+                        ->html($delivery['html']));
+
+                    $delivery['send']->update(['status' => 'sent', 'sent_at' => now()]);
+                    $subscriber->update(['last_sent_at' => now()]);
+                    $campaign->increment('sent_count');
+                } catch (\Throwable $e) {
+                    $delivery['send']->update(['status' => 'failed']);
+                    $campaign->increment('failed_count');
+                    Log::warning('Échec envoi newsletter', [
+                        'email' => $subscriber->email,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+        });
+
+        return ['sent' => count($deliveries), 'failed' => 0];
     }
 
     public function recordOpen(string $token): void

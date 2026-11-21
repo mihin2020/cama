@@ -28,16 +28,11 @@ class AssureNotificationDeliveryService
         }
 
         if (($channels["{$event}_email"] ?? false) && $assure->email) {
-            try {
-                Mail::to($assure->email)->send(new AssurePlatformNotificationMail(
-                    $assure,
-                    $titre,
-                    $contenu,
-                    $lien ?? route('assure.membres'),
-                ));
-            } catch (\Throwable $e) {
-                Log::warning('Notification e-mail assuré échouée : '.$e->getMessage());
-            }
+            $email = $assure->email;
+            $mail = new AssurePlatformNotificationMail($assure, $titre, $contenu, $lien ?? route('assure.membres'));
+
+            // Envoyé après la réponse : l'agent qui traite le dossier n'attend pas le serveur SMTP.
+            \App\Support\MailAfterResponse::send("notification assuré ({$email})", fn () => Mail::to($email)->send($mail));
         }
     }
 
