@@ -88,7 +88,7 @@ class InscriptionFieldsSettingsTest extends TestCase
         ]))->assertSessionHasNoErrors();
 
         $assure = Assure::query()->where('email', 'awa@example.bf')->firstOrFail();
-        $this->assertSame('', $assure->numero_cim);
+        $this->assertNull($assure->numero_cim);
         $this->assertSame('IUP-9', $assure->numero_iup);
         $this->assertNull($assure->telephone);
     }
@@ -109,5 +109,55 @@ class InscriptionFieldsSettingsTest extends TestCase
         $this->post(route('registration.store'), $this->registration(['matricule' => '', 'email' => 'deux@example.bf']))
             ->assertSessionHasNoErrors();
         $this->assertSame(2, Assure::query()->whereNull('matricule')->count());
+    }
+
+    public function test_cim_is_optional_at_registration_by_default(): void
+    {
+        $this->post(route('registration.store'), $this->registration(['numero_cim' => '']))
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull(Assure::query()->where('email', 'awa@example.bf')->value('numero_cim'));
+    }
+
+    public function test_cim_can_never_be_made_mandatory(): void
+    {
+        $this->actingAs($this->admin(), 'admin')
+            ->post(route('admin.parametres.inscription-fields'), ['fields' => $this->fields([
+                'numero_cim' => ['actif' => true, 'required' => true],
+            ])])
+            ->assertSessionHasNoErrors();
+
+        $map = app(PlatformSettingsService::class)->inscriptionFieldsMap();
+        $this->assertTrue($map['numero_cim']['actif']);
+        $this->assertFalse($map['numero_cim']['required']);
+
+        $this->flushSession();
+        $this->post(route('registration.store'), $this->registration(['numero_cim' => '']))
+            ->assertSessionHasNoErrors();
+    }
+
+    public function test_registration_is_validated_without_cim_but_not_without_cama_card(): void
+    {
+        $this->post(route('registration.store'), $this->registration(['numero_cim' => '']))->assertSessionHasNoErrors();
+        $assure = Assure::query()->where('email', 'awa@example.bf')->firstOrFail();
+        $admin = $this->admin();
+
+        // Sans N° Carte CAMA : validation refusée.
+        $assure->update(['numero_cama' => '']);
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.inscriptions.validate', $assure))
+            ->assertSessionHasErrors(['numero_cama' => 'Le N° Carte CAMA doit être renseigné avant validation.']);
+
+        // Le gestionnaire renseigne la carte et laisse le CIM vide : accepté, puis validé.
+        $this->actingAs($admin, 'admin')
+            ->patch(route('admin.inscriptions.identifiers', $assure), ['numero_cim' => '', 'numero_cama' => 'CAMA-77'])
+            ->assertSessionHasNoErrors();
+        $this->assertNull($assure->fresh()->numero_cim);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.inscriptions.validate', $assure))
+            ->assertSessionHasNoErrors()
+            ->assertSessionHas('success', 'Compte validé (Carte CAMA : CAMA-77).');
+        $this->assertSame(\App\Enums\AssureStatut::Actif, $assure->fresh()->statut);
     }
 }

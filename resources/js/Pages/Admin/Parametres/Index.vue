@@ -92,6 +92,7 @@ const fieldsForm = useForm({
         parent: f.parent,
         actif: !!f.actif,
         required: !!f.required,
+        neverRequired: !!f.neverRequired,
     })),
 });
 
@@ -99,7 +100,7 @@ const LOCKED_FIELDS = ['Nom', 'Prénom(s)', 'E-mail', 'Mot de passe'];
 
 const FIELD_HINTS = {
     matricule: "Si masqué, l'assuré sera identifié uniquement par son e-mail et ses numéros CAMA.",
-    numero_cim: 'Si masqué, le gestionnaire devra le saisir avant de valider l\'inscription.',
+    numero_cim: 'Toujours facultatif : l\'assuré peut le laisser vide, et il n\'est pas exigé pour valider l\'inscription.',
     numero_cama: 'Si masqué, le gestionnaire devra le saisir avant de valider l\'inscription.',
     corps: 'Exigé uniquement si la région choisie propose des corps.',
     service: 'Exigé uniquement si le corps choisi propose des services.',
@@ -149,7 +150,7 @@ function setFieldActif(field, actif) {
 }
 
 function setFieldRequired(field, required) {
-    if (!field.actif) return;
+    if (!field.actif || (required && field.neverRequired)) return;
     field.required = required;
 }
 
@@ -161,7 +162,7 @@ function setGroup(group, mode) {
         }
         if (parentBlocked(field)) return;
         field.actif = true;
-        field.required = mode === 'required';
+        field.required = mode === 'required' && !field.neverRequired;
     });
 }
 
@@ -825,7 +826,8 @@ function toggleValidation2N() {
                                         type="button"
                                         class="px-3 py-1.5 transition-colors"
                                         :class="field.actif && field.required ? 'bg-primary text-on-primary' : 'bg-white text-on-surface-variant hover:bg-surface-container-high'"
-                                        :disabled="!field.actif"
+                                        :disabled="!field.actif || field.neverRequired"
+                                        :title="field.neverRequired ? 'Ce champ ne peut pas être rendu obligatoire.' : undefined"
                                         @click="setFieldRequired(field, true)"
                                     >
                                         Obligatoire
