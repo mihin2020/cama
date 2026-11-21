@@ -1,7 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
-import FlashMessage from '@/Components/FlashMessage.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
@@ -18,6 +17,18 @@ const props = defineProps({
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 const formOpen = ref(false);
 const editing = ref(null);
+
+// Même message que les autres écrans du back-office : bandeau sombre en bas à droite.
+const toast = ref(null);
+let toastTimer = null;
+function showToast(message, icon = 'check_circle') {
+    if (!message) return;
+    toast.value = { message, icon };
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.value = null; }, 3500);
+}
+const toastFromFlash = (page) => showToast(page.props.flash?.success ?? page.props.flash?.warning);
+const toastFromErrors = (errors) => showToast(Object.values(errors)[0], 'error');
 
 const form = useForm({
     nom: '',
@@ -89,7 +100,13 @@ function togglePermission(key) {
 }
 
 function save() {
-    const options = { preserveScroll: true, onSuccess: closeForm };
+    const options = {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            closeForm();
+            toastFromFlash(page);
+        },
+    };
     if (isEditing.value) {
         form.put(route('admin.roles.update', editing.value.id), options);
     } else {
@@ -105,7 +122,11 @@ function confirmToggle(role) {
             : `Les comptes ayant le rôle « ${role.nom} » pourront de nouveau se connecter.`,
         confirmLabel: role.actif ? 'Désactiver' : 'Activer',
         variant: role.actif ? 'danger' : 'info',
-        onConfirm: () => router.post(route('admin.roles.toggle', role.id), {}, { preserveScroll: true }),
+        onConfirm: () => router.post(route('admin.roles.toggle', role.id), {}, {
+            preserveScroll: true,
+            onSuccess: toastFromFlash,
+            onError: toastFromErrors,
+        }),
     });
 }
 
@@ -115,7 +136,11 @@ function confirmDelete(role) {
         message: `Le rôle « ${role.nom} » sera supprimé définitivement.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.roles.destroy', role.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.roles.destroy', role.id), {
+            preserveScroll: true,
+            onSuccess: toastFromFlash,
+            onError: toastFromErrors,
+        }),
     });
 }
 </script>
@@ -124,8 +149,6 @@ function confirmDelete(role) {
     <Head title="Rôles et permissions" />
 
     <AdminLayout active-nav="roles" title="Rôles et permissions" subtitle="Créez des rôles (ex. webmaster) et choisissez leurs permissions">
-        <FlashMessage />
-
         <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
             <p class="text-xs text-on-surface-variant max-w-2xl">
                 Créez un rôle, cochez ses permissions : elles seront cochées automatiquement quand vous créerez un compte avec ce rôle
@@ -135,8 +158,6 @@ function confirmDelete(role) {
                 <span class="material-symbols-outlined text-[16px]">add</span> Nouveau rôle
             </button>
         </div>
-
-        <p v-if="$page.props.errors?.role" class="mb-4 text-xs text-error">{{ $page.props.errors.role }}</p>
 
         <div class="assure-card overflow-hidden">
             <div class="overflow-x-auto">
@@ -271,5 +292,11 @@ function confirmDelete(role) {
             @confirm="confirm"
             @cancel="cancel"
         />
+
+        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
+            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">
+                <span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.message }}
+            </div>
+        </div>
     </AdminLayout>
 </template>
