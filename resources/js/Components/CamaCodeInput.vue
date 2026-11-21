@@ -1,9 +1,9 @@
 <script setup>
 /**
  * Saisie d'un code à usage unique (2FA, vérification d'e-mail) : une case par caractère.
- * Chiffres et lettres, convertis en majuscules ; les caractères ambigus (0, O, 1, I, L), qui
- * n'apparaissent jamais dans un code, sont ignorés. Le collage et le remplissage automatique
- * du code (one-time-code) répartissent les caractères dans les cases.
+ * Chiffres (0-9) et lettres (A-Z), convertis en majuscules ; les autres caractères (espaces,
+ * tirets, symboles) sont ignorés. Le collage et le remplissage automatique du code
+ * (one-time-code) répartissent les caractères dans les cases.
  */
 import { computed, nextTick, ref } from 'vue';
 
@@ -18,7 +18,7 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue', 'complete']);
 
 // Mêmes caractères que le serveur (OneTimeCodeService::ALPHABET).
-const NOT_ALLOWED = /[^ABCDEFGHJKMNPQRSTUVWXYZ23456789]/g;
+const NOT_ALLOWED = /[^A-Z0-9]/g;
 const inputs = ref([]);
 
 const chars = computed(() => Array.from({ length: props.length }, (_, i) => props.modelValue[i] ?? ''));

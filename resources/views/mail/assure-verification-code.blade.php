@@ -16,7 +16,7 @@
     </p>
 
     <p style="margin: 28px 0; text-align: center;">
-        <span style="display: inline-block; background: #f4f4f4; border: 1px solid #ddd; border-radius: 8px; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 12px; font-family: 'Courier New', monospace;">{{ $code }}</span>
+        <span style="display: inline-block; background: #f4f4f4; border: 1px solid #ddd; border-radius: 8px; padding: 16px 32px; font-size: 32px; font-weight: bold; letter-spacing: 12px; font-family: Consolas, 'Courier New', monospace;">{{ $code }}</span>
     </p>
 
     <p style="font-size: 13px; color: #666;">

@@ -34,10 +34,9 @@ class OneTimeCodeTest extends TestCase
         foreach (range(1, 300) as $i) {
             $code = $service->generate('test');
 
-            $this->assertMatchesRegularExpression('/^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/', $code);
+            $this->assertMatchesRegularExpression('/^[A-Z0-9]{6}$/', $code);
             $this->assertMatchesRegularExpression('/[A-Z]/', $code, 'Au moins une lettre.');
-            $this->assertMatchesRegularExpression('/[2-9]/', $code, 'Au moins un chiffre.');
-            $this->assertDoesNotMatchRegularExpression('/[01OIL]/', $code, 'Pas de caractère ambigu.');
+            $this->assertMatchesRegularExpression('/[0-9]/', $code, 'Au moins un chiffre.');
         }
     }
 
@@ -70,6 +69,22 @@ class OneTimeCodeTest extends TestCase
         $this->assertTrue($service->matches($fingerprint, 'k7p 2qx'));
         $this->assertTrue($service->matches($fingerprint, 'K7P-2QX'));
         $this->assertFalse($service->matches($fingerprint, 'K7P2QY'));
+    }
+
+    public function test_zero_and_look_alike_characters_are_valid_in_a_code(): void
+    {
+        $service = app(OneTimeCodeService::class);
+
+        // 0, O, 1, I et L font partie des codes : aucun caractère n'est écarté.
+        foreach (['0O1IL5', 'A0B1C2', '000AAA', 'ZZZ999'] as $code) {
+            OneTimeCodeService::assertWellFormed($code);
+            $this->assertTrue($service->matches($service->fingerprint($code), strtolower($code)));
+        }
+
+        $seen = implode('', array_map(fn () => $service->generate('test'), range(1, 400)));
+        foreach (str_split('0O1IL') as $char) {
+            $this->assertStringContainsString($char, $seen, "Le caractère {$char} doit pouvoir apparaître.");
+        }
     }
 
     public function test_malformed_input_is_refused_without_using_an_attempt(): void

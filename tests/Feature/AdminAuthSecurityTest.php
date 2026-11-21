@@ -194,7 +194,7 @@ class AdminAuthSecurityTest extends TestCase
         $this->assertGuest('admin');
 
         $code = session('dev_2fa_code');
-        $this->assertMatchesRegularExpression('/^[A-HJ-NP-Z2-9]{6}$/', $code);
+        $this->assertMatchesRegularExpression('/^[A-Z0-9]{6}$/', $code);
         $this->assertMatchesRegularExpression('/[A-Z]/', $code);
         $this->assertMatchesRegularExpression('/\d/', $code);
         $this->assertNotSame($code, $admin->fresh()->login_2fa_code, 'Le code ne doit pas être stocké en clair.');

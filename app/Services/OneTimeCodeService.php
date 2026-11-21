@@ -10,9 +10,8 @@ use RuntimeException;
 /**
  * Codes à usage unique (2FA administrateur et assuré, vérification de l'e-mail).
  *
- *  - 6 caractères mêlant chiffres et lettres majuscules, au moins un de chaque ;
- *  - alphabet sans caractères ambigus (pas de 0/O, 1/I/L) : 31 symboles, soit environ
- *    887 millions de codes possibles ;
+ *  - 6 caractères mêlant chiffres (0-9) et lettres majuscules (A-Z), au moins un de chaque ;
+ *  - 36 symboles, soit environ 2,1 milliards de codes possibles ;
  *  - jamais répété : l'empreinte de chaque code émis est conservée dans one_time_codes avec un
  *    index unique ; un code déjà émis (pour n'importe quel compte) est écarté ;
  *  - jamais stocké en clair : seule l'empreinte HMAC-SHA256 (clé de l'application) est gardée.
@@ -23,11 +22,11 @@ class OneTimeCodeService
 {
     public const LENGTH = 6;
 
-    public const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    public const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
-    private const LETTERS = 'ABCDEFGHJKMNPQRSTUVWXYZ';
+    private const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
-    private const DIGITS = '23456789';
+    private const DIGITS = '0123456789';
 
     private const MAX_TRIES = 50;
 
