@@ -38,7 +38,11 @@ class RegistrationController extends Controller
         $assure = $registration->register($data);
 
         // Les pièces sont rangées après la création du compte : leur nom contient son N° FIF.
-        $assure->update(['documents_identite' => $this->storeIdentityDocuments($request, $settings, $storage, $assure)]);
+        $assure->update([
+            'documents_identite' => $this->storeIdentityDocuments($request, $settings, $storage, $assure),
+            // Champs « fichier » du formulaire FIF (PDF) : rangés avec les autres pièces, leurs références gardées avec les valeurs.
+            'fif_donnees' => [...($assure->fif_donnees ?? []), ...$this->storeFifFiles($request, $storage, $assure)],
+        ]);
 
         Auth::guard('assure')->login($assure);
         $request->session()->regenerate();
@@ -52,6 +56,22 @@ class RegistrationController extends Controller
 
         return redirect()->route('assure.verification.notice')
             ->with('success', "Votre demande d'inscription a été enregistrée. Un code de vérification de 6 caractères a été envoyé à {$assure->email}.");
+    }
+
+    /**
+     * @return array<string, array<string, mixed>>  code du champ => références du fichier rangé
+     */
+    private function storeFifFiles(RegisterAssureRequest $request, DossierPieceStorageService $storage, \App\Models\Assure $assure): array
+    {
+        $stored = [];
+
+        foreach (app(\App\Services\FifSchemaService::class)->fields('assure') as $field) {
+            if ($field['type'] === 'fichier' && $request->hasFile("fif.{$field['code']}")) {
+                $stored[$field['code']] = $storage->storeFifFile($assure, $request->file("fif.{$field['code']}"), $field['libelle']);
+            }
+        }
+
+        return $stored;
     }
 
     /**

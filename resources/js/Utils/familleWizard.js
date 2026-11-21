@@ -1,4 +1,4 @@
-import { missingFifFields } from '@/Utils/fifForm';
+import { fifPayload, missingFifFields } from '@/Utils/fifForm';
 
 export const PIECE_LABELS = {
     acte_mariage: 'Acte de mariage',
@@ -170,7 +170,7 @@ export function rowToPayload(row, list) {
         telephone: row.telephone || null,
         piece_files: pieceFiles,
         removed_pieces: row.removedTypes || [],
-        fif: row.fif || {},
+        fif: fifPayload(row.fif),
     };
 
     if (list === 'conjoints') {

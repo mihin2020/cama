@@ -3,6 +3,8 @@
 defineProps({
     // [{ titre, rows: [{ label, value }] }] — voir FifSchemaService::display().
     sections: { type: Array, default: () => [] },
+    // (code, inline) => adresse du fichier chargé pour ce champ ; sans elle, seul le nom est affiché.
+    fileUrl: { type: Function, default: null },
 });
 </script>
 
@@ -16,6 +18,14 @@ defineProps({
                 <div v-for="row in section.rows" :key="row.code" class="bg-white rounded-lg p-3 border border-outline-variant">
                     <p class="text-[10px] text-on-surface-variant uppercase">{{ row.label }}</p>
                     <p class="font-bold break-words">{{ row.value || 'Non renseigné' }}</p>
+                    <p v-if="row.fichier && fileUrl" class="mt-1 flex items-center gap-3 font-semibold">
+                        <a :href="fileUrl(row.code, true)" class="text-primary hover:underline inline-flex items-center gap-1" rel="noopener" target="_blank">
+                            <span class="material-symbols-outlined text-[14px]">visibility</span> Visualiser
+                        </a>
+                        <a :href="fileUrl(row.code, false)" class="text-primary hover:underline inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[14px]">download</span> Télécharger
+                        </a>
+                    </p>
                 </div>
             </div>
         </div>

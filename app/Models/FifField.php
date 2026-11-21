@@ -22,6 +22,7 @@ class FifField extends Model
         'checkbox' => 'Case à cocher (oui / non)',
         'email' => 'Adresse e-mail',
         'tel' => 'Téléphone',
+        'fichier' => 'Fichier à charger (PDF)',
     ];
 
     /** Types qui proposent une liste de choix. */

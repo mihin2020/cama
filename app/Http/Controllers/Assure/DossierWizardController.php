@@ -174,6 +174,21 @@ class DossierWizardController extends Controller
                 $existing[] = $stored;
             }
 
+            // Champs « fichier » du formulaire FIF : le nouveau fichier remplace l'ancien.
+            $cible = $list === 'conjoints' ? 'conjoint' : 'enfant';
+            foreach (app(\App\Services\FifSchemaService::class)->fields($cible) as $field) {
+                if ($field['type'] === 'fichier' && ($file = $request->file("{$list}.{$i}.fif.{$field['code']}"))) {
+                    $storage->deleteStored($row['fif_donnees'][$field['code']]['path'] ?? null);
+                    $row['fif_donnees'][$field['code']] = $storage->storeFifFile(
+                        $assure,
+                        $file,
+                        $field['libelle'],
+                        UploadFilename::memberCode($list === 'conjoints', (int) $i + 1),
+                        "{$list}.{$i}.fif.{$field['code']}",
+                    );
+                }
+            }
+
             unset($row['piece_files'], $row['removed_pieces']);
             $row['pieces'] = $existing;
             $rows[$i] = $row;
@@ -229,8 +244,8 @@ class DossierWizardController extends Controller
             ...app(\App\Services\FifSchemaService::class)->rules('enfant', 'enfants.*.fif', false),
         ]);
 
-        $enfants = $this->withCleanFif($validated['enfants'] ?? [], 'enfant', 'enfants', $forSubmit);
-        $conjoints = $this->withCleanFif($validated['conjoints'] ?? [], 'conjoint', 'conjoints', $forSubmit);
+        $enfants = $this->withCleanFif($validated['enfants'] ?? [], 'enfant', 'enfants', $forSubmit, $request);
+        $conjoints = $this->withCleanFif($validated['conjoints'] ?? [], 'conjoint', 'conjoints', $forSubmit, $request);
 
         if ($forSubmit) {
             $this->assertRequiredPieces($conjoints, $enfants, $settings, $request);
@@ -249,17 +264,33 @@ class DossierWizardController extends Controller
      * @param  array<int, array<string, mixed>>  $rows
      * @return array<int, array<string, mixed>>
      */
-    private function withCleanFif(array $rows, string $cible, string $list, bool $forSubmit): array
+    private function withCleanFif(array $rows, string $cible, string $list, bool $forSubmit, Request $request): array
     {
         $fif = app(\App\Services\FifSchemaService::class);
 
         foreach ($rows as $i => $row) {
             $values = $fif->clean($cible, $row['fif'] ?? []);
             unset($row['fif']);
+
+            // Champs « fichier » : un fichier déjà enregistré reste valable tant qu'on n'en envoie pas un nouveau.
+            $existing = ! empty($row['id']) ? (auth('assure')->user()->dossiers()->find($row['id'])?->fif_donnees ?? []) : [];
+            $filesPresent = [];
+            foreach ($fif->fields($cible) as $field) {
+                if ($field['type'] !== 'fichier') {
+                    continue;
+                }
+                if (! empty($existing[$field['code']]['path'])) {
+                    $values[$field['code']] = $existing[$field['code']];
+                    $filesPresent[] = $field['code'];
+                }
+                if ($request->hasFile("{$list}.{$i}.fif.{$field['code']}")) {
+                    $filesPresent[] = $field['code'];
+                }
+            }
             $row['fif_donnees'] = $values;
 
             $filled = trim($row['nom'] ?? '') !== '' || trim($row['prenom'] ?? '') !== '';
-            if ($forSubmit && $filled && ($missing = $fif->missingRequired($cible, $values)) !== []) {
+            if ($forSubmit && $filled && ($missing = $fif->missingRequired($cible, $values, $filesPresent)) !== []) {
                 throw ValidationException::withMessages([
                     "{$list}.{$i}.fif" => 'Champ(s) obligatoire(s) manquant(s) : '.implode(', ', $missing).'.',
                 ]);

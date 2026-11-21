@@ -70,6 +70,27 @@ class DossierPieceStorageService
         return ['key' => $key, 'label' => $label, ...$stored];
     }
 
+    /**
+     * Fichier d'un champ « fichier » du formulaire FIF (PDF, comme toute pièce), rangé avec les autres
+     * pièces de l'assuré sous un nom normalisé.
+     *
+     * @return array{filename: string, original_name: string, path: string, mime: string, size: int}
+     */
+    public function storeFifFile(Assure $assure, UploadedFile $file, string $label, ?string $memberCode = null, string $field = 'fif'): array
+    {
+        $owner = $this->owner($assure).($memberCode ? "-{$memberCode}" : '');
+
+        return $this->store($assure, $file, $owner, $label, $field);
+    }
+
+    /** Supprime un fichier rangé (ex. remplacé par un nouveau). */
+    public function deleteStored(?string $path): void
+    {
+        if ($path && (str_starts_with($path, 'assures/') || str_starts_with($path, 'inscriptions/'))) {
+            Storage::disk(self::DISK)->delete($path);
+        }
+    }
+
     /** Code du membre d'un dossier existant : rang parmi les conjoints ou les enfants de l'assuré. */
     public function memberCodeFor(Assure $assure, Dossier $dossier): string
     {

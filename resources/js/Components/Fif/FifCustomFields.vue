@@ -1,4 +1,6 @@
 <script setup>
+import { reactive } from 'vue';
+
 /**
  * Sections et champs ajoutés par l'administration (formulaire FIF configurable).
  * Une valeur par champ, indexée par le code du champ : { code: valeur }.
@@ -12,6 +14,33 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['update:modelValue']);
+
+// Fichiers : PDF uniquement, 5 Mo maximum (le serveur refait ces contrôles sur le contenu réel).
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const fileErrors = reactive({});
+
+function onFile(field, event) {
+    fileErrors[field.code] = '';
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+        fileErrors[field.code] = 'Format non accepté : PDF uniquement.';
+        event.target.value = '';
+        return;
+    }
+    if (file.size > MAX_FILE_SIZE) {
+        fileErrors[field.code] = 'Fichier trop volumineux (5 Mo max).';
+        event.target.value = '';
+        return;
+    }
+    set(field.code, file);
+}
+
+const fileLabel = (field) => {
+    const value = props.modelValue?.[field.code];
+    if (value instanceof File) return value.name;
+    return value?.filename ?? null;
+};
 
 const inputClass = 'w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none';
 
@@ -36,7 +65,7 @@ const fieldId = (field) => `${props.idPrefix}-${field.code}`;
                     class="space-y-1"
                     :class="field.type === 'textarea' ? 'md:col-span-2' : ''"
                 >
-                    <label v-if="field.type !== 'checkbox'" class="text-xs font-medium text-on-surface-variant" :for="fieldId(field)">
+                    <label v-if="field.type !== 'checkbox' && field.type !== 'fichier'" class="text-xs font-medium text-on-surface-variant" :for="fieldId(field)">
                         {{ field.libelle }}<span v-if="field.obligatoire" class="text-error"> *</span>
                     </label>
 
@@ -85,6 +114,23 @@ const fieldId = (field) => `${props.idPrefix}-${field.code}`;
                         />
                         <span>{{ field.libelle }}<span v-if="field.obligatoire" class="text-error"> *</span></span>
                     </label>
+
+                    <div v-else-if="field.type === 'fichier'">
+                        <p class="text-xs font-medium text-on-surface-variant mb-1">
+                            {{ field.libelle }}<span v-if="field.obligatoire" class="text-error"> *</span>
+                        </p>
+                        <p v-if="fileLabel(field)" class="text-[11px] flex items-center gap-1 bg-surface-container-low rounded px-2 py-1 mb-1.5">
+                            <span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>
+                            <span class="truncate">{{ fileLabel(field) }}</span>
+                        </p>
+                        <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[15px]">upload_file</span>
+                            {{ fileLabel(field) ? 'Remplacer le fichier' : 'Choisir un fichier PDF' }}
+                            <input :id="fieldId(field)" accept=".pdf,application/pdf" class="hidden" type="file" @change="onFile(field, $event)" />
+                        </label>
+                        <p class="text-[10px] text-on-surface-variant mt-0.5">PDF uniquement — 5 Mo max.</p>
+                        <p v-if="fileErrors[field.code]" class="text-error text-xs">{{ fileErrors[field.code] }}</p>
+                    </div>
 
                     <input
                         v-else

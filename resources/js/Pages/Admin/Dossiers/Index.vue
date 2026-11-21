@@ -1,4 +1,5 @@
 <script setup>
+import SearchSelect from '@/Components/SearchSelect.vue';
 import FifSectionsView from '@/Components/Fif/FifSectionsView.vue';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
@@ -69,15 +70,29 @@ const { can } = useAdminPermissions();
 const canBatchAssign = computed(() => can('dossiers.assign'));
 const canActOnDossier = computed(() => can('dossiers.process'));
 
-// Filtre : tous les noms qui détiennent des dossiers, y compris les comptes désactivés.
-const gestionnaireOptions = computed(() => {
-    const names = props.gestionnaires.map((g) => g.nom);
-    return ['Non affecté', ...names];
-});
+// Options des listes à recherche. Affectation : uniquement les comptes qui reçoivent des dossiers
+// (le serveur refuse les autres) ; chaque nom indique sa charge en cours.
+function assignOptions(current = null) {
+    const options = [
+        { value: 'Non affecté', label: 'Non affecté' },
+        ...props.gestionnaires
+            .filter((g) => g.actif !== false)
+            .map((g) => ({ value: g.nom, label: g.nom, hint: `${g.nonTraites ?? 0} en cours` })),
+    ];
+    // Dossier détenu par un compte qui ne reçoit plus rien : visible, mais pas re-choisissable.
+    if (current && !options.some((o) => o.value === current) && current !== 'Non affecté') {
+        options.unshift({ value: current, label: `${current} (compte inactif — à réaffecter)`, disabled: true });
+    }
+    return options;
+}
 
-// Affectation : uniquement les gestionnaires actifs (le serveur refuse les autres).
-const assignableOptions = computed(() => ['Non affecté', ...props.gestionnaires.filter((g) => g.actif !== false).map((g) => g.nom)]);
-const inactiveGestionnaires = computed(() => new Set(props.gestionnaires.filter((g) => g.actif === false).map((g) => g.nom)));
+// Filtre : tous les noms qui détiennent des dossiers, y compris les comptes désactivés.
+const filterOptions = computed(() => [
+    { value: 'Tous', label: 'Tous les gestionnaires affectés' },
+    { value: 'Non affecté', label: 'Non affecté' },
+    ...props.gestionnaires.map((g) => ({ value: g.nom, label: g.nom, hint: `${g.assignes ?? 0} dossier(s)` })),
+]);
+
 
 const STATUS_STYLES = {
     Brouillon: 'bg-surface-container-high text-on-surface-variant',
@@ -715,10 +730,13 @@ const detailLotFifPiece = computed(() => {
             <div class="flex flex-col gap-3">
                 <p class="text-xs text-on-surface-variant"><span class="font-bold text-on-surface">{{ selectedAssureIds.size }}</span> dossier(s) familial(aux) sélectionné(s).</p>
                 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <select v-model="batchGestionnaire" class="flex-1 px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white min-w-0">
-                        <option value="">Choisir un gestionnaire…</option>
-                        <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
-                    </select>
+                    <SearchSelect
+                        v-model="batchGestionnaire"
+                        class="flex-1"
+                        :options="assignOptions()"
+                        placeholder="Choisir un gestionnaire…"
+                        search-placeholder="Rechercher un gestionnaire…"
+                    />
                     <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shrink-0" @click="batchAssign">Affecter la sélection</button>
                 </div>
             </div>
@@ -729,10 +747,15 @@ const detailLotFifPiece = computed(() => {
                 <option value="Tous">Tous les statuts</option>
                 <option v-for="s in statutOptions" :key="s" :value="s">{{ s }}</option>
             </select>
-            <select v-if="canBatchAssign" v-model="filterGestionnaire" class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white">
-                <option value="Tous">Tous les gestionnaires affectés</option>
-                <option v-for="g in gestionnaireOptions" :key="g" :value="g">{{ g }}</option>
-            </select>
+            <SearchSelect
+                v-if="canBatchAssign"
+                v-model="filterGestionnaire"
+                button-class="px-3 py-3 sm:py-2 text-sm sm:text-xs"
+                class="filter-field"
+                :options="filterOptions"
+                placeholder="Tous les gestionnaires affectés"
+                search-placeholder="Rechercher un gestionnaire…"
+            />
             <select v-model="filterLien" class="filter-field px-3 py-3 sm:py-2 text-sm sm:text-xs border border-outline-variant rounded-lg bg-white">
                 <option value="Tous">Tous les liens</option>
                 <option v-for="l in liensOptions" :key="l" :value="l">{{ l }}</option>
@@ -818,10 +841,14 @@ const detailLotFifPiece = computed(() => {
                             </button>
                             <div v-if="canBatchAssign" class="flex items-center gap-2">
                                 <label class="text-[10px] text-on-surface-variant whitespace-nowrap">Affecter à</label>
-                                <select class="text-[11px] px-2 py-1.5 border border-outline-variant rounded-lg bg-white max-w-[280px]" :value="family.gestionnaire" @change="assignFamily(family.assureId, $event.target.value)">
-                                    <option v-if="inactiveGestionnaires.has(family.gestionnaire)" :value="family.gestionnaire" disabled>{{ family.gestionnaire }} (compte inactif — à réaffecter)</option>
-                                    <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
-                                </select>
+                                <SearchSelect
+                                    button-class="text-[11px] px-2 py-1.5"
+                                    class="max-w-[280px]"
+                                    :model-value="family.gestionnaire"
+                                    :options="assignOptions(family.gestionnaire)"
+                                    search-placeholder="Rechercher un gestionnaire…"
+                                    @update:model-value="(name) => assignFamily(family.assureId, name)"
+                                />
                             </div>
                             <button type="button" class="text-[11px] font-bold text-primary hover:underline" @click="openFamily(family)">Traiter le dossier familial</button>
                         </div>
@@ -935,10 +962,13 @@ const detailLotFifPiece = computed(() => {
 
                         <div v-if="canBatchAssign">
                             <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Affectation du dossier familial</label>
-                            <select class="w-full px-3 py-2 text-sm border border-outline-variant rounded-lg bg-white" :value="detailFamily.gestionnaire" @change="assignFamily(detailFamily.assureId, $event.target.value)">
-                                <option v-if="inactiveGestionnaires.has(detailFamily.gestionnaire)" :value="detailFamily.gestionnaire" disabled>{{ detailFamily.gestionnaire }} (compte inactif — à réaffecter)</option>
-                                    <option v-for="g in assignableOptions" :key="g" :value="g">{{ g }}</option>
-                            </select>
+                            <SearchSelect
+                                button-class="px-3 py-2 text-sm"
+                                :model-value="detailFamily.gestionnaire"
+                                :options="assignOptions(detailFamily.gestionnaire)"
+                                search-placeholder="Rechercher un gestionnaire…"
+                                @update:model-value="(name) => assignFamily(detailFamily.assureId, name)"
+                            />
                         </div>
                         <div v-else class="bg-surface-container-low rounded-lg p-3 text-xs">
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border" :class="affectationBadgeClass(detailFamily.gestionnaire)">{{ affectationLabel(detailFamily.gestionnaire) }}</span>
@@ -1109,7 +1139,7 @@ const detailLotFifPiece = computed(() => {
                                 </div>
                                 <p v-if="!beneficiaireInfo(detailDossier).length" class="text-xs text-on-surface-variant italic col-span-2">Informations complémentaires non renseignées.</p>
                             </div>
-                            <FifSectionsView class="mt-3" :sections="detailDossier.fifSections" />
+                            <FifSectionsView class="mt-3" :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'dossier', id: detailDossier.id, code })}${inline ? '?inline=1' : ''}`" :sections="detailDossier.fifSections" />
                         </div>
 
                         <div>
@@ -1240,7 +1270,7 @@ const detailLotFifPiece = computed(() => {
                             <p class="text-xs font-bold break-words">{{ value }}</p>
                         </div>
                     </div>
-                    <FifSectionsView :sections="detailFamily.assureProfile.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: detailFamily.assureProfile.id, code })}${inline ? '?inline=1' : ''}`" :sections="detailFamily.assureProfile.fifSections" />
                     <div v-if="detailFamily.assureProfile.documentsIdentite?.length">
                         <h4 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-primary">badge</span>

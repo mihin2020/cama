@@ -265,7 +265,7 @@ class AdminUserService
         return $actor->hasPermission('users.manage')
             && ! $role->isAdministrateur()
             && $role->rang <= $actor->role_rang
-            && array_diff(AdminPermissions::expand($role->permissionKeys()), $this->grantableBy($actor)) === [];
+            && array_diff(AdminPermissions::expand($role->permissionKeys()), $this->grantableBy($actor), AdminPermissions::NOT_A_PRIVILEGE) === [];
     }
 
     private function assertCanManage(AdminUser $actor, AdminUser $target): void

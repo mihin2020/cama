@@ -25,8 +25,9 @@ class AdminProfilService
             'initiales' => $admin->initiales,
             'deuxFa' => (bool) $admin->deux_fa_active,
             'deconnexionAuto' => (bool) $admin->deconnexion_auto_active,
-            'isGestionnaire' => $admin->hasRole(AdminRole::Gestionnaire),
-            'workload' => $admin->hasRole(AdminRole::Gestionnaire)
+            // « Reçoit des dossiers » : défini par la permission, pas par le nom du rôle.
+            'isGestionnaire' => $admin->hasPermission('dossiers.receive'),
+            'workload' => $admin->hasPermission('dossiers.receive')
                 ? $this->gestionnaireWorkload($admin)
                 : null,
         ];

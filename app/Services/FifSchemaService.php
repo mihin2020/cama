@@ -130,13 +130,18 @@ class FifSchemaService
      * Libellés des champs obligatoires non renseignés (soumission d'un membre).
      *
      * @param  array<string, mixed>|null  $values
+     * @param  list<string>  $filesPresent  codes des champs fichier satisfaits (envoyé maintenant ou déjà enregistré)
      * @return list<string>
      */
-    public function missingRequired(string $cible, ?array $values): array
+    public function missingRequired(string $cible, ?array $values, array $filesPresent = []): array
     {
         return collect($this->fields($cible))
             ->filter(fn (array $field) => $field['obligatoire'])
-            ->filter(function (array $field) use ($values) {
+            ->filter(function (array $field) use ($values, $filesPresent) {
+                if ($field['type'] === 'fichier') {
+                    return ! in_array($field['code'], $filesPresent, true) && empty($values[$field['code']]);
+                }
+
                 $value = $values[$field['code']] ?? null;
 
                 return $field['type'] === 'checkbox' ? ! $value : ($value === null || (is_string($value) && trim($value) === ''));
@@ -160,6 +165,9 @@ class FifSchemaService
             'select', 'radio' => [$required ? 'required' : 'nullable', Rule::in($field['options'])],
             // Case à cocher obligatoire : elle doit être cochée (ex. « Je certifie l'exactitude »).
             'checkbox' => $required ? ['accepted'] : ['nullable', 'boolean'],
+            // Fichier chargé par l'assuré : PDF uniquement (contenu réel vérifié). Le caractère
+            // obligatoire est contrôlé à part (un fichier déjà envoyé reste valable).
+            'fichier' => ['nullable', new \App\Rules\PdfDocument],
             default => [$required ? 'required' : 'nullable', 'string', 'max:255'],
         };
     }
@@ -175,6 +183,11 @@ class FifSchemaService
         $values = [];
 
         foreach ($this->fields($cible) as $field) {
+            // Les fichiers sont rangés à part (voir DossierPieceStorageService::storeFifFile).
+            if ($field['type'] === 'fichier') {
+                continue;
+            }
+
             $value = Arr::get($input ?? [], $field['code']);
 
             $values[$field['code']] = match (true) {
@@ -197,8 +210,22 @@ class FifSchemaService
     public function valuesFor(string $cible, ?array $stored): array
     {
         return collect($this->fields($cible))
-            ->mapWithKeys(fn (array $field) => [$field['code'] => $stored[$field['code']] ?? ($field['type'] === 'checkbox' ? false : null)])
+            ->mapWithKeys(fn (array $field) => [$field['code'] => $field['type'] === 'fichier'
+                ? $this->fileSummary($stored[$field['code']] ?? null)
+                : ($stored[$field['code']] ?? ($field['type'] === 'checkbox' ? false : null))])
             ->all();
+    }
+
+    /**
+     * Fichier déjà chargé, sans son chemin interne : de quoi afficher « Fichier actuel : nom ».
+     *
+     * @return array{filename: ?string}|null
+     */
+    public function fileSummary(mixed $stored): ?array
+    {
+        return is_array($stored) && ! empty($stored['path'])
+            ? ['filename' => $stored['original_name'] ?? $stored['filename'] ?? null]
+            : null;
     }
 
     // ------------------------------------------------------------------ affichage et impression
@@ -219,6 +246,8 @@ class FifSchemaService
                     'label' => $field['libelle'],
                     'value' => $this->formatValue($field, $stored[$field['code']] ?? null),
                     'imprimer' => $field['imprimer_pdf'],
+                    // Fichier chargé : l'écran propose « Visualiser » et « Télécharger » (jamais le chemin interne).
+                    'fichier' => $field['type'] === 'fichier' && ! empty($stored[$field['code']]['path'] ?? null),
                 ])->all(),
             ])
             ->all();
@@ -229,6 +258,10 @@ class FifSchemaService
     {
         if ($field['type'] === 'checkbox') {
             return $value ? 'Oui' : 'Non';
+        }
+
+        if ($field['type'] === 'fichier') {
+            return is_array($value) ? (string) ($value['original_name'] ?? $value['filename'] ?? '') : '';
         }
 
         if ($value === null || $value === '') {

@@ -295,7 +295,12 @@ class DossierService
             'profession' => $meta['profession'] ?? null,
             'lieuResidence' => $meta['lieu_residence'] ?? $meta['lieuResidence'] ?? null,
             'nationalite' => $meta['nationalite'] ?? null,
-            'fifDonnees' => $dossier->fif_donnees ?? [],
+            // Valeurs des champs ajoutés ; un fichier chargé n'est jamais transmis avec son chemin interne.
+            'fifDonnees' => collect($dossier->fif_donnees ?? [])
+                ->map(fn ($value) => is_array($value) && isset($value['path'])
+                    ? ['filename' => $value['original_name'] ?? $value['filename'] ?? null]
+                    : $value)
+                ->all(),
             // Champs ajoutés par l'administration, prêts à afficher et à imprimer (sections « libellé : valeur »).
             'fifSections' => app(\App\Services\FifSchemaService::class)->display(
                 stripos((string) $dossier->lien, 'conjoint') !== false ? 'conjoint' : 'enfant',

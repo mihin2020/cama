@@ -26,18 +26,29 @@ class DossierAffectationService
     public function __construct(private PlatformSettingsService $settings) {}
 
     /**
-     * Gestionnaires pouvant recevoir des dossiers : uniquement les comptes internes
-     * actifs de rôle Gestionnaire (un compte désactivé ou supprimé ne reçoit plus rien).
+     * Comptes pouvant recevoir des dossiers : les comptes internes actifs dont le rôle donne la
+     * permission « Recevoir des dossiers à traiter » ET « Traiter les dossiers » (recevoir un dossier
+     * qu'on ne peut pas traiter n'aurait aucun sens). Le critère est la permission, pas le nom du
+     * rôle : un rôle créé par l'administration (ex. « Chargé de dossiers ») est donc inclus dès qu'on
+     * coche ces permissions.
+     *
+     * Les superviseurs ne reçoivent rien tant que leur rôle n'a pas « Recevoir des dossiers à
+     * traiter » (ils ont déjà « Traiter » : sans cette permission distincte, ils seraient inclus
+     * d'office). Les administrateurs techniques ne reçoivent jamais de dossiers.
      *
      * @return list<string>
      */
     public function assignablePool(): array
     {
         return AdminUser::query()
-            ->where('role', AdminRole::Gestionnaire)
+            ->with('roleDefinition')
             ->where('actif', true)
+            ->where('role', '!=', AdminRole::Administrateur->value)
             ->orderBy('id')
             ->get()
+            ->filter(fn (AdminUser $user) => $user->roleIsActive()
+                && $user->hasPermission('dossiers.receive')
+                && $user->hasPermission('dossiers.process'))
             ->map(fn (AdminUser $user) => $user->display_name)
             ->values()
             ->all();

@@ -71,7 +71,14 @@ class RegisterAssureRequest extends FormRequest
 
         // Champs ajoutés par l'administration (voir FifSchemaService) : contrôlés comme les autres.
         $rules['fif'] = ['nullable', 'array'];
-        $rules = array_merge($rules, app(\App\Services\FifSchemaService::class)->rules('assure', 'fif'));
+        $fif = app(\App\Services\FifSchemaService::class);
+        $rules = array_merge($rules, $fif->rules('assure', 'fif'));
+        // Champ fichier obligatoire : le PDF doit être envoyé à l'inscription.
+        foreach ($fif->fields('assure') as $field) {
+            if ($field['type'] === 'fichier' && $field['obligatoire']) {
+                $rules["fif.{$field['code']}"] = ['required', new \App\Rules\PdfDocument];
+            }
+        }
 
         foreach ($settings->activeInscriptionDocuments() as $slot) {
             // Pièces d'inscription : PDF uniquement (contenu réel vérifié, 5 Mo maximum).

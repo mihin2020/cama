@@ -41,6 +41,7 @@ class AdminPermissions
                     ['key' => 'dossiers.process', 'label' => 'Traiter / valider / refuser les dossiers'],
                     ['key' => 'dossiers.supervise', 'label' => 'Valider en second niveau (supervision)'],
                     ['key' => 'dossiers.assign', 'label' => 'Affecter les dossiers aux gestionnaires'],
+                    ['key' => 'dossiers.receive', 'label' => "Recevoir des dossiers à traiter (liste d'affectation et affectation automatique)"],
                 ],
             ],
             [
@@ -166,6 +167,14 @@ class AdminPermissions
     }
 
     /**
+     * Permissions qui ne donnent aucun pouvoir supplémentaire : recevoir des dossiers à traiter est une
+     * charge de travail, pas un droit d'agir. Elles ne comptent donc pas dans la règle « on ne donne
+     * que ce qu'on possède » : un superviseur doit pouvoir créer des gestionnaires, qui reçoivent des
+     * dossiers, sans les recevoir lui-même.
+     */
+    public const NOT_A_PRIVILEGE = ['dossiers.receive'];
+
+    /**
      * Permissions réservées à certains rôles (niveau interne minimal) : gérer les comptes internes
      * est réservé aux superviseurs et administrateurs (un gestionnaire ou un rôle créé n'a aucun
      * compte « en dessous » de lui) ; créer des rôles, qui fixent les droits de tous, est réservé
@@ -263,6 +272,7 @@ class AdminPermissions
             AdminRole::Gestionnaire => [
                 'dossiers.view',
                 'dossiers.process',
+                'dossiers.receive',
                 'assures.view',
                 'inscriptions.view',
                 'exports.export',
@@ -359,6 +369,8 @@ class AdminPermissions
         'admin.utilisateurs.destroy' => 'users.manage',
 
         'admin.fif' => 'fif.manage',
+        // Fichiers chargés par les assurés : le contrôleur vérifie les droits selon la portée (assuré ou dossier).
+        'admin.fif.file' => null,
         'admin.fif.sections.store' => 'fif.manage',
         'admin.fif.sections.update' => 'fif.manage',
         'admin.fif.sections.destroy' => 'fif.manage',

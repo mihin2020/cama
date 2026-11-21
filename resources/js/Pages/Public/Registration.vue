@@ -282,7 +282,10 @@ function saveDraft() {
         const snapshot = { _step: currentStep.value };
         Object.entries(form.data()).forEach(([key, value]) => {
             if (key === 'documents') return;
-            snapshot[key] = value;
+            // Les fichiers ne se conservent pas dans le brouillon : à re-sélectionner.
+            snapshot[key] = key === 'fif'
+                ? Object.fromEntries(Object.entries(value ?? {}).filter(([, v]) => !(v && typeof v === 'object')))
+                : value;
         });
         sessionStorage.setItem(DRAFT_KEY, JSON.stringify(snapshot));
     } catch (e) {

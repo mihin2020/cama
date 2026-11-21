@@ -220,7 +220,7 @@ async function exportZip() {
                         </div>
                     </div>
 
-                    <FifSectionsView :sections="selected.exportProfile?.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.id, code })}${inline ? '?inline=1' : ''}`" :sections="selected.exportProfile?.fifSections" />
 
                     <div v-if="(can('inscriptions.view') && selected.documents?.length) || (can('dossiers.view') && memberFiles.length)">
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">

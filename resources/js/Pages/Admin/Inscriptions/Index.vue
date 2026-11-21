@@ -327,7 +327,7 @@ function infoValue(value) {
                         </div>
                     </div>
 
-                    <FifSectionsView :sections="selected.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.id, code })}${inline ? '?inline=1' : ''}`" :sections="selected.fifSections" />
 
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
