@@ -67,6 +67,7 @@ class AdminPermissions
                 'group' => 'Paramètres',
                 'items' => [
                     ['key' => 'settings.manage', 'label' => 'Gérer les paramètres de la plateforme'],
+                    ['key' => 'fif.manage', 'label' => 'Gérer le formulaire FIF (sections et champs)'],
                 ],
             ],
             [
@@ -356,6 +357,16 @@ class AdminPermissions
         'admin.utilisateurs.toggle' => 'users.manage',
         'admin.utilisateurs.resend-invitation' => 'users.manage',
         'admin.utilisateurs.destroy' => 'users.manage',
+
+        'admin.fif' => 'fif.manage',
+        'admin.fif.sections.store' => 'fif.manage',
+        'admin.fif.sections.update' => 'fif.manage',
+        'admin.fif.sections.destroy' => 'fif.manage',
+        'admin.fif.sections.move' => 'fif.manage',
+        'admin.fif.fields.store' => 'fif.manage',
+        'admin.fif.fields.update' => 'fif.manage',
+        'admin.fif.fields.destroy' => 'fif.manage',
+        'admin.fif.fields.move' => 'fif.manage',
 
         'admin.roles' => 'roles.manage',
         'admin.roles.store' => 'roles.manage',

@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Auth\TwoFactorController as AdminTwoFactorControl
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\DossierController;
 use App\Http\Controllers\Admin\ExportController;
+use App\Http\Controllers\Admin\FifController;
 use App\Http\Controllers\Admin\InscriptionController;
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\ParametresController;
@@ -77,6 +78,16 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::post('/utilisateurs-internes/{adminUser}/toggle', [AdminUserController::class, 'toggleActif'])->name('utilisateurs.toggle');
     Route::post('/utilisateurs-internes/{adminUser}/renvoyer-invitation', [AdminUserController::class, 'resendInvitation'])->name('utilisateurs.resend-invitation');
     Route::delete('/utilisateurs-internes/{adminUser}', [AdminUserController::class, 'destroy'])->name('utilisateurs.destroy');
+
+    Route::get('/formulaire-fif', [FifController::class, 'index'])->name('fif');
+    Route::post('/formulaire-fif/{cible}/sections', [FifController::class, 'storeSection'])->name('fif.sections.store');
+    Route::put('/formulaire-fif/sections/{section}', [FifController::class, 'updateSection'])->name('fif.sections.update');
+    Route::delete('/formulaire-fif/sections/{section}', [FifController::class, 'destroySection'])->name('fif.sections.destroy');
+    Route::post('/formulaire-fif/sections/{section}/deplacer', [FifController::class, 'moveSection'])->name('fif.sections.move');
+    Route::post('/formulaire-fif/sections/{section}/champs', [FifController::class, 'storeField'])->name('fif.fields.store');
+    Route::put('/formulaire-fif/champs/{field}', [FifController::class, 'updateField'])->name('fif.fields.update');
+    Route::delete('/formulaire-fif/champs/{field}', [FifController::class, 'destroyField'])->name('fif.fields.destroy');
+    Route::post('/formulaire-fif/champs/{field}/deplacer', [FifController::class, 'moveField'])->name('fif.fields.move');
 
     Route::get('/roles', [RoleController::class, 'index'])->name('roles');
     Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');

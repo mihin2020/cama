@@ -33,6 +33,7 @@ final class AdminAccess
         'cms.contacts' => 'admin.cms.contacts',
         'cms.newsletter' => 'admin.cms.newsletter',
         'settings.manage' => 'admin.parametres',
+        'fif.manage' => 'admin.fif',
         'users.manage' => 'admin.utilisateurs',
         'roles.manage' => 'admin.roles',
     ];

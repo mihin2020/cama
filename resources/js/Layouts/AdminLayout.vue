@@ -117,6 +117,13 @@ const logout = () => router.post(route('admin.logout'));
             >
                 <span class="material-symbols-outlined text-[20px]">settings</span> Paramètres
             </Link>
+            <Link
+                v-show="can('fif.manage')"
+                :class="navClass('fif')"
+                :href="route('admin.fif')"
+            >
+                <span class="material-symbols-outlined text-[20px]">dynamic_form</span> Formulaire FIF
+            </Link>
             <div v-show="cmsHome" class="h-px bg-white/10 my-2 mx-1" />
             <Link
                 v-if="cmsHome"
