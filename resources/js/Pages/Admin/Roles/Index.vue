@@ -43,6 +43,28 @@ const isAdminRole = computed(() => editing.value?.administrateur === true);
 // Niveau interne du rôle édité (un rôle créé est au niveau d'un gestionnaire) : non affiché.
 const roleRank = computed(() => editing.value?.rang ?? props.customRank);
 
+function openCreate() {
+    editing.value = null;
+    form.reset();
+    form.clearErrors();
+    formOpen.value = true;
+}
+
+function openEdit(role) {
+    editing.value = role;
+    form.nom = role.nom;
+    form.description = role.description ?? '';
+    form.permissions = [...role.permissions];
+    form.apply_to_users = false;
+    form.clearErrors();
+    formOpen.value = true;
+}
+
+function closeForm() {
+    formOpen.value = false;
+    editing.value = null;
+}
+
 function permissionReason(key) {
     const restriction = props.restrictions[key];
     if (restriction && roleRank.value < restriction.minRank) return restriction.label;
@@ -148,8 +170,8 @@ function confirmDelete(role) {
     <AdminLayout active-nav="roles" title="Rôles et permissions" subtitle="Créez des rôles (ex. webmaster) et choisissez leurs permissions">
         <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
             <p class="text-xs text-on-surface-variant max-w-2xl">
-                Créez un rôle et cochez ses permissions. Dans « Comptes internes », choisir ce rôle pré-coche ses permissions ;
-                les comptes qui gardent ces cases reçoivent automatiquement toute modification du rôle.
+                Les permissions se règlent ici, sur le rôle. Dans « Comptes internes », on choisit simplement le rôle d'un compte :
+                il reçoit ses permissions, et toute modification du rôle s'applique aussitôt à ses comptes.
             </p>
             <button class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:opacity-90" type="button" @click="openCreate">
                 <span class="material-symbols-outlined text-[16px]">add</span> Nouveau rôle
@@ -244,18 +266,9 @@ function confirmDelete(role) {
                     <p v-if="form.errors.permissions" class="text-[11px] text-error mt-2">{{ form.errors.permissions }}</p>
                 </div>
 
-                <div v-if="isEditing && !isAdminRole && editing.usersCount > 0" class="mt-4 rounded-lg bg-surface-container-low p-3 text-xs">
-                    <p>
-                        <strong>{{ editing.usersCount - editing.customUsersCount }}</strong> compte(s) suivent ce rôle : ils recevront ces permissions dès l'enregistrement.
-                    </p>
-                    <label v-if="editing.customUsersCount > 0" class="mt-2 flex items-start gap-2 cursor-pointer">
-                        <input v-model="form.apply_to_users" class="mt-0.5 rounded border-outline-variant text-primary" type="checkbox" />
-                        <span>
-                            Appliquer aussi aux {{ editing.customUsersCount }} compte(s) aux permissions personnalisées
-                            <span class="block text-[10px] text-on-surface-variant">Leurs cases cochées à la main seront remplacées par celles du rôle.</span>
-                        </span>
-                    </label>
-                </div>
+                <p v-if="isEditing && !isAdminRole && editing.usersCount > 0" class="mt-4 rounded-lg bg-surface-container-low p-3 text-xs">
+                    <strong>{{ editing.usersCount }}</strong> compte(s) ont ce rôle : ils recevront ces permissions dès l'enregistrement.
+                </p>
 
                 <div class="flex justify-end gap-2 mt-6">
                     <button class="px-4 py-2 text-xs rounded-lg border border-outline" type="button" @click="closeForm">Annuler</button>

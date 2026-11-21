@@ -56,17 +56,23 @@ class AdminPermissionGovernanceTest extends TestCase
 
     public function test_nobody_can_grant_a_permission_he_does_not_have(): void
     {
-        $superviseur = $this->account(AdminRole::Superviseur, ['users.manage', 'dossiers.view']);
-        $cible = $this->account(AdminRole::Gestionnaire, ['dossiers.view']);
+        // Un rôle qui donne « Gérer les paramètres », que le superviseur n'a pas.
+        \App\Models\Role::query()->create([
+            'slug' => 'parametreur', 'nom' => 'Paramétreur', 'rang' => 10, 'systeme' => false, 'actif' => true,
+            'permissions' => ['dossiers.view', 'settings.manage'],
+        ]);
+        $superviseur = $this->account(AdminRole::Superviseur);
+        $cible = $this->account(AdminRole::Gestionnaire);
 
         $this->switchTo($superviseur)
-            ->put(route('admin.utilisateurs.update', $cible), $this->payload($cible, ['dossiers.view', 'settings.manage']))
-            ->assertSessionHasErrors('permissions');
+            ->put(route('admin.utilisateurs.update', $cible), [...$this->payload($cible, []), 'role' => 'parametreur'])
+            ->assertSessionHasErrors('role');
 
+        $this->assertSame('gestionnaire', $cible->fresh()->role);
         $this->assertNotContains('settings.manage', $cible->fresh()->effective_permissions);
     }
 
-    public function test_rights_given_by_an_administrator_are_kept_when_a_supervisor_edits_the_account(): void
+    public function test_supervisor_can_edit_the_profile_of_an_account_he_manages(): void
     {
         $superviseur = $this->account(AdminRole::Superviseur, ['users.manage', 'dossiers.view']);
         $cible = $this->account(AdminRole::Gestionnaire, ['dossiers.view', 'settings.manage']);
@@ -78,13 +84,15 @@ class AdminPermissionGovernanceTest extends TestCase
         $this->assertSame('Renommé', $cible->fresh()->prenom);
     }
 
-    public function test_an_agent_cannot_change_his_own_rights(): void
+    public function test_an_agent_cannot_change_his_own_role(): void
     {
-        $superviseur = $this->account(AdminRole::Superviseur, ['users.manage', 'dossiers.view', 'exports.export']);
+        $superviseur = $this->account(AdminRole::Superviseur);
 
         $this->switchTo($superviseur)
-            ->put(route('admin.utilisateurs.update', $superviseur), $this->payload($superviseur, ['users.manage', 'dossiers.view']))
-            ->assertSessionHasErrors('permissions');
+            ->put(route('admin.utilisateurs.update', $superviseur), $this->payload($superviseur, [], AdminRole::Gestionnaire))
+            ->assertSessionHasErrors('role');
+
+        $this->assertSame('superviseur', $superviseur->fresh()->role);
     }
 
     public function test_account_management_is_reserved_to_supervisors_and_administrators(): void
@@ -92,9 +100,12 @@ class AdminPermissionGovernanceTest extends TestCase
         $admin = $this->account(AdminRole::Administrateur);
         $gestionnaire = $this->account(AdminRole::Gestionnaire, ['dossiers.view']);
 
+        // Les permissions envoyées pour un compte sont ignorées : il reçoit celles de son rôle.
         $this->switchTo($admin)
             ->put(route('admin.utilisateurs.update', $gestionnaire), $this->payload($gestionnaire, ['dossiers.view', 'users.manage']))
-            ->assertSessionHasErrors('permissions');
+            ->assertSessionHasNoErrors();
+        $this->assertNull($gestionnaire->fresh()->permissions);
+        $this->assertFalse($gestionnaire->fresh()->hasPermission('users.manage'));
 
         // Même enregistrée à la main en base, la permission n'est pas effective pour ce rôle.
         $gestionnaire->update(['permissions' => ['dossiers.view', 'users.manage']]);

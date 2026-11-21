@@ -40,7 +40,6 @@ class AdminUserService
         $role = $this->findRole($data['role']);
 
         $this->assertCanManageRole($actor, $role);
-        $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? []);
 
         $user = AdminUser::query()->create([
             'nom' => strtoupper(trim($data['nom'])),
@@ -49,7 +48,8 @@ class AdminUserService
             'email' => strtolower(trim($data['email'])),
             'password' => Hash::make(Str::password(24)),
             'role' => $role->slug,
-            'permissions' => $this->storedPermissions($role, $permissions),
+            // Les permissions d'un compte sont celles de son rôle (réglées dans « Rôles et permissions »).
+            'permissions' => null,
             'matricule_interne' => $data['matricule_interne'] ?? null,
             'actif' => true,
             'invited_at' => now(),
@@ -71,8 +71,14 @@ class AdminUserService
         $this->assertCanManage($actor, $user);
 
         $role = $this->findRole($data['role']);
-        $this->assertCanManageRole($actor, $role);
-        $permissions = $this->grantablePermissions($actor, $role, $data['permissions'] ?? [], $user);
+        if ($role->slug !== $user->role) {
+            if ($user->id === $actor->id && ! $actor->isAdministrateur()) {
+                throw ValidationException::withMessages([
+                    'role' => 'Vous ne pouvez pas changer votre propre rôle : demandez à un administrateur.',
+                ]);
+            }
+            $this->assertCanManageRole($actor, $role);
+        }
 
         $email = strtolower(trim($data['email']));
         $emailChanged = $email !== strtolower($user->email);
@@ -88,7 +94,7 @@ class AdminUserService
             'grade' => $data['grade'] ?? null,
             'email' => $email,
             'role' => $role->slug,
-            'permissions' => $this->storedPermissions($role, $permissions),
+            'permissions' => null,
             'matricule_interne' => $data['matricule_interne'] ?? $user->matricule_interne,
         ])->save();
 
@@ -181,8 +187,6 @@ class AdminUserService
             'actif' => $user->actif,
             'permissions' => AdminPermissions::expand($user->effective_permissions),
             'permissionsCount' => count(AdminPermissions::expand($user->effective_permissions)),
-            // Le compte suit-il les permissions de son rôle (modifier le rôle le met à jour) ?
-            'followsRole' => $user->permissions === null,
             'displayName' => $user->display_name_with_grade,
             'initiales' => $user->initiales,
             'lastLoginAt' => $user->last_login_at?->format('d/m/Y H:i'),
@@ -258,9 +262,11 @@ class AdminUserService
             return true;
         }
 
+        // Pas d'élévation de privilèges : on n'attribue qu'un rôle dont on possède toutes les permissions.
         return $actor->hasPermission('users.manage')
             && ! $role->isAdministrateur()
-            && $role->rang <= $actor->role_rang;
+            && $role->rang <= $actor->role_rang
+            && array_diff(AdminPermissions::expand($role->permissionKeys()), $this->grantableBy($actor)) === [];
     }
 
     private function assertCanManage(AdminUser $actor, AdminUser $target): void
@@ -271,63 +277,13 @@ class AdminUserService
     }
 
     /**
-     * Permissions que le compte connecté peut attribuer (pour les cases de la fiche).
+     * Permissions que le compte connecté possède et peut donc transmettre via un rôle.
      *
      * @return list<string>
      */
     public function grantableBy(AdminUser $actor): array
     {
         return AdminPermissions::grantableBy($actor->isAdministrateur(), app(AdminPermissionService::class)->expanded($actor));
-    }
-
-    /**
-     * Contrôle des permissions demandées, contre l'élévation de privilèges :
-     *  - chaque permission doit être compatible avec le rôle (ex. gestion des comptes) ;
-     *  - un non-administrateur ne peut AJOUTER que des permissions qu'il possède lui-même
-     *    (celles que le compte avait déjà sont conservées, pour pouvoir le modifier) ;
-     *  - un non-administrateur ne peut pas changer ses propres droits ni son rôle.
-     *
-     * @param  array<int, mixed>  $requested
-     * @return list<string>
-     */
-    private function grantablePermissions(AdminUser $actor, Role $role, array $requested, ?AdminUser $target = null): array
-    {
-        $permissions = AdminPermissions::sanitize($requested);
-        $current = $target?->effective_permissions ?? [];
-
-        foreach ($permissions as $key) {
-            if (! AdminPermissions::allowedForRole($key, $role)) {
-                throw ValidationException::withMessages([
-                    'permissions' => '« '.AdminPermissions::label($key).' » ne peut pas être donné au rôle « '.$role->nom.' » : '.lcfirst(AdminPermissions::restrictionLabel($key) ?? ''),
-                ]);
-            }
-        }
-
-        if ($actor->isAdministrateur()) {
-            return $permissions;
-        }
-
-        if ($target && $target->id === $actor->id) {
-            $unchanged = $role->slug === $target->role
-                && AdminPermissions::sameSet($permissions, $current);
-            if (! $unchanged) {
-                throw ValidationException::withMessages([
-                    'permissions' => 'Vous ne pouvez pas modifier vos propres droits : demandez à un administrateur.',
-                ]);
-            }
-
-            return $permissions;
-        }
-
-        $refused = array_diff($permissions, $this->grantableBy($actor), $current);
-        if ($refused !== []) {
-            throw ValidationException::withMessages([
-                'permissions' => 'Vous ne pouvez attribuer que des permissions que vous possédez vous-même. Non autorisé : '
-                    .implode(', ', array_map(fn (string $key) => '« '.AdminPermissions::label($key).' »', $refused)).'.',
-            ]);
-        }
-
-        return $permissions;
     }
 
     /**
@@ -355,22 +311,6 @@ class AdminUserService
         }
     }
 
-    /**
-     * Ce qu'on enregistre sur le compte : rien (null) si les cases cochées sont celles du rôle —
-     * le compte suit alors le rôle et toute modification du rôle s'y applique —, sinon la liste.
-     *
-     * @param  list<string>  $permissions
-     * @return list<string>|null
-     */
-    private function storedPermissions(Role $role, array $permissions): ?array
-    {
-        if ($role->isAdministrateur()) {
-            return null;
-        }
-
-        return AdminPermissions::sameSet($permissions, $role->permissionKeys()) ? null : $permissions;
-    }
-
     private function findRole(string $slug): Role
     {
         $role = Role::query()->where('slug', $slug)->first();
@@ -392,7 +332,7 @@ class AdminUserService
             throw ValidationException::withMessages([
                 'role' => $role->isAdministrateur()
                     ? 'Seul un administrateur technique peut créer ou promouvoir un administrateur.'
-                    : "Seul un administrateur peut attribuer le rôle « {$role->nom} ».",
+                    : "Vous ne pouvez pas attribuer le rôle « {$role->nom} » : il donne des permissions que vous n'avez pas.",
             ]);
         }
     }

@@ -28,8 +28,6 @@ class UpdateAdminUserRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', Rule::unique('admin_users', 'email')->ignore($adminUser?->id)],
             'grade' => ['nullable', 'string', Rule::in(AdminPermissions::GRADES)],
             'role' => ['required', 'string', Rule::exists('admin_roles', 'slug')->where('actif', true)],
-            'permissions' => ['nullable', 'array'],
-            'permissions.*' => ['string', Rule::in(AdminPermissions::allKeys())],
             'matricule_interne' => ['nullable', 'string', 'max:50'],
         ];
     }

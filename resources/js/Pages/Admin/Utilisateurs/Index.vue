@@ -3,7 +3,6 @@ import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
-import PermissionPicker from '@/Components/Admin/PermissionPicker.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -17,8 +16,6 @@ const props = defineProps({
     rolePresets: Object,
     grades: Array,
     assignableRoles: Array,
-    grantablePermissions: { type: Array, default: () => [] },
-    roleRestricted: { type: Object, default: () => ({}) },
     actorId: { type: Number, default: null },
     actorIsAdmin: { type: Boolean, default: false },
 });
@@ -64,7 +61,6 @@ const form = useForm({
     email: '',
     grade: '',
     role: 'gestionnaire',
-    permissions: [],
     matricule_interne: '',
 });
 
@@ -82,7 +78,6 @@ function openCreate() {
     form.role = props.assignableRoles.some((role) => role.value === 'gestionnaire')
         ? 'gestionnaire'
         : (props.assignableRoles[0]?.value ?? '');
-    applyRolePreset();
     formOpen.value = true;
 }
 
@@ -94,7 +89,6 @@ function openEdit(user) {
     form.email = user.email;
     form.grade = user.grade ?? '';
     form.role = user.role;
-    form.permissions = [...(user.permissions ?? [])];
     form.matricule_interne = user.matriculeInterne ?? '';
     form.clearErrors();
     formOpen.value = true;
@@ -105,43 +99,28 @@ function closeForm() {
     editingUser.value = null;
 }
 
-/* Règles d'attribution (vérifiées aussi par le serveur) : on ne donne que ce qu'on possède,
-   certaines permissions sont réservées à des rôles, et ses propres droits ne se modifient pas. */
+// Les permissions d'un compte sont celles de son rôle : elles se règlent dans « Rôles et permissions »
+// et ne sont qu'affichées ici. Un agent ne change pas son propre rôle (seul un administrateur le peut).
 const isSelf = computed(() => isEditing.value && editingUser.value?.id === props.actorId);
 const selfLocked = computed(() => isSelf.value && !props.actorIsAdmin);
 
-function allowedForRole(key, role = form.role) {
-    return !props.roleRestricted[key] || props.roleRestricted[key].includes(role);
-}
-
-function permissionReason(key) {
-    if (selfLocked.value) return 'Vos propres droits ne peuvent être modifiés que par un administrateur.';
-    if (!allowedForRole(key)) return 'Réservée aux rôles Superviseur et Administrateur.';
-    const alreadyHad = isEditing.value && (editingUser.value?.permissions ?? []).includes(key);
-    if (!props.grantablePermissions.includes(key) && !alreadyHad) {
-        return 'Vous ne possédez pas cette permission : vous ne pouvez pas l’attribuer.';
+// Rôle actuel d'un compte modifié, même s'il ne figure pas parmi les rôles que l'on peut attribuer.
+const roleOptions = computed(() => {
+    const options = [...props.assignableRoles];
+    if (isEditing.value && !options.some((role) => role.value === editingUser.value.role)) {
+        options.unshift({ value: editingUser.value.role, label: editingUser.value.roleLabel });
     }
-    return '';
-}
+    return options;
+});
 
-const rolePermissions = computed(() => (props.rolePresets[form.role] ?? [])
-    .filter((key) => allowedForRole(key) && props.grantablePermissions.includes(key)));
-
-function sameSet(a, b) {
-    return a.length === b.length && a.every((key) => b.includes(key));
-}
-
-// Les cases sont-elles celles du rôle ? Le compte suit alors le rôle (et ses futures modifications).
-const followsRole = computed(() => form.role === 'administrateur' || sameSet(form.permissions, rolePermissions.value));
-
-function applyRolePreset() {
-    form.permissions = [...rolePermissions.value];
-}
-
-// Choisir un autre rôle dans la liste pré-coche ses permissions ; on peut ensuite les ajuster.
-function onRoleChosen() {
-    if (!selfLocked.value) applyRolePreset();
-}
+const rolePermissionGroups = computed(() => {
+    const keys = form.role === 'administrateur'
+        ? props.permissionsCatalog.flatMap((group) => group.items.map((item) => item.key))
+        : (props.rolePresets[form.role] ?? (isEditing.value && form.role === editingUser.value.role ? editingUser.value.permissions : []));
+    return props.permissionsCatalog
+        .map((group) => ({ group: group.group, items: group.items.filter((item) => keys.includes(item.key)) }))
+        .filter((group) => group.items.length);
+});
 
 function saveUser() {
     if (isEditing.value) {
@@ -359,8 +338,8 @@ function executeDelete(user) {
                     </div>
                     <div>
                         <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Rôle</label>
-                        <select v-model="form.role" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" @change="onRoleChosen">
-                            <option v-for="role in assignableRoles" :key="role.value" :value="role.value">{{ role.label }}</option>
+                        <select v-model="form.role" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg bg-white disabled:bg-surface-container" :disabled="selfLocked">
+                            <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
                         </select>
                         <p v-if="selectedRole?.description" class="text-[10px] text-on-surface-variant mt-1">{{ selectedRole.description }}</p>
                         <p v-if="form.errors.role" class="text-[10px] text-error mt-1">{{ form.errors.role }}</p>
@@ -388,39 +367,26 @@ function executeDelete(user) {
                 </div>
 
                 <div class="mt-5">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                        <p class="text-[11px] font-bold uppercase text-on-surface-variant">Permissions de ce compte</p>
-                        <span
-                            v-if="followsRole"
-                            class="text-[10px] font-bold px-2 py-1 rounded-full bg-secondary/10 text-secondary"
-                        >Identiques au rôle « {{ selectedRole?.label ?? form.role }} »</span>
-                        <span v-else class="flex items-center gap-2">
-                            <span class="text-[10px] font-bold px-2 py-1 rounded-full bg-tertiary/10 text-tertiary">Personnalisées</span>
-                            <button
-                                v-if="!selfLocked"
-                                class="text-[11px] font-bold text-primary hover:underline flex items-center gap-1"
-                                type="button"
-                                @click="applyRolePreset"
-                            >
-                                <span class="material-symbols-outlined text-[14px]">restart_alt</span> Revenir aux permissions du rôle
-                            </button>
-                        </span>
+                    <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-1">
+                        Permissions du rôle « {{ roleOptions.find((role) => role.value === form.role)?.label ?? form.role }} »
+                    </p>
+                    <p class="mb-2 text-[11px] text-on-surface-variant flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[14px]">info</span>
+                        <span v-if="selfLocked">Votre rôle ne peut être changé que par un administrateur.</span>
+                        <span v-else>Le compte reçoit les permissions de son rôle. Pour les changer, modifiez le rôle dans « Rôles et permissions ».</span>
+                    </p>
+                    <div v-if="rolePermissionGroups.length" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div v-for="group in rolePermissionGroups" :key="group.group" class="border border-outline-variant rounded-lg p-3 bg-surface-container-low">
+                            <p class="text-[11px] font-bold uppercase text-on-surface-variant mb-1.5">{{ group.group }}</p>
+                            <ul class="space-y-1">
+                                <li v-for="item in group.items" :key="item.key" class="flex items-start gap-1.5 text-xs">
+                                    <span class="material-symbols-outlined text-[16px] text-secondary">check</span>
+                                    {{ item.label }}
+                                </li>
+                            </ul>
+                        </div>
                     </div>
-                    <p v-if="selfLocked" class="mb-2 text-[11px] text-tertiary flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[14px]">lock</span>
-                        Vos propres droits ne peuvent être modifiés que par un administrateur.
-                    </p>
-                    <p v-else class="mb-2 text-[11px] text-on-surface-variant">
-                        Les cases sont pré-cochées d'après le rôle : cochez ou décochez librement. Tant qu'elles restent identiques au rôle,
-                        le compte reçoit automatiquement les modifications faites sur le rôle.
-                    </p>
-                    <PermissionPicker
-                        v-model="form.permissions"
-                        :all-locked="form.role === 'administrateur'"
-                        :catalog="permissionsCatalog"
-                        :disabled-reason="permissionReason"
-                    />
-                    <p v-if="form.errors.permissions" class="text-[11px] text-error mt-2">{{ form.errors.permissions }}</p>
+                    <p v-else class="text-xs text-on-surface-variant italic">Ce rôle ne donne aucune permission.</p>
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">

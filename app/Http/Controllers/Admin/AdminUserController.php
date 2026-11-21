@@ -29,23 +29,15 @@ class AdminUserController extends Controller
         }
 
         $assignable = $service->assignableRoles($actor);
-        $allRoles = Role::query()->get();
 
         return Inertia::render('Admin/Utilisateurs/Index', [
             'users' => $paginator->items(),
             'pagination' => Pagination::meta($paginator),
             'search' => $search ?? '',
             'permissionsCatalog' => AdminPermissions::catalog(),
-            // Cases que le compte connecté peut cocher (pas d'élévation de privilèges) et
-            // permissions réservées à certains rôles.
-            'grantablePermissions' => $service->grantableBy($actor),
-            // Permission réservée => rôles (slugs) dont le rang l'autorise.
-            'roleRestricted' => collect(AdminPermissions::MIN_RANK)
-                ->map(fn (int $rank) => $allRoles->where('rang', '>=', $rank)->pluck('slug')->values()->all())
-                ->all(),
             'actorId' => $actor->id,
             'actorIsAdmin' => $actor->isAdministrateur(),
-            // Permissions de chaque rôle : proposées à la création et via « Appliquer le rôle ».
+            // Permissions de chaque rôle attribuable : affichées (lecture seule) sur la fiche du compte.
             'rolePresets' => $assignable->mapWithKeys(fn (Role $role) => [$role->slug => AdminPermissions::expand($role->permissionKeys())])->all(),
             'grades' => AdminPermissions::GRADES,
             'assignableRoles' => $assignable

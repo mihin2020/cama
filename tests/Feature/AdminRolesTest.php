@@ -161,7 +161,7 @@ class AdminRolesTest extends TestCase
     public function test_supervisor_cannot_assign_a_role_above_his_rank(): void
     {
         Notification::fake();
-        $superviseur = $this->account(AdminRole::Superviseur, ['users.manage', 'dossiers.view']);
+        $superviseur = $this->account(AdminRole::Superviseur);
 
         foreach (['direction', 'administrateur'] as $slug) {
             $this->actingAs($superviseur, 'admin')
@@ -239,7 +239,7 @@ class AdminRolesTest extends TestCase
         $this->assertDatabaseHas('admin_roles', ['slug' => 'administrateur']);
     }
 
-    public function test_account_with_the_role_permissions_follows_later_changes_of_the_role(): void
+    public function test_accounts_always_get_the_permissions_of_their_role(): void
     {
         Notification::fake();
         $admin = $this->administrateur();
@@ -249,22 +249,23 @@ class AdminRolesTest extends TestCase
             'prenom' => 'Suit', 'nom' => 'Role', 'email' => 'suit@cama.bf', 'role' => 'webmaster', 'permissions' => self::WEBMASTER_PERMISSIONS,
         ])->assertSessionHasNoErrors();
         $this->actingAs($admin, 'admin')->post(route('admin.utilisateurs.store'), [
-            'prenom' => 'Perso', 'nom' => 'Role', 'email' => 'perso@cama.bf', 'role' => 'webmaster', 'permissions' => ['cms.pages'],
+            // Des permissions envoyées pour le compte sont ignorées : seul le rôle compte.
+            'prenom' => 'Perso', 'nom' => 'Role', 'email' => 'perso@cama.bf', 'role' => 'webmaster', 'permissions' => ['cms.pages', 'settings.manage'],
         ])->assertSessionHasNoErrors();
 
         $suit = AdminUser::query()->where('email', 'suit@cama.bf')->firstOrFail();
         $perso = AdminUser::query()->where('email', 'perso@cama.bf')->firstOrFail();
         $this->assertNull($suit->permissions);
-        $this->assertSame(['cms.pages'], $perso->permissions);
+        $this->assertNull($perso->permissions);
+        $this->assertFalse($perso->hasPermission('settings.manage'));
 
         $this->actingAs($admin, 'admin')->put(route('admin.roles.update', $role), [
             'nom' => 'Webmaster', 'permissions' => [...self::WEBMASTER_PERMISSIONS, 'cms.faq'],
         ])->assertSessionHasNoErrors();
 
-        // Le compte qui suit le rôle reçoit la nouvelle case ; le compte personnalisé garde les siennes.
+        // Modifier le rôle met à jour tous ses comptes.
         $this->assertTrue($suit->fresh()->hasPermission('cms.faq'));
-        $this->assertFalse($perso->fresh()->hasPermission('cms.faq'));
-        $this->assertFalse($perso->fresh()->hasPermission('cms.articles'));
+        $this->assertTrue($perso->fresh()->hasPermission('cms.faq'));
     }
 
     public function test_full_studio_access_shown_with_every_studio_box_checked(): void
