@@ -326,6 +326,36 @@ class AdminRolesTest extends TestCase
         }
     }
 
+    public function test_roles_list_is_paginated_and_searchable(): void
+    {
+        $admin = $this->administrateur();
+        foreach (range(1, 22) as $n) {
+            Role::query()->create(['slug' => "role-$n", 'nom' => "Rôle test $n", 'rang' => 10, 'permissions' => ['dossiers.view']]);
+        }
+
+        // 4 rôles d'origine + 22 = 26 : deux pages de 20.
+        $this->actingAs($admin, 'admin')->get(route('admin.roles'))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->has('roles', 20)
+                ->where('pagination.total', 26)
+                ->where('pagination.lastPage', 2));
+
+        $this->actingAs($admin, 'admin')->get(route('admin.roles', ['page' => 2]))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('roles', 6));
+
+        $this->actingAs($admin, 'admin')->get(route('admin.roles', ['per_page' => 50]))
+            ->assertInertia(fn (AssertableInertia $page) => $page->has('roles', 26)->where('pagination.perPage', 50));
+
+        $this->actingAs($admin, 'admin')->get(route('admin.roles', ['q' => 'test 2']))
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('search', 'test 2')
+                ->where('roles', fn ($roles) => collect($roles)->every(fn ($role) => str_contains($role['nom'], 'test 2'))));
+
+        // Page qui n'existe plus : retour à la dernière page.
+        $this->actingAs($admin, 'admin')->get(route('admin.roles', ['page' => 9]))
+            ->assertRedirect(route('admin.roles', ['page' => 2]));
+    }
+
     public function test_unused_custom_role_can_be_deleted(): void
     {
         $admin = $this->administrateur();

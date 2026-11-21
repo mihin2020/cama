@@ -1,13 +1,17 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import CamaPagination from '@/Components/CamaPagination.vue';
+import { useServerPagination } from '@/Composables/usePagination';
 import PermissionPicker from '@/Components/Admin/PermissionPicker.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     roles: { type: Array, default: () => [] },
+    pagination: { type: Object, default: () => ({ currentPage: 1, lastPage: 1, perPage: 20, total: 0 }) },
+    search: { type: String, default: '' },
     permissionsCatalog: { type: Array, default: () => [] },
     restrictions: { type: Object, default: () => ({}) },
     customRank: { type: Number, default: 10 },
@@ -16,6 +20,20 @@ const props = defineProps({
 });
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
+
+// Liste paginée par le serveur, comme « Comptes internes » (recherche + pages + lignes par page).
+const search = ref(props.search);
+const listTop = ref(null);
+const { reload, goToPage, setPerPage } = useServerPagination(() => props.pagination, {
+    routeName: 'admin.roles',
+    params: () => ({ q: search.value.trim() }),
+    anchor: listTop,
+});
+let searchTimer = null;
+watch(search, () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(reload, 300);
+});
 const formOpen = ref(false);
 const editing = ref(null);
 
@@ -168,17 +186,22 @@ function confirmDelete(role) {
     <Head title="Rôles et permissions" />
 
     <AdminLayout active-nav="roles" title="Rôles et permissions" subtitle="Créez des rôles (ex. webmaster) et choisissez leurs permissions">
-        <div class="flex flex-wrap justify-between items-start gap-3 mb-5">
-            <p class="text-xs text-on-surface-variant max-w-2xl">
+        <p class="text-xs text-on-surface-variant max-w-3xl mb-4">
                 Les permissions se règlent ici, sur le rôle. Dans « Comptes internes », on choisit simplement le rôle d'un compte :
                 il reçoit ses permissions, et toute modification du rôle s'applique aussitôt à ses comptes.
-            </p>
+        </p>
+
+        <div class="flex flex-wrap justify-between items-center gap-3 mb-5">
+            <div class="relative w-full sm:w-72">
+                <span class="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                <input v-model="search" class="w-full pl-8 pr-3 py-2 text-xs border border-outline-variant rounded-lg bg-white" placeholder="Rechercher un rôle…" type="search" />
+            </div>
             <button class="bg-primary text-on-primary px-4 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 hover:opacity-90" type="button" @click="openCreate">
                 <span class="material-symbols-outlined text-[16px]">add</span> Nouveau rôle
             </button>
         </div>
 
-        <div class="assure-card overflow-hidden">
+        <div ref="listTop" class="assure-card overflow-hidden scroll-mt-24">
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead>
@@ -231,8 +254,16 @@ function confirmDelete(role) {
                                 </button>
                             </td>
                         </tr>
+                        <tr v-if="!roles.length">
+                            <td class="px-5 py-10 text-center text-on-surface-variant text-sm" colspan="5">
+                                {{ props.search ? `Aucun rôle ne correspond à « ${props.search} ».` : 'Aucun rôle.' }}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
+            </div>
+            <div class="px-4 border-t border-outline-variant">
+                <CamaPagination v-bind="pagination" label="rôle(s)" @change="goToPage" @per-page="setPerPage" />
             </div>
         </div>
 

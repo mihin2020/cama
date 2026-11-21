@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Services\AdminPermissionService;
 use App\Services\AdminRoleService;
 use App\Support\AdminPermissions;
+use App\Support\Pagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -16,13 +17,21 @@ use Inertia\Response;
 
 class RoleController extends Controller
 {
-    public function index(Request $request, AdminRoleService $service): Response
+    public function index(Request $request, AdminRoleService $service): Response|RedirectResponse
     {
         /** @var AdminUser $actor */
         $actor = $request->user('admin');
+        $search = mb_substr(trim($request->string('q')->toString()), 0, 100) ?: null;
+        $paginator = $service->paginate($search, Pagination::perPage($request));
+
+        if (Pagination::isBeyondLastPage($paginator)) {
+            return redirect()->route('admin.roles', [...$request->query(), 'page' => $paginator->lastPage()]);
+        }
 
         return Inertia::render('Admin/Roles/Index', [
-            'roles' => $service->list(),
+            'roles' => $paginator->items(),
+            'pagination' => Pagination::meta($paginator),
+            'search' => $search ?? '',
             'permissionsCatalog' => AdminPermissions::catalog(),
             // Permission réservée => [niveau interne minimal, texte] (cases grisées à l'écran).
             'restrictions' => collect(AdminPermissions::MIN_RANK)

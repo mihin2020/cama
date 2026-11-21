@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\AdminUser;
 use App\Models\Role;
 use App\Support\AdminPermissions;
+use App\Support\SqlLike;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,17 +29,21 @@ use Illuminate\Validation\ValidationException;
 class AdminRoleService
 {
     /**
-     * @return list<array<string, mixed>>
+     * Rôles paginés (les plus élevés d'abord), filtrés par nom ou description.
      */
-    public function list(): array
+    public function paginate(?string $search, int $perPage): LengthAwarePaginator
     {
         return Role::query()
             ->withCount(['users', 'users as custom_users_count' => fn ($query) => $query->whereNotNull('permissions')])
+            ->when($search, function ($query, string $search) {
+                $like = SqlLike::contains($search);
+                $query->where(fn ($q) => $q->where('nom', 'like', $like)->orWhere('description', 'like', $like));
+            })
             ->orderByDesc('rang')
             ->orderBy('nom')
-            ->get()
-            ->map(fn (Role $role) => $this->format($role))
-            ->all();
+            ->paginate($perPage)
+            ->withQueryString()
+            ->through(fn (Role $role) => $this->format($role));
     }
 
     /**
