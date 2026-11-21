@@ -201,6 +201,12 @@ class AdminPermissions
             return [];
         }
 
+        // L'administrateur a toujours toutes les permissions, y compris celles ajoutées au catalogue
+        // après la création de son compte (ex. « roles.manage ») : sa liste enregistrée est ignorée.
+        if ($role->isAdministrateur()) {
+            return self::allKeys();
+        }
+
         $permissions = $stored !== null ? self::sanitize($stored) : $role->permissionKeys();
 
         return array_values(array_filter($permissions, fn (string $key) => self::allowedForRole($key, $role)));

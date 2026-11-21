@@ -131,6 +131,20 @@ class AdminRolesTest extends TestCase
         $this->assertGuest('admin');
     }
 
+    public function test_administrator_with_an_old_permission_list_still_sees_the_roles_screen(): void
+    {
+        // Compte créé avant l'ajout de « roles.manage » : sa liste enregistrée ne la contient pas.
+        $admin = $this->account(AdminRole::Administrateur, ['dossiers.view', 'users.manage'], 'ancien-admin@cama.bf');
+
+        $this->assertTrue($admin->hasPermission('roles.manage'));
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.roles'))
+            ->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Admin/Roles/Index')
+                ->where('auth.admin.permissions', fn ($permissions) => collect($permissions)->contains('roles.manage')));
+    }
+
     public function test_only_the_administrator_can_manage_roles(): void
     {
         $superviseur = $this->account(AdminRole::Superviseur, ['users.manage', 'dossiers.view', 'roles.manage']);
