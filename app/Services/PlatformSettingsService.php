@@ -255,8 +255,7 @@ class PlatformSettingsService
         ['key' => 'grade', 'label' => 'Grade', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
         ['key' => 'categorie', 'label' => 'Catégorie', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
         ['key' => 'numero_informatique', 'label' => 'N° informatique', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
-        // Le N° CIM n'est jamais obligatoire (il peut être affiché ou masqué, pas exigé).
-        ['key' => 'numero_cim', 'label' => 'N° CIM', 'group' => 'Situation administrative', 'actif' => true, 'required' => false, 'neverRequired' => true],
+        ['key' => 'numero_cim', 'label' => 'N° CIM', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
         ['key' => 'numero_cama', 'label' => 'N° Carte CAMA', 'group' => 'Situation administrative', 'actif' => true, 'required' => true],
         ['key' => 'numero_iup', 'label' => 'N° IUP', 'group' => 'Situation administrative', 'actif' => true, 'required' => false],
         ['key' => 'armee', 'label' => 'Armée', 'group' => 'Rattachement', 'actif' => true, 'required' => true],
@@ -330,8 +329,7 @@ class PlatformSettingsService
             if ($parent !== null && ! ($result[$parent]['actif'] ?? true)) {
                 $actif = false;
             }
-            $neverRequired = (bool) ($default['neverRequired'] ?? false);
-            $required = $actif && ! $neverRequired && (bool) ($row['required'] ?? $default['required']);
+            $required = $actif && (bool) ($row['required'] ?? $default['required']);
 
             $result[$default['key']] = [
                 'key' => $default['key'],
@@ -340,7 +338,6 @@ class PlatformSettingsService
                 'parent' => $parent,
                 'actif' => $actif,
                 'required' => $required,
-                'neverRequired' => $neverRequired,
             ];
         }
 

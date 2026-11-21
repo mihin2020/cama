@@ -269,9 +269,9 @@ function infoValue(value) {
 
                     <div v-if="isPending" class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-xs text-on-surface">
                         <p class="font-bold mb-1 flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">info</span> Identifiants CAMA</p>
-                        <p class="text-on-surface-variant mb-2">L'assuré renseigne son N° Carte CAMA (obligatoire) et son N° CIM (facultatif) à l'inscription. Corrigez-les ici si besoin avant validation.</p>
+                        <p class="text-on-surface-variant mb-2">L'assuré renseigne son N° CIM et son N° Carte CAMA à l'inscription. Corrigez-les ici si besoin avant validation.</p>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <div><label class="text-[10px] uppercase text-on-surface-variant">N° CIM (facultatif)</label><input v-model="idForm.numero_cim" class="w-full mt-1 px-2 py-1.5 text-xs border border-outline-variant rounded" /></div>
+                            <div><label class="text-[10px] uppercase text-on-surface-variant">N° CIM</label><input v-model="idForm.numero_cim" class="w-full mt-1 px-2 py-1.5 text-xs border border-outline-variant rounded" /></div>
                             <div><label class="text-[10px] uppercase text-on-surface-variant">N° Carte CAMA</label><input v-model="idForm.numero_cama" class="w-full mt-1 px-2 py-1.5 text-xs border border-outline-variant rounded" /></div>
                         </div>
                         <button type="button" class="mt-2 text-primary text-[11px] font-bold hover:underline" @click="saveIds">Enregistrer les identifiants</button>

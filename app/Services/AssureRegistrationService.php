@@ -37,7 +37,7 @@ class AssureRegistrationService
             'numero_informatique' => $data['numero_informatique'] ?? null,
             'grade' => $data['grade'] ?? null,
             'categorie' => $data['categorie'] ?? null,
-            'numero_cim' => self::optional($data['numero_cim'] ?? null),
+            'numero_cim' => $data['numero_cim'] ?? '',
             'numero_cama' => $data['numero_cama'] ?? '',
             'numero_iup' => $data['numero_iup'] ?? null,
             'armee' => $data['armee'] ?? null,
@@ -59,24 +59,10 @@ class AssureRegistrationService
         ]);
     }
 
-    /** Valeur facultative : vide ou absente => null (« non renseigné »). */
-    private static function optional(?string $value): ?string
-    {
-        $value = trim((string) $value);
-
-        return $value === '' ? null : $value;
-    }
-
-    /** Libellé des identifiants pour le journal et les e-mails (le CIM n'apparaît que s'il est renseigné). */
-    private static function identifiersLabel(Assure $assure): string
-    {
-        return ($assure->numero_cim ? "CIM : {$assure->numero_cim}, " : '')."Carte CAMA : {$assure->numero_cama}";
-    }
-
-    public function updateIdentifiers(Assure $assure, ?string $numeroCim, string $numeroCama): Assure
+    public function updateIdentifiers(Assure $assure, string $numeroCim, string $numeroCama): Assure
     {
         $assure->update([
-            'numero_cim' => self::optional($numeroCim),
+            'numero_cim' => trim($numeroCim),
             'numero_cama' => trim($numeroCama),
         ]);
 
@@ -85,10 +71,9 @@ class AssureRegistrationService
 
     public function validate(Assure $assure): Assure
     {
-        // Seul le N° Carte CAMA est exigé avant validation : le N° CIM est facultatif.
-        if (! trim((string) $assure->numero_cama)) {
+        if (! trim($assure->numero_cim) || ! trim($assure->numero_cama)) {
             throw ValidationException::withMessages([
-                'numero_cama' => 'Le N° Carte CAMA doit être renseigné avant validation.',
+                'numero_cim' => 'Le N° CIM et le N° Carte CAMA doivent être renseignés avant validation.',
             ]);
         }
 
@@ -97,7 +82,7 @@ class AssureRegistrationService
             $journal = $assure->journal ?? [];
             $journal[] = [
                 'date' => $now,
-                'libelle' => 'Inscription validée — compte activé ('.self::identifiersLabel($assure).')',
+                'libelle' => "Inscription validée — compte activé (CIM : {$assure->numero_cim}, Carte CAMA : {$assure->numero_cama})",
             ];
 
             $assure->update([
@@ -122,7 +107,7 @@ class AssureRegistrationService
             'Votre compte CAMA est validé',
             "Bonjour {$fresh->full_name},\n\n"
                 ."Votre compte assuré a été validé.\n"
-                .($fresh->numero_cim ? "N° CIM : {$fresh->numero_cim}\n" : '')
+                ."N° CIM : {$fresh->numero_cim}\n"
                 ."N° Carte CAMA : {$fresh->numero_cama}\n\n"
                 ."Vous pouvez dès à présent vous connecter à votre espace assuré et enrôler vos ayants droit.",
         );

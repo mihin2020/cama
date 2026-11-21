@@ -78,11 +78,11 @@ class InscriptionController extends Controller
     public function updateIdentifiers(Request $request, Assure $assure, AssureRegistrationService $service): RedirectResponse
     {
         $data = $request->validate([
-            'numero_cim' => ['nullable', 'string', 'max:50'],
+            'numero_cim' => ['required', 'string', 'max:50'],
             'numero_cama' => ['required', 'string', 'max:50'],
         ]);
 
-        $service->updateIdentifiers($assure, $data['numero_cim'] ?? null, $data['numero_cama']);
+        $service->updateIdentifiers($assure, $data['numero_cim'], $data['numero_cama']);
 
         return back()->with('success', 'Identifiants enregistrés.');
     }
@@ -91,9 +91,7 @@ class InscriptionController extends Controller
     {
         $assure = $service->validate($assure);
 
-        $cim = $assure->numero_cim ? "CIM : {$assure->numero_cim}, " : '';
-
-        return back()->with('success', "Compte validé ({$cim}Carte CAMA : {$assure->numero_cama}).");
+        return back()->with('success', "Compte validé (CIM : {$assure->numero_cim}, Carte CAMA : {$assure->numero_cama}).");
     }
 
     public function reject(Request $request, Assure $assure, AssureRegistrationService $service): RedirectResponse
