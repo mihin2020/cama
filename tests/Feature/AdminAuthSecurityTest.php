@@ -163,6 +163,18 @@ class AdminAuthSecurityTest extends TestCase
         $this->assertEqualsWithDelta(time(), session('admin_session.last_activity'), 2);
     }
 
+    public function test_entering_the_back_office_forces_a_full_reload_for_its_routes(): void
+    {
+        // La page de connexion ne reçoit que les routes « admin-guest » : après connexion, Inertia
+        // doit recharger la page (409) au lieu de garder cette liste (page blanche sinon).
+        $guestVersion = $this->get(route('admin.login'))->viewData('page')['version'];
+
+        $this->actingAs($this->makeAdmin(), 'admin')
+            ->withHeaders(['X-Inertia' => 'true', 'X-Inertia-Version' => $guestVersion])
+            ->get(route('admin.dashboard'))
+            ->assertStatus(409);
+    }
+
     public function test_login_is_locked_after_too_many_failures(): void
     {
         $this->makeAdmin();

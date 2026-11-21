@@ -18,9 +18,24 @@ class HandleInertiaRequests extends Middleware
 {
     protected $rootView = 'app';
 
+    /**
+     * Le groupe de routes Ziggy fait partie de la version : en changeant d'espace (connexion,
+     * déconnexion), Inertia recharge la page une fois pour recevoir la liste de routes du nouvel
+     * espace. Sans cela, la page suivante s'afficherait avec les routes de la précédente.
+     */
     public function version(Request $request): ?string
     {
-        return parent::version($request);
+        return parent::version($request).'|'.self::routeGroup($request);
+    }
+
+    /** Groupe de routes exposé au navigateur (config/ziggy.php), selon l'espace courant. */
+    public static function routeGroup(Request $request): string
+    {
+        if (auth('admin')->check()) {
+            return 'admin';
+        }
+
+        return $request->is('admin', 'admin/*') ? 'admin-guest' : 'site';
     }
 
     public function share(Request $request): array
