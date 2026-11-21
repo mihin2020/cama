@@ -42,7 +42,7 @@ const fileLabel = (field) => {
     return value?.filename ?? null;
 };
 
-const inputClass = 'w-full px-3 py-2.5 border border-outline-variant rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none';
+const inputClass = 'w-full px-3 py-2.5 border border-outline rounded-lg text-sm bg-white focus:ring-2 focus:ring-primary focus:border-primary outline-none';
 
 function set(code, value) {
     emit('update:modelValue', { ...props.modelValue, [code]: value });
@@ -54,18 +54,23 @@ const fieldId = (field) => `${props.idPrefix}-${field.code}`;
 
 <template>
     <div v-if="sections.length" class="space-y-4">
-        <section v-for="section in sections" :key="section.id">
-            <h3 class="text-xs font-semibold text-on-surface-variant mb-0.5">{{ section.titre }}</h3>
-            <p v-if="section.description" class="text-[11px] text-on-surface-variant mb-2">{{ section.description }}</p>
+        <section v-for="section in sections" :key="section.id" class="rounded-xl border border-primary/30 bg-primary/5 overflow-hidden">
+            <header class="flex items-start gap-2.5 px-4 py-3 bg-primary/10 border-b border-primary/20">
+                <span class="material-symbols-outlined text-primary text-[20px] mt-px" aria-hidden="true">edit_note</span>
+                <div class="min-w-0">
+                    <h3 class="text-sm font-bold text-primary leading-tight">{{ section.titre }}</h3>
+                    <p v-if="section.description" class="text-xs text-on-surface-variant mt-0.5">{{ section.description }}</p>
+                </div>
+            </header>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3.5 p-4">
                 <div
                     v-for="field in section.fields"
                     :key="field.id"
                     class="space-y-1"
                     :class="field.type === 'textarea' ? 'md:col-span-2' : ''"
                 >
-                    <label v-if="field.type !== 'checkbox' && field.type !== 'fichier'" class="text-xs font-medium text-on-surface-variant" :for="fieldId(field)">
+                    <label v-if="field.type !== 'checkbox' && field.type !== 'fichier'" class="text-xs font-semibold text-on-surface" :for="fieldId(field)">
                         {{ field.libelle }}<span v-if="field.obligatoire" class="text-error"> *</span>
                     </label>
 
@@ -116,19 +121,19 @@ const fieldId = (field) => `${props.idPrefix}-${field.code}`;
                     </label>
 
                     <div v-else-if="field.type === 'fichier'">
-                        <p class="text-xs font-medium text-on-surface-variant mb-1">
+                        <p class="text-xs font-semibold text-on-surface mb-1">
                             {{ field.libelle }}<span v-if="field.obligatoire" class="text-error"> *</span>
                         </p>
                         <p v-if="fileLabel(field)" class="text-[11px] flex items-center gap-1 bg-surface-container-low rounded px-2 py-1 mb-1.5">
                             <span class="material-symbols-outlined text-secondary text-[14px]">check_circle</span>
                             <span class="truncate">{{ fileLabel(field) }}</span>
                         </p>
-                        <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[15px]">upload_file</span>
+                        <label class="text-xs text-primary font-semibold cursor-pointer inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-primary bg-white hover:bg-primary/5 transition-colors">
+                            <span class="material-symbols-outlined text-[18px]">upload_file</span>
                             {{ fileLabel(field) ? 'Remplacer le fichier' : 'Choisir un fichier PDF' }}
                             <input :id="fieldId(field)" accept=".pdf,application/pdf" class="hidden" type="file" @change="onFile(field, $event)" />
                         </label>
-                        <p class="text-[10px] text-on-surface-variant mt-0.5">PDF uniquement — 5 Mo max.</p>
+                        <p class="text-[11px] text-on-surface-variant mt-1">PDF uniquement — 5 Mo max.</p>
                         <p v-if="fileErrors[field.code]" class="text-error text-xs">{{ fileErrors[field.code] }}</p>
                     </div>
 
