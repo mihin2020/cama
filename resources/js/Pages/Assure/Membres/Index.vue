@@ -1,4 +1,5 @@
 <script setup>
+import UploadField from '@/Components/UploadField.vue';
 import AssureLayout from '@/Layouts/AssureLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
@@ -473,16 +474,7 @@ function submitComplement(m) {
                                     <span class="material-symbols-outlined text-secondary text-[14px]">task</span>
                                     <span class="truncate flex-1">{{ complementFileName(m.id, piece.type) }}</span>
                                 </div>
-                                <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[15px]">upload_file</span>
-                                    {{ complementFileName(m.id, piece.type) ? 'Remplacer le fichier' : 'Choisir un fichier' }}
-                                    <input
-                                        type="file"
-                                        class="hidden"
-                                        accept=".pdf,application/pdf"
-                                        @change="setComplementFile(m.id, piece.type, $event)"
-                                    />
-                                </label>
+                                <UploadField :file-name="complementFileName(m.id, piece.type) || ''" @change="setComplementFile(m.id, piece.type, $event)" />
                                 <p class="text-[10px] text-on-surface-variant mt-1">PDF uniquement — 5 Mo max.</p>
                                 <p v-if="complementErrors[m.id]?.[piece.type]" class="text-error text-[11px] mt-1">
                                     {{ complementErrors[m.id][piece.type] }}

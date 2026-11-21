@@ -1,4 +1,5 @@
 <script setup>
+import UploadField from '@/Components/UploadField.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPhoneInput from '@/Components/CamaPhoneInput.vue';
 import FifCustomFields from '@/Components/Fif/FifCustomFields.vue';
@@ -546,10 +547,7 @@ function submit() {
                                                 <span class="truncate flex-1">{{ documentFiles[doc.key].name }}</span>
                                                 <button type="button" class="text-error shrink-0" @click="removeDocument(doc.key)"><span class="material-symbols-outlined text-[16px]">close</span></button>
                                             </div>
-                                            <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1.5">
-                                                <span class="material-symbols-outlined text-[16px]">upload_file</span> Téléverser {{ doc.titre }}
-                                                <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handleDocument(doc.key, $event)" />
-                                            </label>
+                                            <UploadField :file-name="documentFiles[doc.key]?.name || ''" @change="handleDocument(doc.key, $event)" />
                                             <p v-if="documentErrors[doc.key]" class="text-error text-[11px] mt-1.5">{{ documentErrors[doc.key] }}</p>
                                             <p v-if="form.errors[`documents.${doc.key}`]" class="text-error text-[11px] mt-1.5">{{ form.errors[`documents.${doc.key}`] }}</p>
                                         </div>

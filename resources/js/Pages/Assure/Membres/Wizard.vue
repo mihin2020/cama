@@ -1,5 +1,6 @@
 <script setup>
 import AssureLayout from '@/Layouts/AssureLayout.vue';
+import UploadField from '@/Components/UploadField.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import FifCustomFields from '@/Components/Fif/FifCustomFields.vue';
 import CamaCountrySelect from '@/Components/CamaCountrySelect.vue';
@@ -587,10 +588,7 @@ watch(() => props.initialRows, () => {
                                         <span v-else class="truncate">{{ keptExisting(row, p).filename || 'Fichier téléversé' }}</span>
                                         <button type="button" class="text-error ml-auto" @click="removeExisting(row, p)"><span class="material-symbols-outlined text-[14px]">close</span></button>
                                     </div>
-                                    <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[15px]">upload_file</span> {{ (row.pieces[p.key] || keptExisting(row, p)) ? 'Remplacer le fichier' : 'Choisir un fichier' }}
-                                        <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handlePiece('conjoints', row, p.key, $event)" />
-                                    </label>
+                                    <UploadField :file-name="row.pieces[p.key]?.name || keptExisting(row, p)?.filename || ''" @change="handlePiece('conjoints', row, p.key, $event)" />
                                     <p v-if="pieceErrors[`${row.uid}-${p.key}`]" class="text-error text-[11px] mt-1">{{ pieceErrors[`${row.uid}-${p.key}`] }}</p>
                                 </div>
                             </div>
@@ -703,10 +701,7 @@ watch(() => props.initialRows, () => {
                                         <span v-else class="truncate">{{ keptExisting(row, p).filename || 'Fichier téléversé' }}</span>
                                         <button type="button" class="text-error ml-auto" @click="removeExisting(row, p)"><span class="material-symbols-outlined text-[14px]">close</span></button>
                                     </div>
-                                    <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[15px]">upload_file</span> {{ (row.pieces[p.key] || keptExisting(row, p)) ? 'Remplacer le fichier' : 'Choisir un fichier' }}
-                                        <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handlePiece('enfants', row, p.key, $event)" />
-                                    </label>
+                                    <UploadField :file-name="row.pieces[p.key]?.name || keptExisting(row, p)?.filename || ''" @change="handlePiece('enfants', row, p.key, $event)" />
                                     <p v-if="pieceErrors[`${row.uid}-${p.key}`]" class="text-error text-[11px] mt-1">{{ pieceErrors[`${row.uid}-${p.key}`] }}</p>
                                 </div>
                             </div>
