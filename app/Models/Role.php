@@ -13,17 +13,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * Les permissions du rôle servent de modèle : elles sont proposées à la création d'un compte,
  * appliquées aux comptes qui n'ont pas de permissions propres, et peuvent être réappliquées aux
- * comptes existants. Le rang fixe la hiérarchie : on ne gère que les comptes d'un rang inférieur
- * ou égal au sien (l'administrateur gère tout).
+ * comptes existants.
+ *
+ * La hiérarchie (qui gère qui) est interne et n'apparaît pas à l'écran : les rôles créés par
+ * l'administrateur sont au niveau d'un gestionnaire.
  */
 class Role extends Model
 {
     protected $table = 'admin_roles';
 
-    /** Rang des rôles personnalisés : en dessous de l'administrateur. */
-    public const RANG_MIN = 1;
-
-    public const RANG_MAX_PERSONNALISE = 99;
+    /** Niveau interne d'un rôle créé par l'administrateur : celui d'un gestionnaire. */
+    public const RANG_PERSONNALISE = 10;
 
     protected $fillable = [
         'slug',
@@ -61,7 +61,7 @@ class Role extends Model
     }
 
     /**
-     * Permissions du rôle, limitées au catalogue et à ce que son rang autorise.
+     * Permissions du rôle, limitées au catalogue et à ce que son niveau autorise.
      *
      * @return list<string>
      */

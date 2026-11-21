@@ -217,8 +217,9 @@ class AdminUserService
     }
 
     /**
-     * Hiérarchie : l'administrateur gère tous les comptes ; un compte qui a la permission de gérer
-     * les comptes ne gère que ceux d'un rang inférieur ou égal au sien (jamais un administrateur).
+     * Hiérarchie (interne, non affichée) : l'administrateur gère tous les comptes ; un superviseur
+     * gère les gestionnaires, les superviseurs et les rôles créés, jamais la Direction ni un
+     * administrateur.
      */
     public function canManage(AdminUser $actor, AdminUser $target): bool
     {
@@ -295,7 +296,7 @@ class AdminUserService
         foreach ($permissions as $key) {
             if (! AdminPermissions::allowedForRole($key, $role)) {
                 throw ValidationException::withMessages([
-                    'permissions' => '« '.AdminPermissions::label($key).' » n\'est pas autorisé pour le rôle « '.$role->nom.' » (rang trop bas).',
+                    'permissions' => '« '.AdminPermissions::label($key).' » ne peut pas être donné au rôle « '.$role->nom.' » : '.lcfirst(AdminPermissions::restrictionLabel($key) ?? ''),
                 ]);
             }
         }
@@ -373,7 +374,7 @@ class AdminUserService
             throw ValidationException::withMessages([
                 'role' => $role->isAdministrateur()
                     ? 'Seul un administrateur technique peut créer ou promouvoir un administrateur.'
-                    : 'Vous ne pouvez attribuer que des rôles de niveau inférieur ou égal au vôtre.',
+                    : "Seul un administrateur peut attribuer le rôle « {$role->nom} ».",
             ]);
         }
     }

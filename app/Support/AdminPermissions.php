@@ -137,9 +137,10 @@ class AdminPermissions
     }
 
     /**
-     * Permissions réservées aux rôles d'un rang minimal : gérer les comptes internes n'a de sens
-     * qu'à partir du rang superviseur (un gestionnaire n'a aucun compte « en dessous » de lui) ;
-     * créer des rôles, qui fixent les droits de tous, est réservé à l'administrateur.
+     * Permissions réservées à certains rôles (niveau interne minimal) : gérer les comptes internes
+     * est réservé aux superviseurs et administrateurs (un gestionnaire ou un rôle créé n'a aucun
+     * compte « en dessous » de lui) ; créer des rôles, qui fixent les droits de tous, est réservé
+     * à l'administrateur.
      *
      * @var array<string, int>
      */
@@ -177,7 +178,17 @@ class AdminPermissions
             || (self::coveredByCmsManage($key) && in_array('cms.manage', $actorPermissions, true))));
     }
 
-    /** La permission peut-elle être donnée à un compte dont le rôle a ce rang ? */
+    /** À qui la permission est réservée (texte affiché), ou null si elle ne l'est pas. */
+    public static function restrictionLabel(string $permission): ?string
+    {
+        return match (self::MIN_RANK[$permission] ?? null) {
+            null => null,
+            100 => "Réservé au rôle Administrateur.",
+            default => 'Réservé aux rôles Superviseur et Administrateur.',
+        };
+    }
+
+    /** La permission peut-elle être donnée à un compte dont le rôle a ce niveau ? */
     public static function allowedForRank(string $permission, int $rank): bool
     {
         return $rank >= (self::MIN_RANK[$permission] ?? 0);

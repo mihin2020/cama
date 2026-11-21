@@ -123,7 +123,7 @@ function permissionState(key) {
         return { disabled: true, reason: 'Vos propres droits ne peuvent être modifiés que par un administrateur.' };
     }
     if (!allowedForRole(key)) {
-        return { disabled: true, reason: 'Non autorisé pour ce rôle : son rang est trop bas.' };
+        return { disabled: true, reason: 'Ce rôle ne peut pas recevoir cette permission (réservée aux rôles Superviseur et Administrateur).' };
     }
     if (impliedByCmsManage(key)) {
         return { disabled: true, reason: 'Déjà inclus dans « Accès complet au studio de contenu ».' };

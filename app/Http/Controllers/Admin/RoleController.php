@@ -24,12 +24,15 @@ class RoleController extends Controller
         return Inertia::render('Admin/Roles/Index', [
             'roles' => $service->list(),
             'permissionsCatalog' => AdminPermissions::catalog(),
-            'minRank' => AdminPermissions::MIN_RANK,
+            // Permission réservée => [niveau interne minimal, texte] (cases grisées à l'écran).
+            'restrictions' => collect(AdminPermissions::MIN_RANK)
+                ->map(fn (int $rank, string $key) => ['minRank' => $rank, 'label' => AdminPermissions::restrictionLabel($key)])
+                ->all(),
+            'customRank' => Role::RANG_PERSONNALISE,
             'grantablePermissions' => AdminPermissions::grantableBy(
                 $actor->isAdministrateur(),
                 app(AdminPermissionService::class)->expanded($actor),
             ),
-            'rangMax' => Role::RANG_MAX_PERSONNALISE,
             'actorRole' => $actor->role,
         ]);
     }
@@ -77,13 +80,11 @@ class RoleController extends Controller
         return $request->validate([
             'nom' => ['required', 'string', 'max:100', Rule::unique('admin_roles', 'nom')->ignore($role?->id)],
             'description' => ['nullable', 'string', 'max:255'],
-            'rang' => [$role?->systeme ? 'nullable' : 'required', 'integer', 'min:'.Role::RANG_MIN, 'max:'.Role::RANG_MAX_PERSONNALISE],
             'permissions' => ['nullable', 'array'],
             'permissions.*' => ['string', Rule::in(AdminPermissions::allKeys())],
             'apply_to_users' => ['nullable', 'boolean'],
         ], [
             'nom.unique' => 'Un rôle porte déjà ce nom.',
-            'rang.max' => 'Le rang d\'un rôle personnalisé va de 1 à 99 (100 est réservé à l\'administrateur).',
         ]);
     }
 }

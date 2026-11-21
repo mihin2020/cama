@@ -15,10 +15,10 @@ use Illuminate\Validation\ValidationException;
  * Règles :
  *  - le rôle Administrateur garde toujours toutes les permissions et ne peut être ni désactivé,
  *    ni supprimé ; seuls son nom et sa description se modifient ;
- *  - les rôles système (les 4 rôles d'origine) gardent leur rang et ne se suppriment pas ;
- *  - un rôle personnalisé a un rang de 1 à 99 (toujours sous l'administrateur) ;
- *  - un rôle encore attribué à des comptes ne se supprime pas ;
- *  - les permissions d'un rôle respectent son rang (ex. gérer les comptes : rang 50 minimum).
+ *  - les rôles système (les 4 rôles d'origine) ne se suppriment pas ;
+ *  - un rôle créé est au niveau d'un gestionnaire : superviseurs et administrateurs gèrent ses
+ *    comptes, et il ne peut pas recevoir « Gérer les comptes internes » ;
+ *  - un rôle encore attribué à des comptes ne se supprime pas.
  */
 class AdminRoleService
 {
@@ -56,11 +56,11 @@ class AdminRoleService
     }
 
     /**
-     * @param  array{nom: string, description?: ?string, rang: int, permissions?: array<int, string>}  $data
+     * @param  array{nom: string, description?: ?string, permissions?: array<int, string>}  $data
      */
     public function create(array $data, AdminUser $actor): Role
     {
-        $rang = (int) $data['rang'];
+        $rang = Role::RANG_PERSONNALISE;
 
         return Role::query()->create([
             'slug' => $this->uniqueSlug($data['nom']),
@@ -74,7 +74,7 @@ class AdminRoleService
     }
 
     /**
-     * @param  array{nom: string, description?: ?string, rang?: int, permissions?: array<int, string>, apply_to_users?: bool}  $data
+     * @param  array{nom: string, description?: ?string, permissions?: array<int, string>, apply_to_users?: bool}  $data
      * @return int Nombre de comptes dont les permissions ont été réalignées sur le rôle.
      */
     public function update(Role $role, array $data, AdminUser $actor): int
@@ -85,9 +85,7 @@ class AdminRoleService
         ];
 
         if (! $role->isAdministrateur()) {
-            $rang = $role->systeme ? $role->rang : (int) ($data['rang'] ?? $role->rang);
-            $attributes['rang'] = $rang;
-            $attributes['permissions'] = $this->checkedPermissions($data['permissions'] ?? [], $rang, $actor);
+            $attributes['permissions'] = $this->checkedPermissions($data['permissions'] ?? [], $role->rang, $actor);
         }
 
         return DB::transaction(function () use ($role, $attributes, $data) {
@@ -142,10 +140,10 @@ class AdminRoleService
         $tooHigh = array_filter($permissions, fn (string $key) => ! AdminPermissions::allowedForRank($key, $rang));
         if ($tooHigh !== []) {
             throw ValidationException::withMessages([
-                'permissions' => 'Rang trop bas pour : '.implode(', ', array_map(
-                    fn (string $key) => '« '.AdminPermissions::label($key).' » (rang '.AdminPermissions::MIN_RANK[$key].' minimum)',
+                'permissions' => implode(' ', array_map(
+                    fn (string $key) => '« '.AdminPermissions::label($key).' » : '.AdminPermissions::restrictionLabel($key),
                     $tooHigh,
-                )).'.',
+                )),
             ]);
         }
 

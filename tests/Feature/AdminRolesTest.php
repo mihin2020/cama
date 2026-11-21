@@ -35,7 +35,6 @@ class AdminRolesTest extends TestCase
             ->post(route('admin.roles.store'), [
                 'nom' => 'Webmaster',
                 'description' => 'Gère le contenu du site public',
-                'rang' => 20,
                 'permissions' => self::WEBMASTER_PERMISSIONS,
             ])
             ->assertSessionHasNoErrors();
@@ -57,7 +56,8 @@ class AdminRolesTest extends TestCase
         $admin = $this->administrateur();
         $role = $this->createWebmasterRole($admin);
 
-        $this->assertSame(20, $role->rang);
+        // Niveau interne d'un rôle créé (non affiché) : celui d'un gestionnaire.
+        $this->assertSame(Role::RANG_PERSONNALISE, $role->rang);
         $this->assertFalse($role->systeme);
         $this->assertEqualsCanonicalizing(self::WEBMASTER_PERMISSIONS, $role->permissionKeys());
 
@@ -179,17 +179,19 @@ class AdminRolesTest extends TestCase
         $this->assertSame('gestionnaire', AdminUser::query()->where('email', 'gest-new@cama.bf')->value('role'));
     }
 
-    public function test_role_permissions_respect_the_rank(): void
+    public function test_a_created_role_cannot_manage_accounts_nor_be_placed_above_others(): void
     {
         $admin = $this->administrateur();
 
         $this->actingAs($admin, 'admin')
-            ->post(route('admin.roles.store'), ['nom' => 'Assistant', 'rang' => 20, 'permissions' => ['users.manage']])
-            ->assertSessionHasErrors('permissions');
+            ->post(route('admin.roles.store'), ['nom' => 'Assistant', 'permissions' => ['users.manage']])
+            ->assertSessionHasErrors(['permissions' => '« Gérer les comptes internes et permissions » : Réservé aux rôles Superviseur et Administrateur.']);
 
+        // Un niveau envoyé à la main est ignoré : le rôle reste au niveau d'un gestionnaire.
         $this->actingAs($admin, 'admin')
             ->post(route('admin.roles.store'), ['nom' => 'Faux admin', 'rang' => 100, 'permissions' => []])
-            ->assertSessionHasErrors('rang');
+            ->assertSessionHasNoErrors();
+        $this->assertSame(Role::RANG_PERSONNALISE, Role::query()->where('nom', 'Faux admin')->value('rang'));
     }
 
     public function test_protected_roles_cannot_be_deleted_or_disabled(): void
@@ -226,7 +228,7 @@ class AdminRolesTest extends TestCase
 
         $this->actingAs($admin, 'admin')
             ->put(route('admin.roles.update', $role), [
-                'nom' => 'Webmaster', 'rang' => 20, 'permissions' => ['cms.pages', 'cms.faq'], 'apply_to_users' => true,
+                'nom' => 'Webmaster', 'permissions' => ['cms.pages', 'cms.faq'], 'apply_to_users' => true,
             ])
             ->assertSessionHasNoErrors();
 
