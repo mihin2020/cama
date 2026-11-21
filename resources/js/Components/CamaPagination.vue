@@ -16,8 +16,8 @@ const props = defineProps({
 
 const emit = defineEmits(['change', 'per-page']);
 
-// Choix de la taille de page inutile quand tout tient déjà dans la plus petite page.
-const showPerPage = computed(() => props.perPageOptions.length > 1 && props.total > Math.min(...props.perPageOptions));
+// Les contrôles restent visibles même quand tout tient sur une page : on voit que la liste est paginée.
+const showPerPage = computed(() => props.perPageOptions.length > 1);
 
 const from = computed(() => (props.total ? (props.currentPage - 1) * props.perPage + 1 : 0));
 const to = computed(() => Math.min(props.currentPage * props.perPage, props.total));
@@ -58,7 +58,7 @@ function go(page) {
             </label>
         </div>
 
-        <div v-if="lastPage > 1" class="flex items-center gap-1">
+        <div class="flex items-center gap-1">
             <button
                 type="button"
                 class="w-8 h-8 inline-flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low disabled:opacity-40 disabled:cursor-not-allowed"
