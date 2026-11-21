@@ -20,6 +20,7 @@ class CmsFaqCategoryService
             ->get()
             ->map(fn (CmsFaqCategory $cat) => [
                 'id' => $cat->id,
+                'uuid' => $cat->uuid,
                 'name' => $cat->name,
                 'sort_order' => $cat->sort_order,
                 'faq_count' => $cat->faqs_count,
@@ -38,6 +39,7 @@ class CmsFaqCategoryService
             ->get(['id', 'name'])
             ->map(fn (CmsFaqCategory $cat) => [
                 'id' => $cat->id,
+                'uuid' => $cat->uuid,
                 'name' => $cat->name,
             ])
             ->all();

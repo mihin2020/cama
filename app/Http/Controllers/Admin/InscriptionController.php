@@ -132,6 +132,7 @@ class InscriptionController extends Controller
     {
         return [
             'id' => $assure->id,
+            'uuid' => $assure->uuid,
             'fullName' => $assure->full_name,
             'nom' => $assure->nom,
             'prenom' => $assure->prenom,
@@ -164,7 +165,7 @@ class InscriptionController extends Controller
                 'key' => $doc['key'] ?? null,
                 'label' => $doc['label'] ?? 'Document',
                 'filename' => $doc['filename'] ?? null,
-                'url' => ! empty($doc['key']) ? route('admin.inscriptions.document', ['assure' => $assure->id, 'key' => $doc['key']]) : null,
+                'url' => ! empty($doc['key']) ? route('admin.inscriptions.document', ['assure' => $assure->uuid, 'key' => $doc['key']]) : null,
             ])->filter(fn ($doc) => $doc['url'])->values()->all(),
         ];
     }

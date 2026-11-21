@@ -67,6 +67,7 @@ class AdminDashboardService
                 'nom' => $d->beneficiaire,
                 'statut' => $d->statut,
                 'id' => $d->id,
+                'uuid' => $d->uuid,
             ])
             ->values()
             ->all();

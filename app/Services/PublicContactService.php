@@ -121,6 +121,7 @@ class PublicContactService
     {
         return [
             'id' => $message->id,
+            'uuid' => $message->uuid,
             'fullName' => $message->full_name,
             'email' => $message->email,
             'phone' => $message->phone,

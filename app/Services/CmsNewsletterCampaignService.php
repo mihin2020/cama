@@ -468,6 +468,7 @@ HTML;
     {
         return [
             'id' => $campaign->id,
+            'uuid' => $campaign->uuid,
             'name' => $campaign->name,
             'subject' => $campaign->subject,
             'preheader' => $campaign->preheader,

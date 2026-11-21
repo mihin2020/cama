@@ -30,6 +30,7 @@ class InstitutionController extends Controller
             ->get()
             ->map(fn (CmsFaq $faq) => [
                 'id' => $faq->id,
+                'uuid' => $faq->uuid,
                 'question' => $faq->question,
                 'answer' => $faq->answer,
                 'category' => $faq->category?->name ?? 'Général',
@@ -45,6 +46,7 @@ class InstitutionController extends Controller
             ->get(['id', 'name', 'type', 'city', 'address', 'image_url', 'latitude', 'longitude', 'maps_url'])
             ->map(fn (CmsPartner $partner) => [
                 'id' => $partner->id,
+                'uuid' => $partner->uuid,
                 'name' => $partner->name,
                 'type' => $partner->type,
                 'city' => $partner->city,

@@ -47,14 +47,14 @@ function openSection(section = null) {
 function saveSection() {
     const options = { preserveScroll: true, onSuccess: (page) => { sectionOpen.value = false; onSuccess(page); } };
     if (editingSection.value) {
-        sectionForm.put(route('admin.fif.sections.update', editingSection.value.id), options);
+        sectionForm.put(route('admin.fif.sections.update', editingSection.value.uuid), options);
     } else {
         sectionForm.post(route('admin.fif.sections.store', activeCible.value), options);
     }
 }
 
 function toggleSection(section) {
-    router.put(route('admin.fif.sections.update', section.id), {
+    router.put(route('admin.fif.sections.update', section.uuid), {
         titre: section.titre,
         description: section.description,
         visible: !section.visible,
@@ -62,7 +62,7 @@ function toggleSection(section) {
 }
 
 function moveSection(section, direction) {
-    router.post(route('admin.fif.sections.move', section.id), { direction }, { preserveScroll: true, onError });
+    router.post(route('admin.fif.sections.move', section.uuid), { direction }, { preserveScroll: true, onError });
 }
 
 function askDeleteSection(section) {
@@ -71,7 +71,7 @@ function askDeleteSection(section) {
         message: `La section « ${section.titre} » et ses ${section.fields.length} champ(s) ne seront plus proposés ni imprimés. Les données déjà saisies sont conservées.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.fif.sections.destroy', section.id), { preserveScroll: true, onSuccess, onError }),
+        onConfirm: () => router.delete(route('admin.fif.sections.destroy', section.uuid), { preserveScroll: true, onSuccess, onError }),
     });
 }
 
@@ -112,14 +112,14 @@ function saveField() {
     }));
 
     if (editingField.value) {
-        fieldForm.put(route('admin.fif.fields.update', editingField.value.id), options);
+        fieldForm.put(route('admin.fif.fields.update', editingField.value.uuid), options);
     } else {
-        fieldForm.post(route('admin.fif.fields.store', targetSection.value.id), options);
+        fieldForm.post(route('admin.fif.fields.store', targetSection.value.uuid), options);
     }
 }
 
 function toggleField(field) {
-    router.put(route('admin.fif.fields.update', field.id), {
+    router.put(route('admin.fif.fields.update', field.uuid), {
         libelle: field.libelle,
         type: field.type,
         options: field.options,
@@ -131,7 +131,7 @@ function toggleField(field) {
 }
 
 function moveField(field, direction) {
-    router.post(route('admin.fif.fields.move', field.id), { direction }, { preserveScroll: true, onError });
+    router.post(route('admin.fif.fields.move', field.uuid), { direction }, { preserveScroll: true, onError });
 }
 
 function askDeleteField(field) {
@@ -140,7 +140,7 @@ function askDeleteField(field) {
         message: `Le champ « ${field.libelle} » ne sera plus proposé ni imprimé. Les données déjà saisies sont conservées.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.fif.fields.destroy', field.id), { preserveScroll: true, onSuccess, onError }),
+        onConfirm: () => router.delete(route('admin.fif.fields.destroy', field.uuid), { preserveScroll: true, onSuccess, onError }),
     });
 }
 </script>

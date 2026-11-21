@@ -37,7 +37,7 @@ class DossierService
 
         return DB::transaction(function () use ($assure, $data) {
             if (! empty($data['id'])) {
-                $dossier = $assure->dossiers()->where('id', $data['id'])->firstOrFail();
+                $dossier = $assure->dossiers()->where('uuid', $data['id'])->firstOrFail();
                 if ($dossier->statut !== 'Brouillon') {
                     throw ValidationException::withMessages([
                         'statut' => 'Seuls les brouillons peuvent être modifiés.',
@@ -272,6 +272,7 @@ class DossierService
 
         return [
             'id' => $dossier->id,
+            'uuid' => $dossier->uuid,
             'ref' => $dossier->ref,
             'dossierId' => $dossier->ref,
             'prenom' => $dossier->prenom,

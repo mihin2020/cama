@@ -29,6 +29,7 @@ class CmsResourceService
     {
         return [
             'id' => $resource->id,
+            'uuid' => $resource->uuid,
             'titre' => $resource->title,
             'description' => $resource->description ?? '',
             'category_id' => $resource->category_id,

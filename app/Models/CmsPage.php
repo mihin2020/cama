@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Models\Concerns\SanitizesSections;
 use App\Services\PublicSiteService;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CmsPage extends Model
 {
-    use SanitizesSections;
+    use SanitizesSections, HasUuid;
 
     protected $fillable = [
         'title',

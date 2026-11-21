@@ -26,6 +26,7 @@ class CmsSlideService
     {
         return [
             'id' => $slide->id,
+            'uuid' => $slide->uuid,
             'title' => $slide->title,
             'subtitle' => $slide->subtitle,
             'image_url' => $slide->image_url,

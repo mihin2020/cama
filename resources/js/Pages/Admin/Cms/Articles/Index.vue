@@ -150,7 +150,7 @@ function addCategory() {
 }
 
 function startEditCategory(cat) {
-    editingCategory.value = cat.id;
+    editingCategory.value = cat.uuid;
     categoryForm.name = cat.name;
     categoryForm.sort_order = cat.sort_order;
 }
@@ -183,7 +183,7 @@ function removeCategory(cat) {
         message: `La catégorie « ${cat.name} » sera définitivement supprimée.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.actualites.categories.destroy', cat.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.actualites.categories.destroy', cat.uuid), { preserveScroll: true }),
     });
 }
 
@@ -266,10 +266,10 @@ function removeArticle(id) {
             <h2 class="font-title-lg text-sm font-bold">Catégories</h2>
             <div class="flex flex-wrap gap-2">
                 <template v-for="cat in categoryList" :key="cat.id">
-                    <div v-if="editingCategory === cat.id" class="inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-outline-variant bg-white">
+                    <div v-if="editingCategory === cat.uuid" class="inline-flex items-center gap-2 px-2 py-1 rounded-lg border border-outline-variant bg-white">
                         <input v-model="categoryForm.name" class="px-2 py-1 text-xs border border-outline-variant rounded w-32" />
                         <input v-model.number="categoryForm.sort_order" class="px-2 py-1 text-xs border border-outline-variant rounded w-14" min="1" type="number" />
-                        <button class="text-primary" type="button" @click="saveCategory(cat.id)">
+                        <button class="text-primary" type="button" @click="saveCategory(cat.uuid)">
                             <span class="material-symbols-outlined text-[16px]">check</span>
                         </button>
                         <button type="button" @click="cancelEditCategory">
@@ -399,7 +399,7 @@ function removeArticle(id) {
                             <button type="button" title="Modifier" class="text-on-surface-variant hover:text-primary ml-2" @click="openEditor(item)">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
-                            <button type="button" title="Supprimer" class="text-on-surface-variant hover:text-error ml-2" @click="removeArticle(item.id)">
+                            <button type="button" title="Supprimer" class="text-on-surface-variant hover:text-error ml-2" @click="removeArticle(item.uuid)">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                             </button>
                         </td>

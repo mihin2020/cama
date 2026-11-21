@@ -147,7 +147,7 @@ class DossierWizardController extends Controller
         foreach ($rows as $i => $row) {
             $existing = [];
             if (! empty($row['id'])) {
-                $dossier = $assure->dossiers()->where('id', $row['id'])->first();
+                $dossier = $assure->dossiers()->where('uuid', $row['id'])->first();
                 $existing = $dossier ? ($dossier->pieces ?? []) : [];
             }
 
@@ -202,7 +202,7 @@ class DossierWizardController extends Controller
         $validated = $request->validate([
             'conjoints' => ['nullable', 'array'],
             'enfants' => ['nullable', 'array'],
-            'conjoints.*.id' => ['nullable', 'integer', 'exists:dossiers,id'],
+            'conjoints.*.id' => ['nullable', 'uuid', 'exists:dossiers,uuid'],
             'conjoints.*.nom' => ['nullable', 'string', 'max:100'],
             'conjoints.*.prenom' => ['nullable', 'string', 'max:150'],
             'conjoints.*.lien' => ['nullable', 'string', 'max:100'],
@@ -221,7 +221,7 @@ class DossierWizardController extends Controller
             'conjoints.*.piece_files' => ['nullable', 'array'],
             'conjoints.*.piece_files.*' => [new MemberPieceFile],
             'conjoints.*.fif' => ['nullable', 'array'],
-            'enfants.*.id' => ['nullable', 'integer', 'exists:dossiers,id'],
+            'enfants.*.id' => ['nullable', 'uuid', 'exists:dossiers,uuid'],
             'enfants.*.nom' => ['nullable', 'string', 'max:100'],
             'enfants.*.prenom' => ['nullable', 'string', 'max:150'],
             'enfants.*.lien' => ['nullable', 'string', 'max:100'],
@@ -273,7 +273,7 @@ class DossierWizardController extends Controller
             unset($row['fif']);
 
             // Champs « fichier » : un fichier déjà enregistré reste valable tant qu'on n'en envoie pas un nouveau.
-            $existing = ! empty($row['id']) ? (auth('assure')->user()->dossiers()->find($row['id'])?->fif_donnees ?? []) : [];
+            $existing = ! empty($row['id']) ? (auth('assure')->user()->dossiers()->where('uuid', $row['id'])->first()?->fif_donnees ?? []) : [];
             $filesPresent = [];
             foreach ($fif->fields($cible) as $field) {
                 if ($field['type'] !== 'fichier') {
@@ -340,7 +340,7 @@ class DossierWizardController extends Controller
 
             $existingTypes = [];
             if (! empty($row['id'])) {
-                $dossier = auth('assure')->user()->dossiers()->find($row['id']);
+                $dossier = auth('assure')->user()->dossiers()->where('uuid', $row['id'])->first();
                 $existingTypes = collect($dossier?->pieces ?? [])->pluck('type')->all();
             }
             $removed = $row['removed_pieces'] ?? [];
@@ -381,7 +381,7 @@ class DossierWizardController extends Controller
         $meta = $d['wizard_meta'] ?? [];
 
         $base = [
-            'id' => $d['id'],
+            'id' => $d['uuid'],
             'nom' => $d['nom'],
             'prenom' => $d['prenom'],
             'sexe' => $d['sexe'],

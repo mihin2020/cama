@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /** Section du formulaire FIF d'une cible (assuré, conjoint ou enfant), définie par l'administration. */
 class FifSection extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuid;
 
     public const CIBLES = ['assure' => 'Assuré (militaire)', 'conjoint' => 'Conjoint(e)', 'enfant' => 'Enfant'];
 

@@ -36,6 +36,7 @@ class CmsMenuService
             ->get()
             ->map(fn (CmsPage $page) => [
                 'id' => $page->id,
+                'uuid' => $page->uuid,
                 'title' => $page->title,
                 'slug' => $page->slug,
                 'status' => $page->status,
@@ -177,6 +178,7 @@ class CmsMenuService
     {
         return [
             'id' => $item->id,
+            'uuid' => $item->uuid,
             'type' => $item->type,
             'pageId' => $item->page_id,
             'label' => $item->label,

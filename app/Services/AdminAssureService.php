@@ -67,6 +67,7 @@ class AdminAssureService
             ->get()
             ->map(fn (Dossier $d) => [
                 'id' => $d->id,
+                'uuid' => $d->uuid,
                 'nom' => $d->beneficiaire,
                 'lien' => $d->lien,
                 'statut' => $d->statut,
@@ -75,6 +76,7 @@ class AdminAssureService
 
         return [
             'id' => $assure->id,
+            'uuid' => $assure->uuid,
             'fullName' => $assure->full_name,
             'nom' => $assure->full_name,
             'matricule' => $assure->matricule,
@@ -126,6 +128,7 @@ class AdminAssureService
         $membres = $assure->dossiers
             ->map(fn (Dossier $d) => [
                 'id' => $d->id,
+                'uuid' => $d->uuid,
                 'nom' => $d->beneficiaire,
                 'lien' => $d->lien,
                 'statut' => $d->statut,
@@ -134,6 +137,7 @@ class AdminAssureService
 
         return [
             'id' => $assure->id,
+            'uuid' => $assure->uuid,
             'nom' => $assure->full_name,
             'matricule' => $assure->matricule,
             'numeroCama' => $assure->numero_cama,
@@ -160,6 +164,7 @@ class AdminAssureService
     {
         return array_merge($this->fif->profile($assure), [
             'id' => $assure->id,
+            'uuid' => $assure->uuid,
             'statut' => $assure->statut->label(),
             'dateCreation' => $assure->created_at?->format('d/m/Y') ?? '',
             'documentsIdentite' => $this->identityDocuments($assure),

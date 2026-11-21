@@ -81,7 +81,7 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::delete('/utilisateurs-internes/{adminUser}', [AdminUserController::class, 'destroy'])->name('utilisateurs.destroy');
 
     Route::get('/formulaire-fif', [FifController::class, 'index'])->name('fif');
-    Route::get('/fichiers-fif/{scope}/{id}/{code}', [FifFileController::class, 'show'])->where(['scope' => 'assure|dossier', 'id' => '[0-9]+', 'code' => '[a-z0-9_]+'])->name('fif.file');
+    Route::get('/fichiers-fif/{scope}/{id}/{code}', [FifFileController::class, 'show'])->where(['scope' => 'assure|dossier', 'id' => '[0-9a-f-]{36}', 'code' => '[a-z0-9_]+'])->name('fif.file');
     Route::post('/formulaire-fif/{cible}/sections', [FifController::class, 'storeSection'])->name('fif.sections.store');
     Route::put('/formulaire-fif/sections/{section}', [FifController::class, 'updateSection'])->name('fif.sections.update');
     Route::delete('/formulaire-fif/sections/{section}', [FifController::class, 'destroySection'])->name('fif.sections.destroy');

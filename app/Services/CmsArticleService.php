@@ -47,6 +47,7 @@ class CmsArticleService
     {
         return [
             'id' => $article->id,
+            'uuid' => $article->uuid,
             'slug' => $article->slug,
             'title' => $article->title,
             'category_id' => $article->category_id,

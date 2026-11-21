@@ -84,7 +84,7 @@ function closeDetail() {
 
 function saveIds() {
     if (!selected.value) return;
-    idForm.patch(route('admin.inscriptions.identifiers', selected.value.id), {
+    idForm.patch(route('admin.inscriptions.identifiers', selected.value.uuid), {
         preserveScroll: true,
         onSuccess: () => openDetail({ ...selected.value, numeroCim: idForm.numero_cim, numeroCama: idForm.numero_cama }),
     });
@@ -92,7 +92,7 @@ function saveIds() {
 
 function validateReg() {
     if (!selected.value) return;
-    router.post(route('admin.inscriptions.validate', selected.value.id), {}, {
+    router.post(route('admin.inscriptions.validate', selected.value.uuid), {}, {
         preserveScroll: true,
         preserveState: true,
         only: ['registrations', 'stats', 'pagination', 'flash'],
@@ -102,7 +102,7 @@ function validateReg() {
 
 function rejectReg() {
     if (!selected.value || !rejectMotif.value.trim()) return;
-    router.post(route('admin.inscriptions.reject', selected.value.id), { motif: rejectMotif.value }, {
+    router.post(route('admin.inscriptions.reject', selected.value.uuid), { motif: rejectMotif.value }, {
         preserveScroll: true,
         preserveState: true,
         only: ['registrations', 'stats', 'pagination', 'flash'],
@@ -327,7 +327,7 @@ function infoValue(value) {
                         </div>
                     </div>
 
-                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.id, code })}${inline ? '?inline=1' : ''}`" :sections="selected.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="selected.fifSections" />
 
                     <div>
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">

@@ -24,6 +24,7 @@ class CmsKeyFigureService
     {
         return [
             'id' => $item->id,
+            'uuid' => $item->uuid,
             'valeur' => $item->value,
             'suffixe' => $item->suffix ?? '',
             'libelle' => $item->label,

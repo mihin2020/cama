@@ -629,7 +629,7 @@ function restoreVersion(version) {
             router.post(
                 route('admin.cms.page_builder.versions.restore', {
                     page: loadedPageId.value,
-                    version: version.id,
+                    version: version.uuid,
                 }),
                 {},
                 { preserveScroll: true },
@@ -642,7 +642,7 @@ function duplicateVersion(version) {
     router.post(
         route('admin.cms.page_builder.versions.duplicate', {
             page: loadedPageId.value,
-            version: version.id,
+            version: version.uuid,
         }),
         {},
         { preserveScroll: true },

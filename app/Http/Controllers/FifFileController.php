@@ -18,11 +18,11 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class FifFileController extends Controller
 {
-    public function show(Request $request, string $scope, int $id, string $code): BinaryFileResponse
+    public function show(Request $request, string $scope, string $id, string $code): BinaryFileResponse
     {
         abort_unless(in_array($scope, ['assure', 'dossier'], true), 404);
 
-        $owner = $scope === 'assure' ? Assure::query()->findOrFail($id) : Dossier::query()->findOrFail($id);
+        $owner = $scope === 'assure' ? Assure::query()->where('uuid', $id)->firstOrFail() : Dossier::query()->where('uuid', $id)->firstOrFail();
         $this->authorizeAccess($request, $scope, $owner);
 
         // Le chemin vient des données enregistrées, jamais de la requête, et reste dans l'espace privé des pièces.

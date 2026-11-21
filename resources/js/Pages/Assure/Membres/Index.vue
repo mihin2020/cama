@@ -90,12 +90,12 @@ function pieceHasFile(p) {
 
 function pieceViewUrl(m, p) {
     if (!pieceHasFile(p) || !p?.type) return null;
-    return `${route('assure.dossiers.piece.download', m.id)}?type=${encodeURIComponent(p.type)}&inline=1`;
+    return `${route('assure.dossiers.piece.download', m.uuid)}?type=${encodeURIComponent(p.type)}&inline=1`;
 }
 
 function pieceDownloadUrl(m, p) {
     if (!pieceHasFile(p) || !p?.type) return null;
-    return `${route('assure.dossiers.piece.download', m.id)}?type=${encodeURIComponent(p.type)}`;
+    return `${route('assure.dossiers.piece.download', m.uuid)}?type=${encodeURIComponent(p.type)}`;
 }
 
 const filtered = computed(() => {
@@ -265,7 +265,7 @@ function submitComplement(m) {
 
     complementSubmitting.value[m.id] = true;
 
-    router.post(route('assure.dossiers.complement', m.id), formData, {
+    router.post(route('assure.dossiers.complement', m.uuid), formData, {
         preserveScroll: true,
         forceFormData: true,
         onSuccess: () => {
@@ -591,7 +591,7 @@ function submitComplement(m) {
                             v-if="m.statut === 'Brouillon'"
                             type="button"
                             class="px-3 py-1.5 rounded-lg border border-error text-error text-xs font-bold hover:bg-error/5 transition-colors flex items-center gap-1.5"
-                            @click="deleteMembre(m.id)"
+                            @click="deleteMembre(m.uuid)"
                         >
                             <span class="material-symbols-outlined text-[16px]">delete</span> Supprimer
                         </button>

@@ -53,6 +53,7 @@ class CmsPartnerService
             ->get(['id', 'name', 'type', 'city', 'address', 'description', 'image_url', 'latitude', 'longitude', 'maps_url'])
             ->map(fn (CmsPartner $partner) => [
                 'id' => $partner->id,
+                'uuid' => $partner->uuid,
                 'lat' => (float) $partner->latitude,
                 'lon' => (float) $partner->longitude,
                 'name' => $partner->name,
@@ -175,6 +176,7 @@ class CmsPartnerService
     {
         return [
             'id' => $partner->id,
+            'uuid' => $partner->uuid,
             'nom' => $partner->name,
             'type' => $partner->type,
             'ville' => $partner->city,

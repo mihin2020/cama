@@ -314,7 +314,7 @@ function removeSlide(id) {
                             <button class="text-on-surface-variant hover:text-primary" type="button" title="Modifier" @click="openSlideEditor(slide)">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
-                            <button class="text-on-surface-variant hover:text-error ml-2" type="button" title="Supprimer" @click="removeSlide(slide.id)">
+                            <button class="text-on-surface-variant hover:text-error ml-2" type="button" title="Supprimer" @click="removeSlide(slide.uuid)">
                                 <span class="material-symbols-outlined text-[18px]">delete</span>
                             </button>
                         </div>

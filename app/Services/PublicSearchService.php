@@ -29,6 +29,7 @@ class PublicSearchService
             ->get()
             ->map(fn (CmsPage $page) => [
                 'id' => $page->id,
+                'uuid' => $page->uuid,
                 'title' => $page->title,
                 'excerpt' => 'Page institutionnelle',
                 'href' => $page->slug === 'accueil' ? '/' : '/'.$page->slug,
@@ -48,6 +49,7 @@ class PublicSearchService
             ->get()
             ->map(fn (CmsArticle $article) => [
                 'id' => $article->id,
+                'uuid' => $article->uuid,
                 'title' => $article->title,
                 'excerpt' => $article->excerpt ?: ($article->category?->name ?? 'Actualité'),
                 'href' => '/actualites/'.$article->slug,
@@ -67,6 +69,7 @@ class PublicSearchService
             ->get()
             ->map(fn (CmsResource $resource) => [
                 'id' => $resource->id,
+                'uuid' => $resource->uuid,
                 'title' => $resource->title,
                 'excerpt' => $resource->description ?: ($resource->category?->name ?? 'Ressource'),
                 'href' => '/ressources',

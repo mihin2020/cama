@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /** Champ d'une section du formulaire FIF. */
 class FifField extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasUuid;
 
     /** Types proposés : valeur => libellé. */
     public const TYPES = [

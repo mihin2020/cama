@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Services\PublicSiteService;
 use Illuminate\Database\Eloquent\Model;
 
 class CmsKeyFigure extends Model
 {
+    use HasUuid;
+
     protected $fillable = [
         'value',
         'suffix',

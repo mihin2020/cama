@@ -99,7 +99,7 @@ function save() {
         },
     };
     if (isEditing.value) {
-        form.put(route('admin.roles.update', editing.value.id), options);
+        form.put(route('admin.roles.update', editing.value.uuid), options);
     } else {
         form.post(route('admin.roles.store'), options);
     }
@@ -113,7 +113,7 @@ function confirmToggle(role) {
             : `Les comptes ayant le rôle « ${role.nom} » pourront de nouveau se connecter.`,
         confirmLabel: role.actif ? 'Désactiver' : 'Activer',
         variant: role.actif ? 'danger' : 'info',
-        onConfirm: () => router.post(route('admin.roles.toggle', role.id), {}, {
+        onConfirm: () => router.post(route('admin.roles.toggle', role.uuid), {}, {
             preserveScroll: true,
             onSuccess: toastFromFlash,
             onError: toastFromErrors,
@@ -137,7 +137,7 @@ function closeSystemDelete() {
 }
 
 function submitSystemDelete() {
-    deleteForm.delete(route('admin.roles.destroy', deleting.value.id), {
+    deleteForm.delete(route('admin.roles.destroy', deleting.value.uuid), {
         preserveScroll: true,
         onSuccess: (page) => {
             closeSystemDelete();
@@ -173,7 +173,7 @@ function confirmDelete(role) {
         message: `Le rôle « ${role.nom} » sera supprimé définitivement.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.roles.destroy', role.id), {
+        onConfirm: () => router.delete(route('admin.roles.destroy', role.uuid), {
             preserveScroll: true,
             onSuccess: toastFromFlash,
             onError: toastFromErrors,

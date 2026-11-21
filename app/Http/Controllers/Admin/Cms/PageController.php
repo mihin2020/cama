@@ -111,7 +111,7 @@ class PageController extends Controller
 
         if ($request->boolean('from_builder')) {
             return redirect()
-                ->route('admin.cms.page_builder', ['page' => $page->id])
+                ->route('admin.cms.page_builder', ['page' => $page->uuid])
                 ->with('success', 'Page « '.$page->title.' » créée.');
         }
 
@@ -173,7 +173,7 @@ class PageController extends Controller
         $versions->restore($page, $version, $request->user('admin'));
 
         return redirect()
-            ->route('admin.cms.page_builder', ['page' => $page->id])
+            ->route('admin.cms.page_builder', ['page' => $page->uuid])
             ->with('success', 'Version restaurée.');
     }
 
@@ -184,7 +184,7 @@ class PageController extends Controller
         $copy = $versions->duplicate($page, $version, $request->user('admin'));
 
         return redirect()
-            ->route('admin.cms.page_builder', ['page' => $copy->id])
+            ->route('admin.cms.page_builder', ['page' => $copy->uuid])
             ->with('success', 'Version dupliquée en nouvelle page.');
     }
 
@@ -271,6 +271,7 @@ class PageController extends Controller
                 ->get()
                 ->map(fn (CmsFaq $faq) => [
                     'id' => $faq->id,
+                    'uuid' => $faq->uuid,
                     'question' => $faq->question,
                     'answer' => $faq->answer,
                     'category' => $faq->category?->name ?? 'Général',
@@ -283,6 +284,7 @@ class PageController extends Controller
                 ->get()
                 ->map(fn (CmsPartner $partner) => [
                     'id' => $partner->id,
+                    'uuid' => $partner->uuid,
                     'name' => $partner->name,
                     'type' => $partner->type,
                     'city' => $partner->city,

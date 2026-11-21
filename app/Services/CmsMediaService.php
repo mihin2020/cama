@@ -156,6 +156,7 @@ class CmsMediaService
 
         return [
             'id' => $media->id,
+            'uuid' => $media->uuid,
             'name' => $media->name,
             'originalName' => $media->original_name,
             'title' => $media->title ?? $media->name,
@@ -195,7 +196,7 @@ class CmsMediaService
 
         CmsPage::query()->select(['id', 'title', 'slug', 'sections_json'])->get()->each(function (CmsPage $page) use (&$usages, $contains) {
             if ($contains(json_encode($page->sections_json ?? [], JSON_UNESCAPED_SLASHES))) {
-                $usages[] = ['module' => 'Page', 'label' => $page->title, 'url' => route('admin.cms.page_builder', ['page' => $page->id])];
+                $usages[] = ['module' => 'Page', 'label' => $page->title, 'url' => route('admin.cms.page_builder', ['page' => $page->uuid])];
             }
         });
 

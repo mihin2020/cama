@@ -168,7 +168,7 @@ function removeItem(item) {
         message: `« ${item.label} » sera supprimé de la navigation publique.`,
         confirmLabel: 'Retirer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.menus.destroy', item.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.menus.destroy', item.uuid), { preserveScroll: true }),
     });
 }
 

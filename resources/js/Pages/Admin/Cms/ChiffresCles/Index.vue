@@ -135,7 +135,7 @@ function removeFigure(id) {
                             <button type="button" title="Modifier" @click="openEditor(item)">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
-                            <button type="button" class="ml-2" title="Supprimer" @click="removeFigure(item.id)">
+                            <button type="button" class="ml-2" title="Supprimer" @click="removeFigure(item.uuid)">
                                 <span class="material-symbols-outlined text-[18px] text-error">delete</span>
                             </button>
                         </td>

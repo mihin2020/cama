@@ -134,6 +134,7 @@ class PublicSiteService
             ->get()
             ->map(fn (CmsMenuItem $item) => [
                 'id' => $item->id,
+                'uuid' => $item->uuid,
                 'label' => $item->label,
                 'href' => $this->publicHref(app(CmsMenuService::class)->href($item)),
                 'depth' => $item->depth,
@@ -192,6 +193,7 @@ class PublicSiteService
             ->get()
             ->map(fn (CmsSlide $slide) => [
                 'id' => $slide->id,
+                'uuid' => $slide->uuid,
                 'title' => $slide->title,
                 'subtitle' => $slide->subtitle,
                 'image_src' => CmsArticleService::resolveImageUrl($slide->image_url),
@@ -212,6 +214,7 @@ class PublicSiteService
             ->get()
             ->map(fn (CmsKeyFigure $figure) => [
                 'id' => $figure->id,
+                'uuid' => $figure->uuid,
                 'value' => $figure->value,
                 'suffix' => $figure->suffix ?? '',
                 'label' => $figure->label,
@@ -236,6 +239,7 @@ class PublicSiteService
                 ->get()
                 ->map(fn (CmsArticle $article) => [
                     'id' => $article->id,
+                    'uuid' => $article->uuid,
                     'slug' => $article->slug,
                     'title' => $article->title,
                     'category' => $article->category?->name ?? 'Actualité',

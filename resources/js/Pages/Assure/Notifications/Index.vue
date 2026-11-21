@@ -45,7 +45,7 @@ function markAllRead() {
                 type="button"
                 class="w-full text-left flex gap-3 px-4 md:px-5 py-4 hover:bg-surface-container-low transition-colors"
                 :class="n.lu ? '' : 'bg-primary/5'"
-                @click="router.patch(route('assure.notifications.read', n.id))"
+                @click="router.patch(route('assure.notifications.read', n.uuid))"
             >
                 <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="notifIconClass(n.type)">
                     <span class="material-symbols-outlined text-[18px]">{{ NOTIF_ICONS[n.type]?.icon ?? 'notifications' }}</span>

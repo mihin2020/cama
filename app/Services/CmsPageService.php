@@ -47,6 +47,7 @@ class CmsPageService
             ->get()
             ->map(fn (CmsPage $page) => [
                 'id' => $page->id,
+                'uuid' => $page->uuid,
                 'title' => $page->title,
                 'slug' => $page->slug,
                 'href' => $page->slug === 'accueil' ? '/' : '/'.$page->slug,
@@ -155,6 +156,7 @@ class CmsPageService
 
         return [
             'id' => $page->id,
+            'uuid' => $page->uuid,
             'title' => $page->title,
             'slug' => $page->slug,
             'status' => $page->status,

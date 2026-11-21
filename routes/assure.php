@@ -59,7 +59,7 @@ Route::middleware(['auth:assure', 'auth.session', 'assure.verified'])->group(fun
     Route::post('/dossiers/brouillon', [DossierWizardController::class, 'storeDraft'])->name('dossiers.draft');
     Route::post('/dossiers/soumettre', [DossierWizardController::class, 'submit'])->name('dossiers.submit');
     Route::get('/dossiers/{dossier}/pieces/telecharger', [DossierPieceController::class, 'download'])->name('dossiers.piece.download');
-    Route::get('/fichiers-fif/{scope}/{id}/{code}', [FifFileController::class, 'show'])->where(['scope' => 'assure|dossier', 'id' => '[0-9]+', 'code' => '[a-z0-9_]+'])->name('fif.file');
+    Route::get('/fichiers-fif/{scope}/{id}/{code}', [FifFileController::class, 'show'])->where(['scope' => 'assure|dossier', 'id' => '[0-9a-f-]{36}', 'code' => '[a-z0-9_]+'])->name('fif.file');
 
     Route::get('/historique', [HistoriqueController::class, 'index'])->name('historique');
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications');

@@ -24,6 +24,7 @@ class NotificationController extends Controller
             ->withQueryString()
             ->through(fn (AssureNotification $n) => [
                 'id' => $n->id,
+                'uuid' => $n->uuid,
                 'type' => $n->type,
                 'titre' => $n->titre,
                 'contenu' => $n->contenu,

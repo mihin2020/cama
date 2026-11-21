@@ -48,6 +48,7 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'assure' => $assure ? [
                     'id' => $assure->id,
+                    'uuid' => $assure->uuid,
                     'fullName' => $assure->full_name,
                     'email' => $assure->email,
                     'matricule' => $assure->matricule,
@@ -59,6 +60,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
                 'admin' => $admin ? [
                     'id' => $admin->id,
+                    'uuid' => $admin->uuid,
                     'fullName' => $admin->full_name,
                     'displayName' => $admin->display_name,
                     'email' => $admin->email,
@@ -108,6 +110,7 @@ class HandleInertiaRequests extends Middleware
                         ->get()
                         ->map(fn ($n) => [
                             'id' => $n->id,
+                            'uuid' => $n->uuid,
                             'type' => $n->type,
                             'titre' => $n->titre,
                             'contenu' => $n->contenu,

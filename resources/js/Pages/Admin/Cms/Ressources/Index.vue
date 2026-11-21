@@ -89,7 +89,7 @@ function removeCategory(cat) {
         message: `La catégorie « ${cat.name} » sera définitivement supprimée.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.ressources.categories.destroy', cat.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.ressources.categories.destroy', cat.uuid), { preserveScroll: true }),
     });
 }
 
@@ -290,7 +290,7 @@ function isLocalFile(url) {
                             <button type="button" title="Modifier" @click="openEditor(item)">
                                 <span class="material-symbols-outlined text-[18px]">edit</span>
                             </button>
-                            <button type="button" class="ml-2" title="Supprimer" @click="removeResource(item.id)">
+                            <button type="button" class="ml-2" title="Supprimer" @click="removeResource(item.uuid)">
                                 <span class="material-symbols-outlined text-[18px] text-error">delete</span>
                             </button>
                         </td>

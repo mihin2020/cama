@@ -29,7 +29,7 @@ const { can } = useAdminPermissions();
 
 // Fichiers envoyés par l'assuré : pièces d'inscription et pièces de chaque membre. Chaque fichier se
 // visualise (nouvel onglet) et se télécharge ; le serveur vérifie les droits de chaque route.
-const identityUrl = (key, inline = false) => `${route('admin.inscriptions.document', { assure: selected.value.id, key })}${inline ? '?inline=1' : ''}`;
+const identityUrl = (key, inline = false) => `${route('admin.inscriptions.document', { assure: selected.value.uuid, key })}${inline ? '?inline=1' : ''}`;
 const pieceUrl = (dossierId, type, inline = false) => `${route('admin.dossiers.piece.download', { dossier: dossierId })}?type=${encodeURIComponent(type)}${inline ? '&inline=1' : ''}`;
 const memberFiles = computed(() => (selected.value?.membresExport ?? [])
     .map((m) => ({ id: m.id, nom: m.beneficiaire || `${m.prenom ?? ''} ${m.nom ?? ''}`.trim(), lien: m.lien, pieces: (m.pieces ?? []).filter((p) => p.hasFile) }))
@@ -93,7 +93,7 @@ function toggleCompte(nouveauStatut) {
         }
     }
     router.post(
-        route('admin.assures.statut', selected.value.id),
+        route('admin.assures.statut', selected.value.uuid),
         { statut: nouveauStatut, motif },
         {
             preserveScroll: true,
@@ -220,7 +220,7 @@ async function exportZip() {
                         </div>
                     </div>
 
-                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.id, code })}${inline ? '?inline=1' : ''}`" :sections="selected.exportProfile?.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="selected.exportProfile?.fifSections" />
 
                     <div v-if="(can('inscriptions.view') && selected.documents?.length) || (can('dossiers.view') && memberFiles.length)">
                         <h3 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
@@ -243,10 +243,10 @@ async function exportZip() {
                                 <FileLinkRow
                                     v-for="p in m.pieces"
                                     :key="p.type"
-                                    :download-url="pieceUrl(m.id, p.type)"
+                                    :download-url="pieceUrl(m.uuid, p.type)"
                                     :filename="p.filename"
                                     :label="p.type"
-                                    :view-url="pieceUrl(m.id, p.type, true)"
+                                    :view-url="pieceUrl(m.uuid, p.type, true)"
                                 />
                             </div>
                         </div>

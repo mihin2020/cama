@@ -20,6 +20,7 @@ class CmsResourceCategoryService
             ->get()
             ->map(fn (CmsResourceCategory $category) => [
                 'id' => $category->id,
+                'uuid' => $category->uuid,
                 'name' => $category->name,
                 'sort_order' => $category->sort_order,
                 'resource_count' => $category->resources_count,
@@ -38,6 +39,7 @@ class CmsResourceCategoryService
             ->get(['id', 'name'])
             ->map(fn (CmsResourceCategory $category) => [
                 'id' => $category->id,
+                'uuid' => $category->uuid,
                 'name' => $category->name,
             ])
             ->all();

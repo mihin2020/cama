@@ -174,6 +174,7 @@ class AdminUserService
     {
         return [
             'id' => $user->id,
+            'uuid' => $user->uuid,
             'grade' => $user->grade,
             'prenom' => $user->prenom,
             'nom' => $user->nom,

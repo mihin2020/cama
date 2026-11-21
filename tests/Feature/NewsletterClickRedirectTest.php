@@ -23,10 +23,10 @@ class NewsletterClickRedirectTest extends TestCase
 
         $now = now();
         $campaignId = DB::table('cms_newsletter_campaigns')->insertGetId([
-            'name' => 'Test', 'subject' => 'Test', 'created_at' => $now, 'updated_at' => $now,
+            'uuid' => (string) \Illuminate\Support\Str::uuid(), 'name' => 'Test', 'subject' => 'Test', 'created_at' => $now, 'updated_at' => $now,
         ]);
         $subscriberId = DB::table('cms_newsletter_subscribers')->insertGetId([
-            'email' => 'abonne@example.bf', 'token' => 'jeton-desinscription', 'created_at' => $now, 'updated_at' => $now,
+            'uuid' => (string) \Illuminate\Support\Str::uuid(), 'email' => 'abonne@example.bf', 'token' => 'jeton-desinscription', 'created_at' => $now, 'updated_at' => $now,
         ]);
         DB::table('cms_newsletter_campaign_sends')->insert([
             'campaign_id' => $campaignId, 'subscriber_id' => $subscriberId, 'tracking_token' => self::TOKEN,

@@ -108,6 +108,7 @@ class CmsPageVersionService
     {
         return [
             'id' => $version->id,
+            'uuid' => $version->uuid,
             'versionNumber' => $version->version_number,
             'event' => $version->event,
             'eventLabel' => $this->eventLabel($version->event),

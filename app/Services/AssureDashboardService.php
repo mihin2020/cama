@@ -19,6 +19,7 @@ class AssureDashboardService
 
         $membres = $dossiers->map(fn ($d) => [
             'id' => $d->id,
+            'uuid' => $d->uuid,
             'prenom' => $d->prenom,
             'nom' => $d->nom,
             'lien' => $d->lien,
@@ -33,6 +34,7 @@ class AssureDashboardService
             ->get()
             ->map(fn (AssureNotification $n) => [
                 'id' => $n->id,
+                'uuid' => $n->uuid,
                 'type' => $n->type,
                 'titre' => $n->titre,
                 'contenu' => $n->contenu,

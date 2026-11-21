@@ -135,7 +135,7 @@ const rolePermissionGroups = computed(() => {
 
 function saveUser() {
     if (isEditing.value) {
-        form.put(route('admin.utilisateurs.update', editingUser.value.id), {
+        form.put(route('admin.utilisateurs.update', editingUser.value.uuid), {
             preserveScroll: true,
             onSuccess: () => {
                 closeForm();
@@ -172,7 +172,7 @@ function confirmToggle(user) {
 
 function executeToggle(user) {
     const wasActive = user.actif;
-    router.post(route('admin.utilisateurs.toggle', user.id), {}, {
+    router.post(route('admin.utilisateurs.toggle', user.uuid), {}, {
         preserveScroll: true,
         onSuccess: () => {
             showToast(wasActive ? 'Compte désactivé.' : 'Compte activé.');
@@ -194,7 +194,7 @@ function confirmResend(user) {
 function executeResend(user) {
     if (resendingId.value) return;
     resendingId.value = user.id;
-    router.post(route('admin.utilisateurs.resend-invitation', user.id), {}, {
+    router.post(route('admin.utilisateurs.resend-invitation', user.uuid), {}, {
         preserveScroll: true,
         onSuccess: (page) => {
             toastFromFlash(page, 'Invitation renvoyée.');
@@ -220,7 +220,7 @@ function confirmDelete(user) {
 }
 
 function executeDelete(user) {
-    router.delete(route('admin.utilisateurs.destroy', user.id), {
+    router.delete(route('admin.utilisateurs.destroy', user.uuid), {
         preserveScroll: true,
         onSuccess: () => {
             showToast(`Compte ${user.email} supprimé.`);

@@ -507,7 +507,7 @@ function openAction(type) {
 
 function confirmAction() {
     if (!detailDossier.value) return;
-    const id = detailDossier.value.id;
+    const id = detailDossier.value.uuid;
 
     if (actionModal.value === 'valider') {
         router.post(route('admin.dossiers.validate', id), {}, { preserveScroll: true, onSuccess: () => { actionModal.value = null; closeDetail(); } });
@@ -540,7 +540,7 @@ function sendMessage() {
     if (!detailDossier.value || !messageText.value.trim()) return;
     const text = messageText.value.trim();
     router.post(
-        route('admin.dossiers.message', detailDossier.value.id),
+        route('admin.dossiers.message', detailDossier.value.uuid),
         { texte: text },
         {
             preserveScroll: true,
@@ -1091,7 +1091,7 @@ const detailLotFifPiece = computed(() => {
                                 <div class="flex flex-wrap gap-2 mt-2">
                                     <a
                                         class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
-                                        :href="pieceViewUrl(detailDossier.id, detailLotFifPiece.type)"
+                                        :href="pieceViewUrl(detailDossier.uuid, detailLotFifPiece.type)"
                                         target="_blank"
                                         rel="noopener"
                                     >
@@ -1099,7 +1099,7 @@ const detailLotFifPiece = computed(() => {
                                     </a>
                                     <a
                                         class="inline-flex items-center gap-1 text-[11px] font-bold text-primary hover:underline"
-                                        :href="pieceDownloadUrl(detailDossier.id, detailLotFifPiece.type)"
+                                        :href="pieceDownloadUrl(detailDossier.uuid, detailLotFifPiece.type)"
                                     >
                                         <span class="material-symbols-outlined text-[14px]">download</span> Télécharger
                                     </a>
@@ -1143,7 +1143,7 @@ const detailLotFifPiece = computed(() => {
                                 </div>
                                 <p v-if="!beneficiaireInfo(detailDossier).length" class="text-xs text-on-surface-variant italic col-span-2">Informations complémentaires non renseignées.</p>
                             </div>
-                            <FifSectionsView class="mt-3" :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'dossier', id: detailDossier.id, code })}${inline ? '?inline=1' : ''}`" :sections="detailDossier.fifSections" />
+                            <FifSectionsView class="mt-3" :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'dossier', id: detailDossier.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="detailDossier.fifSections" />
                         </div>
 
                         <div>
@@ -1155,13 +1155,13 @@ const detailLotFifPiece = computed(() => {
                                     <span class="text-xs flex items-center gap-2 min-w-0">
                                         <a
                                             v-if="p.hasFile && isImagePiece(p)"
-                                            :href="pieceViewUrl(detailDossier.id, p.type)"
+                                            :href="pieceViewUrl(detailDossier.uuid, p.type)"
                                             target="_blank"
                                             rel="noopener"
                                             class="shrink-0"
                                             title="Agrandir l'image"
                                         >
-                                            <img :src="pieceViewUrl(detailDossier.id, p.type)" alt="" loading="lazy" class="w-14 h-14 object-cover rounded-lg border border-outline-variant bg-white" />
+                                            <img :src="pieceViewUrl(detailDossier.uuid, p.type)" alt="" loading="lazy" class="w-14 h-14 object-cover rounded-lg border border-outline-variant bg-white" />
                                         </a>
                                         <span v-else class="material-symbols-outlined text-[16px] shrink-0" :class="p.lot ? 'text-primary' : 'text-on-surface-variant'">description</span>
                                         <span class="break-words">
@@ -1176,7 +1176,7 @@ const detailLotFifPiece = computed(() => {
                                             <a
                                                 v-if="!isImagePiece(p)"
                                                 class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-primary"
-                                                :href="pieceViewUrl(detailDossier.id, p.type)"
+                                                :href="pieceViewUrl(detailDossier.uuid, p.type)"
                                                 target="_blank"
                                                 rel="noopener"
                                                 title="Visualiser"
@@ -1185,7 +1185,7 @@ const detailLotFifPiece = computed(() => {
                                             </a>
                                             <a
                                                 class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-on-surface-variant"
-                                                :href="pieceDownloadUrl(detailDossier.id, p.type)"
+                                                :href="pieceDownloadUrl(detailDossier.uuid, p.type)"
                                                 title="Télécharger"
                                             >
                                                 <span class="material-symbols-outlined text-[18px]">download</span>
@@ -1274,7 +1274,7 @@ const detailLotFifPiece = computed(() => {
                             <p class="text-xs font-bold break-words">{{ value }}</p>
                         </div>
                     </div>
-                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: detailFamily.assureProfile.id, code })}${inline ? '?inline=1' : ''}`" :sections="detailFamily.assureProfile.fifSections" />
+                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: detailFamily.assureProfile.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="detailFamily.assureProfile.fifSections" />
                     <div v-if="detailFamily.assureProfile.documentsIdentite?.length">
                         <h4 class="text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2 flex items-center gap-2">
                             <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
@@ -1289,7 +1289,7 @@ const detailLotFifPiece = computed(() => {
                                 <div v-if="doc.key" class="flex items-center gap-1 shrink-0">
                                     <a
                                         class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-primary"
-                                        :href="identityDocumentViewUrl(detailFamily.assureProfile.id, doc.key)"
+                                        :href="identityDocumentViewUrl(detailFamily.assureProfile.uuid, doc.key)"
                                         target="_blank"
                                         rel="noopener"
                                         title="Visualiser"
@@ -1298,7 +1298,7 @@ const detailLotFifPiece = computed(() => {
                                     </a>
                                     <a
                                         class="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white text-on-surface-variant"
-                                        :href="identityDocumentUrl(detailFamily.assureProfile.id, doc.key)"
+                                        :href="identityDocumentUrl(detailFamily.assureProfile.uuid, doc.key)"
                                         title="Télécharger"
                                     >
                                         <span class="material-symbols-outlined text-[18px]">download</span>

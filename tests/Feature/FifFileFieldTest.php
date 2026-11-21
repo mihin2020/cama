@@ -131,7 +131,7 @@ class FifFileFieldTest extends TestCase
         $this->post(route('registration.store'), $this->registration(['fif' => [$field->code => $this->pdf()]]))->assertSessionHasNoErrors();
         $assure = Assure::query()->firstOrFail();
         auth('assure')->logout();
-        $url = route('admin.fif.file', ['scope' => 'assure', 'id' => $assure->id, 'code' => $field->code]);
+        $url = route('admin.fif.file', ['scope' => 'assure', 'id' => $assure->uuid, 'code' => $field->code]);
 
         $this->flushSession();
         $admin = $this->admin(['inscriptions.view']);
@@ -186,18 +186,18 @@ class FifFileFieldTest extends TestCase
 
         // Nouvel enregistrement sans fichier : l'ancien est conservé.
         $this->actingAs($assure, 'assure')->post(route('assure.dossiers.draft'), ['conjoints' => [
-            [...$member, 'id' => $dossier->id, 'fif' => []],
+            [...$member, 'id' => $dossier->uuid, 'fif' => []],
         ]])->assertSessionHasNoErrors();
         $this->assertSame($first['path'], $dossier->fresh()->fif_donnees[$field->code]['path']);
 
         // Soumission : le fichier déjà enregistré suffit pour le champ obligatoire.
         $this->actingAs($assure, 'assure')->post(route('assure.dossiers.submit'), ['conjoints' => [
-            [...$member, 'id' => $dossier->id, 'fif' => []],
+            [...$member, 'id' => $dossier->uuid, 'fif' => []],
         ]])->assertSessionDoesntHaveErrors('conjoints.0.fif');
 
         // Un nouveau fichier remplace l'ancien, qui est supprimé.
         $this->actingAs($assure, 'assure')->post(route('assure.dossiers.draft'), ['conjoints' => [
-            [...$member, 'id' => $dossier->id, 'fif' => [$field->code => $this->pdf('nouveau.pdf')]],
+            [...$member, 'id' => $dossier->uuid, 'fif' => [$field->code => $this->pdf('nouveau.pdf')]],
         ]])->assertSessionHasNoErrors();
         $second = $dossier->fresh()->fif_donnees[$field->code];
         $this->assertNotSame($first['path'], $second['path']);
@@ -240,7 +240,7 @@ class FifFileFieldTest extends TestCase
             'fif' => [$field->code => $this->pdf()],
         ]]])->assertSessionHasNoErrors();
         $dossier = $owner->dossiers()->firstOrFail();
-        $url = route('assure.fif.file', ['scope' => 'dossier', 'id' => $dossier->id, 'code' => $field->code]);
+        $url = route('assure.fif.file', ['scope' => 'dossier', 'id' => $dossier->uuid, 'code' => $field->code]);
 
         $this->actingAs($owner, 'assure')->get($url.'?inline=1')->assertOk();
 

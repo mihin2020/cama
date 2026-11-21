@@ -136,7 +136,7 @@ function saveHint(item) {
 }
 
 function save(item) {
-    form.put(route('admin.cms.contacts.update', item.id), {
+    form.put(route('admin.cms.contacts.update', item.uuid), {
         preserveScroll: true,
         onSuccess: () => {
             editId.value = null;

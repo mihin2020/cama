@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Enums\AdminRole;
 use App\Support\AdminPermissions;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Role extends Model
 {
+    use HasUuid;
+
     protected $table = 'admin_roles';
 
     /** Niveau interne d'un rôle créé par l'administrateur : celui d'un gestionnaire. */

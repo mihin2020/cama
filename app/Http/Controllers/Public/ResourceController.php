@@ -32,6 +32,7 @@ class ResourceController extends Controller
             ->get()
             ->map(fn (CmsResource $resource) => [
                 'id' => $resource->id,
+                'uuid' => $resource->uuid,
                 'title' => $resource->title,
                 'category' => $resource->category?->name ?? 'Autres',
                 'description' => $resource->description ?? '',

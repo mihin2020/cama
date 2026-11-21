@@ -53,6 +53,7 @@ class AdminRoleService
     {
         return [
             'id' => $role->id,
+            'uuid' => $role->uuid,
             'slug' => $role->slug,
             'nom' => $role->nom,
             'description' => $role->description,

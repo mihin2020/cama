@@ -87,18 +87,18 @@ function savePage() {
     };
 
     if (editingPage.value) {
-        form.put(route('admin.cms.pages.update', editingPage.value.id), options);
+        form.put(route('admin.cms.pages.update', editingPage.value.uuid), options);
     } else {
         form.post(route('admin.cms.pages.store'), options);
     }
 }
 
 function toggleStatus(item) {
-    router.put(route('admin.cms.pages.status', item.id), {}, { preserveScroll: true });
+    router.put(route('admin.cms.pages.status', item.uuid), {}, { preserveScroll: true });
 }
 
 function duplicatePage(item) {
-    router.post(route('admin.cms.pages.duplicate', item.id), {}, { preserveScroll: true });
+    router.post(route('admin.cms.pages.duplicate', item.uuid), {}, { preserveScroll: true });
 }
 
 function deletePage(item) {
@@ -117,7 +117,7 @@ function deletePage(item) {
         message: `La page « ${item.title} » sera supprimée et retirée automatiquement du menu si elle y figure.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.pages.destroy', item.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.pages.destroy', item.uuid), { preserveScroll: true }),
     });
 }
 </script>

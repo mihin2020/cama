@@ -24,6 +24,7 @@ class ArticleController extends Controller
             ->get()
             ->map(fn (CmsArticle $article) => [
                 'id' => $article->id,
+                'uuid' => $article->uuid,
                 'slug' => $article->slug,
                 'title' => $article->title,
                 'category' => $article->category?->name ?? 'Actualité',

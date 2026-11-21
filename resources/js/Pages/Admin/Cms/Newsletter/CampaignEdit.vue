@@ -66,7 +66,7 @@ function startBlank() {
 
 function save() {
     if (isEdit.value) {
-        form.put(route('admin.cms.newsletter.campaigns.update', props.campaign.id), { preserveScroll: true });
+        form.put(route('admin.cms.newsletter.campaigns.update', props.campaign.uuid), { preserveScroll: true });
     } else {
         form.post(route('admin.cms.newsletter.campaigns.store'));
     }
@@ -80,13 +80,13 @@ function toggleBatch(id) {
 
 function sendTest() {
     sendForm.test_email = testEmail.value;
-    sendForm.post(route('admin.cms.newsletter.campaigns.send', props.campaign.id), { preserveScroll: true });
+    sendForm.post(route('admin.cms.newsletter.campaigns.send', props.campaign.uuid), { preserveScroll: true });
 }
 
 function sendCampaign() {
     if (!window.confirm('Envoyer cette campagne aux abonnés ciblés ?')) return;
     sendForm.test_email = '';
-    sendForm.post(route('admin.cms.newsletter.campaigns.send', props.campaign.id));
+    sendForm.post(route('admin.cms.newsletter.campaigns.send', props.campaign.uuid));
 }
 </script>
 

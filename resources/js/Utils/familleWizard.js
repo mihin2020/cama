@@ -304,7 +304,7 @@ export function dossierToConjoint(d) {
     const meta = d.wizard_meta || {};
     return {
         ...newConjoint(),
-        dossier_id: d.id,
+        dossier_id: d.uuid,
         nom: d.nom || '',
         prenoms: d.prenom || '',
         sexe: d.sexe || '',
@@ -325,7 +325,7 @@ export function dossierToEnfant(d) {
     const lien = d.lien || 'Enfant biologique';
     return {
         ...newEnfant(),
-        dossier_id: d.id,
+        dossier_id: d.uuid,
         nom: d.nom || '',
         prenoms: d.prenom || '',
         sexe: d.sexe || '',

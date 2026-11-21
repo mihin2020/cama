@@ -161,6 +161,7 @@ class PublicNewsletterService
             ->withQueryString()
             ->through(fn (CmsNewsletterSubscriber $subscriber) => [
                 'id' => $subscriber->id,
+                'uuid' => $subscriber->uuid,
                 'email' => $subscriber->email,
                 'fullName' => $subscriber->full_name,
                 'segment' => $subscriber->segment,
@@ -221,6 +222,7 @@ class PublicNewsletterService
             ->get()
             ->map(fn (CmsNewsletterBatch $batch) => [
                 'id' => $batch->id,
+                'uuid' => $batch->uuid,
                 'name' => $batch->name,
                 'description' => $batch->description,
                 'count' => $batch->subscribers_count,

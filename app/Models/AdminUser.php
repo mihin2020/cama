@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Casts\AdminRoleSlug;
 use App\Enums\AdminRole;
 use App\Support\AdminPermissions;
@@ -12,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 class AdminUser extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasUuid;
 
     protected $fillable = [
         'nom',

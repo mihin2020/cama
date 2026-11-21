@@ -40,6 +40,7 @@ class CmsFaqService
     {
         return [
             'id' => $faq->id,
+            'uuid' => $faq->uuid,
             'question' => $faq->question,
             'answer' => $faq->answer,
             'category_id' => $faq->category_id,

@@ -98,7 +98,7 @@ function createBatch() {
 
 function deleteBatch(batch) {
     if (!window.confirm(`Supprimer le lot « ${batch.name} » ?`)) return;
-    router.delete(route('admin.cms.newsletter.batches.destroy', batch.id), { preserveScroll: true });
+    router.delete(route('admin.cms.newsletter.batches.destroy', batch.uuid), { preserveScroll: true });
 }
 
 function openEditSubscriber(item) {
@@ -109,7 +109,7 @@ function openEditSubscriber(item) {
 }
 
 function saveSubscriber(item) {
-    subscriberForm.put(route('admin.cms.newsletter.subscribers.update', item.id), {
+    subscriberForm.put(route('admin.cms.newsletter.subscribers.update', item.uuid), {
         preserveScroll: true,
         onSuccess: () => { editingSubscriber.value = null; },
     });
@@ -121,12 +121,12 @@ function cleanList(type) {
 }
 
 function toggle(item) {
-    router.put(route('admin.cms.newsletter.toggle', item.id), {}, { preserveScroll: true });
+    router.put(route('admin.cms.newsletter.toggle', item.uuid), {}, { preserveScroll: true });
 }
 
 function deleteCampaign(campaign) {
     if (!window.confirm(`Supprimer la campagne « ${campaign.name} » ?`)) return;
-    router.delete(route('admin.cms.newsletter.campaigns.destroy', campaign.id), { preserveScroll: true });
+    router.delete(route('admin.cms.newsletter.campaigns.destroy', campaign.uuid), { preserveScroll: true });
 }
 
 function inBatch(item) {
@@ -336,7 +336,7 @@ function inBatch(item) {
                             <td class="px-4 py-3 text-xs">{{ campaign.openRate }}% / {{ campaign.clickRate }}%</td>
                             <td class="px-4 py-3 text-xs text-on-surface-variant">{{ campaign.sentAt || campaign.createdAt }}</td>
                             <td class="px-4 py-3 whitespace-nowrap">
-                                <Link :href="route('admin.cms.newsletter.campaigns.edit', campaign.id)" class="text-xs font-bold text-primary mr-2">Ouvrir</Link>
+                                <Link :href="route('admin.cms.newsletter.campaigns.edit', campaign.uuid)" class="text-xs font-bold text-primary mr-2">Ouvrir</Link>
                                 <button v-if="campaign.status !== 'sent'" class="text-xs font-bold text-error" type="button" @click="deleteCampaign(campaign)">Supprimer</button>
                             </td>
                         </tr>

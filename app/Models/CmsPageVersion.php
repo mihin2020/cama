@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUuid;
 use App\Models\Concerns\SanitizesSections;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CmsPageVersion extends Model
 {
-    use SanitizesSections;
+    use SanitizesSections, HasUuid;
 
     protected $fillable = [
         'cms_page_id',

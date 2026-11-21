@@ -247,7 +247,7 @@ function removePartner(item) {
         message: `« ${item.nom} » sera retiré du site et de la carte des partenaires.`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.partenaires.destroy', item.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.partenaires.destroy', item.uuid), { preserveScroll: true }),
     });
 }
 </script>

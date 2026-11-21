@@ -114,7 +114,7 @@ function closeMetadataEditor() {
 function saveMetadata() {
     if (!editingItem.value) return;
 
-    metadataForm.put(route('admin.cms.media.update', editingItem.value.id), {
+    metadataForm.put(route('admin.cms.media.update', editingItem.value.uuid), {
         preserveScroll: true,
         onSuccess: () => closeMetadataEditor(),
     });
@@ -138,7 +138,7 @@ function deleteMedia(item) {
         message: `Le fichier « ${item.originalName} » sera retiré de la médiathèque.${usageMessage}`,
         confirmLabel: 'Supprimer',
         variant: 'danger',
-        onConfirm: () => router.delete(route('admin.cms.media.destroy', item.id), { preserveScroll: true }),
+        onConfirm: () => router.delete(route('admin.cms.media.destroy', item.uuid), { preserveScroll: true }),
     });
 }
 </script>

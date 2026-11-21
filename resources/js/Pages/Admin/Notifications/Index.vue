@@ -37,7 +37,7 @@ function notifIconClass(type) {
 }
 
 function openNotification(n) {
-    router.post(route('admin.notifications.read', n.id));
+    router.post(route('admin.notifications.read', n.uuid));
 }
 
 function markAllRead() {

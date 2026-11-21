@@ -37,6 +37,7 @@ class AdminNotificationService
     {
         return [
             'id' => $n->id,
+            'uuid' => $n->uuid,
             'type' => $n->type,
             'titre' => $n->titre,
             'contenu' => $n->contenu,

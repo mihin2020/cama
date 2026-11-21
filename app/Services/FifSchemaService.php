@@ -73,6 +73,7 @@ class FifSchemaService
             ->get()
             ->map(fn (FifSection $section) => [
                 'id' => $section->id,
+                'uuid' => $section->uuid,
                 'code' => $section->code,
                 'titre' => $section->titre,
                 'description' => $section->description,
@@ -88,6 +89,7 @@ class FifSchemaService
     {
         return [
             'id' => $field->id,
+            'uuid' => $field->uuid,
             'code' => $field->code,
             'libelle' => $field->libelle,
             'type' => $field->type,
