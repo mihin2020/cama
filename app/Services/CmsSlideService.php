@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\UploadFilename;
 use App\Models\AdminUser;
 use App\Models\CmsSlide;
 use Illuminate\Http\UploadedFile;
@@ -39,7 +40,7 @@ class CmsSlideService
     public function create(array $data, ?UploadedFile $imageFile, ?AdminUser $admin = null): CmsSlide
     {
         if ($imageFile) {
-            $data['image_url'] = app(CmsImageUploadService::class)->store($imageFile);
+            $data['image_url'] = app(CmsImageUploadService::class)->store($imageFile, 'cms', 'BANNIERE-'.UploadFilename::label((string) ($data['title'] ?? 'SLIDE')));
         }
 
         $slide = CmsSlide::query()->create($data);
@@ -57,7 +58,7 @@ class CmsSlideService
     {
         if ($imageFile) {
             app(CmsImageUploadService::class)->deleteIfUploaded($slide->image_url);
-            $data['image_url'] = app(CmsImageUploadService::class)->store($imageFile);
+            $data['image_url'] = app(CmsImageUploadService::class)->store($imageFile, 'cms', 'BANNIERE-'.UploadFilename::label((string) ($data['title'] ?? $slide->title ?? 'SLIDE')));
         }
 
         $slide->update($data);

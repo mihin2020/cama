@@ -8,6 +8,9 @@ use App\Services\DossierPieceStorageService;
 use App\Services\DossierService;
 use App\Services\FifProfileService;
 use App\Services\PlatformSettingsService;
+use App\Rules\MemberPieceFile;
+use App\Rules\PdfDocument;
+use App\Support\UploadFilename;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -101,7 +104,7 @@ class DossierWizardController extends Controller
         $fifPiece = null;
         if ($settings->fifSigneeRequise()) {
             $request->validate([
-                'fif_signee' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+                'fif_signee' => ['required', new PdfDocument],
             ]);
 
             $fifPiece = $storage->storeLotPiece(
@@ -111,7 +114,7 @@ class DossierWizardController extends Controller
             );
         } elseif ($request->hasFile('fif_signee')) {
             $request->validate([
-                'fif_signee' => ['file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+                'fif_signee' => [new PdfDocument],
             ]);
             $fifPiece = $storage->storeLotPiece(
                 $assure,
@@ -155,7 +158,13 @@ class DossierWizardController extends Controller
                     continue;
                 }
                 $type = $labels[$key] ?? $key;
-                $stored = $storage->storeMemberPiece($assure, $file, $key, $type);
+                $stored = $storage->storeMemberPiece(
+                    $assure,
+                    $file,
+                    $key,
+                    $type,
+                    UploadFilename::memberCode($list === 'conjoints', (int) $i + 1),
+                );
                 $existing = array_values(array_filter($existing, fn ($p) => ($p['type'] ?? '') !== $type));
                 $existing[] = $stored;
             }
@@ -190,7 +199,7 @@ class DossierWizardController extends Controller
             'conjoints.*.removed_pieces' => ['nullable', 'array'],
             'conjoints.*.removed_pieces.*' => ['string', 'max:150'],
             'conjoints.*.piece_files' => ['nullable', 'array'],
-            'conjoints.*.piece_files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
+            'conjoints.*.piece_files.*' => [new MemberPieceFile],
             'enfants.*.id' => ['nullable', 'integer', 'exists:dossiers,id'],
             'enfants.*.nom' => ['nullable', 'string', 'max:100'],
             'enfants.*.prenom' => ['nullable', 'string', 'max:150'],
@@ -206,7 +215,7 @@ class DossierWizardController extends Controller
             'enfants.*.removed_pieces' => ['nullable', 'array'],
             'enfants.*.removed_pieces.*' => ['string', 'max:150'],
             'enfants.*.piece_files' => ['nullable', 'array'],
-            'enfants.*.piece_files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,webp', 'max:5120'],
+            'enfants.*.piece_files.*' => [new MemberPieceFile],
         ]);
 
         $enfants = $validated['enfants'] ?? [];

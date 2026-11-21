@@ -42,7 +42,7 @@ const FieldError = (p) => (p.msg ? h('p', { class: 'text-error text-xs mt-1' }, 
 FieldError.props = ['msg'];
 
 const MAX_DOC_SIZE = 5 * 1024 * 1024;
-const ACCEPTED_DOC_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+const ACCEPTED_DOC_TYPES = ['application/pdf'];
 
 const documentFiles = reactive({});
 const documentErrors = reactive({});
@@ -86,7 +86,7 @@ function handleDocument(key, event) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!ACCEPTED_DOC_TYPES.includes(file.type)) {
-        documentErrors[key] = 'Format non accepté (PDF, JPEG, PNG).';
+        documentErrors[key] = 'Format non accepté : PDF uniquement.';
         event.target.value = '';
         return;
     }
@@ -504,7 +504,7 @@ function submit() {
                             <div v-show="currentStepId === 'securite'" class="space-y-4">
                                 <div v-if="hasDocuments" class="space-y-3 pb-4 border-b border-outline-variant">
                                     <h2 class="text-lg font-bold flex items-center gap-2"><span class="material-symbols-outlined text-primary">badge</span> Pièces justificatives</h2>
-                                    <p class="text-sm text-on-surface-variant -mt-1">Téléversez les documents demandés (PDF, JPEG ou PNG — 5 Mo max) pour permettre la vérification de votre identité.</p>
+                                    <p class="text-sm text-on-surface-variant -mt-1">Téléversez les documents demandés (PDF uniquement — 5 Mo max) pour permettre la vérification de votre identité.</p>
                                     <div class="grid grid-cols-1 gap-3">
                                         <div v-for="doc in inscriptionDocuments" :key="doc.key" class="border border-outline-variant rounded-lg p-3">
                                             <p class="text-xs font-semibold mb-2">{{ doc.titre }} <span class="text-error">*</span></p>
@@ -515,7 +515,7 @@ function submit() {
                                             </div>
                                             <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1.5">
                                                 <span class="material-symbols-outlined text-[16px]">upload_file</span> Téléverser {{ doc.titre }}
-                                                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handleDocument(doc.key, $event)" />
+                                                <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handleDocument(doc.key, $event)" />
                                             </label>
                                             <p v-if="documentErrors[doc.key]" class="text-error text-[11px] mt-1.5">{{ documentErrors[doc.key] }}</p>
                                             <p v-if="form.errors[`documents.${doc.key}`]" class="text-error text-[11px] mt-1.5">{{ form.errors[`documents.${doc.key}`] }}</p>

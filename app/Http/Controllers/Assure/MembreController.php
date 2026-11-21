@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Assure;
 
 use App\Http\Controllers\Controller;
 use App\Models\Dossier;
+use App\Rules\PdfDocument;
 use App\Services\AssureDashboardService;
 use App\Services\DossierPieceStorageService;
 use App\Services\DossierService;
@@ -71,16 +72,17 @@ class MembreController extends Controller
                         "piece_files.{$type}" => "Le fichier pour « {$type} » est requis.",
                     ]);
                 }
-                $storedByType[$type] = $this->storeComplementPiece($storage, $assure, $file, $type);
+                $storedByType[$type] = $this->storeComplementPiece($storage, $assure, $dossier, $file, $type);
             }
         } else {
             $request->validate([
-                'complement_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+                'complement_file' => ['required', new PdfDocument],
             ]);
             $type = config('cama.complement_generic_type', 'Pièce complémentaire');
             $storedByType[$type] = $this->storeComplementPiece(
                 $storage,
                 $assure,
+                $dossier,
                 $request->file('complement_file'),
                 $type,
             );
@@ -108,6 +110,7 @@ class MembreController extends Controller
     private function storeComplementPiece(
         DossierPieceStorageService $storage,
         $assure,
+        Dossier $dossier,
         UploadedFile $file,
         string $type,
     ): array {
@@ -117,7 +120,7 @@ class MembreController extends Controller
             return $storage->storeLotPiece($assure, $file, $type);
         }
 
-        return $storage->storeMemberPiece($assure, $file, $this->pieceKeyForType($type), $type);
+        return $storage->storeMemberPiece($assure, $file, $this->pieceKeyForType($type), $type, $storage->memberCodeFor($assure, $dossier));
     }
 
     private function pieceKeyForType(string $type): string

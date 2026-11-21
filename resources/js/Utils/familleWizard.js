@@ -13,7 +13,8 @@ export const PIECE_LABELS = {
 };
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
-export const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+// Pièces justificatives : PDF uniquement (seule la photo d'un membre reste une image : PHOTO_TYPES).
+export const ACCEPTED_TYPES = ['application/pdf'];
 export const PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 export const FIF_PIECE_TYPE = 'FIF signée';
 

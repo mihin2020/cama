@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Support\SafeUpload;
+use App\Support\UploadFilename;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Str;
 
 class CmsDocumentUploadService
 {
-    public function store(UploadedFile $file, string $subdir = 'cms'): string
+    /**
+     * @param  string  $owner  à quoi le document est lié (ex. « RESSOURCE-GUIDE-ASSURE »)
+     */
+    public function store(UploadedFile $file, string $subdir = 'cms', string $owner = 'RESSOURCE'): string
     {
         $directory = public_path("documents/{$subdir}");
 
@@ -17,7 +20,13 @@ class CmsDocumentUploadService
         }
 
         $extension = SafeUpload::extension($file, [...SafeUpload::DOCUMENTS, 'png', 'jpg'], 'document_file');
-        $filename = Str::uuid().'.'.$extension;
+        $filename = UploadFilename::makeUnique(
+            fn (string $name) => is_file($directory.DIRECTORY_SEPARATOR.$name),
+            UploadFilename::CMS,
+            $owner,
+            'DOCUMENT',
+            $extension,
+        );
 
         $file->move($directory, $filename);
 

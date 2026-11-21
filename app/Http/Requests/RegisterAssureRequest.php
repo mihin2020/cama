@@ -70,7 +70,8 @@ class RegisterAssureRequest extends FormRequest
         }
 
         foreach ($settings->activeInscriptionDocuments() as $slot) {
-            $rules["documents.{$slot['key']}"] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'];
+            // Pièces d'inscription : PDF uniquement (contenu réel vérifié, 5 Mo maximum).
+            $rules["documents.{$slot['key']}"] = ['required', new \App\Rules\PdfDocument];
         }
 
         return $rules;

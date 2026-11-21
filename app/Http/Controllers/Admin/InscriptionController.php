@@ -105,16 +105,28 @@ class InscriptionController extends Controller
         return back()->with('success', 'Demande refusée.');
     }
 
-    public function downloadDocument(Assure $assure, string $key): BinaryFileResponse
+    public function downloadDocument(Request $request, Assure $assure, string $key): BinaryFileResponse
     {
+        // Pièces d'identité : contrôle explicite du droit, en plus de celui de la route.
+        abort_unless($request->user('admin')?->hasPermission('inscriptions.view'), 403, 'Accès non autorisé pour vos permissions.');
+
         $document = collect($assure->documents_identite ?? [])
             ->first(fn ($doc) => ($doc['key'] ?? '') === $key);
 
-        abort_unless($document && ! empty($document['path']) && Storage::disk('local')->exists($document['path']), 404);
+        // Le chemin vient de la fiche de l'assuré (jamais de la requête) et reste dans l'espace privé
+        // des pièces : « assures/ » (nouveau rangement) ou « inscriptions/ » (anciens dépôts).
+        $path = (string) ($document['path'] ?? '');
+        abort_unless(
+            $path !== '' && (str_starts_with($path, 'assures/') || str_starts_with($path, 'inscriptions/')),
+            404,
+        );
+        abort_unless(Storage::disk('local')->exists($path), 404);
 
+        // Téléchargé sous son nom normalisé (ASS_<N° FIF>_INSCR-…), jamais affiché dans le navigateur.
         return response()->download(
-            Storage::disk('local')->path($document['path']),
-            $document['filename'] ?? basename($document['path']),
+            Storage::disk('local')->path($path),
+            $document['filename'] ?? basename($path),
+            ['X-Content-Type-Options' => 'nosniff'],
         );
     }
 

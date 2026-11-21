@@ -231,7 +231,7 @@ function handleFifUpload(event) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!ACCEPTED_TYPES.includes(file.type)) {
-        fifError.value = 'Format non accepté (PDF, JPEG, PNG).';
+        fifError.value = 'Format non accepté : PDF uniquement.';
         event.target.value = '';
         return;
     }
@@ -294,7 +294,7 @@ function handlePiece(list, row, key, event) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!ACCEPTED_TYPES.includes(file.type)) {
-        pieceErrors[errKey] = 'Format non accepté (PDF, JPEG, PNG).';
+        pieceErrors[errKey] = 'Format non accepté : PDF uniquement.';
         event.target.value = '';
         return;
     }
@@ -581,7 +581,7 @@ watch(() => props.initialRows, () => {
                                     </div>
                                     <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[15px]">upload_file</span> {{ (row.pieces[p.key] || keptExisting(row, p)) ? 'Remplacer le fichier' : 'Choisir un fichier' }}
-                                        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handlePiece('conjoints', row, p.key, $event)" />
+                                        <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handlePiece('conjoints', row, p.key, $event)" />
                                     </label>
                                     <p v-if="pieceErrors[`${row.uid}-${p.key}`]" class="text-error text-[11px] mt-1">{{ pieceErrors[`${row.uid}-${p.key}`] }}</p>
                                 </div>
@@ -694,7 +694,7 @@ watch(() => props.initialRows, () => {
                                     </div>
                                     <label class="text-[11px] text-primary font-semibold cursor-pointer inline-flex items-center gap-1">
                                         <span class="material-symbols-outlined text-[15px]">upload_file</span> {{ (row.pieces[p.key] || keptExisting(row, p)) ? 'Remplacer le fichier' : 'Choisir un fichier' }}
-                                        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handlePiece('enfants', row, p.key, $event)" />
+                                        <input type="file" class="hidden" accept=".pdf,application/pdf" @change="handlePiece('enfants', row, p.key, $event)" />
                                     </label>
                                     <p v-if="pieceErrors[`${row.uid}-${p.key}`]" class="text-error text-[11px] mt-1">{{ pieceErrors[`${row.uid}-${p.key}`] }}</p>
                                 </div>
@@ -746,7 +746,7 @@ watch(() => props.initialRows, () => {
 
                 <div class="border border-outline-variant rounded-lg p-4">
                     <p class="text-xs font-semibold text-on-surface mb-2">{{ fifPieceType }} <span class="text-error">*</span></p>
-                    <p class="text-[11px] text-on-surface-variant mb-3">Scan ou photo du formulaire signé (PDF, JPEG ou PNG — 5 Mo max).</p>
+                    <p class="text-[11px] text-on-surface-variant mb-3">Scan du formulaire signé, en PDF (5 Mo max).</p>
                     <div
                         class="border-2 border-dashed rounded-lg p-3"
                         :class="fifSignee ? 'border-secondary/40 bg-secondary/5' : 'border-outline-variant bg-surface-container-low'"
@@ -761,7 +761,7 @@ watch(() => props.initialRows, () => {
                                         {{ fifSignee ? fifSignee.name : 'Aucun fichier sélectionné' }}
                                     </p>
                                     <p class="text-[11px] text-on-surface-variant">
-                                        {{ fifSignee ? 'FIF prête pour la soumission.' : 'Formats acceptés : PDF, JPEG, PNG — 5 Mo max.' }}
+                                        {{ fifSignee ? 'FIF prête pour la soumission.' : 'Format accepté : PDF uniquement — 5 Mo max.' }}
                                     </p>
                                 </div>
                             </div>
@@ -788,7 +788,7 @@ watch(() => props.initialRows, () => {
                             ref="fifInput"
                             type="file"
                             class="hidden"
-                            accept=".pdf,.jpg,.jpeg,.png"
+                            accept=".pdf,application/pdf"
                             @change="handleFifUpload"
                         />
                     </div>

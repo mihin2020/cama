@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\UploadFilename;
 use App\Models\AdminUser;
 use App\Models\CmsArticle;
 use App\Models\CmsMedia;
@@ -71,10 +72,16 @@ class CmsMediaService
         }
 
         $extension = SafeUpload::extension($file, [...SafeUpload::IMAGES, ...SafeUpload::DOCUMENTS]);
-        $filename = Str::uuid().'.'.$extension;
+        $original = $file->getClientOriginalName();
+        $filename = UploadFilename::makeUnique(
+            fn (string $name) => is_file($directory.DIRECTORY_SEPARATOR.$name),
+            UploadFilename::CMS,
+            'MEDIA',
+            UploadFilename::segment(pathinfo($original, PATHINFO_FILENAME)),
+            $extension,
+        );
         $size = $file->getSize() ?: 0;
         $mime = $file->getMimeType();
-        $original = $file->getClientOriginalName();
         $dimensions = $this->dimensions($file);
 
         $file->move($directory, $filename);

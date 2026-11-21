@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Cms;
 
+use App\Support\UploadFilename;
 use App\Http\Controllers\Controller;
 use App\Services\PlatformSettingsService;
 use Illuminate\Http\RedirectResponse;
@@ -53,7 +54,13 @@ class IdentityController extends Controller
         $file = $request->file('logo');
         $directory = public_path(self::LOGO_DIRECTORY);
         File::ensureDirectoryExists($directory);
-        $name = 'logo-'.now()->format('YmdHis').'-'.Str::lower(Str::random(6)).'.'.$file->extension();
+        $name = UploadFilename::makeUnique(
+            fn (string $candidate) => is_file($directory.DIRECTORY_SEPARATOR.$candidate),
+            UploadFilename::CMS,
+            'IDENTITE',
+            'LOGO',
+            $file->extension(),
+        );
         $file->move($directory, $name);
 
         $previous = $settings->siteLogo();

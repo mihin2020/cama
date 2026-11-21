@@ -79,7 +79,7 @@ class CmsSiteStructureTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $logo = app(PlatformSettingsService::class)->siteLogo();
-        $this->assertStringStartsWith('/media/branding/logo-', $logo);
+        $this->assertMatchesRegularExpression('~^/media/branding/CMS_IDENTITE_LOGO_\d{8}-\d{6}_[0-9A-F]{4}\.png$~', $logo);
         $this->assertFileExists(public_path(ltrim($logo, '/')));
 
         // Le logo est partagé avec toutes les pages.

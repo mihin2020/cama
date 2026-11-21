@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Cms;
 
+use App\Support\UploadFilename;
 use App\Http\Controllers\Controller;
 use App\Models\CmsArticle;
 use App\Models\CmsArticleCategory;
@@ -154,7 +155,7 @@ class ArticleController extends Controller
         if ($request->hasFile('image_file')) {
             $uploader = app(CmsImageUploadService::class);
             $uploader->deleteIfUploaded($article?->image_url);
-            $data['image_url'] = $uploader->store($request->file('image_file'));
+            $data['image_url'] = $uploader->store($request->file('image_file'), 'cms', 'ARTICLE-'.UploadFilename::label((string) ($data['title'] ?? 'SANS-TITRE')));
         } elseif (empty($data['image_url'])) {
             $data['image_url'] = $article?->image_url ?? 'images/CAMA_8.jfif';
         }

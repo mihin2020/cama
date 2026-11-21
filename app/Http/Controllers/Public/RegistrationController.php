@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterAssureRequest;
 use App\Services\AssureEmailVerificationService;
 use App\Services\AssureRegistrationService;
+use App\Services\DossierPieceStorageService;
 use App\Services\PlatformSettingsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -28,11 +29,14 @@ class RegistrationController extends Controller
         AssureRegistrationService $registration,
         AssureEmailVerificationService $verification,
         PlatformSettingsService $settings,
+        DossierPieceStorageService $storage,
     ): RedirectResponse {
         $data = $request->validated();
-        $data['documents_identite'] = $this->storeIdentityDocuments($request, $settings);
 
         $assure = $registration->register($data);
+
+        // Les pièces sont rangées après la création du compte : leur nom contient son N° FIF.
+        $assure->update(['documents_identite' => $this->storeIdentityDocuments($request, $settings, $storage, $assure)]);
 
         Auth::guard('assure')->login($assure);
         $request->session()->regenerate();
@@ -53,8 +57,12 @@ class RegistrationController extends Controller
      *
      * @return array<int, array<string, mixed>>
      */
-    private function storeIdentityDocuments(RegisterAssureRequest $request, PlatformSettingsService $settings): array
-    {
+    private function storeIdentityDocuments(
+        RegisterAssureRequest $request,
+        PlatformSettingsService $settings,
+        DossierPieceStorageService $storage,
+        \App\Models\Assure $assure,
+    ): array {
         $slots = $settings->activeInscriptionDocuments();
         $stored = [];
 
@@ -64,18 +72,7 @@ class RegistrationController extends Controller
                 continue;
             }
 
-            $file = $request->file($field);
-            $matricule = preg_replace('/[^A-Za-z0-9_-]/', '', (string) $request->input('matricule')) ?: 'assure';
-            $path = $file->store("inscriptions/{$matricule}", 'local');
-
-            $stored[] = [
-                'key' => $slot['key'],
-                'label' => $slot['titre'],
-                'path' => $path,
-                'filename' => $file->getClientOriginalName(),
-                'mime' => $file->getMimeType(),
-                'size' => $file->getSize(),
-            ];
+            $stored[] = $storage->storeIdentityDocument($assure, $request->file($field), $slot['key'], $slot['titre']);
         }
 
         return $stored;

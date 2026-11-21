@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\UploadFilename;
 use App\Models\AdminUser;
 use App\Models\CmsPartner;
 use App\Support\Pagination;
@@ -197,7 +198,7 @@ class CmsPartnerService
     public function create(array $data, ?UploadedFile $image, ?AdminUser $admin = null): CmsPartner
     {
         if ($image) {
-            $data['image_url'] = app(CmsImageUploadService::class)->store($image, 'partners');
+            $data['image_url'] = app(CmsImageUploadService::class)->store($image, 'partners', 'PARTENAIRE-'.UploadFilename::label((string) ($data['name'] ?? 'SANS-NOM')));
         }
 
         $partner = CmsPartner::query()->create($data);
@@ -215,7 +216,7 @@ class CmsPartnerService
     {
         if ($image) {
             app(CmsImageUploadService::class)->deleteIfUploaded($partner->image_url);
-            $data['image_url'] = app(CmsImageUploadService::class)->store($image, 'partners');
+            $data['image_url'] = app(CmsImageUploadService::class)->store($image, 'partners', 'PARTENAIRE-'.UploadFilename::label((string) ($data['name'] ?? $partner->name ?? 'SANS-NOM')));
         }
 
         $partner->update($data);

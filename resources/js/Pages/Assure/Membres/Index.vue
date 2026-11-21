@@ -200,7 +200,7 @@ function complementFileName(dossierId, key) {
 
 function validateComplementFile(file) {
     if (!file) return 'Fichier requis.';
-    if (!ACCEPTED_TYPES.includes(file.type)) return 'Format non accepté (PDF, JPEG ou PNG).';
+    if (!ACCEPTED_TYPES.includes(file.type)) return 'Format non accepté : PDF uniquement.';
     if (file.size > MAX_FILE_SIZE) return 'Fichier trop volumineux (5 Mo max).';
     return null;
 }
@@ -479,11 +479,11 @@ function submitComplement(m) {
                                     <input
                                         type="file"
                                         class="hidden"
-                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        accept=".pdf,application/pdf"
                                         @change="setComplementFile(m.id, piece.type, $event)"
                                     />
                                 </label>
-                                <p class="text-[10px] text-on-surface-variant mt-1">PDF, JPEG ou PNG — 5 Mo max.</p>
+                                <p class="text-[10px] text-on-surface-variant mt-1">PDF uniquement — 5 Mo max.</p>
                                 <p v-if="complementErrors[m.id]?.[piece.type]" class="text-error text-[11px] mt-1">
                                     {{ complementErrors[m.id][piece.type] }}
                                 </p>

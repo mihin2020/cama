@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\UploadFilename;
 use App\Models\AdminUser;
 use App\Models\CmsResource;
 use Illuminate\Http\UploadedFile;
@@ -102,7 +103,7 @@ class CmsResourceService
         $originalName = $file->getClientOriginalName();
         $size = $file->getSize();
 
-        $data['file_url'] = app(CmsDocumentUploadService::class)->store($file);
+        $data['file_url'] = app(CmsDocumentUploadService::class)->store($file, 'cms', 'RESSOURCE-'.UploadFilename::label((string) ($data['title'] ?? 'SANS-TITRE')));
         $data['format'] = CmsDocumentUploadService::formatFromFilename($originalName);
         $data['file_size'] = CmsDocumentUploadService::humanSize($size);
 
