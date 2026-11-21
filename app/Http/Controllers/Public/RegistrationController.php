@@ -45,7 +45,7 @@ class RegistrationController extends Controller
         }
 
         return redirect()->route('assure.verification.notice')
-            ->with('success', "Votre demande d'inscription a été enregistrée. Un code de vérification à 4 chiffres a été envoyé à {$assure->email}.");
+            ->with('success', "Votre demande d'inscription a été enregistrée. Un code de vérification de 6 caractères (chiffres et lettres) a été envoyé à {$assure->email}.");
     }
 
     /**

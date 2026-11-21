@@ -5,35 +5,31 @@ namespace App\Services;
 use App\Mail\AssureLogin2faCodeMail;
 use App\Models\Assure;
 use App\Support\DevCodes;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AssureLogin2faService
 {
-    private const EXPIRATION_MINUTES = 15;
+    public const EXPIRATION_MINUTES = 10;
 
-    private const MAX_USED_CODES = 500;
-
-    /** Codes incorrects tolérés avant d'annuler le code en cours (4 chiffres = 10 000 combinaisons). */
+    /** Codes incorrects tolérés avant d'annuler le code en cours. */
     public const MAX_ATTEMPTS = 5;
+
+    public function __construct(private OneTimeCodeService $codes) {}
 
     /**
      * @return string|null Code affiché uniquement si le mailer est « log » (dev sans SMTP)
      */
     public function sendCode(Assure $assure): ?string
     {
-        $used = $this->usedCodes($assure);
-
-        $code = $this->generateUniqueCode($used);
-        $used->push($this->fingerprint($code));
+        // 6 caractères (chiffres et lettres), jamais émis auparavant, pour aucun compte.
+        $code = $this->codes->generate('assure_2fa');
 
         $assure->forceFill([
-            'login_2fa_code' => $this->fingerprint($code),
+            'login_2fa_code' => $this->codes->fingerprint($code),
             'login_2fa_expires_at' => now()->addMinutes(self::EXPIRATION_MINUTES),
             'login_2fa_attempts' => 0,
-            'login_2fa_used_codes' => $used->unique()->take(self::MAX_USED_CODES)->values()->all(),
         ])->save();
 
         $this->dispatchLoginCodeMail($assure, $code);
@@ -56,14 +52,16 @@ class AssureLogin2faService
         }
 
         if (now()->isAfter($assure->login_2fa_expires_at)) {
+            $this->clearCode($assure);
+
             throw ValidationException::withMessages([
                 'code' => 'Ce code a expiré. Cliquez sur « Renvoyer le code » ou reconnectez-vous.',
             ]);
         }
 
-        $normalized = $this->normalizeCode($code);
+        OneTimeCodeService::assertWellFormed($code);
 
-        if (! hash_equals($assure->login_2fa_code, $this->fingerprint($normalized))) {
+        if (! $this->codes->matches($assure->login_2fa_code, $code)) {
             $attempts = $assure->login_2fa_attempts + 1;
             $remaining = self::MAX_ATTEMPTS - $attempts;
 
@@ -83,9 +81,6 @@ class AssureLogin2faService
             ]);
         }
 
-        $used = $this->usedCodes($assure);
-        $used->push($assure->login_2fa_code);
-
         $journal = $assure->journal ?? [];
         $journal[] = ['date' => now()->format('d/m/Y H:i'), 'libelle' => 'Connexion sécurisée (2FA validée)'];
 
@@ -93,7 +88,6 @@ class AssureLogin2faService
             'login_2fa_code' => null,
             'login_2fa_expires_at' => null,
             'login_2fa_attempts' => 0,
-            'login_2fa_used_codes' => $used->unique()->take(self::MAX_USED_CODES)->values()->all(),
             'journal' => $journal,
         ])->save();
     }
@@ -118,38 +112,6 @@ class AssureLogin2faService
         $masked = $visible.str_repeat('*', max(1, strlen($local) - 1));
 
         return "{$masked}@{$domain}";
-    }
-
-    private function usedCodes(Assure $assure): Collection
-    {
-        return collect($assure->login_2fa_used_codes ?? [])->map(fn ($c) => (string) $c);
-    }
-
-    private function generateUniqueCode(Collection $used): string
-    {
-        for ($attempt = 0; $attempt < 200; $attempt++) {
-            $code = $this->normalizeCode((string) random_int(0, 9999));
-            if (! $used->contains($this->fingerprint($code))) {
-                return $code;
-            }
-        }
-
-        throw ValidationException::withMessages([
-            'code' => 'Impossible de générer un nouveau code. Réessayez dans quelques instants.',
-        ]);
-    }
-
-    /** Le code n'est jamais stocké en clair : une fuite de la base ne permet pas de le rejouer. */
-    public function fingerprint(string $code): string
-    {
-        return hash_hmac('sha256', $code, (string) config('app.key'));
-    }
-
-    private function normalizeCode(string $code): string
-    {
-        $digits = preg_replace('/\D/', '', $code) ?? '';
-
-        return str_pad(substr($digits, 0, 4), 4, '0', STR_PAD_LEFT);
     }
 
     private function dispatchLoginCodeMail(Assure $assure, string $code): void

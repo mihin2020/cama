@@ -11,7 +11,7 @@ use Illuminate\Validation\ValidationException;
 
 class AdminLogin2faService
 {
-    public const CODE_LENGTH = 6;
+    public const CODE_LENGTH = OneTimeCodeService::LENGTH;
 
     public const EXPIRATION_MINUTES = 10;
 
@@ -20,12 +20,15 @@ class AdminLogin2faService
     /**
      * @return string|null Code affiché uniquement si le mailer est « log » (dev sans SMTP)
      */
+    public function __construct(private OneTimeCodeService $codes) {}
+
     public function sendCode(AdminUser $admin): ?string
     {
-        $code = str_pad((string) random_int(0, 10 ** self::CODE_LENGTH - 1), self::CODE_LENGTH, '0', STR_PAD_LEFT);
+        // 6 caractères (chiffres et lettres), jamais émis auparavant.
+        $code = $this->codes->generate('admin_2fa');
 
         $admin->forceFill([
-            'login_2fa_code' => $this->fingerprint($code),
+            'login_2fa_code' => $this->codes->fingerprint($code),
             'login_2fa_expires_at' => now()->addMinutes(self::EXPIRATION_MINUTES),
             'login_2fa_attempts' => 0,
         ])->save();
@@ -57,9 +60,9 @@ class AdminLogin2faService
             ]);
         }
 
-        $digits = preg_replace('/\D/', '', $code) ?? '';
+        OneTimeCodeService::assertWellFormed($code);
 
-        if (! hash_equals($admin->login_2fa_code, $this->fingerprint($digits))) {
+        if (! $this->codes->matches($admin->login_2fa_code, $code)) {
             $attempts = $admin->login_2fa_attempts + 1;
             $remaining = self::MAX_ATTEMPTS - $attempts;
 
@@ -99,14 +102,6 @@ class AdminLogin2faService
         [$local, $domain] = explode('@', $email, 2);
 
         return substr($local, 0, 1).str_repeat('*', max(1, strlen($local) - 1))."@{$domain}";
-    }
-
-    /**
-     * Le code n'est jamais stocké en clair : une fuite de la base ne permet pas de le rejouer.
-     */
-    private function fingerprint(string $code): string
-    {
-        return hash_hmac('sha256', $code, (string) config('app.key'));
     }
 
     private function dispatchLoginCodeMail(AdminUser $admin, string $code): void

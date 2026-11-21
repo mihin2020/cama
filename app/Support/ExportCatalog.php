@@ -15,7 +15,6 @@ class ExportCatalog
         'password',
         'remember_token',
         'login_2fa_code',
-        'login_2fa_used_codes',
         'email_verification_code',
     ];
 

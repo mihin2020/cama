@@ -1,11 +1,12 @@
 <script setup>
+import CamaCodeInput from '@/Components/CamaCodeInput.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaLogo from '@/Components/CamaLogo.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
 import InputError from '@/Components/InputError.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
     step: {
@@ -31,6 +32,8 @@ const form = useForm({
 
 const twoFaForm = useForm({ code: '' });
 const resending = ref(false);
+const codeInput = ref(null);
+onMounted(() => codeInput.value?.focus());
 
 const submit = () => {
     form.post(route('admin.login.store'), {
@@ -38,15 +41,13 @@ const submit = () => {
     });
 };
 
-function onCodeInput(event) {
-    twoFaForm.code = event.target.value.replace(/\D/g, '').slice(0, props.codeLength);
-    if (twoFaForm.code.length === props.codeLength) submit2fa();
-}
-
 function submit2fa() {
     if (twoFaForm.code.length !== props.codeLength || twoFaForm.processing) return;
     twoFaForm.post(route('admin.login.2fa.store'), {
-        onError: () => twoFaForm.reset('code'),
+        onError: () => {
+            twoFaForm.reset('code');
+            codeInput.value?.focus();
+        },
     });
 }
 
@@ -81,7 +82,7 @@ function cancel2fa() {
                     <template v-if="is2fa">
                         <h1 class="font-headline text-xl font-bold text-on-surface mb-1">Vérification en deux étapes</h1>
                         <p class="text-sm text-on-surface-variant mb-4">
-                            Saisissez le code à {{ codeLength }} chiffres envoyé à <strong>{{ maskedEmail }}</strong>.
+                            Saisissez le code de {{ codeLength }} caractères (chiffres et lettres) envoyé à <strong>{{ maskedEmail }}</strong>.
                         </p>
 
                         <FlashMessage />
@@ -92,20 +93,16 @@ function cancel2fa() {
 
                         <form class="space-y-4" @submit.prevent="submit2fa">
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-1" for="code">Code de vérification</label>
-                                <input
-                                    id="code"
-                                    :value="twoFaForm.code"
-                                    class="mt-1 block w-full rounded-lg border border-outline-variant px-4 py-3 text-center font-mono text-2xl tracking-[0.5em] focus:border-primary focus:ring-2 focus:ring-primary outline-none"
-                                    type="text"
-                                    inputmode="numeric"
-                                    autocomplete="one-time-code"
-                                    :maxlength="codeLength"
-                                    required
-                                    autofocus
-                                    @input="onCodeInput"
+                                <p class="block text-xs font-bold uppercase tracking-wide text-on-surface-variant mb-2">Code de vérification</p>
+                                <CamaCodeInput
+                                    ref="codeInput"
+                                    v-model="twoFaForm.code"
+                                    :length="codeLength"
+                                    :invalid="!!twoFaForm.errors.code"
+                                    box-class="w-10 h-12 sm:w-11 sm:h-14 text-xl"
+                                    @complete="submit2fa"
                                 />
-                                <InputError class="mt-1" :message="twoFaForm.errors.code" />
+                                <InputError class="mt-2 text-center" :message="twoFaForm.errors.code" />
                             </div>
 
                             <CamaLoadingButton

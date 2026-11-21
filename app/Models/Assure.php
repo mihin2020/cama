@@ -45,6 +45,7 @@ class Assure extends Authenticatable
         'password',
         'remember_token',
         'login_2fa_code',
+        'email_verification_code',
     ];
 
     protected function casts(): array
@@ -52,8 +53,9 @@ class Assure extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'login_2fa_expires_at' => 'datetime',
-            'login_2fa_used_codes' => 'array',
             'login_2fa_attempts' => 'integer',
+            'email_verification_expires_at' => 'datetime',
+            'email_verification_attempts' => 'integer',
             'password' => 'hashed',
             'deux_fa_active' => 'boolean',
             'statut' => AssureStatut::class,

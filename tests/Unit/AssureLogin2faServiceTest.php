@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Enums\AssureStatut;
 use App\Models\Assure;
 use App\Services\AssureLogin2faService;
+use App\Services\OneTimeCodeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class AssureLogin2faServiceTest extends TestCase
         ]);
 
         $assure->forceFill([
-            'login_2fa_code' => app(AssureLogin2faService::class)->fingerprint('1234'),
+            'login_2fa_code' => app(OneTimeCodeService::class)->fingerprint('K7P2QX'),
             'login_2fa_expires_at' => now()->addMinutes(10),
         ])->save();
 
@@ -40,7 +41,7 @@ class AssureLogin2faServiceTest extends TestCase
         $service = app(AssureLogin2faService::class);
         $assure = $this->makeAssureWithCode();
 
-        $service->verify($assure, '1234');
+        $service->verify($assure, 'k7p2qx');
 
         $assure->refresh();
         $this->assertNull($assure->login_2fa_code);
@@ -54,7 +55,7 @@ class AssureLogin2faServiceTest extends TestCase
         $assure = $this->makeAssureWithCode('wrong@example.bf');
 
         $this->expectException(ValidationException::class);
-        $service->verify($assure, '9999');
+        $service->verify($assure, 'K7P2QY');
     }
 
     public function test_code_is_cancelled_after_too_many_wrong_attempts(): void
@@ -64,7 +65,7 @@ class AssureLogin2faServiceTest extends TestCase
 
         for ($i = 1; $i < AssureLogin2faService::MAX_ATTEMPTS; $i++) {
             try {
-                $service->verify($assure->fresh(), '0000');
+                $service->verify($assure->fresh(), 'AAAA22');
                 $this->fail('Un code incorrect doit être refusé.');
             } catch (ValidationException $e) {
                 $this->assertStringContainsString('restante', $e->errors()['code'][0]);
@@ -73,7 +74,7 @@ class AssureLogin2faServiceTest extends TestCase
 
         // Dernière tentative autorisée : le code est annulé.
         try {
-            $service->verify($assure->fresh(), '0000');
+            $service->verify($assure->fresh(), 'AAAA22');
             $this->fail('Un code incorrect doit être refusé.');
         } catch (ValidationException $e) {
             $this->assertStringContainsString('annulé', $e->errors()['code'][0]);
@@ -83,7 +84,7 @@ class AssureLogin2faServiceTest extends TestCase
 
         // Même le bon code ne passe plus : il faut en redemander un.
         $this->expectException(ValidationException::class);
-        $service->verify($assure->fresh(), '1234');
+        $service->verify($assure->fresh(), 'K7P2QX');
     }
 
     public function test_code_is_never_stored_in_clear_and_attempts_reset_on_new_code(): void

@@ -36,12 +36,8 @@ class TwoFactorController extends Controller
             return redirect()->route('admin.login');
         }
 
-        $length = AdminLogin2faService::CODE_LENGTH;
-
         $data = $request->validate([
-            'code' => ['required', 'digits:'.$length],
-        ], [
-            'code.digits' => "Le code comporte {$length} chiffres.",
+            'code' => ['required', 'string', 'max:20'],
         ]);
 
         $service->verify($admin, $data['code']);

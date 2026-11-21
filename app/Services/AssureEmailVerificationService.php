@@ -4,29 +4,48 @@ namespace App\Services;
 
 use App\Mail\AssureVerificationCodeMail;
 use App\Models\Assure;
+use App\Support\DevCodes;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AssureEmailVerificationService
 {
-    private const EXPIRATION_MINUTES = 15;
+    public const EXPIRATION_MINUTES = 15;
 
-    /** Génère un code à 4 chiffres, l'enregistre et planifie l'envoi par e-mail. */
+    /** Codes incorrects tolérés avant d'annuler le code en cours. */
+    public const MAX_ATTEMPTS = 5;
+
+    public function __construct(private OneTimeCodeService $codes) {}
+
+    /**
+     * Génère un code de 6 caractères (chiffres et lettres, jamais émis auparavant), en enregistre
+     * l'empreinte (jamais le code en clair) et planifie l'envoi par e-mail.
+     */
     public function sendCode(Assure $assure): void
     {
-        $code = (string) random_int(1000, 9999);
+        $code = $this->codes->generate('email_verification');
 
         $assure->forceFill([
-            'email_verification_code' => $code,
+            'email_verification_code' => $this->codes->fingerprint($code),
             'email_verification_expires_at' => now()->addMinutes(self::EXPIRATION_MINUTES),
+            'email_verification_attempts' => 0,
         ])->save();
 
         $this->dispatchVerificationMail($assure, $code);
 
-        if (app()->environment('local') && config('app.debug')) {
-            Log::info("CAMA vérification e-mail — code pour {$assure->email} : {$code}");
+        if (DevCodes::visible()) {
+            Log::info("CAMA vérification e-mail (mailer log) — code pour {$assure->email} : {$code}");
         }
+    }
+
+    private function clearCode(Assure $assure): void
+    {
+        $assure->forceFill([
+            'email_verification_code' => null,
+            'email_verification_expires_at' => null,
+            'email_verification_attempts' => 0,
+        ])->save();
     }
 
     public function verify(Assure $assure, string $code): void
@@ -42,14 +61,31 @@ class AssureEmailVerificationService
         }
 
         if (now()->isAfter($assure->email_verification_expires_at)) {
+            $this->clearCode($assure);
+
             throw ValidationException::withMessages([
                 'code' => 'Ce code a expiré. Cliquez sur « Renvoyer le code » pour en recevoir un nouveau.',
             ]);
         }
 
-        if (! hash_equals($assure->email_verification_code, trim($code))) {
+        OneTimeCodeService::assertWellFormed($code);
+
+        if (! $this->codes->matches($assure->email_verification_code, $code)) {
+            $attempts = $assure->email_verification_attempts + 1;
+            $remaining = self::MAX_ATTEMPTS - $attempts;
+
+            if ($remaining <= 0) {
+                $this->clearCode($assure);
+
+                throw ValidationException::withMessages([
+                    'code' => 'Trop de codes incorrects. Ce code est annulé : cliquez sur « Renvoyer le code » pour en recevoir un nouveau.',
+                ]);
+            }
+
+            $assure->forceFill(['email_verification_attempts' => $attempts])->save();
+
             throw ValidationException::withMessages([
-                'code' => 'Code incorrect. Vérifiez le code reçu par e-mail.',
+                'code' => "Code incorrect. {$remaining} tentative(s) restante(s).",
             ]);
         }
 
@@ -60,6 +96,7 @@ class AssureEmailVerificationService
             'email_verified_at' => now(),
             'email_verification_code' => null,
             'email_verification_expires_at' => null,
+            'email_verification_attempts' => 0,
             'journal' => $journal,
         ])->save();
     }

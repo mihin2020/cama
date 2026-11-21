@@ -2,6 +2,7 @@
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import Checkbox from '@/Components/Checkbox.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
+import CamaCodeInput from '@/Components/CamaCodeInput.vue';
 import InputError from '@/Components/InputError.vue';
 import TextInput from '@/Components/TextInput.vue';
 import PublicLayout from '@/Layouts/PublicLayout.vue';
@@ -28,15 +29,15 @@ const loginForm = useForm({
 });
 
 const twoFaForm = useForm({ code: '' });
-const digits = ref(['', '', '', '']);
-const digitInputs = ref([]);
+const codeInput = ref(null);
+const CODE_LENGTH = 6;
 const cardRef = ref(null);
 const resending = ref(false);
 
 const inputCls = 'w-full px-4 py-3 border border-outline-variant rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all outline-none text-sm';
 
 function focusFirstDigit() {
-    nextTick(() => digitInputs.value[0]?.focus());
+    nextTick(() => codeInput.value?.focus());
 }
 
 function scrollToCard() {
@@ -65,43 +66,10 @@ const submitLogin = () => {
     });
 };
 
-function syncCode() {
-    twoFaForm.code = digits.value.join('');
-}
-
-function onDigitInput(index, event) {
-    const value = event.target.value.replace(/\D/g, '');
-    digits.value[index] = value.slice(-1);
-    syncCode();
-    if (value && index < 3) {
-        nextTick(() => digitInputs.value[index + 1]?.focus());
-    }
-    if (twoFaForm.code.length === 4) {
-        submit2fa();
-    }
-}
-
-function onDigitKeydown(index, event) {
-    if (event.key === 'Backspace' && !digits.value[index] && index > 0) {
-        digitInputs.value[index - 1]?.focus();
-    }
-}
-
-function onPaste(event) {
-    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/\D/g, '').slice(0, 4);
-    if (!pasted) return;
-    event.preventDefault();
-    pasted.split('').forEach((d, i) => (digits.value[i] = d));
-    syncCode();
-    nextTick(() => digitInputs.value[Math.min(pasted.length, 3)]?.focus());
-    if (twoFaForm.code.length === 4) submit2fa();
-}
-
 function submit2fa() {
-    if (twoFaForm.code.length !== 4 || twoFaForm.processing) return;
+    if (twoFaForm.code.length !== CODE_LENGTH || twoFaForm.processing) return;
     twoFaForm.post(route('assure.login.2fa.store'), {
         onError: () => {
-            digits.value = ['', '', '', ''];
             twoFaForm.code = '';
             focusFirstDigit();
         },
@@ -114,7 +82,6 @@ function resendCode() {
         preserveScroll: true,
         onFinish: () => {
             resending.value = false;
-            digits.value = ['', '', '', ''];
             twoFaForm.clearErrors();
             twoFaForm.code = '';
             focusFirstDigit();
@@ -144,7 +111,7 @@ function cancel2fa() {
                     </h1>
                     <p class="font-body-lg text-body-lg text-white/85 max-w-2xl mx-auto">
                         <template v-if="is2fa">
-                            Saisissez le code à 4 chiffres envoyé à <strong class="text-white">{{ maskedEmail }}</strong>.
+                            Saisissez le code de 6 caractères envoyé à <strong class="text-white">{{ maskedEmail }}</strong>.
                         </template>
                         <template v-else>
                             Accédez à votre tableau de bord, gérez votre dossier familial et suivez vos demandes d'enrôlement.
@@ -188,30 +155,23 @@ function cancel2fa() {
                                         </div>
 
                                         <form @submit.prevent="submit2fa">
-                                            <p class="text-center text-sm font-label-md text-on-surface-variant mb-4">Code à 4 chiffres</p>
-                                            <div class="flex justify-center gap-3 mb-2" @paste="onPaste">
-                                                <input
-                                                    v-for="(d, i) in digits"
-                                                    :key="i"
-                                                    :ref="(el) => (digitInputs[i] = el)"
-                                                    v-model="digits[i]"
-                                                    type="text"
-                                                    inputmode="numeric"
-                                                    autocomplete="one-time-code"
-                                                    maxlength="1"
-                                                    class="w-14 h-16 text-center text-2xl font-bold border-2 rounded-xl outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/30"
-                                                    :class="twoFaForm.errors.code ? 'border-error bg-error/5' : 'border-outline-variant bg-surface-container-low'"
-                                                    @input="onDigitInput(i, $event)"
-                                                    @keydown="onDigitKeydown(i, $event)"
-                                                />
-                                            </div>
+                                            <p class="text-center text-sm font-label-md text-on-surface-variant mb-4">Code de 6 caractères (chiffres et lettres)</p>
+                                            <CamaCodeInput
+                                                ref="codeInput"
+                                                v-model="twoFaForm.code"
+                                                class="mb-2"
+                                                :length="CODE_LENGTH"
+                                                :invalid="!!twoFaForm.errors.code"
+                                                box-class="w-11 h-14 sm:w-12 sm:h-16 text-xl sm:text-2xl border-2 bg-surface-container-low"
+                                                @complete="submit2fa"
+                                            />
                                             <InputError :message="twoFaForm.errors.code" class="text-center mb-4" />
 
                                             <CamaLoadingButton
                                                 type="submit"
                                                 button-class="w-full py-3.5 rounded-lg font-bold shadow-md flex items-center justify-center gap-2"
                                                 :loading="twoFaForm.processing"
-                                                :disabled="twoFaForm.code.length !== 4"
+                                                :disabled="twoFaForm.code.length !== CODE_LENGTH"
                                                 loading-text="Vérification…"
                                             >
                                                 <span class="material-symbols-outlined">verified_user</span>
@@ -230,7 +190,7 @@ function cancel2fa() {
                                                 >
                                                     {{ resending ? 'Envoi en cours…' : 'renvoyer le code' }}
                                                 </button>
-                                                (valable 15 min).
+                                                (valable 10 min).
                                             </p>
                                             <button
                                                 type="button"

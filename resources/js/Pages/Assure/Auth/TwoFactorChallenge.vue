@@ -2,9 +2,10 @@
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaLogo from '@/Components/CamaLogo.vue';
 import FlashMessage from '@/Components/FlashMessage.vue';
+import CamaCodeInput from '@/Components/CamaCodeInput.vue';
 import InputError from '@/Components/InputError.vue';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, nextTick, ref } from 'vue';
+import { computed, ref } from 'vue';
 
 const page = usePage();
 const dev2faCode = computed(() => page.props.flash?.dev_2fa_code ?? null);
@@ -15,49 +16,16 @@ defineProps({
 });
 
 const form = useForm({ code: '' });
-const digits = ref(['', '', '', '']);
-const inputs = ref([]);
+const codeInput = ref(null);
 const resending = ref(false);
-
-function syncCode() {
-    form.code = digits.value.join('');
-}
-
-function onDigitInput(index, event) {
-    const value = event.target.value.replace(/\D/g, '');
-    digits.value[index] = value.slice(-1);
-    syncCode();
-    if (value && index < 3) {
-        nextTick(() => inputs.value[index + 1]?.focus());
-    }
-    if (form.code.length === 4) {
-        submit();
-    }
-}
-
-function onDigitKeydown(index, event) {
-    if (event.key === 'Backspace' && !digits.value[index] && index > 0) {
-        inputs.value[index - 1]?.focus();
-    }
-}
-
-function onPaste(event) {
-    const pasted = (event.clipboardData?.getData('text') ?? '').replace(/\D/g, '').slice(0, 4);
-    if (!pasted) return;
-    event.preventDefault();
-    pasted.split('').forEach((d, i) => (digits.value[i] = d));
-    syncCode();
-    nextTick(() => inputs.value[Math.min(pasted.length, 3)]?.focus());
-    if (form.code.length === 4) submit();
-}
+const CODE_LENGTH = 6;
 
 function submit() {
-    if (form.code.length !== 4 || form.processing) return;
+    if (form.code.length !== CODE_LENGTH || form.processing) return;
     form.post(route('assure.login.2fa.store'), {
         onError: () => {
-            digits.value = ['', '', '', ''];
             form.code = '';
-            nextTick(() => inputs.value[0]?.focus());
+            codeInput.value?.focus();
         },
     });
 }
@@ -100,7 +68,7 @@ function cancel() {
                 </div>
                 <h1 class="font-headline text-2xl font-bold text-on-surface mb-1">Vérification en deux étapes</h1>
                 <p class="text-sm text-on-surface-variant mb-6">
-                    Un code à <strong class="text-on-surface">4 chiffres</strong> a été envoyé à
+                    Un code de <strong class="text-on-surface">6 caractères</strong> (chiffres et lettres) a été envoyé à
                     <strong class="text-on-surface">{{ email }}</strong>. Saisissez-le pour finaliser la connexion.
                     <span class="block mt-2 text-[11px] italic">La réception peut prendre jusqu'à une minute selon votre messagerie.</span>
                 </p>
@@ -119,29 +87,21 @@ function cancel() {
                 </div>
 
                 <form @submit.prevent="submit">
-                    <div class="flex justify-center gap-3 mb-2" @paste="onPaste">
-                        <input
-                            v-for="(d, i) in digits"
-                            :key="i"
-                            :ref="(el) => (inputs[i] = el)"
-                            v-model="digits[i]"
-                            type="text"
-                            inputmode="numeric"
-                            autocomplete="one-time-code"
-                            maxlength="1"
-                            class="w-14 h-16 text-center text-2xl font-bold border border-outline-variant rounded-xl focus:border-primary focus:ring-primary"
-                            :class="form.errors.code ? 'border-error' : ''"
-                            @input="onDigitInput(i, $event)"
-                            @keydown="onDigitKeydown(i, $event)"
-                        />
-                    </div>
+                    <CamaCodeInput
+                        ref="codeInput"
+                        v-model="form.code"
+                        class="mb-2"
+                        :length="CODE_LENGTH"
+                        :invalid="!!form.errors.code"
+                        @complete="submit"
+                    />
                     <InputError :message="form.errors.code" class="text-center mb-3" />
 
                     <CamaLoadingButton
                         type="submit"
                         button-class="w-full justify-center mt-2"
                         :loading="form.processing"
-                        :disabled="form.code.length !== 4"
+                        :disabled="form.code.length !== CODE_LENGTH"
                     >
                         <span class="material-symbols-outlined text-[18px]">verified_user</span>
                         Vérifier et se connecter
@@ -154,7 +114,7 @@ function cancel() {
                         <button type="button" class="text-primary font-bold hover:underline disabled:opacity-50" :disabled="resending" @click="resend">
                             {{ resending ? 'Envoi en cours…' : 'renvoyer le code' }}
                         </button>
-                        (valable 15 minutes).
+                        (valable 10 minutes).
                     </p>
                 </div>
             </div>

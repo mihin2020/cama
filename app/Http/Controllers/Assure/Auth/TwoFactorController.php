@@ -26,9 +26,7 @@ class TwoFactorController extends Controller
         }
 
         $data = $request->validate([
-            'code' => ['required', 'string', 'size:4'],
-        ], [
-            'code.size' => 'Le code comporte 4 chiffres.',
+            'code' => ['required', 'string', 'max:20'],
         ]);
 
         $service->verify($assure, $data['code']);

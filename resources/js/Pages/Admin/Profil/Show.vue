@@ -190,7 +190,7 @@ function submitPassword() {
                     >{{ profile.deuxFa ? 'Activée' : 'Désactivée' }}</span>
                 </div>
                 <p class="text-xs text-on-surface-variant mb-4">
-                    Option facultative. Une fois activée, un code à 6 chiffres est envoyé à {{ profile.email }} à chaque connexion par mot de passe.
+                    Option facultative. Une fois activée, un code de 6 caractères (chiffres et lettres) est envoyé à {{ profile.email }} à chaque connexion par mot de passe.
                 </p>
                 <form class="flex flex-col sm:flex-row sm:items-end gap-3" @submit.prevent="submitTwoFa">
                     <div class="flex-1">

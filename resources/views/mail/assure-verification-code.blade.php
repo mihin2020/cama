@@ -20,7 +20,7 @@
     </p>
 
     <p style="font-size: 13px; color: #666;">
-        Ce code expire sous 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.
+        Ce code de 6 caractères (chiffres et lettres) expire sous {{ \App\Services\AssureEmailVerificationService::EXPIRATION_MINUTES }} minutes et ne sert qu'une fois. Si vous n'êtes pas à l'origine de cette demande, ignorez ce message.
     </p>
 
     <p style="font-size: 13px; color: #666; margin-top: 32px;">

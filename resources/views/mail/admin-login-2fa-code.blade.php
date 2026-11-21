@@ -20,7 +20,7 @@
     </p>
 
     <p style="font-size: 13px; color: #666;">
-        Ce code expire sous {{ \App\Services\AdminLogin2faService::EXPIRATION_MINUTES }} minutes et ne peut être saisi que {{ \App\Services\AdminLogin2faService::MAX_ATTEMPTS }} fois.
+        Ce code de 6 caractères (chiffres et lettres) expire sous {{ \App\Services\AdminLogin2faService::EXPIRATION_MINUTES }} minutes et ne peut être saisi que {{ \App\Services\AdminLogin2faService::MAX_ATTEMPTS }} fois.
         Si vous n'êtes pas à l'origine de cette connexion, votre mot de passe est probablement compromis :
         changez-le immédiatement et prévenez l'administrateur de la plateforme.
     </p>

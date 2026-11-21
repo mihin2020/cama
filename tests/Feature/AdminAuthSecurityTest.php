@@ -194,10 +194,13 @@ class AdminAuthSecurityTest extends TestCase
         $this->assertGuest('admin');
 
         $code = session('dev_2fa_code');
-        $this->assertMatchesRegularExpression('/^\d{6}$/', $code);
+        $this->assertMatchesRegularExpression('/^[A-HJ-NP-Z2-9]{6}$/', $code);
+        $this->assertMatchesRegularExpression('/[A-Z]/', $code);
+        $this->assertMatchesRegularExpression('/\d/', $code);
         $this->assertNotSame($code, $admin->fresh()->login_2fa_code, 'Le code ne doit pas être stocké en clair.');
 
-        $this->post(route('admin.login.2fa.store'), ['code' => $code])
+        // Saisie en minuscules acceptée (le code est normalisé).
+        $this->post(route('admin.login.2fa.store'), ['code' => strtolower($code)])
             ->assertRedirect(route('admin.dashboard'));
 
         $this->assertAuthenticatedAs($admin, 'admin');
@@ -210,7 +213,7 @@ class AdminAuthSecurityTest extends TestCase
         $admin = $this->makeAdmin();
         $service = app(AdminLogin2faService::class);
         $code = $service->sendCode($admin);
-        $wrong = $code === '000000' ? '111111' : '000000';
+        $wrong = $code === 'AAAA22' ? 'BBBB33' : 'AAAA22';
 
         for ($i = 0; $i < AdminLogin2faService::MAX_ATTEMPTS; $i++) {
             try {
