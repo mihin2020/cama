@@ -11,6 +11,7 @@ use App\Services\PlatformSettingsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
@@ -72,6 +73,7 @@ class CmsSiteStructureTest extends TestCase
 
     public function test_logo_can_be_replaced_and_restored(): void
     {
+        Storage::fake('public');
         $admin = $this->admin();
 
         $this->actingAs($admin, 'admin')
@@ -79,8 +81,11 @@ class CmsSiteStructureTest extends TestCase
             ->assertSessionHasNoErrors();
 
         $logo = app(PlatformSettingsService::class)->siteLogo();
-        $this->assertMatchesRegularExpression('~^/media/branding/CMS_IDENTITE_LOGO_\d{8}-\d{6}_[0-9A-F]{4}\.png$~', $logo);
-        $this->assertFileExists(public_path(ltrim($logo, '/')));
+        // Rangé sur le stockage de Laravel (conservé entre deux déploiements), pas dans public/.
+        $this->assertMatchesRegularExpression('~^/storage/site/media/branding/CMS_IDENTITE_LOGO_\d{8}-\d{6}_[0-9A-F]{4}\.png$~', $logo);
+        $diskPath = substr($logo, strlen('/storage/'));
+        Storage::disk('public')->assertExists($diskPath);
+        $this->assertFileDoesNotExist(public_path(ltrim($logo, '/')));
 
         // Le logo est partagé avec toutes les pages.
         $this->get('/mention_legales')
@@ -89,7 +94,7 @@ class CmsSiteStructureTest extends TestCase
         $this->actingAs($admin, 'admin')->delete(route('admin.cms.identity.logo.reset'))->assertSessionHasNoErrors();
 
         $this->assertSame(PlatformSettingsService::DEFAULT_LOGO, app(PlatformSettingsService::class)->siteLogo());
-        $this->assertFileDoesNotExist(public_path(ltrim($logo, '/')));
+        Storage::disk('public')->assertMissing($diskPath);
     }
 
     public function test_svg_logo_is_rejected(): void

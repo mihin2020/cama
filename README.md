@@ -37,6 +37,27 @@ npm run build
 php artisan serve
 ```
 
+## Fichiers envoyés et déploiement
+
+Les fichiers envoyés depuis l'application ne sont **jamais** rangés dans `public/` (dossier remplacé à
+chaque déploiement) :
+
+| Fichiers | Où | Accès |
+|---|---|---|
+| Pièces des assurés (PDF, photos) | `storage/app/private/assures/<N° FIF>/` | uniquement par l'application, après contrôle des droits |
+| Images, documents, médiathèque, logo du site public | `storage/app/public/site/…` (disque `SITE_UPLOADS_DISK`) | public, à l'adresse `/storage/site/…` |
+
+À prévoir à l'hébergement :
+
+1. **Conserver `storage/`** d'un déploiement à l'autre (dossier partagé / volume). Sans cela, les fichiers sont perdus.
+2. `php artisan storage:link` : sert `/storage` directement par le serveur web (plus rapide). Sans ce lien,
+   Laravel sert les fichiers lui-même : le site fonctionne, un peu plus lentement.
+3. Hébergement sans disque persistant (conteneurs, plateformes éphémères) : `SITE_UPLOADS_DISK=s3` (et les
+   variables `AWS_*`). Les pièces des assurés, elles, doivent rester sur un disque privé persistant.
+4. Si le site contient déjà des fichiers dans `public/images/cms`, `public/documents/cms`, `public/media/cms`,
+   `public/images/partners` ou `public/media/branding` : `php artisan uploads:move-to-storage` les reprend et
+   corrige les adresses (puis `--delete-originals` après vérification).
+
 ## URLs
 
 | Zone | URL |

@@ -65,6 +65,7 @@ class UploadAndPieceSecurityTest extends TestCase
 
     public function test_media_library_refuses_web_pages_and_keeps_only_safe_extensions(): void
     {
+        Storage::fake('public');
         $admin = $this->admin(['cms.media']);
 
         $this->actingAs($admin, 'admin')
@@ -78,7 +79,6 @@ class UploadAndPieceSecurityTest extends TestCase
 
         $media = CmsMedia::query()->firstOrFail();
         $this->assertSame('png', $media->extension);
-        @unlink(public_path($media->disk_path));
     }
 
     public function test_dossier_pieces_require_the_dossier_permission(): void

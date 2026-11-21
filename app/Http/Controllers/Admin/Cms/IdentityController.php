@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin\Cms;
 
+use App\Support\SiteUploads;
 use App\Support\UploadFilename;
 use App\Http\Controllers\Controller;
 use App\Services\PlatformSettingsService;
@@ -52,19 +53,18 @@ class IdentityController extends Controller
         ]);
 
         $file = $request->file('logo');
-        $directory = public_path(self::LOGO_DIRECTORY);
-        File::ensureDirectoryExists($directory);
         $name = UploadFilename::makeUnique(
-            fn (string $candidate) => is_file($directory.DIRECTORY_SEPARATOR.$candidate),
+            fn (string $candidate) => SiteUploads::nameTaken(self::LOGO_DIRECTORY, $candidate),
             UploadFilename::CMS,
             'IDENTITE',
             'LOGO',
             $file->extension(),
         );
-        $file->move($directory, $name);
+        // Rangé sur le stockage de Laravel (voir App\Support\SiteUploads), pas dans public/.
+        $ref = SiteUploads::store($file, self::LOGO_DIRECTORY, $name);
 
         $previous = $settings->siteLogo();
-        $settings->updateSiteLogo('/'.self::LOGO_DIRECTORY.'/'.$name);
+        $settings->updateSiteLogo(SiteUploads::url($ref));
         $this->deleteUploadedLogo($previous);
 
         return back()->with('success', 'Logo mis à jour sur tout le site.');
@@ -109,9 +109,8 @@ class IdentityController extends Controller
 
     private function deleteUploadedLogo(string $path): void
     {
-        // On ne supprime que les fichiers envoyés via ce module, jamais le logo d'origine.
-        if (str_starts_with($path, '/'.self::LOGO_DIRECTORY.'/')) {
-            File::delete(public_path(ltrim($path, '/')));
-        }
+        // On ne supprime que les fichiers envoyés via ce module (stockage de Laravel, ou ancien
+        // dossier media/branding), jamais le logo d'origine du site.
+        SiteUploads::delete($path);
     }
 }

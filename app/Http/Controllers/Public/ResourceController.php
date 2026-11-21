@@ -7,6 +7,7 @@ use App\Models\CmsResource;
 use App\Models\CmsResourceCategory;
 use App\Services\CmsDocumentUploadService;
 use App\Services\PublicSiteService;
+use App\Support\SiteUploads;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -65,6 +66,7 @@ class ResourceController extends Controller
             return $url;
         }
 
-        return is_file(public_path(ltrim($url, '/'))) ? $url : null;
+        // Document envoyé depuis le studio (stockage de Laravel, ou ancien dossier public/) ou fichier d'origine du site.
+        return (SiteUploads::exists($url) || is_file(public_path(ltrim($url, '/')))) ? $url : null;
     }
 }

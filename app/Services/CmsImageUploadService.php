@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\SafeUpload;
+use App\Support\SiteUploads;
 use App\Support\UploadFilename;
 use Illuminate\Http\UploadedFile;
 
@@ -13,48 +14,23 @@ class CmsImageUploadService
      */
     public function store(UploadedFile $file, string $subdir = 'cms', string $owner = 'SITE'): string
     {
-        $directory = public_path("images/{$subdir}");
-
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
+        $folder = "images/{$subdir}";
         $extension = SafeUpload::extension($file, SafeUpload::IMAGES, 'image_file');
         $filename = UploadFilename::makeUnique(
-            fn (string $name) => is_file($directory.DIRECTORY_SEPARATOR.$name),
+            fn (string $name) => SiteUploads::nameTaken($folder, $name),
             UploadFilename::CMS,
             $owner,
             'IMAGE',
             $extension,
         );
 
-        $file->move($directory, $filename);
-
-        return "images/{$subdir}/{$filename}";
+        // Rangé sur le stockage de Laravel (voir App\Support\SiteUploads), pas dans public/.
+        return SiteUploads::store($file, $folder, $filename);
     }
 
+    /** Supprime l'image si elle a été envoyée par l'administration (jamais une image d'origine du site). */
     public function deleteIfUploaded(?string $relativePath): void
     {
-        if (! $relativePath) {
-            return;
-        }
-
-        $managed = ['images/cms/', 'images/partners/'];
-        $isManaged = false;
-        foreach ($managed as $prefix) {
-            if (str_starts_with($relativePath, $prefix)) {
-                $isManaged = true;
-                break;
-            }
-        }
-        if (! $isManaged) {
-            return;
-        }
-
-        $fullPath = public_path($relativePath);
-
-        if (is_file($fullPath)) {
-            unlink($fullPath);
-        }
+        SiteUploads::delete($relativePath);
     }
 }

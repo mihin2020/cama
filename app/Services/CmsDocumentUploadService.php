@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Support\SafeUpload;
+use App\Support\SiteUploads;
 use App\Support\UploadFilename;
 use Illuminate\Http\UploadedFile;
 
@@ -13,37 +14,23 @@ class CmsDocumentUploadService
      */
     public function store(UploadedFile $file, string $subdir = 'cms', string $owner = 'RESSOURCE'): string
     {
-        $directory = public_path("documents/{$subdir}");
-
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
+        $folder = "documents/{$subdir}";
         $extension = SafeUpload::extension($file, [...SafeUpload::DOCUMENTS, 'png', 'jpg'], 'document_file');
         $filename = UploadFilename::makeUnique(
-            fn (string $name) => is_file($directory.DIRECTORY_SEPARATOR.$name),
+            fn (string $name) => SiteUploads::nameTaken($folder, $name),
             UploadFilename::CMS,
             $owner,
             'DOCUMENT',
             $extension,
         );
 
-        $file->move($directory, $filename);
-
-        return "documents/{$subdir}/{$filename}";
+        // Rangé sur le stockage de Laravel (voir App\Support\SiteUploads), pas dans public/.
+        return SiteUploads::store($file, $folder, $filename);
     }
 
     public function deleteIfUploaded(?string $relativePath): void
     {
-        if (! $relativePath || ! str_starts_with($relativePath, 'documents/cms/')) {
-            return;
-        }
-
-        $fullPath = public_path($relativePath);
-
-        if (is_file($fullPath)) {
-            unlink($fullPath);
-        }
+        SiteUploads::delete($relativePath);
     }
 
     public static function formatFromFilename(string $filename): string
@@ -78,6 +65,6 @@ class CmsDocumentUploadService
             return $path;
         }
 
-        return '/'.ltrim($path, '/');
+        return SiteUploads::url($path);
     }
 }

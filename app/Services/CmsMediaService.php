@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\SiteUploads;
 use App\Support\UploadFilename;
 use App\Models\AdminUser;
 use App\Models\CmsArticle;
@@ -65,16 +66,10 @@ class CmsMediaService
      */
     public function store(UploadedFile $file, ?AdminUser $admin = null, array $data = []): CmsMedia
     {
-        $directory = public_path('media/cms');
-
-        if (! is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
         $extension = SafeUpload::extension($file, [...SafeUpload::IMAGES, ...SafeUpload::DOCUMENTS]);
         $original = $file->getClientOriginalName();
         $filename = UploadFilename::makeUnique(
-            fn (string $name) => is_file($directory.DIRECTORY_SEPARATOR.$name),
+            fn (string $name) => SiteUploads::nameTaken('media/cms', $name),
             UploadFilename::CMS,
             'MEDIA',
             UploadFilename::segment(pathinfo($original, PATHINFO_FILENAME)),
@@ -84,11 +79,12 @@ class CmsMediaService
         $mime = $file->getMimeType();
         $dimensions = $this->dimensions($file);
 
-        $file->move($directory, $filename);
+        // Rangé sur le stockage de Laravel (voir App\Support\SiteUploads), pas dans public/.
+        $ref = SiteUploads::store($file, 'media/cms', $filename);
 
         $media = CmsMedia::query()->create([
-            'disk_path' => 'media/cms/'.$filename,
-            'url' => '/media/cms/'.$filename,
+            'disk_path' => $ref,
+            'url' => SiteUploads::url($ref),
             'name' => pathinfo($original, PATHINFO_FILENAME) ?: $filename,
             'original_name' => $original,
             'title' => $data['title'] ?? pathinfo($original, PATHINFO_FILENAME) ?: $filename,
@@ -131,10 +127,7 @@ class CmsMediaService
 
     public function delete(CmsMedia $media, ?AdminUser $admin = null): void
     {
-        $path = public_path($media->disk_path);
-        if (is_file($path)) {
-            unlink($path);
-        }
+        SiteUploads::delete($media->disk_path);
 
         $name = $media->original_name;
         $media->delete();

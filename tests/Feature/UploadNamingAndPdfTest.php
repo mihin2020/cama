@@ -297,6 +297,7 @@ class UploadNamingAndPdfTest extends TestCase
 
     public function test_site_uploads_use_the_same_naming(): void
     {
+        Storage::fake('public');
         $admin = AdminUser::query()->create([
             'nom' => 'Web', 'prenom' => 'Master', 'email' => 'web@cama.bf', 'password' => 'motdepasse-solide',
             'role' => AdminRole::Administrateur, 'actif' => true,
@@ -309,6 +310,5 @@ class UploadNamingAndPdfTest extends TestCase
         $media = \App\Models\CmsMedia::query()->firstOrFail();
         $this->assertMatchesRegularExpression('/^CMS_MEDIA_RAPPORT-ANNUEL-2026_\d{8}-\d{6}_[0-9A-F]{4}\.png$/', basename($media->disk_path));
         $this->assertSame('Rapport annuel 2026.png', $media->original_name);
-        @unlink(public_path($media->disk_path));
     }
 }

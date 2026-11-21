@@ -930,7 +930,8 @@ class PlatformSettingsService
             $stored = $this->get('site_identity');
             $path = is_array($stored) ? ($stored['logo'] ?? null) : null;
 
-            return ($path && is_file(public_path(ltrim($path, '/')))) ? $path : self::DEFAULT_LOGO;
+            // Logo envoyé depuis le studio (stockage de Laravel, ou ancien dossier public/) si le fichier existe encore.
+            return ($path && \App\Support\SiteUploads::exists($path)) ? $path : self::DEFAULT_LOGO;
         });
     }
 
