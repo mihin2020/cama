@@ -97,7 +97,7 @@ class FifProfileService
     private function lastRank(string $prefix): int
     {
         return Assure::query()
-            ->where('numero_fif', 'like', SqlLike::escape($prefix).'%')
+            ->whereLike('numero_fif', SqlLike::escape($prefix).'%')
             ->pluck('numero_fif')
             ->map(fn (string $numero) => NumeroFif::rank($prefix, $numero))
             ->filter()

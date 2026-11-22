@@ -206,9 +206,9 @@ class AdminUserService
             ->with('roleDefinition')
             ->when($search, function ($query, string $search) {
                 $like = SqlLike::contains($search);
-                $query->where(fn ($q) => $q->where('nom', 'like', $like)
-                    ->orWhere('prenom', 'like', $like)
-                    ->orWhere('email', 'like', $like));
+                $query->where(fn ($q) => $q->whereLike('nom', $like)
+                    ->orWhereLike('prenom', $like)
+                    ->orWhereLike('email', $like));
             })
             ->orderBy('nom')
             ->orderBy('prenom')

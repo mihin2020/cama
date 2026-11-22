@@ -23,8 +23,8 @@ class CmsPageService
             ->with('author')
             ->when($query, function ($builder) use ($query) {
                 $builder->where(function ($inner) use ($query) {
-                    $inner->where('title', 'like', "%{$query}%")
-                        ->orWhere('slug', 'like', "%{$query}%");
+                    $inner->whereLike('title', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('slug', \App\Support\SqlLike::contains($query));
                 });
             })
             ->when($status && array_key_exists($status, self::STATUSES), fn ($builder) => $builder->where('status', $status))

@@ -37,7 +37,7 @@ class AdminRoleService
             ->withCount(['users', 'users as custom_users_count' => fn ($query) => $query->whereNotNull('permissions')])
             ->when($search, function ($query, string $search) {
                 $like = SqlLike::contains($search);
-                $query->where(fn ($q) => $q->where('nom', 'like', $like)->orWhere('description', 'like', $like));
+                $query->where(fn ($q) => $q->whereLike('nom', $like)->orWhereLike('description', $like));
             })
             ->orderByDesc('rang')
             ->orderBy('nom')

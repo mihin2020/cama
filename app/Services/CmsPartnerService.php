@@ -80,9 +80,9 @@ class CmsPartnerService
 
         if ($search = trim((string) $search)) {
             $like = SqlLike::contains($search);
-            $query->where(fn ($q) => $q->where('name', 'like', $like)
-                ->orWhere('city', 'like', $like)
-                ->orWhere('address', 'like', $like));
+            $query->where(fn ($q) => $q->whereLike('name', $like)
+                ->orWhereLike('city', $like)
+                ->orWhereLike('address', $like));
         }
 
         return $query;

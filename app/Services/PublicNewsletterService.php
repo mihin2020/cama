@@ -152,8 +152,8 @@ class PublicNewsletterService
             ->when($status === 'bounced', fn ($builder) => $builder->where('email_status', 'bounced'))
             ->when($segment, fn ($builder) => $builder->where('segment', $segment))
             ->when($query, fn ($builder) => $builder->where(function ($inner) use ($query) {
-                $inner->where('email', 'like', "%{$query}%")
-                    ->orWhere('full_name', 'like', "%{$query}%");
+                $inner->whereLike('email', \App\Support\SqlLike::contains($query))
+                    ->orWhereLike('full_name', \App\Support\SqlLike::contains($query));
             }))
             ->orderByDesc('subscribed_at')
             ->orderByDesc('id')

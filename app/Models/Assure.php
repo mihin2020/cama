@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\HasUuid;
 use App\Enums\AssureStatut;
 use App\Services\FifProfileService;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -75,6 +76,12 @@ class Assure extends Authenticatable
                 app(FifProfileService::class)->assign($assure);
             }
         });
+    }
+
+    /** Adresse toujours enregistrée en minuscules (comparaisons identiques sous MySQL et PostgreSQL). */
+    protected function email(): Attribute
+    {
+        return Attribute::set(fn (?string $value) => $value === null ? null : mb_strtolower(trim($value)));
     }
 
     public function getFullNameAttribute(): string

@@ -508,11 +508,46 @@ class ExportService
         $sql = match ($driver) {
             'mysql', 'mariadb' => (array) (DB::selectOne('SHOW CREATE TABLE '.DB::connection()->getQueryGrammar()->wrapTable($table)) ?? []),
             'sqlite' => ['sql' => DB::table('sqlite_master')->where('type', 'table')->where('name', $table)->value('sql')],
+            'pgsql' => ['sql' => $this->postgresCreateStatement($table)],
             default => [],
         };
         $statement = $sql['Create Table'] ?? $sql['sql'] ?? null;
 
         return $statement ? preg_replace('/^CREATE TABLE\s+/i', 'CREATE TABLE IF NOT EXISTS ', $statement) : null;
+    }
+
+    /** CREATE TABLE reconstitué depuis le schéma (PostgreSQL n'a pas d'équivalent de SHOW CREATE TABLE). */
+    private function postgresCreateStatement(string $table): ?string
+    {
+        $columns = \Illuminate\Support\Facades\Schema::getColumns($table);
+        if ($columns === []) {
+            return null;
+        }
+
+        $grammar = DB::connection()->getQueryGrammar();
+        $lines = [];
+        foreach ($columns as $column) {
+            $type = $column['auto_increment'] ? ($column['type_name'] === 'int8' ? 'bigserial' : 'serial') : $column['type'];
+            $line = $grammar->wrap($column['name']).' '.$type;
+            if (! $column['nullable']) {
+                $line .= ' NOT NULL';
+            }
+            if ($column['default'] !== null && ! $column['auto_increment']) {
+                $line .= ' DEFAULT '.$column['default'];
+            }
+            $lines[] = $line;
+        }
+
+        foreach (\Illuminate\Support\Facades\Schema::getIndexes($table) as $index) {
+            if ($index['primary']) {
+                $lines[] = 'PRIMARY KEY ('.implode(', ', array_map(fn ($c) => $grammar->wrap($c), $index['columns'])).')';
+            }
+        }
+
+        return 'CREATE TABLE '.$grammar->wrapTable($table)." (
+  ".implode(",
+  ", $lines)."
+)";
     }
 
     private function sqlValue(\PDO $pdo, mixed $value, ?array $meta): string
@@ -521,7 +556,8 @@ class ExportService
             return 'NULL';
         }
         if (is_bool($value)) {
-            return $value ? '1' : '0';
+            // PostgreSQL refuse 1/0 pour un booléen ; MySQL et SQLite acceptent TRUE/FALSE comme 1/0.
+            return $value ? 'TRUE' : 'FALSE';
         }
         if (is_int($value) || is_float($value)) {
             return (string) $value;

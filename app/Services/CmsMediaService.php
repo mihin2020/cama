@@ -45,15 +45,15 @@ class CmsMediaService
             ->with('uploader')
             ->when($query, function ($builder) use ($query) {
                 $builder->where(function ($inner) use ($query) {
-                    $inner->where('name', 'like', "%{$query}%")
-                        ->orWhere('original_name', 'like', "%{$query}%")
-                        ->orWhere('title', 'like', "%{$query}%")
-                        ->orWhere('alt_text', 'like', "%{$query}%")
-                        ->orWhere('description', 'like', "%{$query}%");
+                    $inner->whereLike('name', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('original_name', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('title', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('alt_text', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('description', \App\Support\SqlLike::contains($query));
                 });
             })
-            ->when($type === 'images', fn ($builder) => $builder->where('mime_type', 'like', 'image/%'))
-            ->when($type === 'documents', fn ($builder) => $builder->where('mime_type', 'not like', 'image/%'))
+            ->when($type === 'images', fn ($builder) => $builder->whereLike('mime_type', 'image/%'))
+            ->when($type === 'documents', fn ($builder) => $builder->whereNotLike('mime_type', 'image/%'))
             ->when($folder, fn ($builder) => $builder->where('folder', $folder))
             ->when($category, fn ($builder) => $builder->where('category', $category))
             ->when($extension, fn ($builder) => $builder->where('extension', strtolower($extension)))

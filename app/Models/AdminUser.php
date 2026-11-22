@@ -6,6 +6,7 @@ use App\Models\Concerns\HasUuid;
 use App\Casts\AdminRoleSlug;
 use App\Enums\AdminRole;
 use App\Support\AdminPermissions;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,6 +52,12 @@ class AdminUser extends Authenticatable
             'invited_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    /** Adresse toujours enregistrée en minuscules (comparaisons identiques sous MySQL et PostgreSQL). */
+    protected function email(): Attribute
+    {
+        return Attribute::set(fn (?string $value) => $value === null ? null : mb_strtolower(trim($value)));
     }
 
     public function getFullNameAttribute(): string

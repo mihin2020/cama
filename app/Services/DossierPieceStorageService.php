@@ -97,7 +97,7 @@ class DossierPieceStorageService
         $conjoint = stripos((string) $dossier->lien, 'conjoint') !== false;
 
         $position = $assure->dossiers()
-            ->where('lien', $conjoint ? 'like' : 'not like', '%onjoint%')
+            ->when($conjoint, fn ($q) => $q->whereLike('lien', '%onjoint%'), fn ($q) => $q->whereNotLike('lien', '%onjoint%'))
             ->where('id', '<=', $dossier->id)
             ->count();
 

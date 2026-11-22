@@ -37,6 +37,27 @@ npm run build
 php artisan serve
 ```
 
+## Base de données : MySQL ou PostgreSQL
+
+L'application fonctionne sur MySQL/MariaDB, PostgreSQL et SQLite (tests). Pour PostgreSQL :
+
+```bash
+createdb cama                       # puis dans .env : DB_CONNECTION=pgsql, DB_HOST, DB_PORT=5432, DB_DATABASE=cama, DB_USERNAME, DB_PASSWORD
+php artisan migrate --seed
+```
+
+Points de compatibilité déjà traités dans le code :
+
+- recherches insensibles à la casse (`whereLike`, soit `ILIKE` sous PostgreSQL) ;
+- adresses e-mail toujours en minuscules (PostgreSQL compare en respectant la casse) ;
+- export SQL (page Exports) avec `CREATE TABLE` reconstitué et booléens `TRUE/FALSE`.
+
+Contrôle avant la mise en service : exécuter la suite de tests sur PostgreSQL.
+
+```bash
+createdb cama_test
+php artisan test --configuration=phpunit.pgsql.xml   # identifiants dans phpunit.pgsql.xml
+```
 ## Fichiers envoyés et déploiement
 
 Les fichiers envoyés depuis l'application ne sont **jamais** rangés dans `public/` (dossier remplacé à

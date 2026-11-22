@@ -21,8 +21,8 @@ class PublicSearchService
         $pages = CmsPage::query()
             ->where('status', 'published')
             ->where(function ($builder) use ($q) {
-                $builder->where('title', 'like', "%{$q}%")
-                    ->orWhere('slug', 'like', "%{$q}%");
+                $builder->whereLike('title', \App\Support\SqlLike::contains($q))
+                    ->orWhereLike('slug', \App\Support\SqlLike::contains($q));
             })
             ->orderBy('title')
             ->limit(8)
@@ -40,9 +40,9 @@ class PublicSearchService
             ->with('category')
             ->where('status', 'published')
             ->where(function ($builder) use ($q) {
-                $builder->where('title', 'like', "%{$q}%")
-                    ->orWhere('excerpt', 'like', "%{$q}%")
-                    ->orWhere('body_html', 'like', "%{$q}%");
+                $builder->whereLike('title', \App\Support\SqlLike::contains($q))
+                    ->orWhereLike('excerpt', \App\Support\SqlLike::contains($q))
+                    ->orWhereLike('body_html', \App\Support\SqlLike::contains($q));
             })
             ->orderByDesc('published_at')
             ->limit(10)
@@ -60,8 +60,8 @@ class PublicSearchService
             ->with('category')
             ->where('published', true)
             ->where(function ($builder) use ($q) {
-                $builder->where('title', 'like', "%{$q}%")
-                    ->orWhere('description', 'like', "%{$q}%");
+                $builder->whereLike('title', \App\Support\SqlLike::contains($q))
+                    ->orWhereLike('description', \App\Support\SqlLike::contains($q));
             })
             ->orderBy('sort_order')
             ->orderBy('title')

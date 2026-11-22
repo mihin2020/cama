@@ -105,11 +105,11 @@ class PublicContactService
             ->when($status, fn ($builder) => $builder->where('status', $status))
             ->when($query, function ($builder) use ($query) {
                 $builder->where(function ($inner) use ($query) {
-                    $inner->where('full_name', 'like', "%{$query}%")
-                        ->orWhere('email', 'like', "%{$query}%")
-                        ->orWhere('phone', 'like', "%{$query}%")
-                        ->orWhere('subject', 'like', "%{$query}%")
-                        ->orWhere('message', 'like', "%{$query}%");
+                    $inner->whereLike('full_name', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('email', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('phone', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('subject', \App\Support\SqlLike::contains($query))
+                        ->orWhereLike('message', \App\Support\SqlLike::contains($query));
                 });
             })
             ->latest()
