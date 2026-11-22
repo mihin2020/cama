@@ -27,7 +27,7 @@ class LoadTestSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') || getgetenv('LOAD_TEST_CONFIRM') !== '1') {
+        if (app()->environment('production') || getenv('LOAD_TEST_CONFIRM') !== '1') {
             $this->command?->error('Refusé : base jetable uniquement. Définissez LOAD_TEST_CONFIRM=1 (jamais en production).');
 
             return;
@@ -101,7 +101,8 @@ class LoadTestSeeder extends Seeder
                 'uuid' => (string) Str::uuid(), 'nom' => 'GEST'.$n, 'prenom' => 'Charge', 'password' => $hash, 'role' => 'gestionnaire',
                 'actif' => true, 'created_at' => $now, 'updated_at' => $now,
             ]);
-            $names[] = 'Charge GEST'.$n;
+            // Les dossiers portent le nom AFFICHÉ du compte (avec son grade), comme dans l'application.
+            $names[] = \App\Models\AdminUser::query()->where('email', $email)->first()->display_name;
         }
 
         DB::table('admin_users')->updateOrInsert(['email' => 'charge-admin@charge.test'], [

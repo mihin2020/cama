@@ -1,7 +1,7 @@
 # Dimensionnement de la base de données et test de montée en charge
 
-> **État : outillage prêt, mesures à réaliser.** Les scripts ci-dessous n'ont pas pu être exécutés sur la machine de
-> développement (ni Docker, ni k6, ni serveur PostgreSQL). Les valeurs de la section « Valeurs de départ » sont des
+> **État : mesures de la base réalisées (section 6) ; test web complet (k6) à réaliser.** Le test web n'a pas pu être
+> exécuté sur la machine de développement (ni Docker, ni k6). Les valeurs de la section « Valeurs de départ » sont des
 > **estimations de départ**, pas des résultats : elles doivent être confirmées (ou corrigées) par les mesures de la
 > section « Résultats », à remplir après l'exécution du test.
 
@@ -99,3 +99,28 @@ Seuils visés (définis dans `tests/Load/common.js`) : moins de 1 % d'erreurs, p
 
 Après l'essai, consigner ici : les requêtes les plus lentes de `pg_stat_statements`, les index ajoutés si besoin, la
 valeur finale retenue pour chaque paramètre du tableau de la section 4 et la configuration serveur recommandée.
+
+## 6. Mesures réalisées : base PostgreSQL seule (sans serveur web)
+
+Réalisées sur la machine de développement (PostgreSQL 19, Windows, base `cama_load`, 50 000 assurés, 150 000 dossiers,
+127 Mo) avec `php tests/Load/db-benchmark.php`. Ce test exécute les vraies fonctions de l'application ; il ne mesure ni
+nginx, ni PHP-FPM, ni le réseau.
+
+| Scénario (une requête isolée) | Moyenne | Remarque |
+|---|---|---|
+| Assuré : tableau de bord | 13 à 22 ms | |
+| Assuré : connexion | 4 ms | |
+| Admin : liste des assurés avec recherche | 833 ms → **198 ms** | après les index trigrammes (migration `…_add_search_indexes_postgres`) |
+| Admin : liste des assurés sans recherche | 460 à 495 ms | ≈ 83 requêtes SQL par page (à réduire) |
+| **Gestionnaire : page Dossiers (≈ 7 500 dossiers)** | **78 s** | **plante avec la limite mémoire PHP par défaut (128 Mo)** |
+
+Parallèle, 8 processus PHP pendant 20 s (62 % tableau de bord, 25 % connexion, 13 % listes admin) : 104 requêtes/s,
+aucune erreur, latence moyenne 76 ms, p95 409 ms, p99 477 ms, 8 connexions actives au maximum, cache PostgreSQL 99,98 %.
+
+### Constats
+
+1. **La page Dossiers charge tous les dossiers visibles en mémoire** (`AdminDossierService::scopedDossiers` puis
+   `groupFamilies`). Inutilisable au-delà de quelques centaines de dossiers par utilisateur ; impossible pour un compte
+   qui voit tout (150 000). Il faut paginer côté serveur par famille et calculer les compteurs en SQL.
+2. La liste des assurés exécute environ 4 requêtes par ligne (profil FIF, dossiers) : à regrouper.
+3. Les recherches « contient » exigent les index trigrammes sur PostgreSQL (fournis).
