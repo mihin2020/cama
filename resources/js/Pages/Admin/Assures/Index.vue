@@ -1,6 +1,8 @@
 <script setup>
 import FileLinkRow from '@/Components/FileLinkRow.vue';
 import FifSectionsView from '@/Components/Fif/FifSectionsView.vue';
+import AssureProfileGrid from '@/Components/Admin/AssureProfileGrid.vue';
+import { beneficiaireInfo } from '@/Utils/dossierInfo';
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip } from '@/Composables/useCamaExport';
@@ -31,6 +33,9 @@ const { can } = useAdminPermissions();
 // visualise (nouvel onglet) et se télécharge ; le serveur vérifie les droits de chaque route.
 const identityUrl = (key, inline = false) => `${route('admin.inscriptions.document', { assure: selected.value.uuid, key })}${inline ? '?inline=1' : ''}`;
 const pieceUrl = (dossierId, type, inline = false) => `${route('admin.dossiers.piece.download', { dossier: dossierId })}?type=${encodeURIComponent(type)}${inline ? '&inline=1' : ''}`;
+// Détail complet d'un membre (état civil, références, champs ajoutés) : même dossier dans « membresExport ».
+const memberDetail = (m) => (selected.value?.membresExport ?? []).find((x) => x.id === m.id) ?? m;
+
 const memberFiles = computed(() => (selected.value?.membresExport ?? [])
     .map((m) => ({ id: m.id, nom: m.beneficiaire || `${m.prenom ?? ''} ${m.nom ?? ''}`.trim(), lien: m.lien, pieces: (m.pieces ?? []).filter((p) => p.hasFile) }))
     .filter((m) => m.pieces.length));
@@ -220,6 +225,8 @@ async function exportZip() {
                         </div>
                     </div>
 
+                    <AssureProfileGrid :profile="selected.exportProfile" />
+
                     <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'assure', id: selected.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="selected.exportProfile?.fifSections" />
 
                     <div v-if="(can('inscriptions.view') && selected.documents?.length) || (can('dossiers.view') && memberFiles.length)">
@@ -268,10 +275,24 @@ async function exportZip() {
                             </div>
                         </div>
                         <div class="bg-surface-container-low rounded-lg px-3">
-                            <div v-for="m in selected.membres" :key="m.id" class="flex items-center justify-between py-2.5 border-b border-outline-variant last:border-0">
-                                <span class="text-xs">{{ m.nom }} <span class="text-on-surface-variant">— {{ m.lien }}</span></span>
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" :class="STATUS_DOSSIER_STYLES[m.statut] || ''">{{ m.statut }}</span>
-                            </div>
+                            <details v-for="m in selected.membres" :key="m.id" class="border-b border-outline-variant last:border-0 group">
+                                <summary class="flex items-center justify-between py-2.5 cursor-pointer list-none">
+                                    <span class="text-xs flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[16px] text-on-surface-variant transition-transform group-open:rotate-90">chevron_right</span>
+                                        {{ m.nom }} <span class="text-on-surface-variant">— {{ m.lien }}</span>
+                                    </span>
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap" :class="STATUS_DOSSIER_STYLES[m.statut] || ''">{{ m.statut }}</span>
+                                </summary>
+                                <div class="pb-3 space-y-2">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <div v-for="([label, value], i) in beneficiaireInfo(memberDetail(m))" :key="i" class="bg-white rounded-lg p-2.5 border border-outline-variant">
+                                            <p class="text-[10px] text-on-surface-variant uppercase">{{ label }}</p>
+                                            <p class="text-xs font-bold break-words">{{ value }}</p>
+                                        </div>
+                                    </div>
+                                    <FifSectionsView :file-url="(code, inline) => `${route('admin.fif.file', { scope: 'dossier', id: m.uuid, code })}${inline ? '?inline=1' : ''}`" :sections="memberDetail(m).fifSections" />
+                                </div>
+                            </details>
                             <p v-if="!selected.membres?.length" class="text-xs text-on-surface-variant italic py-3">Aucun membre enrôlé.</p>
                         </div>
                     </div>

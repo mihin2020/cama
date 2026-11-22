@@ -138,6 +138,7 @@ class InscriptionController extends Controller
             'prenom' => $assure->prenom,
             'sexe' => $assure->sexe,
             'matricule' => $assure->matricule,
+            'numeroFif' => $assure->numero_fif,
             'grade' => $assure->grade,
             'categorie' => $assure->categorie,
             'numeroInformatique' => $assure->numero_informatique,
