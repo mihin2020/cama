@@ -40,7 +40,13 @@ class TwoFactorController extends Controller
             'code' => ['required', 'string', 'max:20'],
         ]);
 
-        $service->verify($admin, $data['code']);
+        try {
+            $service->verify($admin, $data['code']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \App\Support\SecurityLog::warning('échec du code 2FA (back-office)', $request, ['compte' => $admin->email]);
+
+            throw $e;
+        }
 
         $request->session()->forget('admin_2fa_pending');
 

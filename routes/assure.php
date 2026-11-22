@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest.assure')->group(function () {
     Route::get('/connexion', [AssureLoginController::class, 'create'])->name('login');
-    Route::post('/connexion', [AssureLoginController::class, 'store'])->name('login.store');
+    Route::post('/connexion', [AssureLoginController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
 
     Route::get('/connexion/2fa', [TwoFactorController::class, 'create'])->name('login.2fa');
     Route::post('/connexion/2fa', [TwoFactorController::class, 'store'])
@@ -43,7 +43,7 @@ Route::middleware(['auth:assure', 'auth.session'])->group(function () {
     Route::post('/deconnexion', [AssureLoginController::class, 'destroy'])->name('logout');
 
     Route::get('/verification-email', [EmailVerificationController::class, 'show'])->name('verification.notice');
-    Route::post('/verification-email', [EmailVerificationController::class, 'verify'])->name('verification.verify');
+    Route::post('/verification-email', [EmailVerificationController::class, 'verify'])->middleware('throttle:10,1')->name('verification.verify');
     Route::post('/verification-email/renvoyer', [EmailVerificationController::class, 'resend'])
         ->middleware('throttle:5,1')
         ->name('verification.resend');

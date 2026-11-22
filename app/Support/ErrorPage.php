@@ -22,6 +22,12 @@ final class ErrorPage
     {
         $status = $response->getStatusCode();
 
+        if ($status === 403 || $status === 429) {
+            SecurityLog::warning($status === 403 ? 'accès refusé' : 'trop de requêtes', $request, [
+                'compte' => $request->user('admin')?->email ?? $request->user('assure')?->email,
+            ]);
+        }
+
         if (! in_array($status, self::STATUSES, true) || ! self::wantsHtml($request)) {
             return $response;
         }

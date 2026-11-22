@@ -66,6 +66,7 @@ class LoginController extends Controller
         }
 
         if ($assure->deux_fa_active) {
+            $request->session()->regenerate();
             $request->session()->put('assure_2fa_pending', $assure->id);
             $request->session()->put('assure_2fa_remember', $request->boolean('remember'));
             Auth::guard('assure')->logout();

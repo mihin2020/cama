@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest.admin')->group(function () {
     Route::get('/connexion', [AdminLoginController::class, 'create'])->name('login');
-    Route::post('/connexion', [AdminLoginController::class, 'store'])->name('login.store');
+    Route::post('/connexion', [AdminLoginController::class, 'store'])->middleware('throttle:20,1')->name('login.store');
     Route::get('/connexion/2fa', [AdminTwoFactorController::class, 'create'])->name('login.2fa');
     Route::post('/connexion/2fa', [AdminTwoFactorController::class, 'store'])
         ->middleware('throttle:10,1')
@@ -32,7 +32,7 @@ Route::middleware('guest.admin')->group(function () {
         ->name('login.2fa.resend');
     Route::post('/connexion/2fa/annuler', [AdminTwoFactorController::class, 'destroy'])->name('login.2fa.cancel');
     Route::get('/invitation/{token}', [InvitationController::class, 'show'])->name('invitation.show');
-    Route::post('/invitation', [InvitationController::class, 'store'])->name('invitation.store');
+    Route::post('/invitation', [InvitationController::class, 'store'])->middleware('throttle:10,1')->name('invitation.store');
 
     Route::get('/mot-de-passe-oublie', [AdminPasswordResetController::class, 'create'])->name('password.request');
     Route::post('/mot-de-passe-oublie', [AdminPasswordResetController::class, 'store'])

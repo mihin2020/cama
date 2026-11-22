@@ -29,7 +29,13 @@ class TwoFactorController extends Controller
             'code' => ['required', 'string', 'max:20'],
         ]);
 
-        $service->verify($assure, $data['code']);
+        try {
+            $service->verify($assure, $data['code']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \App\Support\SecurityLog::warning('échec du code 2FA (assuré)', $request, ['compte' => $assure->email]);
+
+            throw $e;
+        }
 
         $remember = (bool) $request->session()->pull('assure_2fa_remember', false);
         $request->session()->forget('assure_2fa_pending');

@@ -23,7 +23,7 @@ class LoginThrottle
     /**
      * @param  array<string, int>  $limits  clé du compteur => essais autorisés
      */
-    private function __construct(private array $limits) {}
+    private function __construct(private array $limits, private string $scope = '', private string $email = '', private ?string $ip = null) {}
 
     public static function for(string $scope, Request $request, string $email): self
     {
@@ -32,7 +32,7 @@ class LoginThrottle
         return new self([
             $account.'|'.$request->ip() => self::MAX_ATTEMPTS,
             $account => self::MAX_ATTEMPTS_PER_ACCOUNT,
-        ]);
+        ], $scope, $email, $request->ip());
     }
 
     public function ensureNotLocked(): void
@@ -40,6 +40,7 @@ class LoginThrottle
         foreach ($this->limits as $key => $max) {
             if (RateLimiter::tooManyAttempts($key, $max)) {
                 $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
+                SecurityLog::warning('connexion bloquée (trop de tentatives)', null, ['espace' => $this->scope, 'email' => $this->email, 'ip' => $this->ip]);
 
                 throw ValidationException::withMessages([
                     'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
@@ -50,6 +51,8 @@ class LoginThrottle
 
     public function hit(): void
     {
+        SecurityLog::warning('échec de connexion', null, ['espace' => $this->scope, 'email' => $this->email, 'ip' => $this->ip]);
+
         foreach (array_keys($this->limits) as $key) {
             RateLimiter::hit($key, self::LOCKOUT_SECONDS);
         }

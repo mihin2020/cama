@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
     <title>@yield('code') · @yield('title') - CAMA</title>
-    <style>
+    <style nonce="{{ app()->bound('csp_nonce') ? app('csp_nonce') : '' }}">
         :root { --primary: #9e001f; --text: #1b1c1c; --muted: #5b403f; --bg: #fbf9f8; --card: #ffffff; --border: #e4bebc; }
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;

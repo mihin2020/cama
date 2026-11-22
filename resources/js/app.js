@@ -33,7 +33,8 @@ createInertiaApp({
     progress: {
         color: 'rgb(var(--c-primary))',
         delay: 80,
-        includeCSS: true,
+        // Le style de la barre est dans app.css : Inertia ne doit pas injecter de <style> (interdit par la CSP).
+        includeCSS: false,
         showSpinner: false,
     },
 });
