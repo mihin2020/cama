@@ -418,10 +418,20 @@ function exportThemeVariables() {
         .join(';');
 }
 
+// L'aperçu réutilise les feuilles de style déjà chargées par l'application (Tailwind compilé, polices locales) :
+// aucun script ni feuille de style n'est chargé depuis un site tiers.
+function appStylesheetLinks() {
+    if (typeof document === 'undefined') return '';
+
+    return [...document.querySelectorAll('link[rel="stylesheet"]')]
+        .map((link) => `<link rel="stylesheet" href="${link.href}"/>`)
+        .join('');
+}
+
 function fullHtml(sourceSections = []) {
     const header = `<header class="sticky top-0 z-20 bg-white border-b border-outline-variant"><div class="max-w-[1200px] mx-auto px-8 h-16 flex items-center justify-between"><div class="flex items-center gap-3"><img src="/images/logo_cama.png" class="h-10 w-10 object-contain"/><strong>CAMA</strong></div><nav class="hidden md:flex gap-6 text-sm font-semibold"><span>Accueil</span><span>À propos</span><span>Services</span><span>Ressources</span><span>Actualités</span><span>Contact</span></nav></div></header>`;
     const footer = `<footer class="bg-on-background text-white px-8 py-10"><div class="max-w-[1200px] mx-auto text-sm opacity-80">© CAMA - Caisse d'Assurance Maladie des Armées</div></footer>`;
-    return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"><\/script><link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Montserrat:wght@100..900&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/><style>:root{${exportThemeVariables()}}body{font-family:Inter}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style></head><body class="bg-background text-on-background">${header}${sourceSections.map(sectionHtml).join('')}${footer}</body></html>`;
+    return `<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>${appStylesheetLinks()}<style>:root{${exportThemeVariables()}}body{font-family:Inter}.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24}</style></head><body class="bg-background text-on-background">${header}${sourceSections.map(sectionHtml).join('')}${footer}</body></html>`;
 }
 
 function styleAttr(styles) {

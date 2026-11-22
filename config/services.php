@@ -35,10 +35,6 @@ return [
         ],
     ],
 
-    'google' => [
-        'maps_key' => env('GOOGLE_MAPS_API_KEY'),
-    ],
-
     'cama' => [
         'contact_recipient' => env('CONTACT_RECIPIENT_EMAIL'),
     ],

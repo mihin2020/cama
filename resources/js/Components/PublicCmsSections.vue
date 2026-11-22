@@ -1,5 +1,5 @@
 <script setup>
-import CamaGoogleMap from '@/Components/CamaGoogleMap.vue';
+import CamaMapPoints from '@/Components/CamaMapPoints.vue';
 import ElementorAccordion from '@/Components/PublicWidgets/ElementorAccordion.vue';
 import ElementorCarousel from '@/Components/PublicWidgets/ElementorCarousel.vue';
 import ElementorPosts from '@/Components/PublicWidgets/ElementorPosts.vue';
@@ -131,7 +131,6 @@ const contactActiveId = ref(null);
 const contactSent = ref(false);
 const contactError = ref('');
 const newsletterSent = ref(false);
-const contactApiKey = computed(() => page.props.app?.googleMapsApiKey ?? '');
 const contactFilters = [
     { key: 'all', label: 'Tous', match: () => true },
     { key: 'cama', label: 'Antennes CAMA', match: type => type === 'siege' || type === 'antenne' },
@@ -1432,7 +1431,7 @@ function faqMeta(category) {
                                 <a v-if="activeContactLocation" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline shrink-0" :href="mapsUrl(activeContactLocation)" rel="noopener" target="_blank"><span class="material-symbols-outlined text-[16px]">directions</span> {{ systemWidget(section).content?.directionsLabel || 'Itinéraire' }}</a>
                             </div>
                             <div class="relative flex-1 min-h-[320px] bg-[#ebe6dc]">
-                                <CamaGoogleMap :api-key="contactApiKey" :points="contactMapPoints" :focus-point="contactMapFocus" height="440px" />
+                                <CamaMapPoints :points="contactMapPoints" :focus-point="contactMapFocus" height="440px" />
                             </div>
                         </div>
                     </div>

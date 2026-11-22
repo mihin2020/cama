@@ -1,8 +1,5 @@
-const SCRIPT_URLS = [
-    'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-    '/js/dossier-export.js',
-];
+// pdf-lib et JSZip viennent du paquet npm (aucun script externe) ; le module d'export lit window.PDFLib / window.JSZip.
+const EXPORT_SCRIPT = '/js/dossier-export.js';
 
 let loadPromise = null;
 
@@ -26,10 +23,12 @@ export function ensureCamaExportLibs() {
         return Promise.resolve(window.CamaDossierExport);
     }
     if (!loadPromise) {
-        loadPromise = SCRIPT_URLS.reduce(
-            (chain, url) => chain.then(() => loadScript(url)),
-            Promise.resolve(),
-        ).then(() => {
+        loadPromise = Promise.all([import('pdf-lib'), import('jszip')]).then(([pdfLib, jszip]) => {
+            window.PDFLib = pdfLib;
+            window.JSZip = jszip.default ?? jszip;
+
+            return loadScript(EXPORT_SCRIPT);
+        }).then(() => {
             if (!window.CamaDossierExport) {
                 throw new Error('Module export FIF indisponible');
             }

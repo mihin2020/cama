@@ -4,7 +4,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
-import CamaGoogleMap from '@/Components/CamaGoogleMap.vue';
+import CamaMapPoints from '@/Components/CamaMapPoints.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { isInBurkinaFaso, parseCoordinates } from '@/Utils/parseCoordinates';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -102,7 +102,6 @@ const geolocatedCount = computed(() => mapPoints.value.length);
 const missingCount = computed(() => props.counts[props.noPositionFilter] ?? 0);
 
 const page = usePage();
-const googleMapsApiKey = computed(() => page.props.app?.googleMapsApiKey ?? '');
 const editorOpen = ref(false);
 const editingId = ref(null);
 const filePickerRef = ref(null);
@@ -291,7 +290,7 @@ function removePartner(item) {
                     </span>
                 </div>
             </div>
-            <CamaGoogleMap :api-key="googleMapsApiKey" :points="mapPoints" :focus-point="mapFocusPoint" height="420px" />
+            <CamaMapPoints :points="mapPoints" :focus-point="mapFocusPoint" height="420px" />
         </div>
 
         <div class="flex flex-wrap gap-2 items-center justify-between">

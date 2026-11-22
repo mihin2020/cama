@@ -46,7 +46,7 @@ export function camaFlagEmoji(code) {
     return code.replace(/./g, (c) => String.fromCodePoint(0x1f1e6 - 65 + c.toUpperCase().charCodeAt(0)));
 }
 
-export function camaFlagUrl(code, size = 24) {
-    const h = size === 24 ? 18 : 36;
-    return `https://flagcdn.com/${size}x${h}/${(code || 'bf').toLowerCase()}.png`;
+// Drapeaux servis par le site lui-même (public/images/flags, issus du paquet flag-icons).
+export function camaFlagUrl(code) {
+    return `/images/flags/${(code || 'bf').toLowerCase()}.svg`;
 }
