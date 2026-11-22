@@ -4,7 +4,8 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "local": "concurrently -k -n php,web -c blue,green \"php artisan serve --host=127.0.0.1 --port=8001\" \"node tools/dev-server.mjs\""
     },
     "devDependencies": {
         "@inertiajs/vue3": "^2.0.0",

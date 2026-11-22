@@ -36,7 +36,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Vite::prefetch(concurrency: 3);
+        // Préchargement des autres pages en arrière-plan : utile en production, mais il sature le serveur de
+        // développement de PHP (un seul processus) et fait échouer le chargement des pages en local.
+        if (! app()->environment('local')) {
+            Vite::prefetch(concurrency: 3);
+        }
 
         // En production (servie en HTTPS), on force la
         // génération d'URLs en https pour éviter le contenu mixte bloqué
