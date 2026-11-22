@@ -34,4 +34,17 @@ trait HasUuid
     {
         return 'uuid';
     }
+
+    /**
+     * Une valeur qui n'est pas un UUID (ex. l'ancien numéro /dossiers/10) donne un 404. Sans ce contrôle,
+     * PostgreSQL (colonne de type uuid) refuserait la requête et la page répondrait 500.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (($field ?? $this->getRouteKeyName()) === 'uuid' && ! Str::isUuid((string) $value)) {
+            return null;
+        }
+
+        return parent::resolveRouteBinding($value, $field);
+    }
 }

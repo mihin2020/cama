@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Même suite que phpunit.xml, sur PostgreSQL : php artisan test --configuration=phpunit.pgsql.xml (base cama_test à créer, voir README). -->
+<!-- Même suite que phpunit.xml, sur PostgreSQL. Commande : php artisan test, avec l option de configuration phpunit.pgsql.xml (base cama_test à créer, voir README). Le mot de passe se passe par la variable DB_PASSWORD. -->
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
          bootstrap="vendor/autoload.php"
