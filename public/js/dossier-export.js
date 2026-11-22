@@ -191,7 +191,10 @@
         });
     }
 
-    /* ── Annexe « informations complémentaires » (champs ajoutés par l'administration) ── */
+    /* ── Pages de suite : champs ajoutés par l'administration, dans la forme du formulaire officiel ──
+       Mêmes titres numérotés en majuscules, mêmes tableaux à cases (colonne N°, Nom, Prénoms, puis une
+       colonne par information), mêmes signatures — placées à la toute fin du document. Seules les
+       informations textuelles ou numériques sont reprises : jamais un fichier chargé. */
 
     // Helvetica (WinAnsi) ne sait pas écrire tous les caractères : on remplace ceux qu'elle refuse.
     function safeText(font, text) {
@@ -208,7 +211,6 @@
         let line = '';
         words.forEach((word) => {
             let w = word;
-            // Mot plus long qu'une ligne : coupé au caractère.
             while (font.widthOfTextAtSize(w, size) > maxW && w.length > 1) {
                 let cut = w.length - 1;
                 while (cut > 1 && font.widthOfTextAtSize(w.slice(0, cut), size) > maxW) cut--;
@@ -224,105 +226,209 @@
         return lines.length ? lines : [''];
     }
 
-    // Sections à imprimer : seulement les lignes « imprimer_pdf » ; une section sans ligne imprimable est ignorée.
+    // Sections à imprimer : lignes « imprimer_pdf » uniquement, jamais les fichiers ; section vide ignorée.
     function printableSections(sections) {
         return (sections || [])
-            .map((s) => ({ titre: s.titre, rows: (s.rows || []).filter((r) => r.imprimer !== false) }))
+            .map((s) => ({ titre: s.titre, rows: (s.rows || []).filter((r) => r.imprimer !== false && r.type !== 'fichier') }))
             .filter((s) => s.rows.length);
     }
 
-    // Blocs de l'annexe : l'assuré, puis chaque conjoint, puis chaque enfant (du plus âgé au plus jeune).
-    function annexBlocks(assure, conjoints, enfants) {
-        const blocks = [];
-        const nomMil = `${assure.prenoms || assure.prenom || ''} ${assure.nom || ''}`.trim();
-        const own = printableSections(assure.fifSections);
-        if (own.length) blocks.push({ titre: `Assuré${nomMil ? ` — ${nomMil}` : ''}`, sections: own });
-        [...(conjoints || []), ...(enfants || [])].forEach((m) => {
-            const sections = printableSections(m.fifSections);
-            if (!sections.length) return;
-            const who = `${m.prenom || ''} ${m.nom || ''}`.trim();
-            blocks.push({ titre: `${m.lien || 'Membre'}${who ? ` — ${who}` : ''}`, sections });
+    // Une table par section : colonnes = champs de la section, une ligne par membre.
+    function memberTables(members) {
+        const tables = [];
+        (members || []).forEach((m, index) => {
+            printableSections(m.fifSections).forEach((section) => {
+                let table = tables.find((t) => t.titre === section.titre);
+                if (!table) {
+                    table = { titre: section.titre, columns: section.rows.map((r) => ({ code: r.code, label: r.label })), rows: [] };
+                    tables.push(table);
+                }
+                const values = {};
+                section.rows.forEach((r) => { values[r.code] = r.value; });
+                table.rows.push({ n: index + 1, nom: m.nom, prenom: m.prenom, values });
+            });
         });
-        return blocks;
+        return tables;
     }
 
-    async function addAnnexPages(out, font, bold, assure, conjoints, enfants) {
-        const blocks = annexBlocks(assure, conjoints, enfants);
-        if (!blocks.length) return;
+    function annexContent(assure, conjoints, enfants) {
+        return {
+            assure: printableSections((assure || {}).fifSections),
+            conjoints: memberTables(conjoints),
+            enfants: memberTables(enfants),
+        };
+    }
 
+    function annexIsEmpty(c) {
+        return !c.assure.length && !c.conjoints.length && !c.enfants.length;
+    }
+
+    // Les signatures du modèle sont déplacées à la fin quand des pages de suite existent : on les masque.
+    function maskSignatures(page) {
         const { rgb } = global.PDFLib;
+        page.drawRectangle({ x: 20, y: 63, width: 805, height: 48, color: rgb(1, 1, 1) });
+    }
+
+    async function addAnnexPages(out, fonts, assure, content) {
+        const { rgb } = global.PDFLib;
+        const { font, bold, italic } = fonts;
         const black = rgb(0, 0, 0);
-        const grey = rgb(0.35, 0.35, 0.35);
-        const MARGIN = 40;
-        const LABEL_W = 230;
-        const VALUE_X = MARGIN + LABEL_W + 10;
-        const VALUE_W = PAGE_W - MARGIN - VALUE_X;
-        const SIZE = 9;
-        const LEADING = 12;
-        const numero = assure.numeroFif || assure.numeroCama || assure.matricule || '';
+        const L = 34;
+        const R = PAGE_W - 34;
+        const W = R - L;
+        const SIZE = 8;
+        const LEAD = 10;
+        const PAD = 3;
+        const BOTTOM = 46;
+        const numero = (assure && (assure.numeroFif || assure.numeroCama || assure.matricule)) || '';
 
         let page = null;
         let y = 0;
         let pageNo = 0;
+        let resume = null; // redessine le titre de section et l'en-tête du tableau après un saut de page
+
+        const rect = (x, yTop, w, h) => page.drawRectangle({ x, y: yTop - h, width: w, height: h, borderWidth: 0.7, borderColor: black });
+        const text = (t, x, yy, f, size) => page.drawText(safeText(f, t), { x, y: yy, size: size || SIZE, font: f, color: black });
+        const centered = (t, cx, yy, f, size) => {
+            const s = safeText(f, t);
+            page.drawText(s, { x: cx - f.widthOfTextAtSize(s, size) / 2, y: yy, size, font: f, color: black });
+        };
 
         const newPage = () => {
             page = out.addPage([PAGE_W, PAGE_H]);
             pageNo += 1;
-            page.drawText('FIF CAMA — Informations complémentaires', { x: MARGIN, y: PAGE_H - 38, size: 13, font: bold, color: black });
-            if (numero) {
-                const t = safeText(font, `N° ${numero}`);
-                page.drawText(t, { x: PAGE_W - MARGIN - font.widthOfTextAtSize(t, 9), y: PAGE_H - 36, size: 9, font, color: grey });
-            }
-            page.drawLine({ start: { x: MARGIN, y: PAGE_H - 46 }, end: { x: PAGE_W - MARGIN, y: PAGE_H - 46 }, thickness: 0.8, color: black });
-            page.drawText(`Annexe ${pageNo}`, { x: MARGIN, y: 22, size: 8, font, color: grey });
-            y = PAGE_H - 70;
+            // Cadre d'en-tête, comme celui du formulaire : titre, numéro FIF et date.
+            rect(L, PAGE_H - 28, W, 44);
+            centered(`FICHE D'IDENTIFICATION FAMILLE (FIF) N° ${numero}`, PAGE_W / 2, PAGE_H - 48, bold, 13);
+            centered('Informations complémentaires — suite du formulaire', PAGE_W / 2, PAGE_H - 62, italic, 9);
+            const d = `Date : ${todayFr()}`;
+            text(d, R - 8 - font.widthOfTextAtSize(d, 8.5), PAGE_H - 48, font, 8.5);
+            text(`Page ${pageNo + 1}`, L, 24, font, 7);
+            y = PAGE_H - 88;
         };
-        // Bloc et section en cours : rappelés en tête de page quand une section continue sur la page suivante.
-        const ctx = { block: null, section: null };
-        const drawBlockTitle = (titre) => {
-            page.drawText(safeText(bold, titre), { x: MARGIN, y, size: 11, font: bold, color: black });
-            y -= 18;
-        };
-        const drawSectionTitle = (titre) => {
-            page.drawText(safeText(bold, titre), { x: MARGIN, y, size: 10, font: bold, color: grey });
-            y -= 5;
-            page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 0.4, color: grey });
-            y -= 13;
-        };
+
         const ensure = (h) => {
-            if (page && y - h >= 40) return;
+            if (page && y - h >= BOTTOM) return;
             newPage();
-            if (ctx.block) drawBlockTitle(`${ctx.block} (suite)`);
-            if (ctx.section) drawSectionTitle(`${ctx.section} (suite)`);
+            if (resume) resume();
+        };
+
+        const heading = (t) => {
+            ensure(34);
+            text(t, L, y, bold, 10);
+            y -= 14;
+        };
+
+        const subTitle = (t) => {
+            ensure(30);
+            text(t, L, y, bold, 8.5);
+            page.drawLine({ start: { x: L, y: y - 2 }, end: { x: L + bold.widthOfTextAtSize(safeText(bold, t), 8.5), y: y - 2 }, thickness: 0.6, color: black });
+            y -= 12;
+        };
+
+        // Informations du militaire : cases « libellé | valeur », deux paires par ligne.
+        const drawAssure = (sections) => {
+            heading('1.  INFORMATIONS ADMINISTRATIVES COMPLÉMENTAIRES DU MILITAIRE');
+            sections.forEach((section) => {
+                subTitle(section.titre);
+                const labelW = 150;
+                const valueW = W / 2 - labelW;
+                for (let i = 0; i < section.rows.length; i += 2) {
+                    const pair = section.rows.slice(i, i + 2);
+                    const lines = pair.map((r) => [wrapText(font, r.label, SIZE, labelW - 2 * PAD), wrapText(font, r.value || '', SIZE, valueW - 2 * PAD)]);
+                    const h = Math.max(...lines.map(([a, b]) => Math.max(a.length, b.length))) * LEAD + 2 * PAD;
+                    resume = () => subTitle(`${section.titre} (suite)`);
+                    ensure(h);
+                    pair.forEach((r, k) => {
+                        const x = L + k * (W / 2);
+                        rect(x, y, labelW, h);
+                        rect(x + labelW, y, valueW, h);
+                        lines[k][0].forEach((ln, j) => text(ln, x + PAD, y - PAD - SIZE - j * LEAD + 1, bold, SIZE));
+                        lines[k][1].forEach((ln, j) => text(ln, x + labelW + PAD, y - PAD - SIZE - j * LEAD + 1, font, SIZE));
+                    });
+                    if (pair.length === 1) rect(L + W / 2, y, W / 2, h);
+                    y -= h;
+                }
+                y -= 10;
+            });
+            resume = null;
+        };
+
+        // Conjoints / enfants : tableau à cases, N° | Nom | Prénoms | une colonne par information.
+        const drawTables = (title, tables) => {
+            if (!tables.length) return;
+            heading(title);
+            const nW = 26;
+            const nomW = 95;
+            const prenomW = 110;
+            const fixed = nW + nomW + prenomW;
+            tables.forEach((table) => {
+                const perChunk = 6;
+                for (let c = 0; c < table.columns.length; c += perChunk) {
+                    const cols = table.columns.slice(c, c + perChunk);
+                    const colW = (W - fixed) / cols.length;
+                    const widths = [nW, nomW, prenomW, ...cols.map(() => colW)];
+                    const headers = ['N°', 'Nom', 'Prénoms', ...cols.map((k) => k.label)];
+                    const xs = widths.reduce((acc, w, i) => [...acc, acc[i] + w], [L]);
+
+                    const drawHeader = () => {
+                        const wrapped = headers.map((hd, i) => wrapText(bold, hd, SIZE, widths[i] - 2 * PAD));
+                        const h = Math.max(...wrapped.map((l) => l.length)) * LEAD + 2 * PAD;
+                        ensure(h + 30);
+                        wrapped.forEach((lns, i) => {
+                            rect(xs[i], y, widths[i], h);
+                            lns.forEach((ln, j) => centered(ln, xs[i] + widths[i] / 2, y - PAD - SIZE - j * LEAD + 1, bold, SIZE));
+                        });
+                        y -= h;
+                    };
+
+                    subTitle(`${table.titre}${cols.length < table.columns.length ? ` (${Math.floor(c / perChunk) + 1}/${Math.ceil(table.columns.length / perChunk)})` : ''}`);
+                    resume = () => { subTitle(`${table.titre} (suite)`); drawHeader(); };
+                    drawHeader();
+
+                    table.rows.forEach((row) => {
+                        const cells = [String(row.n), row.nom || '', row.prenom || '', ...cols.map((k) => row.values[k.code] || '')];
+                        const wrapped = cells.map((t, i) => wrapText(font, t, SIZE, widths[i] - 2 * PAD));
+                        const h = Math.max(...wrapped.map((l) => l.length)) * LEAD + 2 * PAD + 4;
+                        ensure(h);
+                        wrapped.forEach((lns, i) => {
+                            rect(xs[i], y, widths[i], h);
+                            lns.forEach((ln, j) => (i === 0 ? centered(ln, xs[i] + widths[i] / 2, y - PAD - SIZE - j * LEAD + 3, font, SIZE) : text(ln, xs[i] + PAD, y - PAD - SIZE - j * LEAD + 3, font, SIZE)));
+                        });
+                        y -= h;
+                    });
+                    y -= 12;
+                }
+            });
+            resume = null;
+        };
+
+        // Signatures : à la toute fin, comme au bas du formulaire officiel.
+        const drawSignatures = () => {
+            ensure(90);
+            y -= 34; // espace pour signer
+            const cols = [
+                { x: 34, titre: 'Le militaire', suite: ' (Nom, prénom(s) et signature)' },
+                { x: 309, titre: 'Le chef de corps', suite: ' (identité, signature et cachet)' },
+                { x: 617, titre: 'Le GRH du Corps', suite: ' (Identité, signature et cachet)' },
+            ];
+            cols.forEach((col) => {
+                text('Date : ', col.x, y, bold, 8.5);
+                text('.......................................................', col.x + bold.widthOfTextAtSize('Date : ', 8.5), y, font, 8.5);
+                text(col.titre, col.x, y - 15, bold, 8.5);
+                page.drawLine({ start: { x: col.x, y: y - 17 }, end: { x: col.x + bold.widthOfTextAtSize(col.titre, 8.5), y: y - 17 }, thickness: 0.6, color: black });
+                text(col.suite, col.x + bold.widthOfTextAtSize(col.titre, 8.5), y - 15, italic, 8);
+            });
+            const nomMil = ((assure && (assure.prenoms || assure.prenom)) || '') + ' ' + ((assure && assure.nom) || '');
+            if (nomMil.trim()) text(nomMil.trim(), 34, y - 30, font, 7);
+            y -= 30;
         };
 
         newPage();
-        blocks.forEach((block) => {
-            ctx.block = null;
-            ctx.section = null;
-            ensure(60);
-            drawBlockTitle(block.titre);
-            ctx.block = block.titre;
-
-            block.sections.forEach((section) => {
-                ctx.section = null;
-                ensure(40);
-                drawSectionTitle(section.titre);
-                ctx.section = section.titre;
-
-                section.rows.forEach((row) => {
-                    const labelLines = wrapText(font, row.label, SIZE, LABEL_W);
-                    const valueLines = wrapText(font, row.value || '—', SIZE, VALUE_W);
-                    const h = Math.max(labelLines.length, valueLines.length) * LEADING;
-                    ensure(h + 4);
-                    labelLines.forEach((l, i) => page.drawText(l, { x: MARGIN, y: y - i * LEADING, size: SIZE, font, color: grey }));
-                    valueLines.forEach((l, i) => page.drawText(l, { x: VALUE_X, y: y - i * LEADING, size: SIZE, font, color: black }));
-                    y -= h + 4;
-                });
-                y -= 8;
-            });
-            y -= 8;
-        });
+        if (content.assure.length) drawAssure(content.assure);
+        drawTables('2.  CONJOINT(ES) — INFORMATIONS COMPLÉMENTAIRES', content.conjoints);
+        drawTables('3.  ENFANT(S) — INFORMATIONS COMPLÉMENTAIRES (du plus âgé au plus jeune)', content.enfants);
+        drawSignatures();
     }
 
     async function buildFormulaireComplet(assure, conjoints, enfants) {
@@ -333,11 +439,15 @@
         const out = await PDFDocument.create();
         const font = await out.embedFont(StandardFonts.Helvetica);
         const bold = await out.embedFont(StandardFonts.HelveticaBold);
+        const italic = await out.embedFont(StandardFonts.HelveticaOblique);
         const black = rgb(0, 0, 0);
 
+        const sortedEnfants = sortEnfantsByAge(enfants);
         const conjChunks = chunk(conjoints || [], CONJOINT_ROWS_Y.length);
-        const enfChunks = chunk(sortEnfantsByAge(enfants), ENFANT_ROWS_Y.length);
+        const enfChunks = chunk(sortedEnfants, ENFANT_ROWS_Y.length);
         const pages = Math.max(1, conjChunks.length, enfChunks.length);
+        const annex = annexContent(assure, conjoints, sortedEnfants);
+        const hasAnnex = !annexIsEmpty(annex);
 
         for (let p = 0; p < pages; p++) {
             const tmpl = await PDFDocument.load(tmplBytes);
@@ -360,15 +470,22 @@
                 }
             });
 
-            // Nom du militaire sous le bloc signature.
-            const nomMil = `${assure.prenoms || assure.prenom || ''} ${assure.nom || ''}`.trim();
-            if (nomMil) {
-                drawField(page, font, black, 26.6, 66, nomMil, 7, 170);
+            if (hasAnnex) {
+                // Pages de suite : les signatures passent à la toute fin du document, on masque celles du modèle.
+                maskSignatures(page);
+            } else {
+                // Nom du militaire sous le bloc signature.
+                const nomMil = `${assure.prenoms || assure.prenom || ''} ${assure.nom || ''}`.trim();
+                if (nomMil) {
+                    drawField(page, font, black, 26.6, 66, nomMil, 7, 170);
+                }
             }
         }
 
-        // Champs ajoutés par l'administration : pages d'annexe après le formulaire officiel.
-        await addAnnexPages(out, font, bold, assure || {}, conjoints, sortEnfantsByAge(enfants));
+        // Champs ajoutés par l'administration : pages de suite dans la forme du formulaire, signatures à la fin.
+        if (hasAnnex) {
+            await addAnnexPages(out, { font, bold, italic }, assure || {}, annex);
+        }
 
         return out.save();
     }

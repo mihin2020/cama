@@ -268,7 +268,7 @@ function fifSectionsFromSchema(sections, values) {
             else if (field.type === 'date') value = isoToFr(raw);
             else value = raw == null ? '' : String(raw);
 
-            return { code: field.code, label: field.libelle, value, imprimer: field.imprimer_pdf !== false };
+            return { code: field.code, label: field.libelle, type: field.type, value, imprimer: field.imprimer_pdf !== false };
         }),
     }));
 }

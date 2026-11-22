@@ -246,6 +246,7 @@ class FifSchemaService
                 'rows' => collect($section['fields'])->map(fn (array $field) => [
                     'code' => $field['code'],
                     'label' => $field['libelle'],
+                    'type' => $field['type'],
                     'value' => $this->formatValue($field, $stored[$field['code']] ?? null),
                     'imprimer' => $field['imprimer_pdf'],
                     // Fichier chargé : l'écran propose « Visualiser » et « Télécharger » (jamais le chemin interne).
