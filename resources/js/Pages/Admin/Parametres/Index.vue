@@ -49,6 +49,7 @@ const fifForm = useForm({
 
 const affectationForm = useForm({
     affectation_mode: props.settings.affectationMode,
+    affectation_superviseur_mode: props.settings.affectationSuperviseurMode ?? 'charge_min',
     validation_2niveaux: props.settings.validation2Niveaux,
 });
 
@@ -548,10 +549,17 @@ function toggleValidation2N() {
             </div>
 
             <!-- Affectation -->
-            <div v-show="activeTab === 'affectation'" class="assure-card p-6 max-w-lg">
+            <div v-show="activeTab === 'affectation'" class="assure-card p-6 max-w-2xl">
                 <h3 class="font-title-lg text-title-lg mb-1">Règles d'affectation automatique</h3>
                 <p class="text-xs text-on-surface-variant mb-4">Mode d'affectation des nouveaux dossiers aux gestionnaires. Ces règles s'appliquent à chaque nouveau dossier soumis par un assuré ; les dossiers déjà affectés ne sont pas redistribués.</p>
                 <form @submit.prevent="saveAffectation">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-6 h-6 shrink-0 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">1</span>
+                        <div>
+                            <p class="text-sm font-bold leading-tight">Gestionnaires — premier niveau</p>
+                            <p class="text-[11px] text-on-surface-variant">Reçoivent les dossiers les comptes dont le rôle a « Recevoir des dossiers à traiter » (page Rôles et permissions).</p>
+                        </div>
+                    </div>
                     <div class="space-y-3 mb-4">
                         <label
                             class="flex items-start gap-2 text-xs cursor-pointer"
@@ -606,6 +614,37 @@ function toggleValidation2N() {
                         >
                             <div class="knob" />
                         </button>
+                    </div>
+                    <div class="mt-5 pt-4 border-t border-outline-variant" :class="affectationForm.validation_2niveaux ? '' : 'opacity-50'">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="w-6 h-6 shrink-0 rounded-full bg-primary text-on-primary text-xs font-bold flex items-center justify-center">2</span>
+                            <div>
+                                <p class="text-sm font-bold leading-tight">Superviseurs — second niveau</p>
+                                <p class="text-[11px] text-on-surface-variant">
+                                    Concerne les dossiers validés par un gestionnaire. Reçoivent ces dossiers les comptes dont le rôle a « Valider en second niveau ».
+                                    <span v-if="!affectationForm.validation_2niveaux" class="font-bold">Activez d'abord la validation à deux niveaux ci-dessus.</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-2 text-xs cursor-pointer">
+                                <input v-model="affectationForm.affectation_superviseur_mode" type="radio" value="charge_min" class="mt-0.5" :disabled="!affectationForm.validation_2niveaux" />
+                                <span>
+                                    <span class="font-bold block">Automatique — superviseur le moins chargé</span>
+                                    <span class="text-[11px] text-on-surface-variant">Le dossier validé par le gestionnaire est confié au superviseur qui a le moins de dossiers en attente de validation. Une même famille reste chez le même superviseur.</span>
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2 text-xs cursor-pointer">
+                                <input v-model="affectationForm.affectation_superviseur_mode" type="radio" value="manuelle" class="mt-0.5" :disabled="!affectationForm.validation_2niveaux" />
+                                <span>
+                                    <span class="font-bold block">Manuelle — file commune des superviseurs</span>
+                                    <span class="text-[11px] text-on-surface-variant">Le dossier attend dans une file commune : tout superviseur peut le valider, ou un superviseur le désigne à un collègue depuis la page Dossiers.</span>
+                                </span>
+                            </label>
+                            <p class="text-[11px] text-on-surface-variant bg-surface-container-low border border-outline-variant rounded-lg px-3 py-2">
+                                Dans les deux cas, le superviseur chargé d'un dossier peut être changé à la main depuis le détail du dossier familial.
+                            </p>
+                        </div>
                     </div>
                     <CamaLoadingButton type="submit" button-class="mt-4" :loading="affectationForm.processing">Enregistrer</CamaLoadingButton>
                 </form>

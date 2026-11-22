@@ -87,11 +87,11 @@ class DossierSupervisorAssignmentTest extends TestCase
         $this->assertSame($premier->fresh()->superviseur, $second->fresh()->superviseur);
     }
 
-    public function test_only_accounts_with_the_receive_supervision_permission_are_candidates(): void
+    public function test_only_accounts_that_validate_at_second_level_are_candidates(): void
     {
         $chef = $this->account('Chef', 'superviseur');
         $sans = Role::query()->create(['slug' => 'sup-bis', 'nom' => 'Sup bis', 'rang' => 20, 'systeme' => false, 'actif' => true,
-            'permissions' => ['dossiers.view', 'dossiers.supervise']]);
+            'permissions' => ['dossiers.view', 'dossiers.process']]);
         AdminUser::query()->create(['nom' => 'Bis', 'prenom' => 'Test', 'email' => 'bis@cama.bf', 'password' => 'motdepasse-solide',
             'role' => 'sup-bis', 'actif' => true]);
 
@@ -130,7 +130,7 @@ class DossierSupervisorAssignmentTest extends TestCase
     {
         $gest = $this->account('Gest', 'gestionnaire');
         $role = Role::query()->create(['slug' => 'sup-perso', 'nom' => 'Sup perso', 'rang' => 20, 'systeme' => false, 'actif' => true,
-            'permissions' => ['dossiers.view', 'dossiers.process', 'dossiers.supervise', 'dossiers.receive_supervision']]);
+            'permissions' => ['dossiers.view', 'dossiers.process', 'dossiers.supervise']]);
         $perso = AdminUser::query()->create(['nom' => 'Perso', 'prenom' => 'Test', 'email' => 'perso@cama.bf', 'password' => 'motdepasse-solide',
             'role' => 'sup-perso', 'actif' => true])->fresh();
 
@@ -143,5 +143,30 @@ class DossierSupervisorAssignmentTest extends TestCase
         $this->assertTrue($mien->fresh()->isVisibleTo($perso));
         $this->assertFalse($autre->fresh()->isVisibleTo($perso));
         $this->assertSame([$mien->id], Dossier::query()->visibleTo($perso)->pluck('id')->all());
+    }
+    public function test_manual_rule_leaves_the_dossier_in_the_common_queue(): void
+    {
+        PlatformSetting::query()->updateOrCreate(["key" => "affectation_superviseur_mode"], ["value" => "manuelle"]);
+        $gest = $this->account("Gest", "gestionnaire");
+        $this->account("Alpha", "superviseur");
+        $dossier = $this->dossier($gest->display_name);
+
+        $this->service()->validate($dossier, $gest);
+
+        $this->assertSame("En attente supervision", $dossier->fresh()->statut);
+        $this->assertNull($dossier->fresh()->superviseur);
+    }
+
+    public function test_the_rule_is_saved_from_the_settings_screen(): void
+    {
+        $admin = $this->account("Admin", "administrateur");
+
+        $this->actingAs($admin, "admin")->post(route("admin.parametres.affectation"), [
+            "affectation_mode" => "manuelle",
+            "affectation_superviseur_mode" => "manuelle",
+            "validation_2niveaux" => true,
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame("manuelle", app(\App\Services\PlatformSettingsService::class)->affectationSuperviseurMode());
     }
 }

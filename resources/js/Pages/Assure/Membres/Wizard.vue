@@ -1,5 +1,6 @@
 <script setup>
 import AssureLayout from '@/Layouts/AssureLayout.vue';
+import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import UploadField from '@/Components/UploadField.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import FifCustomFields from '@/Components/Fif/FifCustomFields.vue';
@@ -252,12 +253,8 @@ function handleFifUpload(event) {
 function removeFif() {
     fifSignee.value = null;
     if (fifInput.value) {
-        fifInput.value.value = '';
+        fifInput.value.clear();
     }
-}
-
-function openFifPicker() {
-    fifInput.value?.click();
 }
 
 function confirmSubmit() {
@@ -753,51 +750,17 @@ watch(() => props.initialRows, () => {
                 <div class="border border-outline-variant rounded-lg p-4">
                     <p class="text-xs font-semibold text-on-surface mb-2">{{ fifPieceType }} <span class="text-error">*</span></p>
                     <p class="text-[11px] text-on-surface-variant mb-3">Scan du formulaire signé, en PDF (5 Mo max).</p>
-                    <div
-                        class="border-2 border-dashed rounded-lg p-3"
-                        :class="fifSignee ? 'border-secondary/40 bg-secondary/5' : 'border-outline-variant bg-surface-container-low'"
+                    <CamaFilePicker
+                        ref="fifInput"
+                        accept=".pdf,application/pdf"
+                        :file-name="fifSignee ? fifSignee.name : ''"
+                        hint="PDF uniquement — 5 Mo max."
+                        @change="handleFifUpload"
                     >
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-                            <div class="flex items-center gap-2 min-w-0 flex-1">
-                                <span class="material-symbols-outlined text-[20px]" :class="fifSignee ? 'text-secondary' : 'text-primary'">
-                                    {{ fifSignee ? 'task' : 'upload_file' }}
-                                </span>
-                                <div class="min-w-0">
-                                    <p class="text-xs font-semibold text-on-surface truncate">
-                                        {{ fifSignee ? fifSignee.name : 'Aucun fichier sélectionné' }}
-                                    </p>
-                                    <p class="text-[11px] text-on-surface-variant">
-                                        {{ fifSignee ? 'FIF prête pour la soumission.' : 'Format accepté : PDF uniquement — 5 Mo max.' }}
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-2 shrink-0">
-                                <button
-                                    type="button"
-                                    class="px-3 py-2 rounded-lg border border-primary text-primary text-xs font-semibold hover:bg-primary/5 flex items-center gap-1.5"
-                                    @click="openFifPicker"
-                                >
-                                    <span class="material-symbols-outlined text-[16px]">upload_file</span>
-                                    {{ fifSignee ? 'Remplacer' : 'Choisir un fichier' }}
-                                </button>
-                                <button
-                                    v-if="fifSignee"
-                                    type="button"
-                                    class="px-3 py-2 rounded-lg border border-error text-error text-xs font-semibold hover:bg-error/5"
-                                    @click="removeFif"
-                                >
-                                    Retirer
-                                </button>
-                            </div>
-                        </div>
-                        <input
-                            ref="fifInput"
-                            type="file"
-                            class="hidden"
-                            accept=".pdf,application/pdf"
-                            @change="handleFifUpload"
-                        />
-                    </div>
+                        <template #actions>
+                            <button v-if="fifSignee" type="button" class="px-3 py-2 rounded-lg border border-error text-error text-xs font-semibold hover:bg-error/5" @click="removeFif">Retirer</button>
+                        </template>
+                    </CamaFilePicker>
                     <p v-if="fifError" class="text-error text-[11px] mt-2">{{ fifError }}</p>
                     <p v-else-if="!fifSignee" class="text-[11px] text-on-surface-variant mt-2 italic">Obligatoire pour activer le bouton « Soumettre ».</p>
                 </div>

@@ -74,6 +74,7 @@ class PlatformSettingsService
             'motifsRefus' => $this->motifsRefus(),
             'emailTemplates' => $this->emailTemplates(),
             'affectationMode' => $this->get('affectation_mode') ?? 'manuelle',
+            'affectationSuperviseurMode' => $this->affectationSuperviseurMode(),
             'validation2Niveaux' => (bool) ($this->get('validation_2niveaux') ?? false),
             'orgStructure' => $org,
             'inscriptionDocuments' => $this->inscriptionDocuments(),
@@ -683,9 +684,16 @@ class PlatformSettingsService
         $this->set('retention_years', max(1, min(30, $years)));
     }
 
-    public function updateAffectation(string $mode, bool $validation2Niveaux): void
+    /** Second niveau : « charge_min » (superviseur le moins chargé, par défaut) ou « manuelle » (file commune). */
+    public function affectationSuperviseurMode(): string
+    {
+        return $this->get('affectation_superviseur_mode') === 'manuelle' ? 'manuelle' : 'charge_min';
+    }
+
+    public function updateAffectation(string $mode, bool $validation2Niveaux, string $superviseurMode = 'charge_min'): void
     {
         $this->set('affectation_mode', $mode);
+        $this->set('affectation_superviseur_mode', $superviseurMode === 'manuelle' ? 'manuelle' : 'charge_min');
         $this->set('validation_2niveaux', $validation2Niveaux);
     }
 

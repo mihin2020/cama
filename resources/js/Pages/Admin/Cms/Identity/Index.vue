@@ -1,5 +1,6 @@
 <script setup>
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
@@ -47,7 +48,7 @@ function resetLogoSelection() {
     logoForm.reset();
     if (logoPreview.value) URL.revokeObjectURL(logoPreview.value);
     logoPreview.value = null;
-    if (logoInput.value) logoInput.value.value = '';
+    logoInput.value?.clear?.();
 }
 
 function uploadLogo() {
@@ -226,11 +227,10 @@ function ratioLabel(ratio) {
                             </template>
                         </div>
                         <div class="flex-1 min-w-0 space-y-2">
-                            <input
+                            <CamaFilePicker
                                 ref="logoInput"
-                                class="block w-full text-xs file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary"
-                                type="file"
                                 accept="image/png,image/jpeg,image/webp"
+                                :file-name="logoForm.logo?.name || ''"
                                 @change="onLogoChange"
                             />
                             <p v-if="logoForm.errors.logo" class="text-error text-xs">{{ logoForm.errors.logo }}</p>

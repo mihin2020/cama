@@ -42,7 +42,6 @@ class AdminPermissions
                     ['key' => 'dossiers.supervise', 'label' => 'Valider en second niveau (supervision)'],
                     ['key' => 'dossiers.assign', 'label' => 'Affecter les dossiers aux gestionnaires'],
                     ['key' => 'dossiers.receive', 'label' => "Recevoir des dossiers à traiter (liste d'affectation et affectation automatique)"],
-                    ['key' => 'dossiers.receive_supervision', 'label' => "Recevoir des dossiers à valider en second niveau (affectation automatique au superviseur le moins chargé)"],
                 ],
             ],
             [
@@ -173,7 +172,7 @@ class AdminPermissions
      * que ce qu'on possède » : un superviseur doit pouvoir créer des gestionnaires, qui reçoivent des
      * dossiers, sans les recevoir lui-même.
      */
-    public const NOT_A_PRIVILEGE = ['dossiers.receive', 'dossiers.receive_supervision'];
+    public const NOT_A_PRIVILEGE = ['dossiers.receive'];
 
     /**
      * Permissions réservées à certains rôles (niveau interne minimal) : gérer les comptes internes
@@ -284,7 +283,6 @@ class AdminPermissions
                 'dossiers.view_all',
                 'dossiers.process',
                 'dossiers.supervise',
-                'dossiers.receive_supervision',
                 'dossiers.assign',
                 'assures.view',
                 'assures.manage',

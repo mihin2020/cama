@@ -67,8 +67,9 @@ class DossierAffectationService
 
     /**
      * Superviseurs pouvant recevoir des dossiers à valider en second niveau : comptes actifs (hors
-     * administrateurs techniques) dont le rôle donne « Recevoir des dossiers à valider en second niveau »,
-     * « Valider en second niveau » (supervise) et « Consulter les dossiers ». Nom affiché => libellé du rôle.
+     * administrateurs techniques) dont le rôle donne « Valider en second niveau » (supervise) et « Consulter
+     * les dossiers ». Les gestionnaires, eux, sont définis par « Recevoir des dossiers à traiter » : les deux
+     * groupes se règlent séparément dans Paramètres > Règles d'affectation. Nom affiché => libellé du rôle.
      *
      * @return array<string, string>
      */
@@ -81,7 +82,6 @@ class DossierAffectationService
             ->orderBy('id')
             ->get()
             ->filter(fn (AdminUser $user) => $user->roleIsActive()
-                && $user->hasPermission('dossiers.receive_supervision')
                 && $user->hasPermission('dossiers.supervise')
                 && $user->hasPermission('dossiers.view'))
             ->mapWithKeys(fn (AdminUser $user) => [$user->display_name => $user->role_label])
@@ -102,6 +102,11 @@ class DossierAffectationService
      */
     public function assignSupervisor(Dossier $dossier): ?string
     {
+        // Règle « manuelle » : le dossier attend dans la file commune, un superviseur le désigne à la main.
+        if ($this->settings->affectationSuperviseurMode() === 'manuelle') {
+            return null;
+        }
+
         // Même verrou que l'affectation des gestionnaires : deux validations simultanées voient des charges à jour.
         $this->ensureLockRow();
         $this->acquireLock();

@@ -1,5 +1,6 @@
 <script setup>
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
+import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaIconPicker from '@/Components/CamaIconPicker.vue';
 import CamaSkeleton from '@/Components/CamaSkeleton.vue';
 import SourceModuleNote from '@/Components/PageBuilder/SourceModuleNote.vue';
@@ -1949,8 +1950,7 @@ async function copyExport() {
                 <div class="grid lg:grid-cols-[1.3fr_1fr_1fr_auto] gap-2 items-end">
                     <div>
                         <label class="text-[10px] uppercase font-bold text-on-surface-variant">Importer depuis l’éditeur</label>
-                        <input class="mt-1 w-full text-xs border border-outline-variant rounded-lg px-3 py-2 bg-white" type="file" accept="image/*" @change="onBuilderMediaFileChange" />
-                        <p v-if="builderMediaFileName" class="text-[10px] text-on-surface-variant mt-1">{{ builderMediaFileName }}</p>
+                        <CamaFilePicker class="mt-1" accept="image/*" :file-name="builderMediaFileName" @change="onBuilderMediaFileChange" />
                     </div>
                     <div>
                         <label class="text-[10px] uppercase font-bold text-on-surface-variant">Titre</label>

@@ -118,10 +118,11 @@ class ParametresController extends Controller
     {
         $data = $request->validate([
             'affectation_mode' => ['required', 'in:manuelle,round_robin,charge_min'],
+            'affectation_superviseur_mode' => ['sometimes', 'in:manuelle,charge_min'],
             'validation_2niveaux' => ['sometimes', 'boolean'],
         ]);
 
-        $settings->updateAffectation($data['affectation_mode'], $request->boolean('validation_2niveaux'));
+        $settings->updateAffectation($data['affectation_mode'], $request->boolean('validation_2niveaux'), $data['affectation_superviseur_mode'] ?? 'charge_min');
 
         return back()->with('success', "Règles d'affectation mises à jour.");
     }
