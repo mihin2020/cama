@@ -112,7 +112,7 @@ function saveBanner() {
 }
 
 function openSlideEditor(item = null) {
-    editingId.value = item?.id ?? null;
+    editingId.value = item?.uuid ?? null;
     slideForm.reset();
     slideForm.clearErrors();
     clearLocalPreview();

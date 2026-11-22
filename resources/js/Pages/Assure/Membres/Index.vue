@@ -573,7 +573,7 @@ function submitComplement(m) {
                     <div class="flex flex-wrap gap-2 mt-6 pt-4 border-t border-outline-variant">
                         <Link
                             v-if="canModify(m)"
-                            :href="`${route('assure.ajouter-membre')}?draft=${m.id}`"
+                            :href="`${route('assure.ajouter-membre')}?draft=${m.uuid}`"
                             class="px-3 py-1.5 rounded-lg border border-outline text-on-surface text-xs font-bold hover:bg-surface-container-low transition-colors flex items-center gap-1.5"
                             title="Reprendre le dossier familial en brouillon (tous les membres) — ce membre sera mis en évidence"
                         >

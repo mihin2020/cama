@@ -169,4 +169,23 @@ class DossierSupervisorAssignmentTest extends TestCase
 
         $this->assertSame("manuelle", app(\App\Services\PlatformSettingsService::class)->affectationSuperviseurMode());
     }
+    public function test_a_supervisor_loses_sight_of_the_dossier_once_supervision_is_over(): void
+    {
+        $gest = $this->account("Gest", "gestionnaire");
+        $role = Role::query()->create(["slug" => "sup-vue", "nom" => "Sup vue", "rang" => 20, "systeme" => false, "actif" => true,
+            "permissions" => ["dossiers.view", "dossiers.process", "dossiers.supervise"]]);
+        $sup = AdminUser::query()->create(["nom" => "Vue", "prenom" => "Test", "email" => "vue@cama.bf", "password" => "motdepasse-solide",
+            "role" => "sup-vue", "actif" => true])->fresh();
+
+        $dossier = $this->dossier($gest->display_name);
+        $this->service()->validate($dossier, $gest);
+        $this->assertSame($sup->display_name, $dossier->fresh()->superviseur);
+        $this->assertTrue($dossier->fresh()->isVisibleTo($sup));
+
+        $this->service()->validate($dossier->fresh(), $sup);
+
+        $this->assertSame("Validé", $dossier->fresh()->statut);
+        $this->assertFalse($dossier->fresh()->isVisibleTo($sup));
+        $this->assertSame([], Dossier::query()->visibleTo($sup)->pluck("id")->all());
+    }
 }

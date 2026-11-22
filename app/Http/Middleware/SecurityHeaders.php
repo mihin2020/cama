@@ -35,8 +35,13 @@ class SecurityHeaders
             'Referrer-Policy' => 'strict-origin-when-cross-origin',
             'Permissions-Policy' => 'camera=(), microphone=(), payment=(), usb=(), geolocation=(self)',
             'Cross-Origin-Opener-Policy' => 'same-origin-allow-popups',
-            'Content-Security-Policy' => $this->contentSecurityPolicy($nonce),
         ];
+
+        // La CSP protège les pages HTML ; sur un fichier servi (PDF « Visualiser »), « object-src 'none' » empêcherait
+        // le lecteur PDF du navigateur de l'afficher (ces fichiers sont déjà servis avec nosniff).
+        if (! $response instanceof \Symfony\Component\HttpFoundation\BinaryFileResponse) {
+            $headers['Content-Security-Policy'] = $this->contentSecurityPolicy($nonce);
+        }
 
         // HTTPS obligatoire pendant un an, une fois le site servi en HTTPS en production.
         if ($request->isSecure() && app()->environment('production')) {

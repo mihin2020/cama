@@ -87,7 +87,7 @@ function isHighlightedRow(row) {
 }
 
 async function focusDraftMember() {
-    const id = props.focusDraftId ? Number(props.focusDraftId) : null;
+    const id = props.focusDraftId || null;
     if (!id) return;
 
     const row = [...state.conjoints, ...state.enfants].find((r) => r.dossier_id === id);

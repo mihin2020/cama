@@ -49,7 +49,8 @@ class PageController extends Controller
 
     public function builder(Request $request, CmsPageService $pages, CmsMediaService $media, CmsPageVersionService $versions): Response
     {
-        $page = CmsPage::query()->find($request->integer('page'))
+        $requested = (string) $request->query('page', '');
+        $page = (\Illuminate\Support\Str::isUuid($requested) ? CmsPage::query()->where('uuid', $requested)->first() : null)
             ?? CmsPage::query()->orderByRaw("case when slug = 'accueil' then 0 else 1 end")->orderBy('title')->first();
 
         if (! $page) {

@@ -37,7 +37,7 @@ const pieceUrl = (dossierId, type, inline = false) => `${route('admin.dossiers.p
 const memberDetail = (m) => (selected.value?.membresExport ?? []).find((x) => x.id === m.id) ?? m;
 
 const memberFiles = computed(() => (selected.value?.membresExport ?? [])
-    .map((m) => ({ id: m.id, nom: m.beneficiaire || `${m.prenom ?? ''} ${m.nom ?? ''}`.trim(), lien: m.lien, pieces: (m.pieces ?? []).filter((p) => p.hasFile) }))
+    .map((m) => ({ id: m.id, uuid: m.uuid, nom: m.beneficiaire || `${m.prenom ?? ''} ${m.nom ?? ''}`.trim(), lien: m.lien, pieces: (m.pieces ?? []).filter((p) => p.hasFile) }))
     .filter((m) => m.pieces.length));
 const canManage = computed(() => can('assures.manage'));
 

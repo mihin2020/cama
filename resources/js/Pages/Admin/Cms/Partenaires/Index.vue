@@ -184,7 +184,7 @@ function onImageUrlInput() {
 }
 
 function openEditor(item = null) {
-    editingId.value = item?.id ?? null;
+    editingId.value = item?.uuid ?? null;
     pastedLocation.value = '';
     pasteFeedback.value = null;
     form.reset();

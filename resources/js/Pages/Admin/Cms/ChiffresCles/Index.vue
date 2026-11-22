@@ -42,7 +42,7 @@ function formatDisplayValue(item) {
 }
 
 function openEditor(item = null) {
-    editingId.value = item?.id ?? null;
+    editingId.value = item?.uuid ?? null;
     form.reset();
     form.clearErrors();
 

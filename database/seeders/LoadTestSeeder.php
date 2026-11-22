@@ -27,14 +27,14 @@ class LoadTestSeeder extends Seeder
 
     public function run(): void
     {
-        if (app()->environment('production') || env('LOAD_TEST_CONFIRM') !== '1') {
+        if (app()->environment('production') || getgetenv('LOAD_TEST_CONFIRM') !== '1') {
             $this->command?->error('Refusé : base jetable uniquement. Définissez LOAD_TEST_CONFIRM=1 (jamais en production).');
 
             return;
         }
 
-        $assures = max(10, (int) env('LOAD_ASSURES', 50000));
-        $perAssure = max(1, (int) env('LOAD_DOSSIERS_PAR_ASSURE', 3));
+        $assures = max(10, (int) (getenv('LOAD_ASSURES') ?: 50000));
+        $perAssure = max(1, (int) (getenv('LOAD_DOSSIERS_PAR_ASSURE') ?: 3));
         $hash = Hash::make(self::PASSWORD);
         $now = now();
 
@@ -61,12 +61,13 @@ class LoadTestSeeder extends Seeder
             }
             DB::table('assures')->insert($rows);
 
-            $firstId = (int) DB::table('assures')->where('email', $rows[0]['email'])->value('id');
+            // Identifiants réels (l'auto-incrément peut avoir des trous), dans l'ordre d'insertion.
+            $ids = DB::table('assures')->whereIn('email', array_column($rows, 'email'))->orderBy('id')->pluck('id')->all();
             $dossiers = [];
             $notifications = [];
             $connexions = [];
             for ($i = 0; $i < $count; $i++) {
-                $assureId = $firstId + $i;
+                $assureId = $ids[$i];
                 for ($d = 1; $d <= $perAssure; $d++) {
                     $statut = ['Soumis', 'En instruction', 'Validé', 'Pièce manquante demandée', 'Refusé'][($assureId + $d) % 5];
                     $dossiers[] = [

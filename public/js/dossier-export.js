@@ -371,10 +371,14 @@
                     const headers = ['N°', 'Nom', 'Prénoms', ...cols.map((k) => k.label)];
                     const xs = widths.reduce((acc, w, i) => [...acc, acc[i] + w], [L]);
 
-                    const drawHeader = () => {
+                    const headerLayout = () => {
                         const wrapped = headers.map((hd, i) => wrapText(bold, hd, SIZE, widths[i] - 2 * PAD));
-                        const h = Math.max(...wrapped.map((l) => l.length)) * LEAD + 2 * PAD;
-                        ensure(h + 30);
+
+                        return { wrapped, h: Math.max(...wrapped.map((l) => l.length)) * LEAD + 2 * PAD };
+                    };
+                    // Dessine seulement : la place est réservée par l'appelant (sinon l'en-tête serait dessiné deux fois).
+                    const drawHeader = () => {
+                        const { wrapped, h } = headerLayout();
                         wrapped.forEach((lns, i) => {
                             rect(xs[i], y, widths[i], h);
                             lns.forEach((ln, j) => centered(ln, xs[i] + widths[i] / 2, y - PAD - SIZE - j * LEAD + 1, bold, SIZE));
@@ -382,6 +386,9 @@
                         y -= h;
                     };
 
+                    // Titre + en-tête + au moins une ligne tiennent sur la page, sinon on passe à la suivante d'abord.
+                    resume = null;
+                    ensure(headerLayout().h + 50);
                     subTitle(`${table.titre}${cols.length < table.columns.length ? ` (${Math.floor(c / perChunk) + 1}/${Math.ceil(table.columns.length / perChunk)})` : ''}`);
                     resume = () => { subTitle(`${table.titre} (suite)`); drawHeader(); };
                     drawHeader();

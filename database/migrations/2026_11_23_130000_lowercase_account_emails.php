@@ -11,7 +11,11 @@ return new class extends Migration
 {
     public function up(): void
     {
-        foreach (['admin_users', 'assures'] as $table) {
+        foreach (['admin_users', 'assures', 'cms_newsletter_subscribers', 'cms_contact_messages'] as $table) {
+            if (! \Illuminate\Support\Facades\Schema::hasTable($table) || ! \Illuminate\Support\Facades\Schema::hasColumn($table, 'email')) {
+                continue;
+            }
+
             DB::table($table)->orderBy('id')->each(function ($row) use ($table) {
                 $lower = mb_strtolower(trim((string) $row->email));
 

@@ -53,8 +53,8 @@ class DossierWizardController extends Controller
             }
         }
 
-        $focusDraftId = $request->integer('draft') ?: null;
-        if ($focusDraftId && ! $brouillons->contains('id', $focusDraftId)) {
+        $focusDraftId = (string) $request->query('draft', '') ?: null;
+        if ($focusDraftId && ! $brouillons->contains('uuid', $focusDraftId)) {
             $focusDraftId = null;
         }
 

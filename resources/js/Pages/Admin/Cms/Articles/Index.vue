@@ -206,7 +206,7 @@ function closeViewer() {
 function openEditor(item = null) {
     closeViewer();
     clearLocalPreview();
-    editingId.value = item?.id ?? null;
+    editingId.value = item?.uuid ?? null;
     editorImageError.value = false;
     form.reset();
     form.clearErrors();

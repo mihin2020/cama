@@ -40,7 +40,7 @@ class LoginThrottle
         foreach ($this->limits as $key => $max) {
             if (RateLimiter::tooManyAttempts($key, $max)) {
                 $minutes = (int) ceil(RateLimiter::availableIn($key) / 60);
-                SecurityLog::warning('connexion bloquée (trop de tentatives)', null, ['espace' => $this->scope, 'email' => $this->email, 'ip' => $this->ip]);
+                SecurityLog::warning('connexion bloquée (trop de tentatives)', null, ['espace' => $this->scope, 'email' => $this->loggableEmail(), 'ip' => $this->ip]);
 
                 throw ValidationException::withMessages([
                     'email' => "Trop de tentatives de connexion. Réessayez dans {$minutes} minute(s).",
@@ -51,11 +51,17 @@ class LoginThrottle
 
     public function hit(): void
     {
-        SecurityLog::warning('échec de connexion', null, ['espace' => $this->scope, 'email' => $this->email, 'ip' => $this->ip]);
+        SecurityLog::warning('échec de connexion', null, ['espace' => $this->scope, 'email' => $this->loggableEmail(), 'ip' => $this->ip]);
 
         foreach (array_keys($this->limits) as $key) {
             RateLimiter::hit($key, self::LOCKOUT_SECONDS);
         }
+    }
+
+    /** Une saisie qui n'a pas la forme d'une adresse (ex. un mot de passe collé dans le champ) n'est pas journalisée. */
+    private function loggableEmail(): string
+    {
+        return filter_var($this->email, FILTER_VALIDATE_EMAIL) ? $this->email : '(saisie non valide)';
     }
 
     public function clear(): void

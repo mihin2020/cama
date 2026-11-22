@@ -43,8 +43,8 @@ const toast = computed(() => page.props.flash?.success ?? null);
 // désormais la vraie page publique dans une iframe (cf. PageBuilderBridge.vue).
 const { fullHtml } = createBuilderRender(() => props.systemPreviewData);
 
-const pageId = ref(props.currentPage.id);
-const loadedPageId = ref(props.currentPage.id);
+const pageId = ref(props.currentPage.uuid);
+const loadedPageId = ref(props.currentPage.uuid);
 const sections = ref(normalizeSections(props.currentPage.sections ?? []));
 const selected = ref(null);
 const device = ref('desktop');
@@ -113,7 +113,7 @@ const widgetGroups = computed(() => {
     return groups;
 });
 
-const currentPageOption = computed(() => props.pageOptions.find((p) => p.id === pageId.value) ?? props.currentPage);
+const currentPageOption = computed(() => props.pageOptions.find((p) => p.uuid === pageId.value) ?? props.currentPage);
 const selectedNode = computed(() => findNode(selected.value));
 const previewHtml = computed(() => fullHtml(sections.value));
 const publicPreviewUrl = computed(() => currentPageOption.value.href ?? (currentPageOption.value.slug === 'accueil' ? '/' : `/${currentPageOption.value.slug}`));
@@ -166,8 +166,8 @@ const canPasteStyle = computed(() => copiedWidgetStyle.value !== null);
 watch(
     () => props.currentPage,
     (value) => {
-        pageId.value = value.id;
-        loadedPageId.value = value.id;
+        pageId.value = value.uuid;
+        loadedPageId.value = value.uuid;
         sections.value = normalizeSections(value.sections ?? []);
         selected.value = null;
         clearTimeout(saveTimer);
@@ -690,7 +690,7 @@ function changePage() {
     // La liste reste sur la page actuelle tant que le changement n'est pas confirmé.
     pageId.value = loadedPageId.value;
 
-    const target = props.pageOptions.find((option) => option.id === targetPageId);
+    const target = props.pageOptions.find((option) => option.uuid === targetPageId);
     guardUnsaved(`ouvrir la page « ${target?.title ?? 'sélectionnée'} »`, () => {
         clearTimeout(saveTimer);
         router.get(route('admin.cms.page_builder'), { page: targetPageId }, { preserveScroll: true, preserveState: false });
@@ -967,7 +967,7 @@ async function copyExport() {
 
                 <div class="flex items-center gap-2 min-w-0 flex-1">
                     <select v-model="pageId" class="text-sm font-bold border border-outline-variant rounded-lg px-2.5 py-2 bg-white min-w-[140px] max-w-[220px]" title="Page en cours d'édition" @change="changePage">
-                        <option v-for="option in pageOptions" :key="option.id" :value="option.id">
+                        <option v-for="option in pageOptions" :key="option.uuid" :value="option.uuid">
                             {{ option.title }}{{ option.status === 'draft' ? ' (brouillon)' : '' }}
                         </option>
                     </select>
