@@ -191,6 +191,140 @@
         });
     }
 
+    /* ── Annexe « informations complémentaires » (champs ajoutés par l'administration) ── */
+
+    // Helvetica (WinAnsi) ne sait pas écrire tous les caractères : on remplace ceux qu'elle refuse.
+    function safeText(font, text) {
+        let out = '';
+        for (const ch of String(text == null ? '' : text).replace(/[\r\n\t]+/g, ' ')) {
+            try { font.encodeText(ch); out += ch; } catch (e) { out += '?'; }
+        }
+        return out;
+    }
+
+    function wrapText(font, text, size, maxW) {
+        const words = safeText(font, text).split(/\s+/).filter(Boolean);
+        const lines = [];
+        let line = '';
+        words.forEach((word) => {
+            let w = word;
+            // Mot plus long qu'une ligne : coupé au caractère.
+            while (font.widthOfTextAtSize(w, size) > maxW && w.length > 1) {
+                let cut = w.length - 1;
+                while (cut > 1 && font.widthOfTextAtSize(w.slice(0, cut), size) > maxW) cut--;
+                if (line) { lines.push(line); line = ''; }
+                lines.push(w.slice(0, cut));
+                w = w.slice(cut);
+            }
+            const test = line ? `${line} ${w}` : w;
+            if (font.widthOfTextAtSize(test, size) <= maxW) { line = test; }
+            else { lines.push(line); line = w; }
+        });
+        if (line) lines.push(line);
+        return lines.length ? lines : [''];
+    }
+
+    // Sections à imprimer : seulement les lignes « imprimer_pdf » ; une section sans ligne imprimable est ignorée.
+    function printableSections(sections) {
+        return (sections || [])
+            .map((s) => ({ titre: s.titre, rows: (s.rows || []).filter((r) => r.imprimer !== false) }))
+            .filter((s) => s.rows.length);
+    }
+
+    // Blocs de l'annexe : l'assuré, puis chaque conjoint, puis chaque enfant (du plus âgé au plus jeune).
+    function annexBlocks(assure, conjoints, enfants) {
+        const blocks = [];
+        const nomMil = `${assure.prenoms || assure.prenom || ''} ${assure.nom || ''}`.trim();
+        const own = printableSections(assure.fifSections);
+        if (own.length) blocks.push({ titre: `Assuré${nomMil ? ` — ${nomMil}` : ''}`, sections: own });
+        [...(conjoints || []), ...(enfants || [])].forEach((m) => {
+            const sections = printableSections(m.fifSections);
+            if (!sections.length) return;
+            const who = `${m.prenom || ''} ${m.nom || ''}`.trim();
+            blocks.push({ titre: `${m.lien || 'Membre'}${who ? ` — ${who}` : ''}`, sections });
+        });
+        return blocks;
+    }
+
+    async function addAnnexPages(out, font, bold, assure, conjoints, enfants) {
+        const blocks = annexBlocks(assure, conjoints, enfants);
+        if (!blocks.length) return;
+
+        const { rgb } = global.PDFLib;
+        const black = rgb(0, 0, 0);
+        const grey = rgb(0.35, 0.35, 0.35);
+        const MARGIN = 40;
+        const LABEL_W = 230;
+        const VALUE_X = MARGIN + LABEL_W + 10;
+        const VALUE_W = PAGE_W - MARGIN - VALUE_X;
+        const SIZE = 9;
+        const LEADING = 12;
+        const numero = assure.numeroFif || assure.numeroCama || assure.matricule || '';
+
+        let page = null;
+        let y = 0;
+        let pageNo = 0;
+
+        const newPage = () => {
+            page = out.addPage([PAGE_W, PAGE_H]);
+            pageNo += 1;
+            page.drawText('FIF CAMA — Informations complémentaires', { x: MARGIN, y: PAGE_H - 38, size: 13, font: bold, color: black });
+            if (numero) {
+                const t = safeText(font, `N° ${numero}`);
+                page.drawText(t, { x: PAGE_W - MARGIN - font.widthOfTextAtSize(t, 9), y: PAGE_H - 36, size: 9, font, color: grey });
+            }
+            page.drawLine({ start: { x: MARGIN, y: PAGE_H - 46 }, end: { x: PAGE_W - MARGIN, y: PAGE_H - 46 }, thickness: 0.8, color: black });
+            page.drawText(`Annexe ${pageNo}`, { x: MARGIN, y: 22, size: 8, font, color: grey });
+            y = PAGE_H - 70;
+        };
+        // Bloc et section en cours : rappelés en tête de page quand une section continue sur la page suivante.
+        const ctx = { block: null, section: null };
+        const drawBlockTitle = (titre) => {
+            page.drawText(safeText(bold, titre), { x: MARGIN, y, size: 11, font: bold, color: black });
+            y -= 18;
+        };
+        const drawSectionTitle = (titre) => {
+            page.drawText(safeText(bold, titre), { x: MARGIN, y, size: 10, font: bold, color: grey });
+            y -= 5;
+            page.drawLine({ start: { x: MARGIN, y }, end: { x: PAGE_W - MARGIN, y }, thickness: 0.4, color: grey });
+            y -= 13;
+        };
+        const ensure = (h) => {
+            if (page && y - h >= 40) return;
+            newPage();
+            if (ctx.block) drawBlockTitle(`${ctx.block} (suite)`);
+            if (ctx.section) drawSectionTitle(`${ctx.section} (suite)`);
+        };
+
+        newPage();
+        blocks.forEach((block) => {
+            ctx.block = null;
+            ctx.section = null;
+            ensure(60);
+            drawBlockTitle(block.titre);
+            ctx.block = block.titre;
+
+            block.sections.forEach((section) => {
+                ctx.section = null;
+                ensure(40);
+                drawSectionTitle(section.titre);
+                ctx.section = section.titre;
+
+                section.rows.forEach((row) => {
+                    const labelLines = wrapText(font, row.label, SIZE, LABEL_W);
+                    const valueLines = wrapText(font, row.value || '—', SIZE, VALUE_W);
+                    const h = Math.max(labelLines.length, valueLines.length) * LEADING;
+                    ensure(h + 4);
+                    labelLines.forEach((l, i) => page.drawText(l, { x: MARGIN, y: y - i * LEADING, size: SIZE, font, color: grey }));
+                    valueLines.forEach((l, i) => page.drawText(l, { x: VALUE_X, y: y - i * LEADING, size: SIZE, font, color: black }));
+                    y -= h + 4;
+                });
+                y -= 8;
+            });
+            y -= 8;
+        });
+    }
+
     async function buildFormulaireComplet(assure, conjoints, enfants) {
         ensureLibs();
         const { PDFDocument, StandardFonts, rgb } = global.PDFLib;
@@ -198,6 +332,7 @@
 
         const out = await PDFDocument.create();
         const font = await out.embedFont(StandardFonts.Helvetica);
+        const bold = await out.embedFont(StandardFonts.HelveticaBold);
         const black = rgb(0, 0, 0);
 
         const conjChunks = chunk(conjoints || [], CONJOINT_ROWS_Y.length);
@@ -232,6 +367,9 @@
             }
         }
 
+        // Champs ajoutés par l'administration : pages d'annexe après le formulaire officiel.
+        await addAnnexPages(out, font, bold, assure || {}, conjoints, sortEnfantsByAge(enfants));
+
         return out.save();
     }
 
@@ -253,6 +391,7 @@
             lieuResidence: m.lieuResidence, telephone: m.telephone,
             refActeScolariteEtatCivil: m.refActeScolariteEtatCivil,
             nomPrenomsParent: m.nomPrenomsParent, numeroCama: m.numeroCama,
+            fifSections: m.fifSections || [],
             statut: m.statut, dossierId: m.dossierId || m.ref,
             dateSoumission: m.dateSoumission, motifRefus: m.motifRefus,
             pieces: m.pieces || []

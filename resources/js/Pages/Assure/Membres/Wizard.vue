@@ -222,7 +222,7 @@ async function generateFif() {
     }
     generatingFif.value = true;
     try {
-        const membres = buildExportMembresFromState(state);
+        const membres = buildExportMembresFromState(state, props.fifSchema);
         await exportFamilleFif(membres, props.assureExport);
         fifGenerated.value = true;
         showToast('picture_as_pdf', 'FIF générée — imprimez-la et faites-la signer par le chef de corps et le GRH.');

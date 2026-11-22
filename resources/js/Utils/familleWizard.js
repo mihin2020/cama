@@ -256,9 +256,25 @@ export function validateFamille(state, {
     return problems;
 }
 
-export function buildExportMembresFromState(state) {
-    const membres = [];
+/** Sections « libellé : valeur » d'un membre à partir du schéma configuré et des valeurs saisies. */
+function fifSectionsFromSchema(sections, values) {
+    return (sections || []).map((section) => ({
+        titre: section.titre,
+        rows: (section.fields || []).map((field) => {
+            const raw = values?.[field.code];
+            let value = '';
+            if (field.type === 'checkbox') value = raw ? 'Oui' : 'Non';
+            else if (field.type === 'fichier') value = raw instanceof File ? raw.name : (raw?.filename ?? '');
+            else if (field.type === 'date') value = isoToFr(raw);
+            else value = raw == null ? '' : String(raw);
 
+            return { code: field.code, label: field.libelle, value, imprimer: field.imprimer_pdf !== false };
+        }),
+    }));
+}
+
+export function buildExportMembresFromState(state, fifSchema = { conjoint: [], enfant: [] }) {
+    const membres = [];
     state.conjoints.forEach((row) => {
         if (!row.nom?.trim() && !row.prenoms?.trim()) return;
         membres.push({
@@ -266,6 +282,7 @@ export function buildExportMembresFromState(state) {
             prenom: row.prenoms,
             prenoms: row.prenoms,
             lien: 'Conjoint(e)',
+            fifSections: fifSectionsFromSchema(fifSchema.conjoint, row.fif),
             sexe: row.sexe,
             dateNaissance: isoToFr(row.dateNaissance),
             lieuNaissance: row.lieuNaissance,
@@ -286,6 +303,7 @@ export function buildExportMembresFromState(state) {
             prenom: row.prenoms,
             prenoms: row.prenoms,
             lien: row.filiation || 'Enfant biologique',
+            fifSections: fifSectionsFromSchema(fifSchema.enfant, row.fif),
             sexe: row.sexe,
             dateNaissance: isoToFr(row.dateNaissance),
             lieuNaissance: row.lieuNaissance,
