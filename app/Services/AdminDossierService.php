@@ -201,6 +201,8 @@ class AdminDossierService
                 'matricule' => $assure->matricule,
                 'numeroCama' => $assure->numero_cama,
                 'gestionnaire' => $gestionnaire,
+                'enSupervision' => $submitted->where('statut', 'En attente supervision')->count(),
+                'superviseur' => $submitted->first(fn ($d) => $d->statut === 'En attente supervision' && $d->superviseur)?->superviseur,
                 'total' => $sorted->count(),
                 'pending' => $pending,
                 'queue' => $queue,
@@ -275,6 +277,56 @@ class AdminDossierService
             });
     }
 
+    /**
+     * Réaffecte à la main le superviseur des dossiers de la famille qui attendent la validation de second niveau.
+     * « Non affecté » (ou vide) les remet dans la file commune de la supervision.
+     */
+    public function assignSupervisorToFamily(int $assureId, string $nom, ?AdminUser $admin = null): void
+    {
+        $nom = trim($nom);
+        $retrait = $nom === '' || $nom === DossierAffectationService::NON_AFFECTE;
+
+        if (! $retrait && ! $this->affectation->isAssignableSupervisor($nom)) {
+            throw ValidationException::withMessages([
+                'superviseur' => "« {$nom} » ne peut pas recevoir de dossiers en supervision : choisissez un superviseur dans la liste.",
+            ]);
+        }
+
+        Dossier::query()
+            ->where('assure_id', $assureId)
+            ->where('statut', 'En attente supervision')
+            ->get()
+            ->each(function (Dossier $dossier) use ($nom, $retrait, $admin) {
+                if (($dossier->superviseur ?? '') === ($retrait ? '' : $nom)) {
+                    return;
+                }
+
+                $dossier->update(['superviseur' => $retrait ? null : $nom]);
+                $par = $admin ? " par {$admin->display_name}" : '';
+                $this->dossiers->appendJournal($dossier, $retrait ? "Superviseur retiré{$par} : file commune" : "Supervision confiée à {$nom}{$par}");
+            });
+    }
+
+    /**
+     * Superviseurs proposés à la réaffectation, avec leur charge (dossiers en attente de leur validation).
+     *
+     * @return list<array{nom: string, role: string, enAttente: int}>
+     */
+    public function superviseurs(): array
+    {
+        $charges = Dossier::query()
+            ->where('statut', 'En attente supervision')
+            ->whereNotNull('superviseur')
+            ->selectRaw('superviseur, count(*) as total')
+            ->groupBy('superviseur')
+            ->pluck('total', 'superviseur');
+
+        return collect($this->affectation->supervisorAccounts())
+            ->map(fn (string $role, string $nom) => ['nom' => $nom, 'role' => $role, 'enAttente' => (int) ($charges[$nom] ?? 0)])
+            ->values()
+            ->all();
+    }
+
     public function batchAssign(array $assureIds, string $gestionnaire, ?AdminUser $admin = null): int
     {
         // Tout le lot ou rien : une erreur en cours de route n'en laisse pas une moitié affectée.
@@ -302,9 +354,13 @@ class AdminDossierService
             // à la supervision. Quand la validation est faite par un superviseur — y compris sur un dossier
             // qui lui est affecté — elle est définitive : il n'y a rien à faire valider de nouveau.
             if ($this->settings->validation2Niveaux() && $this->isGestionnaire($admin)) {
-                $dossier->update(['statut' => 'En attente supervision']);
-                $this->dossiers->appendJournal($dossier, "Validation niveau 1 par {$admin->display_name} — transmis à la supervision");
-
+                $dossier->update(['statut' => 'En attente supervision', 'superviseur' => null]);
+                $superviseur = $this->affectation->assignSupervisor($dossier);
+                $this->dossiers->appendJournal(
+                    $dossier,
+                    "Validation niveau 1 par {$admin->display_name} — transmis à la supervision"
+                        .($superviseur ? " (affecté à {$superviseur})" : ' (aucun superviseur disponible : file commune)')
+                );
                 return;
             }
 
@@ -615,6 +671,7 @@ class AdminDossierService
             'beneficiaire' => $dossier->beneficiaire,
             'assureNom' => $dossier->assure->full_name,
             'gestionnaire' => $dossier->gestionnaire,
+            'superviseur' => $dossier->statut === 'En attente supervision' ? $dossier->superviseur : null,
             'dateSoumission' => $dossier->date_soumission?->format('Y-m-d'),
             'dateSoumissionFr' => $dossier->date_soumission?->format('d/m/Y'),
             'affecteLe' => $this->affectationDate($dossier),

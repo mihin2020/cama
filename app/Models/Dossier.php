@@ -22,6 +22,7 @@ class Dossier extends Model
         'membre_numero_cama',
         'statut',
         'gestionnaire',
+        'superviseur',
         'date_soumission',
         'date_decision',
         'motif_refus',
@@ -54,12 +55,12 @@ class Dossier extends Model
     /** Dossiers que l'agent peut consulter : tous, ou seulement les siens (cf. AdminUser::seesOnlyOwnDossiers). */
     public function scopeVisibleTo(Builder $query, ?AdminUser $admin): Builder
     {
-        return $query->when($admin?->seesOnlyOwnDossiers(), fn (Builder $q) => $q->where($q->qualifyColumn('gestionnaire'), $admin->display_name));
+        return $query->when($admin?->seesOnlyOwnDossiers(), fn (Builder $q) => $q->where(fn (Builder $own) => $own->where($q->qualifyColumn('gestionnaire'), $admin->display_name)->orWhere($q->qualifyColumn('superviseur'), $admin->display_name)));
     }
 
     public function isVisibleTo(?AdminUser $admin): bool
     {
-        return $admin !== null && (! $admin->seesOnlyOwnDossiers() || $this->gestionnaire === $admin->display_name);
+        return $admin !== null && (! $admin->seesOnlyOwnDossiers() || $this->gestionnaire === $admin->display_name || $this->superviseur === $admin->display_name);
     }
 
     public function getBeneficiaireAttribute(): string

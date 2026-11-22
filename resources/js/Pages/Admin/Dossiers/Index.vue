@@ -15,6 +15,7 @@ const props = defineProps({
     families: Array,
     queueCounts: Object,
     gestionnaires: Array,
+    superviseurs: { type: Array, default: () => [] },
     adminRole: String,
     gestionnaireNom: String,
     isGestionnaire: Boolean,
@@ -84,6 +85,34 @@ function assignOptions(current = null) {
         options.unshift({ value: current, label: `${current} (compte inactif — à réaffecter)`, disabled: true });
     }
     return options;
+}
+
+// Second niveau : superviseurs qui reçoivent des dossiers à valider, avec leur charge en cours.
+function supervisorOptions(current = null) {
+    const options = [
+        { value: 'Non affecté', label: 'Non affecté (file commune des superviseurs)' },
+        ...props.superviseurs.map((s) => ({ value: s.nom, label: s.nom, hint: `${s.role ? `${s.role} · ` : ''}${s.enAttente ?? 0} en attente` })),
+    ];
+    if (current && !options.some((o) => o.value === current)) {
+        options.unshift({ value: current, label: `${current} (ne reçoit plus — à réaffecter)`, disabled: true });
+    }
+    return options;
+}
+
+function assignSupervisor(assureId, nom) {
+    router.post(
+        route('admin.dossiers.assign-supervisor'),
+        { assure_id: assureId, superviseur: nom === 'Non affecté' ? '' : nom },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                showToast(nom === 'Non affecté' ? 'Dossier remis dans la file commune des superviseurs.' : `Validation de second niveau confiée à ${nom}.`);
+                if (detailFamily.value?.assureId === assureId) {
+                    detailFamily.value = { ...detailFamily.value, superviseur: nom === 'Non affecté' ? null : nom };
+                }
+            },
+        },
+    );
 }
 
 // Filtre : tous les noms qui détiennent des dossiers, y compris les comptes désactivés.
@@ -824,6 +853,7 @@ const detailLotFifPiece = computed(() => {
                         <span v-if="family.pending > 0" class="px-3 py-1.5 rounded-full text-xs font-bold bg-primary/10 text-primary">{{ family.pending }} à traiter</span>
                         <span v-else class="px-3 py-1.5 rounded-full text-xs font-bold bg-secondary/10 text-secondary">À jour</span>
                         <span class="hidden sm:inline px-2.5 py-1 rounded-full text-[10px] font-bold border" :class="affectationBadgeClass(family.gestionnaire)">{{ affectationLabel(family.gestionnaire) }}</span>
+                        <span v-if="validation2Niveaux && family.enSupervision" class="hidden sm:inline px-2.5 py-1 rounded-full text-[10px] font-bold border border-tertiary/40 bg-tertiary/10 text-tertiary" title="Validation de second niveau">Supervision : {{ family.superviseur || 'file commune' }}</span>
                     </div>
                     <span class="material-symbols-outlined text-on-surface-variant accordion-chevron hidden sm:block shrink-0">expand_more</span>
                 </summary>
@@ -976,6 +1006,19 @@ const detailLotFifPiece = computed(() => {
                         </div>
                         <div v-else class="bg-surface-container-low rounded-lg p-3 text-xs">
                             <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border" :class="affectationBadgeClass(detailFamily.gestionnaire)">{{ affectationLabel(detailFamily.gestionnaire) }}</span>
+                        </div>
+                        <div v-if="validation2Niveaux && detailFamily.enSupervision">
+                            <label class="text-[11px] font-bold uppercase tracking-wide text-on-surface-variant block mb-1.5">Superviseur chargé de la validation de second niveau</label>
+                            <SearchSelect
+                                v-if="canBatchAssign"
+                                button-class="px-3 py-2 text-sm"
+                                :model-value="detailFamily.superviseur || 'Non affecté'"
+                                :options="supervisorOptions(detailFamily.superviseur)"
+                                :panel-min-width="460"
+                                search-placeholder="Rechercher un superviseur…"
+                                @update:model-value="(name) => assignSupervisor(detailFamily.assureId, name)"
+                            />
+                            <p v-else class="bg-surface-container-low rounded-lg p-3 text-xs">{{ detailFamily.superviseur || 'File commune des superviseurs (aucun superviseur désigné)' }}</p>
                         </div>
                         <div v-if="detailFamily.lastTraitement" class="bg-surface-container-low rounded-lg p-3 text-xs">
                             <strong>Dernier traitement :</strong> {{ detailFamily.lastTraitement }}

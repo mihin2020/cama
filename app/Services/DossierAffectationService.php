@@ -65,6 +65,82 @@ class DossierAffectationService
             ->all();
     }
 
+    /**
+     * Superviseurs pouvant recevoir des dossiers à valider en second niveau : comptes actifs (hors
+     * administrateurs techniques) dont le rôle donne « Recevoir des dossiers à valider en second niveau »,
+     * « Valider en second niveau » (supervise) et « Consulter les dossiers ». Nom affiché => libellé du rôle.
+     *
+     * @return array<string, string>
+     */
+    public function supervisorAccounts(): array
+    {
+        return AdminUser::query()
+            ->with('roleDefinition')
+            ->where('actif', true)
+            ->where('role', '!=', AdminRole::Administrateur->value)
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (AdminUser $user) => $user->roleIsActive()
+                && $user->hasPermission('dossiers.receive_supervision')
+                && $user->hasPermission('dossiers.supervise')
+                && $user->hasPermission('dossiers.view'))
+            ->mapWithKeys(fn (AdminUser $user) => [$user->display_name => $user->role_label])
+            ->all();
+    }
+
+    public function isAssignableSupervisor(string $nom): bool
+    {
+        return array_key_exists($nom, $this->supervisorAccounts());
+    }
+
+    /**
+     * Confie un dossier qui vient d'être validé au premier niveau à UN superviseur : celui qui a déjà un
+     * autre dossier de la même famille en supervision (cohérence), sinon le moins chargé (dossiers en
+     * attente de supervision), à charge égale le premier de la liste. À appeler dans la transaction de
+     * validation. Retourne null s'il n'y a aucun superviseur éligible : le dossier reste alors dans la
+     * file commune de la supervision.
+     */
+    public function assignSupervisor(Dossier $dossier): ?string
+    {
+        // Même verrou que l'affectation des gestionnaires : deux validations simultanées voient des charges à jour.
+        $this->ensureLockRow();
+        $this->acquireLock();
+
+        $pool = array_keys($this->supervisorAccounts());
+        if ($pool === []) {
+            return null;
+        }
+
+        $famille = Dossier::query()
+            ->where('assure_id', $dossier->assure_id)
+            ->where('id', '!=', $dossier->id)
+            ->where('statut', 'En attente supervision')
+            ->whereIn('superviseur', $pool)
+            ->orderByDesc('id')
+            ->value('superviseur');
+
+        $chosen = $famille ?? $this->leastLoadedSupervisor($pool);
+
+        $dossier->update(['superviseur' => $chosen]);
+
+        return $chosen;
+    }
+
+    /**
+     * @param  list<string>  $pool
+     */
+    private function leastLoadedSupervisor(array $pool): string
+    {
+        $charges = Dossier::query()
+            ->where('statut', 'En attente supervision')
+            ->whereIn('superviseur', $pool)
+            ->selectRaw('superviseur, count(*) as total')
+            ->groupBy('superviseur')
+            ->pluck('total', 'superviseur');
+
+        return collect($pool)->sortBy(fn (string $nom) => (int) ($charges[$nom] ?? 0))->first();
+    }
+
     public function isAssignable(string $gestionnaire): bool
     {
         return in_array($gestionnaire, $this->assignablePool(), true);

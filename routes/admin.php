@@ -54,6 +54,7 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::get('/dossiers', [DossierController::class, 'index'])->name('dossiers');
     Route::post('/dossiers/affecter', [DossierController::class, 'assign'])->name('dossiers.assign');
     Route::post('/dossiers/affecter-lot', [DossierController::class, 'batchAssign'])->name('dossiers.batch-assign');
+    Route::post('/dossiers/affecter-superviseur', [DossierController::class, 'assignSupervisor'])->name('dossiers.assign-supervisor');
     Route::post('/dossiers/{dossier}/valider', [DossierController::class, 'validate'])->name('dossiers.validate');
     Route::post('/dossiers/{dossier}/refuser', [DossierController::class, 'reject'])->name('dossiers.reject');
     Route::post('/dossiers/{dossier}/retrait', [DossierController::class, 'confirmWithdrawal'])->name('dossiers.retrait');

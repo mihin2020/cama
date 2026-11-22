@@ -44,6 +44,7 @@ class DossierController extends Controller implements HasMiddleware
             'families' => $families,
             'queueCounts' => $service->queueCounts($families),
             'gestionnaires' => $service->gestionnaires(),
+            'superviseurs' => $service->superviseurs(),
             'validation2Niveaux' => $settings->validation2Niveaux(),
             'fifRequise' => $settings->fifSigneeRequise(),
             'affectationMode' => $settings->get('affectation_mode') ?? 'manuelle',
@@ -77,6 +78,18 @@ class DossierController extends Controller implements HasMiddleware
         $service->assignFamily($data['assure_id'], $data['gestionnaire'], auth('admin')->user());
 
         return back()->with('success', 'Affectation mise à jour.');
+    }
+
+    public function assignSupervisor(Request $request, AdminDossierService $service): RedirectResponse
+    {
+        $data = $request->validate([
+            'assure_id' => ['required', 'integer', 'exists:assures,id'],
+            'superviseur' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        $service->assignSupervisorToFamily($data['assure_id'], (string) ($data['superviseur'] ?? ''), auth('admin')->user());
+
+        return back()->with('success', 'Superviseur mis à jour.');
     }
 
     public function batchAssign(Request $request, AdminDossierService $service): RedirectResponse
