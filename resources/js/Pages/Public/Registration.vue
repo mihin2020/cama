@@ -481,23 +481,6 @@ function submit() {
                                             >check_circle</span>
                                         </div>
                                         <FieldError :msg="form.errors.email" />
-
-                                        <div
-                                            v-if="!emailLooksValid"
-                                            class="mt-2 rounded-lg bg-primary/5 border border-primary/15 p-3 text-xs text-on-surface-variant space-y-1.5"
-                                        >
-                                            <p class="flex items-start gap-1.5">
-                                                <span class="material-symbols-outlined text-[16px] text-primary shrink-0">mark_email_read</span>
-                                                <span>Une adresse e-mail <strong>valide</strong> est obligatoire pour poursuivre l'inscription (elle sert à vos identifiants et notifications).</span>
-                                            </p>
-                                            <p class="pl-[22px]">
-                                                Pas encore d'adresse ? Créez-en une gratuitement :
-                                                <a class="font-semibold text-primary hover:underline" href="https://accounts.google.com/signup" rel="noopener" target="_blank">Gmail&nbsp;↗</a>
-                                                <span class="opacity-50">·</span>
-                                                <a class="font-semibold text-primary hover:underline" href="https://login.yahoo.com/account/create" rel="noopener" target="_blank">Yahoo&nbsp;↗</a>
-                                                <span class="block mt-1 opacity-70">Vos informations déjà saisies restent enregistrées pendant ce temps.</span>
-                                            </p>
-                                        </div>
                                     </div>
                                     <div v-if="isOn('personne_a_prevenir')"><label class="reg-label">Personne à prévenir{{ star('personne_a_prevenir') }}</label><input v-model="form.personne_a_prevenir" class="reg-input" :required="isReq('personne_a_prevenir')" placeholder="Ex. Aminata OUÉDRAOGO (épouse)" /><FieldError :msg="form.errors.personne_a_prevenir" /></div>
                                     <div v-if="isOn('tel_personne_a_prevenir')">

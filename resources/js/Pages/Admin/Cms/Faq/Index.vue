@@ -33,9 +33,21 @@ const form = useForm({
     question: '',
     answer: '',
     category_id: null,
-    sort_order: 1,
     published: true,
 });
+
+const movingId = ref(null);
+const isFirst = (index) => props.pagination.currentPage === 1 && index === 0;
+const isLast = (index) => props.pagination.currentPage === props.pagination.lastPage && index === props.items.length - 1;
+
+function moveFaq(item, direction) {
+    movingId.value = item.uuid;
+    router.post(
+        route('admin.cms.faq.move', item.uuid),
+        { direction, category: props.activeCategoryId || undefined },
+        { preserveScroll: true, onFinish: () => { movingId.value = null; } },
+    );
+}
 
 const filterPills = computed(() => [
     { id: null, name: 'Toutes' },
@@ -75,11 +87,9 @@ function openEditor(item = null) {
         form.question = item.question;
         form.answer = item.answer;
         form.category_id = item.category_id;
-        form.sort_order = item.sort_order;
         form.published = item.published;
     } else {
         form.category_id = props.categoryOptions[0]?.id ?? null;
-        form.sort_order = 1;
         form.published = true;
     }
 
@@ -255,12 +265,12 @@ function removeCategory(cat) {
                         <th class="p-3">Question</th>
                         <th class="p-3">Catégorie</th>
                         <th class="p-3">Statut</th>
-                        <th class="p-3">Ordre</th>
+                        <th class="p-3">Position</th>
                         <th class="p-3" />
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="item in items" :key="item.id" class="border-b border-outline-variant last:border-0">
+                    <tr v-for="(item, index) in items" :key="item.uuid" class="border-b border-outline-variant last:border-0">
                         <td class="p-3 font-semibold max-w-xs">
                             <button class="text-left truncate block max-w-xs hover:text-primary" type="button" @click="openViewer(item)">
                                 {{ item.question }}
@@ -275,7 +285,31 @@ function removeCategory(cat) {
                                 {{ item.published ? 'Publié' : 'Brouillon' }}
                             </span>
                         </td>
-                        <td class="p-3 text-on-surface-variant">{{ item.sort_order }}</td>
+                        <td class="p-3 whitespace-nowrap">
+                            <div class="inline-flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    class="p-0.5 rounded hover:bg-surface-container-high disabled:opacity-30 disabled:hover:bg-transparent"
+                                    title="Monter"
+                                    aria-label="Monter la question"
+                                    :disabled="isFirst(index) || movingId !== null"
+                                    @click="moveFaq(item, 'up')"
+                                >
+                                    <span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    class="p-0.5 rounded hover:bg-surface-container-high disabled:opacity-30 disabled:hover:bg-transparent"
+                                    title="Descendre"
+                                    aria-label="Descendre la question"
+                                    :disabled="isLast(index) || movingId !== null"
+                                    @click="moveFaq(item, 'down')"
+                                >
+                                    <span class="material-symbols-outlined text-[18px]">arrow_downward</span>
+                                </button>
+                                <span class="ml-1 text-on-surface-variant tabular-nums">{{ item.sort_order }}</span>
+                            </div>
+                        </td>
                         <td class="p-3 text-right whitespace-nowrap">
                             <button type="button" title="Voir" @click="openViewer(item)">
                                 <span class="material-symbols-outlined text-[18px]">visibility</span>
@@ -325,7 +359,7 @@ function removeCategory(cat) {
                             <p class="font-semibold">{{ viewedItem.category_name }}</p>
                         </div>
                         <div>
-                            <p class="text-[10px] uppercase text-on-surface-variant mb-1">Ordre</p>
+                            <p class="text-[10px] uppercase text-on-surface-variant mb-1">Position</p>
                             <p class="font-semibold">{{ viewedItem.sort_order }}</p>
                         </div>
                         <div>
@@ -369,18 +403,13 @@ function removeCategory(cat) {
                         <textarea v-model="form.answer" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" required rows="4" />
                         <p v-if="form.errors.answer" class="text-error text-[10px] mt-1">{{ form.errors.answer }}</p>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Catégorie</label>
-                            <select v-model="form.category_id" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" required>
-                                <option v-for="cat in categoryOptions" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
-                            </select>
-                            <p v-if="form.errors.category_id" class="text-error text-[10px] mt-1">{{ form.errors.category_id }}</p>
-                        </div>
-                        <div>
-                            <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Ordre</label>
-                            <input v-model.number="form.sort_order" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" min="1" type="number" />
-                        </div>
+                    <div>
+                        <label class="text-[11px] font-bold uppercase text-on-surface-variant block mb-1">Catégorie</label>
+                        <select v-model="form.category_id" class="w-full px-3 py-2 text-xs border border-outline-variant rounded-lg" required>
+                            <option v-for="cat in categoryOptions" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+                        </select>
+                        <p v-if="form.errors.category_id" class="text-error text-[10px] mt-1">{{ form.errors.category_id }}</p>
+                        <p v-if="!editingId" class="text-[10px] text-on-surface-variant mt-1">La question est ajoutée en fin de liste : utilisez les flèches pour la placer.</p>
                     </div>
                     <div>
                         <label class="flex items-center gap-2 text-xs font-semibold">

@@ -5,6 +5,7 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { useServerPagination } from '@/Composables/usePagination';
 import PermissionPicker from '@/Components/Admin/PermissionPicker.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { notify } from '@/Composables/useFlashToast';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -37,15 +38,7 @@ watch(search, () => {
 const formOpen = ref(false);
 const editing = ref(null);
 
-// Même message que les autres écrans du back-office : bandeau sombre en bas à droite.
-const toast = ref(null);
-let toastTimer = null;
-function showToast(message, icon = 'check_circle') {
-    if (!message) return;
-    toast.value = { message, icon };
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.value = null; }, 3500);
-}
+const showToast = (message, type = 'success') => notify(message, type);
 const toastFromFlash = (page) => showToast(page.props.flash?.success ?? page.props.flash?.warning);
 const toastFromErrors = (errors) => showToast(Object.values(errors)[0], 'error');
 
@@ -355,11 +348,5 @@ function confirmDelete(role) {
             @confirm="confirm"
             @cancel="cancel"
         />
-
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">
-                <span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.message }}
-            </div>
-        </div>
     </AdminLayout>
 </template>

@@ -29,7 +29,7 @@ const filters = [
     { value: 'Refusé', label: 'Refusé' },
 ];
 
-const { toast, showToast } = useToast();
+const { showToast } = useToast();
 const exportingZip = ref(false);
 const complementFiles = ref({});
 const complementSubmitting = ref({});
@@ -612,10 +612,6 @@ function submitComplement(m) {
             </Link>
         </div>
     </AssureLayout>
-
-    <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
-    </div>
 
     <CamaConfirmModal
         :show="confirmState.show"

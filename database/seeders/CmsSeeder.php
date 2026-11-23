@@ -16,6 +16,7 @@ use App\Models\CmsPartner;
 use App\Models\CmsResource;
 use App\Models\CmsResourceCategory;
 use App\Models\CmsSlide;
+use App\Models\PlatformSetting;
 use App\Services\CmsPageService;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -69,7 +70,19 @@ class CmsSeeder extends Seeder
 
     private function seedFaq(): void
     {
-        if (CmsFaq::query()->exists()) {
+        // La FAQ d'origine n'est semée qu'une fois, sur une FAQ vierge. « Vierge » tolère les 2 questions que la
+        // migration de relecture du 05/11/2026 ajoute sur une installation neuve. Ensuite (marqueur posé, ou toute
+        // autre question présente), rien n'est recréé : une question supprimée ou reformulée dans le CMS le reste.
+        $marker = 'seed.cms_faq';
+        $fromReviewMigration = [
+            'Sur quelles bases tarifaires les remboursements sont-ils faits ?',
+            'Comment reconnaître un prestataire conventionné avec la CAMA ?',
+        ];
+        $alreadySeeded = PlatformSetting::query()->whereKey($marker)->exists()
+            || CmsFaq::query()->whereNotIn('question', $fromReviewMigration)->exists();
+
+        PlatformSetting::query()->updateOrCreate(['key' => $marker], ['value' => true]);
+        if ($alreadySeeded) {
             return;
         }
 
@@ -87,8 +100,7 @@ class CmsSeeder extends Seeder
         ];
 
         foreach ($items as $item) {
-            CmsFaq::query()->create([
-                'question' => $item['question'],
+            CmsFaq::query()->firstOrCreate(['question' => $item['question']], [
                 'answer' => $item['answer'],
                 'category_id' => $categories[$item['category']],
                 'sort_order' => $item['sort_order'],

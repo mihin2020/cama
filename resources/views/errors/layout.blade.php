@@ -29,18 +29,19 @@
     </style>
 </head>
 <body>
-    <img src="{{ asset('images/logo_cama.png') }}" alt="Logo CAMA">
+    {{-- Chemins relatifs au site : ils restent valides même si APP_URL ou le schéma forcé (https) ne correspondent pas à l'adresse réellement servie. --}}
+    <img src="/images/logo_cama.png" alt="Logo CAMA">
     <main>
         <p class="code">@yield('code')</p>
         <h1>@yield('title')</h1>
         <p class="text">@yield('message')</p>
         <div class="actions">
             @if (request()->is('admin', 'admin/*'))
-                <a class="btn primary" href="{{ url('/admin') }}">Espace administration</a>
+                <a class="btn primary" href="/admin">Espace administration</a>
             @elseif (request()->is('espace-assure', 'espace-assure/*'))
-                <a class="btn primary" href="{{ url('/espace-assure') }}">Mon espace assuré</a>
+                <a class="btn primary" href="/espace-assure">Mon espace assuré</a>
             @endif
-            <a class="btn @unless (request()->is('admin', 'admin/*', 'espace-assure', 'espace-assure/*')) primary @endunless" href="{{ url('/') }}">Page d'accueil</a>
+            <a class="btn @unless (request()->is('admin', 'admin/*', 'espace-assure', 'espace-assure/*')) primary @endunless" href="/">Page d'accueil</a>
         </div>
     </main>
     <footer>Caisse d'Assurance Maladie des Armées (CAMA)</footer>

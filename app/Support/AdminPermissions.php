@@ -325,6 +325,7 @@ class AdminPermissions
         'admin.notifications.read-all' => null,
 
         'admin.dossiers' => 'dossiers.view',
+        'admin.dossiers.family' => 'dossiers.view',
         'admin.dossiers.assign' => 'dossiers.assign',
         'admin.dossiers.batch-assign' => 'dossiers.assign',
         'admin.dossiers.assign-supervisor' => 'dossiers.assign',
@@ -414,6 +415,7 @@ class AdminPermissions
         'admin.cms.faq' => 'cms.faq',
         'admin.cms.faq.store' => 'cms.faq',
         'admin.cms.faq.update' => 'cms.faq',
+        'admin.cms.faq.move' => 'cms.faq',
         'admin.cms.faq.destroy' => 'cms.faq',
         'admin.cms.faq.categories.store' => 'cms.faq',
         'admin.cms.faq.categories.update' => 'cms.faq',

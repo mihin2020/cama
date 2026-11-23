@@ -50,6 +50,18 @@ class FaqController extends Controller
         return back()->with('success', 'Question FAQ mise à jour.');
     }
 
+    public function move(Request $request, CmsFaq $faq, CmsFaqService $service): RedirectResponse
+    {
+        $data = $request->validate([
+            'direction' => ['required', Rule::in(['up', 'down'])],
+            'category' => ['nullable', 'integer'],
+        ]);
+
+        $service->move($faq, $data['direction'], $data['category'] ?? null, $request->user('admin'));
+
+        return back();
+    }
+
     public function destroy(Request $request, CmsFaq $faq, CmsFaqService $service): RedirectResponse
     {
         $service->delete($faq, $request->user('admin'));
@@ -99,7 +111,6 @@ class FaqController extends Controller
             'question' => ['required', 'string', 'max:1000'],
             'answer' => ['required', 'string', 'max:5000'],
             'category_id' => ['required', 'exists:cms_faq_categories,id'],
-            'sort_order' => ['required', 'integer', 'min:1'],
             'published' => ['boolean'],
         ]);
 

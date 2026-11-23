@@ -9,6 +9,7 @@ use App\Models\Assure;
 use App\Models\Dossier;
 use App\Models\ExportLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Tests\TestCase;
 use ZipArchive;
@@ -130,6 +131,21 @@ class AdminExportTest extends TestCase
         $this->assertStringNotContainsStringIgnoringCase('DROP TABLE', $sql);
         $this->assertStringNotContainsString($admin->getAuthPassword(), $sql);
         $this->assertStringNotContainsString('$2y$', $sql);
+
+        // PostgreSQL : le compteur des identifiants est recalé, sinon le premier ajout après import échoue.
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $this->assertStringContainsString("SELECT setval(pg_get_serial_sequence('\"assures\"', 'id')", $sql);
+        } else {
+            $this->assertStringNotContainsString('setval(', $sql);
+        }
+    }
+
+    public function test_the_page_names_the_database_engine_the_sql_file_is_written_for(): void
+    {
+        $expected = ['pgsql' => 'PostgreSQL', 'sqlite' => 'SQLite', 'mysql' => 'MySQL'][DB::connection()->getDriverName()];
+
+        $this->actingAs($this->admin(), 'admin')->get(route('admin.exports'))
+            ->assertInertia(fn (\Inertia\Testing\AssertableInertia $page) => $page->where('sqlEngine', $expected));
     }
 
     public function test_elements_outside_permissions_are_neither_listed_nor_exportable(): void

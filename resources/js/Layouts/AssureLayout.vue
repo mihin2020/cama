@@ -2,6 +2,7 @@
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import CamaPageSkeleton from '@/Components/CamaPageSkeleton.vue';
+import FlashMessage from '@/Components/FlashMessage.vue';
 import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
@@ -173,6 +174,7 @@ const notifIconClass = (type) => {
             <CamaPageSkeleton v-if="navigating" />
             <div v-show="!navigating" class="contents">
                 <slot />
+                <FlashMessage />
             </div>
         </main>
 

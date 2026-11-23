@@ -6,7 +6,7 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     items: Array,
@@ -16,8 +16,6 @@ const props = defineProps({
 });
 
 const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? null);
-const flashError = computed(() => page.props.flash?.error ?? null);
 
 const search = ref(props.filters?.q ?? '');
 const activeStatus = ref(props.filters?.status ?? '');
@@ -279,16 +277,6 @@ function deletePage(item) {
                     </CamaLoadingButton>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div v-if="toast || flashError" class="fixed bottom-6 right-6 z-[70]">
-        <div
-            class="text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold"
-            :class="flashError ? 'bg-error' : 'bg-on-background'"
-        >
-            <span class="material-symbols-outlined text-[18px]">{{ flashError ? 'error' : 'check_circle' }}</span>
-            {{ flashError || toast }}
         </div>
     </div>
 

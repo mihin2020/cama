@@ -52,6 +52,7 @@ Route::middleware(['auth:admin', 'auth.session', 'admin.active', 'admin.idle', '
     Route::post('/session/ping', [AdminSessionController::class, 'ping'])->name('session.ping');
 
     Route::get('/dossiers', [DossierController::class, 'index'])->name('dossiers');
+    Route::get('/dossiers/familles/{assure}', [DossierController::class, 'family'])->name('dossiers.family');
     Route::post('/dossiers/affecter', [DossierController::class, 'assign'])->name('dossiers.assign');
     Route::post('/dossiers/affecter-lot', [DossierController::class, 'batchAssign'])->name('dossiers.batch-assign');
     Route::post('/dossiers/affecter-superviseur', [DossierController::class, 'assignSupervisor'])->name('dossiers.assign-supervisor');

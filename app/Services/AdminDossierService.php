@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AdminUser;
+use App\Models\Assure;
 use App\Models\Dossier;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -159,9 +160,15 @@ class AdminDossierService
             ->all();
     }
 
-    public function groupFamilies(Collection $dossiers): array
+    /**
+     * Dossiers familiaux (un par assuré). Avec $detail = false (liste de la page Dossiers), chaque famille
+     * ne porte que ce que la liste affiche et filtre : ni fiche de l'assuré, ni membres complets, ni pièces,
+     * messages ou journal. Le détail d'une famille se charge à l'ouverture (familyDetail) : sans cela, un
+     * gestionnaire avec 750 familles recevait 8 Mo et le serveur passait plusieurs secondes à les préparer.
+     */
+    public function groupFamilies(Collection $dossiers, bool $detail = true): array
     {
-        return $dossiers->groupBy('assure_id')->map(function (Collection $items) {
+        return $dossiers->groupBy('assure_id')->map(function (Collection $items) use ($detail) {
             $assure = $items->first()->assure;
             $sorted = $items->sortByDesc('date_soumission')->values();
             $submitted = $sorted->where('statut', '!=', 'Brouillon');
@@ -195,8 +202,9 @@ class AdminDossierService
                 : ($hasRefus && ! $hasOpen ? 'refuses'
                 : ($hasComplement ? 'complement' : 'a_traiter')));
 
-            return [
+            $family = [
                 'assureId' => $assure->id,
+                'assureUuid' => $assure->uuid,
                 'assureNom' => $assure->full_name,
                 'matricule' => $assure->matricule,
                 'numeroCama' => $assure->numero_cama,
@@ -214,8 +222,19 @@ class AdminDossierService
                 'lastTraitementLibelle' => $lastJournal['libelle'] ?? '',
                 'latestDate' => $sorted->first()?->date_soumission?->format('Y-m-d') ?? '',
                 'initiales' => $assure->initiales,
-                'assureProfile' => $this->assures->profileForAdmin($assure),
-                'exportProfile' => $this->assures->profileForAdmin($assure),
+                'detailLoaded' => $detail,
+            ];
+
+            if (! $detail) {
+                return $family + ['dossiers' => $sorted->map(fn ($d) => $this->formatDossierListRow($d))->values()->all()];
+            }
+
+            // Fiche calculée une seule fois (elle servait deux fois : affichage et export FIF).
+            $profile = $this->assures->profileForAdmin($assure);
+
+            return $family + [
+                'assureProfile' => $profile,
+                'exportProfile' => $profile,
                 'membresExport' => $submitted
                     ->map(fn ($d) => $this->dossiers->formatMembre($d))
                     ->values()
@@ -223,6 +242,23 @@ class AdminDossierService
                 'dossiers' => $sorted->map(fn ($d) => $this->formatDossierRow($d))->values()->all(),
             ];
         })->sortByDesc('latestDate')->values()->all();
+    }
+
+    /**
+     * Détail complet d'un dossier familial (fiche, membres, pièces, messages) pour l'agent connecté,
+     * limité aux dossiers qu'il peut voir. null si aucun dossier de cet assuré ne lui est visible.
+     */
+    public function familyDetail(?AdminUser $admin, Assure $assure): ?array
+    {
+        $dossiers = Dossier::query()
+            ->with('assure')
+            ->where('assure_id', $assure->id)
+            ->where('statut', '!=', 'Brouillon')
+            ->visibleTo($admin)
+            ->orderByDesc('date_soumission')
+            ->get();
+
+        return $dossiers->isEmpty() ? null : $this->groupFamilies($dossiers)[0];
     }
 
     public function queueCounts(array $families): array
@@ -656,12 +692,32 @@ class AdminDossierService
         return ! in_array($dossier->statut, ['Validé', 'Refusé', 'Brouillon', 'Retiré', 'En attente supervision'], true);
     }
 
+    /** Ligne d'un membre dans la liste des familles : seulement les champs affichés et filtrés par la liste. */
+    private function formatDossierListRow(Dossier $dossier): array
+    {
+        return [
+            'id' => $dossier->id,
+            'uuid' => $dossier->uuid,
+            'ref' => $dossier->ref,
+            'prenom' => $dossier->prenom,
+            'nom' => $dossier->nom,
+            'beneficiaire' => $dossier->beneficiaire,
+            'lien' => $dossier->lien,
+            'statut' => $dossier->statut,
+            'dateSoumission' => $dossier->date_soumission?->format('Y-m-d'),
+            'lotType' => $dossier->lot_type ?? 'initial',
+            'isComplementFamilial' => ($dossier->lot_type ?? 'initial') === 'complementaire',
+        ];
+    }
+
     private function formatDossierRow(Dossier $dossier): array
     {
         $meta = $dossier->wizard_meta ?? [];
 
+        // Le chemin interne du fichier n'est jamais transmis au navigateur (comme dans formatMembre) :
+        // la pièce se visualise et se télécharge par la route protégée « admin.dossiers.piece.download ».
         $pieces = collect($dossier->pieces ?? [])->map(function ($piece) {
-            return array_merge($piece, [
+            return array_merge(\Illuminate\Support\Arr::except($piece, ['path']), [
                 'hasFile' => ! empty($piece['path']),
                 'lot' => (bool) ($piece['lot'] ?? false),
             ]);

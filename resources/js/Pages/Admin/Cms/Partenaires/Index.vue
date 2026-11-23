@@ -4,7 +4,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaFilePicker from '@/Components/CamaFilePicker.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
-import CamaMapPoints from '@/Components/CamaMapPoints.vue';
+import CamaGoogleMap from '@/Components/CamaGoogleMap.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { isInBurkinaFaso, parseCoordinates } from '@/Utils/parseCoordinates';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
@@ -102,6 +102,7 @@ const geolocatedCount = computed(() => mapPoints.value.length);
 const missingCount = computed(() => props.counts[props.noPositionFilter] ?? 0);
 
 const page = usePage();
+const googleMapsApiKey = computed(() => page.props.app?.googleMapsApiKey ?? '');
 const editorOpen = ref(false);
 const editingId = ref(null);
 const filePickerRef = ref(null);
@@ -128,7 +129,6 @@ const form = useForm({
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 
-const toast = computed(() => page.props.flash?.success ?? null);
 
 const typePills = computed(() => ['Tous', ...(props.types ?? [])]);
 
@@ -290,7 +290,7 @@ function removePartner(item) {
                     </span>
                 </div>
             </div>
-            <CamaMapPoints :points="mapPoints" :focus-point="mapFocusPoint" height="420px" />
+            <CamaGoogleMap :api-key="googleMapsApiKey" :points="mapPoints" :focus-point="mapFocusPoint" height="420px" />
         </div>
 
         <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -561,12 +561,6 @@ function removePartner(item) {
         </div>
     </div>
 
-    <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-            {{ toast }}
-        </div>
-    </div>
 
     <CamaConfirmModal
         :show="confirmState.show"

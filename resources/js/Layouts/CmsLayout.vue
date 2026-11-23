@@ -3,6 +3,7 @@ import { CMS_NAV_ITEMS } from '@/Utils/cmsNav';
 import { Link, router, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
 import CamaPageSkeleton from '@/Components/CamaPageSkeleton.vue';
+import FlashMessage from '@/Components/FlashMessage.vue';
 import { usePageNavigation } from '@/Composables/usePageNavigation';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { useShellSidebar } from '@/Composables/useShellSidebar';
@@ -119,6 +120,7 @@ const badgeValue = (item) => (item.badge ? Number(app.value?.[item.badge] ?? 0) 
             <CamaPageSkeleton v-if="navigating" />
             <div v-show="!navigating" class="space-y-6">
                 <slot />
+                <FlashMessage />
             </div>
         </main>
 

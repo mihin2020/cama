@@ -67,7 +67,7 @@ const showWarning = ref(false);
 const submitting = ref(false);
 const submitted = ref(false);
 const submittedCount = ref(0);
-const { toast, showToast } = useToast();
+const { showToast } = useToast();
 const pieceErrors = reactive({});
 const fifSignee = ref(null);
 const fifError = ref('');
@@ -834,10 +834,6 @@ watch(() => props.initialRows, () => {
                 <button type="button" class="px-4 py-2 text-xs rounded-lg bg-secondary text-on-secondary font-bold" @click="confirmSubmit">Confirmer et soumettre</button>
             </div>
         </div>
-    </div>
-
-    <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm font-medium"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
     </div>
 
     <CamaConfirmModal

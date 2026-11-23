@@ -19,6 +19,7 @@ class ExportController extends Controller
     {
         return Inertia::render('Admin/Exports/Index', [
             'catalog' => $service->catalog(auth('admin')->user()),
+            'sqlEngine' => $service->sqlEngineLabel(),
         ]);
     }
 

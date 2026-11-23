@@ -2,8 +2,8 @@
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useClientPagination, useServerPagination } from '@/Composables/usePagination';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     tab: { type: String, default: 'overview' },
@@ -18,8 +18,6 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 });
 
-const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? null);
 const activeTab = ref(props.tab || 'overview');
 const search = ref(props.filters?.q ?? '');
 const status = ref(props.filters?.status ?? '');
@@ -137,8 +135,6 @@ function inBatch(item) {
 <template>
     <Head title="Newsletter" />
     <CmsLayout active-nav="newsletter" title="Newsletter CAMA" subtitle="CRM abonnés, campagnes HTML, statistiques d'ouverture et de clics">
-        <div v-if="toast" class="rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm text-secondary font-semibold mb-4">{{ toast }}</div>
-
         <div class="flex flex-wrap gap-2 mb-4">
             <button
                 v-for="tab in tabs"

@@ -6,8 +6,8 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
 import CmsLayout from '@/Layouts/CmsLayout.vue';
-import { Head, Link, router, useForm, usePage } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { Head, Link, router, useForm } from '@inertiajs/vue3';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
     items: { type: Array, default: () => [] },
@@ -17,9 +17,6 @@ const props = defineProps({
     filters: { type: Object, default: () => ({}) },
 });
 
-const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? null);
-const flashError = computed(() => page.props.flash?.error ?? null);
 
 const search = ref(props.filters?.q ?? '');
 const activeType = ref(props.filters?.type ?? '');
@@ -147,13 +144,6 @@ function deleteMedia(item) {
     <Head title="Médiathèque" />
 
     <CmsLayout active-nav="media" title="Médiathèque" subtitle="Centralisez les images et fichiers utilisés dans le site public">
-        <div v-if="toast" class="rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm text-secondary font-semibold">
-            {{ toast }}
-        </div>
-        <div v-if="flashError" class="rounded-xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error font-semibold">
-            {{ flashError }}
-        </div>
-
         <section class="assure-card p-5 space-y-4">
             <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
                 <div>

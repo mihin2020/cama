@@ -5,7 +5,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
 const siteLogo = useSiteLogo();
@@ -15,8 +15,6 @@ const props = defineProps({
     pages: Array,
 });
 
-const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? null);
 
 const localItems = ref([...(props.items ?? [])]);
 const selectedPageIds = ref([]);
@@ -420,12 +418,6 @@ function onDrop(index) {
         </div>
     </CmsLayout>
 
-    <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-            {{ toast }}
-        </div>
-    </div>
 
     <CamaConfirmModal
         :show="confirmState.show"

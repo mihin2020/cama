@@ -8,6 +8,7 @@ import VersionHistoryModal from '@/Components/PageBuilder/VersionHistoryModal.vu
 import { PB_WIDGET_MIME, isBuilderMessage, postToPreview } from '@/Components/PageBuilder/pageBuilderPreview';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { colorToHex } from '@/Utils/siteTheme';
+import FlashMessage from '@/Components/FlashMessage.vue';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { PALETTE, ANIMATIONS, ELEMENTOR_TABS, ELEMENTOR_ADVANCED_SECTIONS, ELEMENTOR_WIDGET_SCHEMAS, WIDGETS, SYSTEM_PAGE_WIDGETS, DEVICE_PRESETS } from './builderConstants';
@@ -37,7 +38,6 @@ const props = defineProps({
 });
 
 const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? null);
 
 // Ne sert plus qu'à l'export HTML autonome : le canevas et l'aperçu affichent
 // désormais la vraie page publique dans une iframe (cf. PageBuilderBridge.vue).
@@ -2067,12 +2067,7 @@ async function copyExport() {
         </div>
     </div>
 
-    <div v-if="toast" class="fixed bottom-6 right-6 z-[90]">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-            {{ toast }}
-        </div>
-    </div>
+    <FlashMessage />
 
     <div v-if="newPageOpen" class="fixed inset-0 z-[95] flex items-center justify-center bg-black/40 p-4" @click.self="newPageOpen = false">
         <form class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden" @submit.prevent="submitNewPage">

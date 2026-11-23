@@ -1,5 +1,5 @@
 <script setup>
-import CamaMapPoints from '@/Components/CamaMapPoints.vue';
+import CamaGoogleMap from '@/Components/CamaGoogleMap.vue';
 import ElementorAccordion from '@/Components/PublicWidgets/ElementorAccordion.vue';
 import ElementorCarousel from '@/Components/PublicWidgets/ElementorCarousel.vue';
 import ElementorPosts from '@/Components/PublicWidgets/ElementorPosts.vue';
@@ -36,8 +36,6 @@ const renderedSections = computed(() => (builderPreview.value && pbPreview.secti
 function pbAttr(node) {
     return builderPreview.value ? node?.uid : undefined;
 }
-const flashSuccess = computed(() => page.props.flash?.success ?? '');
-const flashError = computed(() => page.props.flash?.error ?? '');
 const fallbackSlide = {
     title: 'La santé de nos héros, notre priorité',
     subtitle: 'Plateforme institutionnelle de la Caisse d’Assurance Maladie des Armées — enrôlement des ayants droit et services numériques.',
@@ -131,6 +129,7 @@ const contactActiveId = ref(null);
 const contactSent = ref(false);
 const contactError = ref('');
 const newsletterSent = ref(false);
+const contactApiKey = computed(() => page.props.app?.googleMapsApiKey ?? '');
 const contactFilters = [
     { key: 'all', label: 'Tous', match: () => true },
     { key: 'cama', label: 'Antennes CAMA', match: type => type === 'siege' || type === 'antenne' },
@@ -1351,8 +1350,6 @@ function faqMeta(category) {
                     </form>
                 </div>
                 <p v-if="newsletterForm.errors.email" class="text-xs text-error mt-2">{{ newsletterForm.errors.email }}</p>
-                <p v-if="flashSuccess" class="text-xs text-secondary mt-2 font-semibold">{{ flashSuccess }}</p>
-                <p v-if="flashError" class="text-xs text-error mt-2 font-semibold">{{ flashError }}</p>
             </div>
         </section>
 
@@ -1386,8 +1383,6 @@ function faqMeta(category) {
                                     {{ contactSent ? systemWidget(section).content?.successLabel : systemWidget(section).content?.buttonLabel }}
                                 </button>
                             </div>
-                            <div v-if="flashSuccess" class="md:col-span-2 text-xs text-secondary font-semibold">{{ flashSuccess }}</div>
-                            <div v-if="flashError" class="md:col-span-2 text-xs text-error font-semibold">{{ flashError }}</div>
                         </form>
                     </div>
                 </div>
@@ -1431,7 +1426,7 @@ function faqMeta(category) {
                                 <a v-if="activeContactLocation" class="text-xs font-bold text-primary flex items-center gap-1 hover:underline shrink-0" :href="mapsUrl(activeContactLocation)" rel="noopener" target="_blank"><span class="material-symbols-outlined text-[16px]">directions</span> {{ systemWidget(section).content?.directionsLabel || 'Itinéraire' }}</a>
                             </div>
                             <div class="relative flex-1 min-h-[320px] bg-[#ebe6dc]">
-                                <CamaMapPoints :points="contactMapPoints" :focus-point="contactMapFocus" height="440px" />
+                                <CamaGoogleMap :api-key="contactApiKey" :points="contactMapPoints" :focus-point="contactMapFocus" height="440px" />
                             </div>
                         </div>
                     </div>

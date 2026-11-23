@@ -2,6 +2,7 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
+import { notify } from '@/Composables/useFlashToast';
 import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -18,15 +19,7 @@ const activeCible = ref(props.cibles[0]?.cible ?? 'assure');
 const current = computed(() => props.cibles.find((c) => c.cible === activeCible.value) ?? props.cibles[0]);
 const typeLabel = (value) => props.types.find((t) => t.value === value)?.label ?? value;
 
-// Un seul message, en bas à droite, comme les autres écrans du back-office.
-const toast = ref(null);
-let toastTimer = null;
-function showToast(message, icon = 'check_circle') {
-    if (!message) return;
-    toast.value = { message, icon };
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.value = null; }, 3500);
-}
+const showToast = (message, type = 'success') => notify(message, type);
 const onSuccess = (page) => showToast(page.props.flash?.success);
 const onError = (errors) => showToast(Object.values(errors)[0], 'error');
 
@@ -333,11 +326,5 @@ function askDeleteField(field) {
             @confirm="confirm"
             @cancel="cancel"
         />
-
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">
-                <span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.message }}
-            </div>
-        </div>
     </AdminLayout>
 </template>

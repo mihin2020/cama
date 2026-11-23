@@ -4,6 +4,7 @@ import CamaConfirmModal from '@/Components/CamaConfirmModal.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
+import { notify } from '@/Composables/useFlashToast';
 import { Head, router, useForm, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -37,7 +38,6 @@ const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 const formOpen = ref(false);
 const editingUser = ref(null);
 const resendingId = ref(null);
-const toast = ref(null);
 
 // Couleur du badge par rôle (slug) ; les rôles créés par l'administrateur ont un badge neutre.
 const ROLE_BADGE = {
@@ -65,14 +65,7 @@ const form = useForm({
 
 const isEditing = computed(() => editingUser.value !== null);
 
-// Un seul message, en bas à droite (comme les autres écrans) : succès, avertissement ou erreur.
-let toastTimer = null;
-function showToast(message, icon = 'check_circle') {
-    if (!message) return;
-    toast.value = { message, icon };
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.value = null; }, 4500);
-}
+const showToast = (message, type = 'success') => notify(message, type);
 
 function toastFromFlash(page, fallback) {
     if (page.props.flash?.warning) {
@@ -419,11 +412,5 @@ function executeDelete(user) {
             @confirm="confirm"
             @cancel="cancel"
         />
-
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold max-w-md">
-                <span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.message }}
-            </div>
-        </div>
     </AdminLayout>
 </template>

@@ -15,6 +15,7 @@ class OwaspHardeningTest extends TestCase
 
     public function test_every_page_carries_a_content_security_policy_with_a_matching_nonce(): void
     {
+        config(['services.google.maps_key' => null]);
         $response = $this->get('/')->assertOk();
 
         $csp = (string) $response->headers->get('Content-Security-Policy');
@@ -29,6 +30,26 @@ class OwaspHardeningTest extends TestCase
         $this->assertDoesNotMatchRegularExpression("/script-src[^;]*'unsafe-(inline|eval)'/", $csp);
         $this->assertDoesNotMatchRegularExpression("/style-src [^;]*'unsafe-inline'/", $csp);
         $this->assertDoesNotMatchRegularExpression('/(script|style|font)-src[^;]*https?:/', $csp);
+    }
+
+    public function test_with_a_google_maps_key_only_the_google_maps_domains_are_added(): void
+    {
+        config(['services.google.maps_key' => 'cle-de-test']);
+        $csp = (string) $this->get('/')->headers->get('Content-Security-Policy');
+
+        // Toute source extérieure ajoutée est un domaine Google, en https (aucun « http: », « https: » ou « * » seul).
+        foreach (['script-src', 'connect-src', 'frame-src', 'style-src', 'font-src'] as $directive) {
+            preg_match("/{$directive} ([^;]*)/", $csp, $match);
+            foreach (preg_grep('/^(https?:|\*)/', explode(' ', $match[1])) as $source) {
+                $this->assertMatchesRegularExpression('~^https://(\*\.|fonts\.|maps\.)?(googleapis|gstatic|google|ggpht|googleusercontent)\.com$~', $source, "{$directive} : {$source}");
+            }
+        }
+        $this->assertStringContainsString('https://*.googleapis.com', $csp);
+        $this->assertMatchesRegularExpression('~frame-src [^;]*https://\*\.google\.com~', $csp);
+        $this->assertStringContainsString('font-src \'self\' data: https://fonts.gstatic.com', $csp);
+        // Toujours ni script en ligne ni eval, même avec la carte.
+        $this->assertDoesNotMatchRegularExpression("/script-src[^;]*'unsafe-(inline|eval)'/", $csp);
+        $this->assertDoesNotMatchRegularExpression("/style-src [^;]*'unsafe-inline'/", $csp);
     }
 
     public function test_the_nonce_changes_on_every_request(): void

@@ -433,6 +433,19 @@ class ExportService
 
     /* ---------------------------------------------------------------- SQL */
 
+    /** Moteur pour lequel le script SQL est écrit : celui de la base en service. */
+    public function sqlEngineLabel(): string
+    {
+        return match (DB::connection()->getDriverName()) {
+            'pgsql' => 'PostgreSQL',
+            'mysql' => 'MySQL',
+            'mariadb' => 'MariaDB',
+            'sqlite' => 'SQLite',
+            'sqlsrv' => 'SQL Server',
+            default => DB::connection()->getDriverName(),
+        };
+    }
+
     /**
      * Script SQL réimportable : CREATE TABLE IF NOT EXISTS (jamais de DROP : importer ce
      * fichier ne peut pas effacer de données) puis INSERT groupés.
@@ -445,6 +458,7 @@ class ExportService
         $pdo = $connection->getPdo();
         $grammar = $connection->getQueryGrammar();
         $mysql = in_array($connection->getDriverName(), ['mysql', 'mariadb'], true);
+        $pgsql = $connection->getDriverName() === 'pgsql';
 
         fwrite($out, "-- Export CAMA — {$connection->getDatabaseName()}\n");
         fwrite($out, '-- Généré le '.now()->format('d/m/Y à H:i')." par {$admin->display_name}\n");
@@ -492,6 +506,17 @@ class ExportService
 
             if ($batch !== []) {
                 fwrite($out, $head.implode(",\n", $batch).";\n");
+            }
+
+            // PostgreSQL n'avance pas le compteur quand l'identifiant est fourni : sans ce recalage, le premier
+            // enregistrement créé après l'import réutiliserait un identifiant déjà pris (erreur de clé dupliquée).
+            if ($pgsql) {
+                foreach ($meta as $name => $column) {
+                    if ($column['auto_increment'] && in_array($name, $columns, true)) {
+                        $wrapped = $grammar->wrap($name);
+                        fwrite($out, "SELECT setval(pg_get_serial_sequence('".$grammar->wrapTable($table)."', '{$name}'), COALESCE(MAX({$wrapped}), 0) + 1, false) FROM ".$grammar->wrapTable($table).";\n");
+                    }
+                }
             }
             fwrite($out, "\n");
         }

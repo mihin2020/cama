@@ -35,6 +35,11 @@ return [
         ],
     ],
 
+    'google' => [
+        // Carte des partenaires et de la page Contact ; vide = liste des lieux sans carte (aucun script Google).
+        'maps_key' => env('GOOGLE_MAPS_API_KEY'),
+    ],
+
     'cama' => [
         'contact_recipient' => env('CONTACT_RECIPIENT_EMAIL'),
     ],

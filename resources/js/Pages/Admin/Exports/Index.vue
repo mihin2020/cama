@@ -2,12 +2,14 @@
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import { exportMembreFif } from '@/Composables/useCamaExport';
+import { notify } from '@/Composables/useFlashToast';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
     catalog: { type: Array, default: () => [] },
+    sqlEngine: { type: String, default: 'PostgreSQL' },
 });
 
 const STORAGE_KEY = 'cama.exports.selection';
@@ -15,7 +17,7 @@ const STORAGE_KEY = 'cama.exports.selection';
 const formats = [
     { key: 'xlsx', label: 'Excel', ext: '.xlsx', icon: 'table_view', hint: 'Un onglet par élément, en-têtes figés et filtres.' },
     { key: 'csv', label: 'CSV', ext: '.csv', icon: 'csv', hint: 'Un fichier par élément (regroupés en .zip si plusieurs).' },
-    { key: 'sql', label: 'SQL', ext: '.sql', icon: 'database', hint: 'Sauvegarde réimportable dans une base MySQL.' },
+    { key: 'sql', label: 'SQL', ext: '.sql', icon: 'database', hint: `Sauvegarde réimportable dans une base ${props.sqlEngine}.` },
 ];
 
 const format = ref('xlsx');
@@ -28,7 +30,6 @@ const columns = reactive({});
 const openColumns = ref(null);
 const busy = ref(false);
 const error = ref('');
-const toast = ref(null);
 
 props.catalog.forEach((item) => {
     checked[item.key] = false;
@@ -86,12 +87,7 @@ function setColumns(item, all) {
     columns[item.key] = all ? item.columns.map((c) => c.key) : [];
 }
 
-function showToast(message) {
-    toast.value = message;
-    setTimeout(() => {
-        toast.value = null;
-    }, 3500);
-}
+const showToast = (message, type = 'download') => notify(message, type);
 
 /* Mémorise la sélection dans ce navigateur, pour refaire le même export en un clic. */
 function restoreSelection() {
@@ -395,12 +391,6 @@ async function exportPdf() {
                         </form>
                     </div>
                 </aside>
-            </div>
-        </div>
-
-        <div v-if="toast" class="fixed bottom-6 right-6 left-6 sm:left-auto z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md">
-                <span class="material-symbols-outlined">download</span> {{ toast }}
             </div>
         </div>
     </AdminLayout>

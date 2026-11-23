@@ -114,7 +114,9 @@ class ErrorPagesTest extends TestCase
 
             $this->assertStringContainsString((string) $status, $html);
             $this->assertStringNotContainsString('<script', $html);
-            $this->assertDoesNotMatchRegularExpression('~(src|href)="https?://(?!localhost)~', $html);
+            // Aucune adresse absolue : le logo et les liens doivent marcher quelle que soit APP_URL ou le schéma forcé.
+            $this->assertDoesNotMatchRegularExpression('~(src|href)="https?://~', $html);
+            $this->assertStringContainsString('src="/images/logo_cama.png"', $html);
         }
     }
 }

@@ -41,6 +41,8 @@ Route::prefix('cms')
 
         Route::put('/faq/{faq}', [CmsFaqController::class, 'update'])->name('faq.update');
 
+        Route::post('/faq/{faq}/deplacer', [CmsFaqController::class, 'move'])->name('faq.move');
+
         Route::delete('/faq/{faq}', [CmsFaqController::class, 'destroy'])->name('faq.destroy');
 
         Route::post('/faq/categories', [CmsFaqController::class, 'storeCategory'])->name('faq.categories.store');

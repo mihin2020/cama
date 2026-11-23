@@ -1,36 +1,52 @@
 <script setup>
+import { currentToast, dismissToast, notify, toastHosts as hosts } from '@/Composables/useFlashToast';
 import { usePage } from '@inertiajs/vue3';
-import { computed, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue';
 
+/**
+ * Affiche le toast commun et y envoie les messages flash du serveur (success / warning / error).
+ * Placé dans chaque mise en page ; si une page en contient un second, seul le premier monté s'affiche.
+ */
 const page = usePage();
-const message = computed(() => page.props.flash?.success || page.props.flash?.warning || page.props.flash?.error);
-const type = computed(() => {
-    if (page.props.flash?.success) return 'success';
-    if (page.props.flash?.warning) return 'warning';
-    return 'error';
-});
 
-let timer;
-watch(message, (val) => {
-    clearTimeout(timer);
-    if (val) timer = setTimeout(() => {
-        page.props.flash.success = null;
-        page.props.flash.warning = null;
-        page.props.flash.error = null;
-    }, 5000);
-});
+watch(
+    () => page.props.flash,
+    (flash) => {
+        if (!flash) return;
+        if (flash.error) notify(flash.error, 'error');
+        else if (flash.warning) notify(flash.warning, 'warning');
+        else if (flash.success) notify(flash.success, 'success');
+    },
+    { immediate: true },
+);
+
+const hostId = Symbol('toast-host');
+onMounted(() => hosts.value.push(hostId));
+onBeforeUnmount(() => { hosts.value = hosts.value.filter((id) => id !== hostId); });
+const isPrimary = computed(() => hosts.value[0] === hostId);
 </script>
 
 <template>
-    <div
-        v-if="message"
-        class="mb-4 rounded-lg px-4 py-3 text-sm font-medium"
-        :class="{
-            'bg-green-50 text-green-900 border border-green-200': type === 'success',
-            'bg-amber-50 text-amber-900 border border-amber-200': type === 'warning',
-            'bg-red-50 text-red-900 border border-red-200': type === 'error',
-        }"
-    >
-        {{ message }}
-    </div>
+    <Teleport to="body">
+        <div v-if="isPrimary" class="fixed bottom-6 right-4 left-4 sm:left-auto sm:right-6 z-[100] flex justify-end pointer-events-none" role="status" aria-live="polite">
+            <Transition
+                enter-active-class="transition duration-200 ease-out"
+                enter-from-class="opacity-0 translate-y-2"
+                leave-active-class="transition duration-150 ease-in"
+                leave-to-class="opacity-0"
+            >
+                <div
+                    v-if="currentToast"
+                    :key="currentToast.id"
+                    class="pointer-events-auto max-w-md bg-on-background text-white pl-4 pr-2 py-3 rounded-lg shadow-xl flex items-start gap-2 text-sm font-semibold"
+                >
+                    <span class="material-symbols-outlined shrink-0" :class="{ 'text-red-300': currentToast.kind === 'error', 'text-amber-300': currentToast.kind === 'warning' }">{{ currentToast.icon }}</span>
+                    <span class="flex-1 break-words">{{ currentToast.text }}</span>
+                    <button type="button" class="shrink-0 opacity-70 hover:opacity-100" aria-label="Fermer le message" @click="dismissToast">
+                        <span class="material-symbols-outlined text-[18px]">close</span>
+                    </button>
+                </div>
+            </Transition>
+        </div>
+    </Teleport>
 </template>

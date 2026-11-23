@@ -120,6 +120,7 @@ class HandleInertiaRequests extends Middleware
                         ])
                         ->all()
                     : [],
+                'googleMapsApiKey' => config('services.google.maps_key'),
             ],
             // Menu, bandeau et pied de page du site public : inutiles dans le back-office
             // (sauf l'aperçu du page builder) et dans l'espace assuré connecté.

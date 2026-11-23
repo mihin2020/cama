@@ -34,7 +34,7 @@ const pwdForm = useForm({
 
 const deuxFa = ref(props.profil.deuxFa);
 const pwdError = ref('');
-const { toast, showToast } = useToast();
+const { showToast } = useToast();
 
 // Champs gérés par la CAMA (lecture seule).
 const militaireRows = [
@@ -363,10 +363,6 @@ function displayValue(value) {
             </section>
         </div>
     </AssureLayout>
-
-    <div v-if="toast.show" class="fixed bottom-6 right-6 z-50">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md"><span class="material-symbols-outlined">{{ toast.icon }}</span> {{ toast.text }}</div>
-    </div>
 </template>
 
 <style scoped>

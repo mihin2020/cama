@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Assure;
 use App\Models\Dossier;
 use App\Services\AdminDossierService;
 use App\Services\PlatformSettingsService;
 use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -38,7 +40,8 @@ class DossierController extends Controller implements HasMiddleware
         $admin = auth('admin')->user();
         $personal = $service->seesOnlyOwnDossiers($admin);
         $dossiers = $service->scopedDossiers($admin);
-        $families = $service->groupFamilies($dossiers);
+        // Liste allégée : le détail d'une famille est chargé à l'ouverture (route admin.dossiers.family).
+        $families = $service->groupFamilies($dossiers, detail: false);
 
         return Inertia::render('Admin/Dossiers/Index', [
             'families' => $families,
@@ -66,6 +69,17 @@ class DossierController extends Controller implements HasMiddleware
             ])),
             'motifsRefus' => $settings->motifsRefus(),
         ]);
+    }
+
+    /** Détail complet d'un dossier familial (fiche, membres, pièces, messages), chargé à l'ouverture. */
+    public function family(Assure $assure, AdminDossierService $service): JsonResponse
+    {
+        $family = $service->familyDetail(auth('admin')->user(), $assure);
+
+        // Même réponse qu'une famille inexistante : on ne révèle pas l'existence des dossiers d'un autre agent.
+        abort_if($family === null, 404);
+
+        return response()->json(['family' => $family]);
     }
 
     public function assign(Request $request, AdminDossierService $service): RedirectResponse

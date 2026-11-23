@@ -1,7 +1,7 @@
 <script setup>
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaSimpleRichText from '@/Components/CamaSimpleRichText.vue';
-import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 
 const props = defineProps({
@@ -12,8 +12,6 @@ const props = defineProps({
     batches: { type: Array, default: () => [] },
 });
 
-const page = usePage();
-const toast = computed(() => page.props.flash?.success ?? page.props.flash?.error ?? null);
 const testEmail = ref('');
 const selectedTemplateId = ref(props.preselectedTemplateId ?? null);
 
@@ -93,8 +91,6 @@ function sendCampaign() {
 <template>
     <Head :title="isEdit ? 'Modifier campagne' : 'Nouvelle campagne'" />
     <CmsLayout active-nav="newsletter" :title="isEdit ? 'Modifier la campagne' : 'Nouvelle campagne'" subtitle="Rédigez votre message et envoyez">
-        <div v-if="toast" class="rounded-xl border border-secondary/30 bg-secondary/10 px-4 py-3 text-sm font-semibold text-secondary mb-4">{{ toast }}</div>
-
         <div class="flex flex-wrap gap-2 mb-4">
             <Link :href="route('admin.cms.newsletter', { tab: 'campaigns' })" class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold">← Retour newsletter</Link>
             <span v-if="isSent" class="px-3 py-1.5 rounded-lg bg-secondary/10 text-secondary text-xs font-bold">Campagne envoyée — lecture seule</span>

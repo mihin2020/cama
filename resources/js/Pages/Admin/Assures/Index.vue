@@ -8,6 +8,7 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip } from '@/Composables/useCamaExport';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
 import { useServerPagination } from '@/Composables/usePagination';
+import { notify } from '@/Composables/useFlashToast';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
@@ -21,7 +22,6 @@ const props = defineProps({
 const page = usePage();
 const selected = ref(null);
 const exportBusy = ref(false);
-const toast = ref(null);
 
 const search = ref(props.filters.search ?? '');
 const statut = ref(props.filters.statut ?? 'tous');
@@ -80,12 +80,7 @@ function closeDetail() {
     selected.value = null;
 }
 
-function showToast(message) {
-    toast.value = message;
-    setTimeout(() => {
-        toast.value = null;
-    }, 3000);
-}
+const showToast = (message, type = 'success') => notify(message, type);
 
 function toggleCompte(nouveauStatut) {
     if (!selected.value) return;
@@ -324,12 +319,6 @@ async function exportZip() {
                         <span class="material-symbols-outlined text-[16px]">how_to_reg</span> Valider le compte
                     </button>
                 </div>
-            </div>
-        </div>
-
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md">
-                <span class="material-symbols-outlined">check_circle</span> {{ toast }}
             </div>
         </div>
     </AdminLayout>

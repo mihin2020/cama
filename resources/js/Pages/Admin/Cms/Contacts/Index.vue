@@ -2,7 +2,8 @@
 import CmsLayout from '@/Layouts/CmsLayout.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useServerPagination } from '@/Composables/usePagination';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { notify } from '@/Composables/useFlashToast';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -17,9 +18,6 @@ const props = defineProps({
 
 const MESSAGE_PREVIEW_LENGTH = 180;
 
-const page = usePage();
-const toast = ref(null);
-let toastTimer = null;
 const search = ref(props.filters?.q ?? '');
 const status = ref(props.filters?.status ?? '');
 const showArchived = ref(Boolean(props.filters?.archived));
@@ -35,22 +33,7 @@ const viewingMessage = ref(null);
 let timer = null;
 let pollTimer = null;
 
-function showToast(message) {
-    if (!message) return;
-    toast.value = message;
-    if (toastTimer) window.clearTimeout(toastTimer);
-    toastTimer = window.setTimeout(() => {
-        toast.value = null;
-    }, 3500);
-}
-
-watch(
-    () => page.props.flash?.success,
-    (message) => {
-        if (message) showToast(message);
-    },
-    { immediate: true },
-);
+const showToast = (message) => notify(message, 'mark_email_unread');
 
 const editId = ref(null);
 const form = useForm({
@@ -250,7 +233,6 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
     if (pollTimer) window.clearInterval(pollTimer);
-    if (toastTimer) window.clearTimeout(toastTimer);
 });
 </script>
 
@@ -452,11 +434,5 @@ onBeforeUnmount(() => {
             </div>
         </Teleport>
 
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-sm font-semibold">
-                <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                {{ toast }}
-            </div>
-        </div>
     </CmsLayout>
 </template>

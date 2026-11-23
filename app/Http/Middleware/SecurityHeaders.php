@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
  * En-têtes de sécurité HTTP ajoutés à chaque réponse web, dont la politique de sécurité du contenu (CSP).
  *
  * La CSP n'autorise que les scripts, styles, polices et images du site lui-même (plus les images https
- * saisies dans le CMS). Un script injecté dans une page (XSS) ne s'exécute pas : seuls les scripts portant
- * le « nonce » tiré au sort à chaque requête sont acceptés.
+ * saisies dans le CMS, et les domaines de Google Maps quand une clé est configurée). Un script injecté dans
+ * une page (XSS) ne s'exécute pas : seuls les scripts portant le « nonce » tiré au sort à chaque requête sont acceptés.
  */
 class SecurityHeaders
 {
@@ -64,6 +64,18 @@ class SecurityHeaders
         $connect = "'self'";
         $font = "'self' data:";
         $img = "'self' data: blob: https:";
+        $frame = "'self' blob:";
+
+        // Carte Google Maps (partenaires, page Contact) : seulement si une clé est configurée. Domaines de la liste
+        // publiée par Google pour l'API Maps JavaScript (guide CSP), limités à https ; les styles restent au nonce
+        // (voir useGoogleMaps.js), jamais 'unsafe-inline'.
+        if (filled(config('services.google.maps_key'))) {
+            $script .= ' https://*.googleapis.com https://*.gstatic.com https://*.google.com https://*.ggpht.com https://*.googleusercontent.com blob:';
+            $style .= ' https://fonts.googleapis.com';
+            $font .= ' https://fonts.gstatic.com';
+            $connect .= ' https://*.googleapis.com https://*.google.com https://*.gstatic.com data: blob:';
+            $frame .= ' https://*.google.com';
+        }
 
         // Développement avec le serveur Vite (fichier public/hot) : on autorise son adresse, rien de plus.
         $hot = public_path('hot');
@@ -87,7 +99,7 @@ class SecurityHeaders
             "font-src {$font}",
             "connect-src {$connect}",
             "media-src 'self' blob: https:",
-            "frame-src 'self' blob:",
+            "frame-src {$frame}",
             "worker-src 'self' blob:",
             "object-src 'none'",
             "base-uri 'self'",

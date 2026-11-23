@@ -1,6 +1,7 @@
 <script setup>
 import CamaAnchorTop from '@/Components/CamaAnchorTop.vue';
 import CamaCookieBar from '@/Components/CamaCookieBar.vue';
+import FlashMessage from '@/Components/FlashMessage.vue';
 import SmartLink from '@/Components/SmartLink.vue';
 import { socialIcon, socialLabel } from '@/Data/socialNetworks.js';
 import { useSiteLogo } from '@/Composables/useSiteLogo';
@@ -241,6 +242,7 @@ function submitSearch() {
 
         <main class="flex-1">
             <slot />
+            <FlashMessage />
         </main>
 
         <footer id="site-footer">

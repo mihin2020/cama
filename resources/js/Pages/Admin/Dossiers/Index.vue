@@ -7,7 +7,9 @@ import CamaPagination from '@/Components/CamaPagination.vue';
 import { exportFamilleFif, exportFamilleZip, exportMembreFif } from '@/Composables/useCamaExport';
 import { useClientPagination } from '@/Composables/usePagination';
 import { formatPhonesDisplay } from '@/Utils/camaPhone';
+import { notify } from '@/Composables/useFlashToast';
 import { Head, router, usePage } from '@inertiajs/vue3';
+import axios from 'axios';
 import { computed, ref, watch } from 'vue';
 import { useAdminDossierBadge } from '@/Composables/useAdminDossierBadge';
 import { useAdminPermissions } from '@/Composables/useAdminPermissions';
@@ -49,7 +51,6 @@ const retraitAutre = ref('');
 const complementPieces = ref([]);
 const complementMessage = ref('');
 const batchGestionnaire = ref('');
-const toast = ref(null);
 const showAssureProfile = ref(false);
 const exportBusy = ref(false);
 
@@ -164,12 +165,7 @@ const AFFECT_TABS = [
 watch(queueTab, (v) => localStorage.setItem('cama_admin_queue_tab', v));
 watch(affectTab, (v) => localStorage.setItem('cama_admin_affect_tab', v));
 
-function showToast(message) {
-    toast.value = message;
-    setTimeout(() => {
-        toast.value = null;
-    }, 3000);
-}
+const showToast = (message, type = 'success') => notify(message, type);
 
 function affectationLabel(g) {
     if (!g || g === 'Non affecté') return 'Non affecté';
@@ -316,19 +312,49 @@ function batchAssign() {
     );
 }
 
-function openFamily(family) {
-    detailDossier.value = null;
-    detailFamily.value = family;
-    showAssureProfile.value = false;
-    markFamilyViewed(family.assureId);
+// La liste ne contient que l'essentiel de chaque famille ; la fiche, les membres complets, les pièces
+// et les messages sont chargés à l'ouverture (sinon la page pesait plusieurs Mo pour un gestionnaire).
+const familyLoading = ref(null);
+
+// Chaque ouverture demandée par l'agent reçoit un numéro : seule la plus récente s'affiche. Sans cela, une réponse
+// lente (famille A) arrivant après une plus rapide (famille B) remplacerait B par A sous les yeux de l'agent.
+let lastOpen = 0;
+const isLatest = (ticket) => ticket === lastOpen;
+
+async function loadFamilyDetail(family, { silent = false, ticket = null } = {}) {
+    if (!family) return null;
+    if (family.detailLoaded) return family;
+    if (!silent) familyLoading.value = family.assureId;
+    try {
+        const { data } = await axios.get(route('admin.dossiers.family', family.assureUuid));
+        return data.family;
+    } catch {
+        if (!silent && (ticket === null || isLatest(ticket))) showToast('Impossible de charger ce dossier familial. Réessayez.', 'error');
+        return null;
+    } finally {
+        if (!silent && (ticket === null || isLatest(ticket))) familyLoading.value = null;
+    }
 }
 
-function openMember(dossier, family) {
-    detailFamily.value = family;
-    detailDossier.value = dossier;
+async function openFamily(family) {
+    const ticket = ++lastOpen;
+    const full = await loadFamilyDetail(family, { ticket });
+    if (!full || !isLatest(ticket)) return;
+    detailDossier.value = null;
+    detailFamily.value = full;
+    showAssureProfile.value = false;
+    markFamilyViewed(full.assureId);
+}
+
+async function openMember(dossier, family) {
+    const ticket = ++lastOpen;
+    const full = await loadFamilyDetail(family, { ticket });
+    if (!full || !isLatest(ticket)) return;
+    detailFamily.value = full;
+    detailDossier.value = full.dossiers.find((d) => d.id === dossier.id) ?? null;
     messageText.value = '';
     showAssureProfile.value = false;
-    markFamilyViewed(family.assureId);
+    markFamilyViewed(full.assureId);
 }
 
 function submittedDossiers(family) {
@@ -412,14 +438,20 @@ function memberExportIndex(dossier) {
     return idx >= 0 ? idx + 1 : 1;
 }
 
-function openAssureProfileFromList(family) {
+async function openAssureProfileFromList(listFamily) {
+    const ticket = ++lastOpen;
+    const family = await loadFamilyDetail(listFamily, { ticket });
+    if (!family || !isLatest(ticket)) return;
     detailFamily.value = family;
     detailDossier.value = null;
-    if (family?.assureProfile) showAssureProfile.value = true;
+    if (family.assureProfile) showAssureProfile.value = true;
 }
 
-async function exportFamilyFifFromList(family) {
-    if (!family?.membresExport?.length) {
+async function exportFamilyFifFromList(listFamily) {
+    const ticket = ++lastOpen;
+    const family = await loadFamilyDetail(listFamily, { ticket });
+    if (!family || !isLatest(ticket)) return;
+    if (!family.membresExport?.length) {
         showToast('Aucun membre soumis pour générer la FIF.');
         return;
     }
@@ -480,6 +512,8 @@ async function exportMemberFif(dossier, index = 1) {
 }
 
 function closeDetail() {
+    lastOpen++; // une ouverture encore en chargement ne doit pas rouvrir le panneau
+    familyLoading.value = null;
     detailFamily.value = null;
     detailDossier.value = null;
     actionModal.value = null;
@@ -599,10 +633,14 @@ function toggleComplementPiece(piece) {
     else complementPieces.value.push(piece);
 }
 
-function syncDetailFromProps() {
+// Après une action (affectation, message…), la liste est rechargée : on recharge aussi le détail ouvert,
+// car la liste n'en contient qu'un résumé.
+async function syncDetailFromProps() {
     if (!detailFamily.value) return;
-    const fam = (page.props.families || []).find((f) => f.assureId === detailFamily.value.assureId);
-    if (!fam) return;
+    const listFamily = (page.props.families || []).find((f) => f.assureId === detailFamily.value.assureId);
+    if (!listFamily) return;
+    const fam = await loadFamilyDetail(listFamily, { silent: true });
+    if (!fam || detailFamily.value?.assureId !== fam.assureId) return;
     detailFamily.value = fam;
     if (detailDossier.value) {
         const dossier = fam.dossiers.find((d) => d.id === detailDossier.value.id);
@@ -801,6 +839,8 @@ const detailLotFifPiece = computed(() => {
                 v-for="family in pageFamilies"
                 :key="family.assureId"
                 class="assure-card assure-accordion overflow-hidden group"
+                :class="{ 'opacity-60 cursor-wait': familyLoading === family.assureId }"
+                :aria-busy="familyLoading === family.assureId"
             >
                 <summary class="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 px-4 py-4 sm:px-5 cursor-pointer hover:bg-surface-container-low transition-colors list-none select-none">
                     <div class="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
@@ -1423,12 +1463,6 @@ const detailLotFifPiece = computed(() => {
                         <button type="button" class="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold" @click="confirmAction">Confirmer</button>
                     </div>
                 </template>
-            </div>
-        </div>
-
-        <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-            <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 font-label-md text-label-md">
-                <span class="material-symbols-outlined">check_circle</span> {{ toast }}
             </div>
         </div>
     </AdminLayout>

@@ -6,7 +6,7 @@ import CamaLoadingButton from '@/Components/CamaLoadingButton.vue';
 import CamaPagination from '@/Components/CamaPagination.vue';
 import { useCamaConfirm } from '@/Composables/useCamaConfirm';
 import { useServerPagination } from '@/Composables/usePagination';
-import { Head, router, useForm, usePage } from '@inertiajs/vue3';
+import { Head, router, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps({
@@ -17,7 +17,6 @@ const props = defineProps({
     activeCategoryId: { type: Number, default: null },
 });
 
-const page = usePage();
 const editorOpen = ref(false);
 const editingId = ref(null);
 const newCategoryName = ref('');
@@ -41,7 +40,6 @@ const form = useForm({
 
 const { confirmState, askConfirm, confirm, cancel } = useCamaConfirm();
 
-const toast = computed(() => page.props.flash?.success ?? null);
 
 const filterPills = computed(() => [
     { id: null, name: 'Toutes' },
@@ -381,12 +379,6 @@ function isLocalFile(url) {
         </div>
     </div>
 
-    <div v-if="toast" class="fixed bottom-6 right-6 z-[70]">
-        <div class="bg-on-background text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-2 text-xs font-semibold">
-            <span class="material-symbols-outlined text-[18px]">check_circle</span>
-            {{ toast }}
-        </div>
-    </div>
 
     <CamaConfirmModal
         :show="confirmState.show"
